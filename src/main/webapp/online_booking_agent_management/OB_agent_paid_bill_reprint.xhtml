@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/channel">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Reprint" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Reprint Sale Bill" class="mt-2" ></h:outputLabel>
+
+                            <div class="d-flex gap-2" style="float: right">
+
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="Back to Bill List"  
+                                    ajax="false" 
+                                    class="ui-button-secondary"
+                                    icon="fa-solid fa-arrow-left"
+                                    actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                    action="/online_booking_agent_management/OB_payment_bill_search?faces-redirect=true"
+                                    >
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="Back to OB List"  
+                                    ajax="false" 
+                                    class="ui-button-secondary"
+                                    icon="fa-solid fa-arrow-left"
+                                    actionListener="#{onlineBookingAgentController.fetchAllOnlineBookings()}"
+                                    action="/online_booking_agent_management/view_all_online_bookings?faces-redirect=true"
+                                    >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Reprint" 
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    ajax="false" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    ajax="true" 
+                                    value="To Cancel"
+                                    icon="fa fa-cancel"
+                                    class="ui-button-danger"
+                                    oncomplete="PF('billToCancel').show()" 
+                                    process="@this"
+                                    update="payementSettleDlg onlineBookingsToPay"
+                                    actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(onlineBookingAgentController.printBill)}"
+                                    disabled="#{onlineBookingAgentController.printBill.cancelled or onlineBookingAgentController.printBill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation' or onlineBookingAgentController.printBill eq null}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                </p:commandButton>
+                            </div>
+
+                            <p:dialog 
+                                widgetVar="billToCancel" 
+                                modal="true" 
+                                closable="false"
+                                dynamic="true"
+                                id="payementSettleDlg"
+                                resizable="false" 
+                                draggable="false" 
+                                height="400"
+                                width="800">
+
+                                <f:facet name="header">
+                                    <h:panelGroup class="d-flex align-items-center justify-content-between">
+                                        <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation ? 'No Selected' : onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name} select to cancel" ></h:outputText>
+                                        <a href="#" onclick="PF('billToCancel').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click"></p:ajax></a> 
+                                    </h:panelGroup>
+
+                                    <p:panel class="my-1">
+                                        <f:facet name="header" >
+                                            <h:panelGroup class="d-flex align-items-center justify-content-between">
+                                                <h:outputLabel value="Select All or Specific Booking to Bill Cancellation" />
+                                                <h:panelGroup id="totalToPay">
+                                                    <h:outputLabel value="Total :" />
+                                                    <h:outputLabel value="#{onlineBookingAgentController.cancelBill.netTotal}" />
+                                                </h:panelGroup>
+  
+                                                <p:commandButton  
+                                                    value="Refrsh" 
+                                                    ajax="true"
+                                                    actionListener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills()}"
+                                                    process="payementSettleDlg dialogContentForCancellation "
+                                                    update="dialogContentForCancellation txtNetTotal gpPaymentDetails totalToPay onlineBookingsToPay cancelBtn"
+                                                    class="ui-button-success" icon="fas fa-cogs">
+                                                </p:commandButton>
+                                                
+                                                <p:commandButton  
+                                                    value="Cancel" 
+                                                    id="cancelBtn"
+                                                    ajax="false"
+                                                    disabled="#{onlineBookingAgentController.cancelBill.netTotal ne onlineBookingAgentController.totalForPaidToHospitalBillCancellation and onlineBookingAgentController.cancelBill.netTotal>0}"
+                                                    action="#{onlineBookingAgentController.paidToHospitalBillCancellation()}"
+                                                    class="ui-button-danger" icon="fas fa-cogs">
+                                                </p:commandButton>
+                                            </h:panelGroup>
+
+                                        </f:facet>
+
+                                        <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
+                                            <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                            <p:selectOneMenu id="cmbPs" value="#{onlineBookingAgentController.cancelPaymentMethod}" style="width:200px">
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                                <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" listener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills()}"/>
+                                            </p:selectOneMenu>
+
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:inputText onfocus="this.select()" value="#{onlineBookingAgentController.cancelBill.netTotal}" id="txtNetTotal" style="width:200px">
+                                                <p:ajax event="keyup" process="@this" listener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills()}" update="gpPaymentDetails"></p:ajax>
+                                            </p:inputText>
+
+                                            <p:outputLabel class="my-2" value="Comments" ></p:outputLabel>
+                                            <p:inputText value="#{onlineBookingAgentController.cancelBill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+
+                                        </h:panelGrid>
+
+                                        <div class="d-flex flex-wrap w-100 gap-2">
+                                            <h:panelGroup id="gpPaymentDetails" >
+                                                <h:panelGroup id="creditCard" class="m-1" rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'Card'}">
+                                                    <pa:creditCard paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup id="cheque"  rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'Cheque'}" >
+                                                    <pa:cheque paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="slip"   rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'Slip'}" >
+                                                    <pa:slip paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="eWallet"   rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'ewallet'}" >
+                                                    <pa:ewallet_collect paymentMethodData="#{onlineBookingAgentController.paymentMethodData}" />
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+
+                                        </div>
+
+                                    </p:panel>
+
+                                </f:facet>
+
+                                <h:panelGroup id="dialogContentForCancellation">
+                                    <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" 
+                                                 var="ob" 
+                                                 scrollable="true"
+                                                 selection="#{onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation}"
+                                                 selectionMode="multiple"
+                                                 rowKey="#{ob.id}">
+                                        
+                                        <p:ajax event="rowSelect" process="@this dialogContentForCancellation" update=":#{p:resolveFirstComponentWithId('payementSettleDlg',view).clientId} :#{p:resolveFirstComponentWithId('totalToPay',view).clientId} " listener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills}" />
+                                        <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('payementSettleDlg',view).clientId} :#{p:resolveFirstComponentWithId('totalToPay',view).clientId}" listener="#{onlineBookingAgentController.onRowUnselectForCancellation}" />
+
+                                        <p:column selectionBox="true" width="20"></p:column>
+
+                                        <p:column width="5em" headerText="Name">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Ref No" ></h:outputText>
+                                            </f:facet>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:outputText value="#{ob.referenceNo}" /> 
+                                            </div>
+                                        </p:column>
+
+                                        <p:column headerText="Name">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Patient Name" ></h:outputText>
+                                            </f:facet>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:outputText value="#{ob.title}. #{ob.patientName}" /> 
+                                            </div>
+                                        </p:column>
+
+                                        <p:column headerText="Date" >
+                                            <h:outputText value="#{ob.createdAt}">
+                                                <f:convertDateTime pattern="dd MMM"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Agent">
+                                            <h:outputText value="#{ob.agency.name}">
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Appoinment Fee" >
+                                            <h:outputText value="#{ob.appoinmentTotalAmount}">
+                                            </h:outputText>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </h:panelGroup>
+                            </p:dialog>
+
+                        </f:facet>
+
+                        <!--                        <div class="d-flex justify-content-end gap-1">
+                                                    <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                                    </p:selectOneMenu>
+                                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                                </div>-->
+
+                        <h:panelGroup   id="gpBillPreview"  > 
+
+                            <h:panelGroup id="gpBillPreview1" rendered="#{!onlineBookingAgentController.printOriginal}"> 
+
+                                <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="true" ></ph:agentPaidToHospitalBill>
+
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreview2" rendered="#{onlineBookingAgentController.printOriginal}"> 
+
+                                <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="false" ></ph:agentPaidToHospitalBill>
+
+                            </h:panelGroup>
+                            
+                           
+
+<!--                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                                <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                                <ph:sale_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                            </h:panelGroup>-->
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

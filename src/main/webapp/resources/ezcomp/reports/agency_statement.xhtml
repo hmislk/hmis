@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form >
+            <p:panel header="Agency Statement Report" styleClass="w-100">
+                <p:panelGrid columns="4" styleClass="mb-2" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
+                    <p:outputLabel value="From Date" />
+                    <p:datePicker  showTime="true" value="#{reportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                    <p:outputLabel value="To Date" />
+                    <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                    <p:outputLabel value="Institution/Branch" />
+                    <p:selectOneMenu filter="true" id="cmdInstitution" style=" max-width: 100%; overflow-x: auto;" class="w-100" value="#{reportController.institution}">
+                        <f:selectItem itemLabel="All" />
+                        <f:selectItems value="#{institutionController.companies}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Agency" />
+
+                    <p:autoComplete 
+                        id="creditCom" 
+                        forceSelection="true" 
+                        value="#{reportController.collectingCentre}" 
+                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                        var="ix" 
+                        class="w-100"
+                        inputStyleClass="form-control"
+                        itemLabel="#{ix.name}" 
+                        itemValue="#{ix}" 
+                        size="30" 
+                        maxResults="20"                                
+                        >
+                        <f:ajax  event="itemSelect" execute="creditCom"  />
+                        <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                        <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                        <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                            <p:outputLabel value="#{ix.ballance}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:column>
+                    </p:autoComplete>
+
+
+                    <p:outputLabel value="Invoice No." />
+                    <p:inputText style=" max-width: 100%; overflow-x: auto;" class="w-100" value="#{reportController.invoiceNumber}" />
+
+                    <!-- Empty spaces for alignment -->
+                    <p:outputLabel value="" />
+                    <p:outputLabel value="" />
+                </p:panelGrid>
+
+                <p:commandButton 
+                    class="m-2" 
+                    ajax="false" 
+                    value="Process" 
+                    action="#{reportController.processCollectingCentreStatementReportNew()}" 
+                    icon="pi pi-check" />
+
+
+                <p:commandButton 
+                    class="m-2 ui-button-success" 
+                    ajax="false" 
+                    value="Download" 
+                    action="#{reportController.processCollectingCentreStatementReportNew()}" 
+                    icon="pi pi-download" >
+                    <p:dataExporter type="xlsx" target="tbl"  fileName="agency_statement.xlsx" ></p:dataExporter>
+                </p:commandButton>
+
+                <h:panelGrid columns="2" styleClass="mt-4">
+                    <h:outputLabel value="From Date :" />
+                    <h:outputLabel value="#{reportController.fromDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                    </h:outputLabel>
+
+                    <h:outputLabel value="To Date :" />
+                    <h:outputLabel value="#{reportController.toDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                    </h:outputLabel>
+                </h:panelGrid>
+            </p:panel>
+
+
+            <p:dataTable
+                id="tbl"
+                value="#{reportController.agentHistories}" 
+                var="agentHx" 
+                paginator="true" 
+                rowKey="#{agentHx.id}"
+                rows="10" 
+                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                rowsPerPageTemplate="5,10,20"
+                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                widgetVar="agentHistoryTable" 
+                sortMode="multiple"
+                reflow="true">
+
+
+
+                <p:column headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
+                    <p:commandLink 
+                        value="#{agentHx.bill.deptId}" 
+                        ajax="false"
+                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandLink>
+                    
+                    <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
+                    <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
+                    
+<!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
+                                   ajax="false"
+                                   rendered="#{agentHx.bill.billedBill}"
+                                   action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
+                        <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
+                    </p:commandLink>-->
+
+                </p:column>
+
+
+                <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.createdAt}" >
+                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" ></f:convertDateTime>
+                    </h:outputText>
+                </p:column>
+
+                <p:column toggleable="true" headerText="Bill Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
+                </p:column>
+
+                <p:column toggleable="true" headerText="Reference No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.bill.referenceNumber}" />
+                </p:column>
+
+                <p:column headerText="Hospital Fee" sortBy="#{agentHx.bill.totalHospitalFee}" filterBy="#{agentHx.bill.totalHospitalFee}">
+                    <h:outputText value="#{agentHx.companyTransactionValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Staff Fee" sortBy="#{agentHx.bill.totalStaffFee}" filterBy="#{agentHx.bill.totalStaffFee}">
+                    <h:outputText value="#{agentHx.staffTrasnactionValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="CC Fee" sortBy="#{agentHx.bill.totalCenterFee}" filterBy="#{agentHx.bill.totalCenterFee}">
+                    <h:outputText value="#{agentHx.agentTransactionValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Received from CC" sortBy="#{agentHx.paidAmountByAgency}" filterBy="#{agentHx.paidAmountByAgency}">
+                    <h:outputText value="#{agentHx.paidAmountByAgency}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Paid to CC" sortBy="#{agentHx.paidAmountToAgency}" filterBy="#{agentHx.paidAmountToAgency}">
+                    <h:outputText value="#{agentHx.paidAmountToAgency}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Adjustments to CC Balance" sortBy="#{agentHx.adjustmentToAgencyBalance}" filterBy="#{agentHx.adjustmentToAgencyBalance}">
+                    <h:outputText value="#{agentHx.adjustmentToAgencyBalance}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="CC Balance Before Transaction" sortBy="#{agentHx.balanceBeforeTransaction}" filterBy="#{agentHx.balanceBeforeTransaction}">
+                    <h:outputText value="#{agentHx.balanceBeforeTransaction}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="Transaction Amount" sortBy="#{agentHx.transactionValue}" filterBy="#{agentHx.transactionValue}">
+                    <h:outputText value="#{agentHx.transactionValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+                <p:column headerText="CC Balance After Transaction" sortBy="#{agentHx.balanceAfterTransaction}" filterBy="#{agentHx.balanceAfterTransaction}">
+                    <h:outputText value="#{agentHx.balanceAfterTransaction}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </p:column>
+
+            </p:dataTable>
+
+        </h:form>
+
+    </cc:implementation>
+</html>

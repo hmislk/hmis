@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-center">
+                        <h4 style="font-weight: 600;">Reservation Calendar</h4>
+                    </div>
+                </f:facet>
+
+                <div class="d-flex gap-2 mb-3 w-100 justify-content-center">
+
+                    <p:calendar 
+                        id="fromDate"
+                        value="#{inwardReservationController.fromDate}"
+                        navigator="false"
+                        style="width: 350px;"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        styleClass="dateTimePicker"
+                        inputStyleClass="form-control">
+                    </p:calendar>
+
+                    <p:calendar 
+                        id="toDate"
+                        value="#{inwardReservationController.toDate}"
+                        navigator="false"
+                        style="width: 350px;"
+                        styleClass="dateTimePicker"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        inputStyleClass="form-control">
+                    </p:calendar>
+
+                    <p:selectOneMenu
+                        value="#{inwardReservationController.calanderStatus}"
+                        filter="true"
+                        style="width: 250px;"
+                        
+                        autoWidth="false">
+                        <f:selectItem itemLabel="Any Status" ></f:selectItem>
+                        <f:selectItems
+                            value="#{enumController.getAppointmentStatus()}"
+                            var="rs"
+                            itemLabel="#{rs.name}"
+                            itemValue="#{rs}" >
+                        </f:selectItems>
+                    </p:selectOneMenu>
+
+                    <p:commandButton
+                        value="Find Reservations"
+                        action="#{inwardReservationController.findReservations()}"
+                        class="ui-button-warning mx-4"
+                        ajax="false"
+                        icon="fa fa-search">
+                    </p:commandButton>
+                </div>
+
+                <div style="margin-left: 4%; margin-right: 4%;" class="mb-3">
+                    <p:schedule
+                        id="schedule"
+                        styleClass="ui-button-warning"
+                        value="#{inwardReservationController.reservationModel}"
+                        widgetVar="myschedule"
+                        timeZone="#{inwardReservationController.serverTimeZone}"
+                        clientTimeZone="#{inwardReservationController.serverTimeZone}">
+                        <p:ajax
+                            event="eventSelect"
+                            listener="#{inwardReservationController.onEventSelectCal}"
+                            update="eventDetails"
+                            oncomplete="PF('eventDialog').show();">
+                        </p:ajax>
+
+                    </p:schedule>
+                </div>
+
+                <script>
+                    function centerTopDialog() {
+                        var dialog = PF('eventDialog').jq;
+                        var win = $(window);
+
+                        // Set the dialog position at the top middle of the window
+                        dialog.css({
+                            'top': '150px', // Adjust this value to control how far from the top you want the dialog
+                            'left': (win.width() - dialog.outerWidth()) / 2 + 'px'
+                        });
+                    }
+                </script>
+
+                <p:dialog
+                    closeOnEscape="true"
+                    widgetVar="eventDialog"
+                    header="Reservations Details"
+                    position="center"
+                    modal=""
+                    onShow="centerTopDialog()"
+                    showEffect="fade"
+                    width="650"
+                    hideEffect="fade"  >
+                    <h:panelGroup id="eventDetails"  >
+
+                        <h:panelGrid  columns="2" cellpadding="7" rendered="#{inwardReservationController.currentReservationDTO ne null}">
+
+                            <p:outputLabel style="width: 150px;"  value="Appointment No" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.appointmentNumber}"/>
+
+                            <p:outputLabel value="Reserve From" />
+                            <h:outputLabel  value="#{inwardReservationController.currentReservationDTO.reservedFrom}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+
+                            <p:outputLabel value="Reserve To" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.reservedTo}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+
+                            <p:outputLabel  value="Referring Doctor" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.refDoctorNameWithTitle}"/>
+
+
+                            <p:outputLabel  value="Room No" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.roomNo}"/>
+
+                            <p:outputLabel  value="Patient" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.patientNameWithTitle}"/>
+
+                            <p:outputLabel  value="Age / Gender" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.ageAndGender}"/>
+
+                            <p:outputLabel  value="Mobile" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.patientMobile}"/>
+
+
+                            <p:outputLabel value="Status" />
+                            <h:panelGroup>
+                                <p:badge 
+                                    rendered="#{inwardReservationController.currentReservationDTO.status eq'PENDING'}" 
+                                    severity="warning" 
+                                    value="#{inwardReservationController.currentReservationDTO.status.name}">
+                                </p:badge>
+                                <p:badge 
+                                    rendered="#{inwardReservationController.currentReservationDTO.status eq'COMPLETE'}" 
+                                    severity="success" 
+                                    value="#{inwardReservationController.currentReservationDTO.status.name}">
+                                </p:badge>
+                                <p:badge 
+                                    rendered="#{inwardReservationController.currentReservationDTO.status eq'CANCEL'}" 
+                                    severity="danger" 
+                                    value="#{inwardReservationController.currentReservationDTO.status.name}">
+                                </p:badge>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton
+                                icon="fa fa-check-circle"
+                                ajax="false"
+                                value="Admit"
+                                style="width: 250px;"
+                                rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}"
+                                disabled="#{inwardReservationController.currentReservationDTO.status eq 'CANCEL' or inwardReservationController.currentReservationDTO.status eq 'COMPLETE'}"
+                                action="#{appointmentController.navigatePatientAdmit(inwardReservationController.currentReservationDTO.id)}"
+                                class="ui-button-success" >
+                            </p:commandButton>
+                        </div>
+
+                    </h:panelGroup>
+                </p:dialog>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

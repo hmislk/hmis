@@ -16,10 +16,10 @@
                     <p:outputLabel value="Arrived Doctors" />
                 </f:facet>
                 <p:panel>
-                    <p:poll interval="30"   
+                    <p:poll interval="30"
                                 listener="#{channelReportController.createDoctorArrival()}" update="@all" />
                     <h:panelGrid columns="2" >
-                        
+
                         <p:commandButton value="Process" action="#{channelReportController.createDoctorArrival()}" ajax="false" />
                         <p:commandButton value="Print" action="#" styleClass="noPrintButton">
                             <p:printer target="pan1" />
@@ -32,9 +32,9 @@
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
                         <p:outputLabel value="Arrived Doctors"/><br></br>
                         <p:outputLabel value="Date: "/>
-                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                        <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                        </p:outputLabel>     
+                        </p:outputLabel>
                     </f:facet>
                     <p:column style="width: 10px!important;">
                         <f:facet name="header">
@@ -47,7 +47,7 @@
                             <p:outputLabel value="Consultant" style="float: left;"/>
                         </f:facet>
                         <p:outputLabel value="#{a.serviceSession.staff.person.name}" />
-                    </p:column>   
+                    </p:column>
                     <p:column sortBy="#{a.serviceSession.startingTime}">
                         <f:facet name="header">
                             <p:outputLabel value="Session Time" style="float: left;"/>
@@ -55,7 +55,7 @@
                         <p:outputLabel value="#{a.serviceSession.startingTime}" >
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
                         </p:outputLabel>
-                    </p:column>   
+                    </p:column>
                     <p:column sortBy="#{a.recordTimeStamp}">
                         <f:facet name="header">
                             <p:outputLabel value="Arrival Time" style="float: left;"/>
@@ -63,7 +63,7 @@
                         <p:outputLabel value="#{a.recordTimeStamp}" style="color: darkgreen;font-weight: bold;">
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}"  />
                         </p:outputLabel>
-                    </p:column>   
+                    </p:column>
                     <p:column >
                         <f:facet name="header">
                             <p:outputLabel value="Departure Time" style="float: left;"/>
@@ -71,8 +71,8 @@
                         <p:outputLabel value="#{a.approvedAt}" style="color: red;font-weight: bold;">
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}"  />
                         </p:outputLabel>
-                    </p:column>   
-                    
+                    </p:column>
+
                 </p:dataTable>
             </p:panel>
         </h:form>

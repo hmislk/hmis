@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                >
+
+    <ui:define name="content">
+
+        <h:panelGroup styleClass="opdPanel" >
+            <h:form id="form">
+                <p:growl id="msg" ></p:growl>
+
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fa-solid fa-warehouse" />
+                        <h:outputLabel  class="mx-4" value="Select Alternative Report"/>
+
+                    </f:facet>
+
+                    <div class="row">
+                        <div class="col-2"></div>
+
+                        <div class="col-3">
+                            <p:selectOneMenu 
+                                class="mx-3 w-100"
+                                value="#{patientReportController.currentReportInvestigation}" >
+                                <f:selectItem itemLabel="Select Alternative Report" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{patientInvestigationController.itemsForParentItem}" 
+                                    var="alternativeReport"
+                                    itemLabel="#{alternativeReport.name}"
+                                    itemValue="#{alternativeReport}">
+                                </f:selectItems>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-3">
+                            <p:selectOneMenu 
+                                class="mx-3 w-50"
+                                value="#{patientReportController.currentPatientSampleComponant}" >
+                                <f:selectItem itemLabel="Select Sample" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{patientInvestigationController.patientSampleComponentsByInvestigation}" 
+                                    var="psc"
+                                    itemValue="#{psc}"
+                                    itemLabel="#{psc.patientSample.idStr}">
+                                </f:selectItems>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Genarate Report" 
+                                action="#{patientReportController.enterNewAlternativeReportFormat(patientInvestigationController.currentPI)}" >
+                            </p:commandButton>
+                        </div>
+
+                        <div class="col-2"></div>
+                    </div>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

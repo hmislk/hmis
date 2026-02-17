@@ -5,25 +5,24 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.ItemWithFee;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ItemWithFee;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.RefundBill;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ServiceFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ServiceFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,7 +51,6 @@ public class MdReportController implements Serializable {
     private List<ItemWithFee> fillterItemWithFees;
     private PaymentMethod paymentMethod;
     ////////////////////////////////////
-    private CommonFunctions commonFunctions;
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
@@ -228,14 +226,6 @@ public class MdReportController implements Serializable {
         this.toDate = toDate;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
     }
@@ -285,8 +275,8 @@ public class MdReportController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
-    
+
+
     private List<Item> item() {
         String sql;
         List<Item> tmp;
@@ -323,7 +313,7 @@ public class MdReportController implements Serializable {
     }
 
     public List<ItemWithFee> getItemWithFees() {
-       
+
         if (itemWithFees == null) {
             itemWithFees = new ArrayList<>();
             for (Item i : item()) {

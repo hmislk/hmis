@@ -6,10 +6,10 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Institution;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.MachineFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.MachineFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,7 +64,7 @@ public class MachineController implements Serializable {
             getEjbFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -74,6 +74,23 @@ public class MachineController implements Serializable {
 
     private void recreateModel() {
         items = null;
+    }
+
+    public Machine findMachine(Long id) {
+        return ejbFacade.find(id);
+    }
+
+    public Machine findMachine(String strId) {
+        if (strId == null) {
+            return null;
+        }
+        Long id;
+        try {
+            id = Long.valueOf(strId);
+        } catch (Exception e) {
+            return null;
+        }
+        return ejbFacade.find(id);
     }
 
     public void saveSelected() {
@@ -103,7 +120,7 @@ public class MachineController implements Serializable {
         m.put("ret", false);
         m.put("name", qry);
         ma = ejbFacade.findFirstByJpql(jpql, m);
-        if(ma==null){
+        if (ma == null) {
             ma = new Machine();
             ma.setName(qry);
             ma.setCreatedAt(new Date());
@@ -111,6 +128,7 @@ public class MachineController implements Serializable {
         }
         return ma;
     }
+
     public MachineFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -142,6 +160,7 @@ public class MachineController implements Serializable {
         this.current = current;
     }
 
+    @Deprecated
     public List<Machine> getInstitutionMachines() {
         if (sessionController.getLoggedUser().getInstitution() != institution) {
             institutionMachines = null;

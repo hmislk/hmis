@@ -53,6 +53,10 @@
                             <p:column headerText="Counter">
                                 <h:outputText value="#{token.counter.name}" />
                             </p:column>
+                            
+                            <p:column headerText="Doctor">
+                                <h:outputText value="#{token.staff.person.nameWithTitle}" />
+                            </p:column>
 
                             <!-- Patient Name Column -->
                             <p:column headerText="Bill">

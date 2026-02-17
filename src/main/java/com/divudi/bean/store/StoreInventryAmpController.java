@@ -1,10 +1,10 @@
 package com.divudi.bean.store;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.facade.AmpFacade;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.facade.AmpFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -115,7 +115,7 @@ public class StoreInventryAmpController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

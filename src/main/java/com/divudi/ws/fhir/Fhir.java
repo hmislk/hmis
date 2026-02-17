@@ -6,24 +6,20 @@
 package com.divudi.ws.fhir;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.AuthenticateController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-
-import com.divudi.entity.ApiKey;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Institution;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,16 +60,7 @@ public class Fhir {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    @EJB
-    private BillFeeFacade billFeeFacade;
 
-
-    private CommonFunctions commonFunctions;
-
-    @Inject
-    private CommonController commonController;
-    @Inject
-    AuthenticateController authenticateController;
     @Inject
     ApiKeyController apiKeyController;
 
@@ -468,174 +455,6 @@ public class Fhir {
         return array;
     }
 
-    private JSONArray billAndBillItemsToJSONArray(List<Bill> bills) {
-        JSONArray array = new JSONArray();
-        for (Bill bill : bills) {
-            JSONObject jSONObject = new JSONObject();
-            jSONObject.put("id", bill.getId());
-            jSONObject.put("bill_id_1", bill.getInsId());
-            jSONObject.put("bill_id_2", bill.getDeptId());
-
-            jSONObject.put("bill_date", bill.getBillDate());
-            jSONObject.put("bill_time", bill.getBillTime());
-
-            JSONArray biArray = new JSONArray();
-            for (BillItem bi : bill.getBillItems()) {
-                JSONObject joBi = new JSONObject();
-                if (bi != null) {
-                    if (bi.getItem() != null) {
-                        joBi.put("item_id", bi.getItem());
-                        joBi.put("item", bi.getItem().getName());
-                        if (bi.getItem().getItemType() != null) {
-                            joBi.put("item_type", bi.getItem().getItemType());
-                        }
-                    }
-
-                    if (bi.getBillSession() != null) {
-                        joBi.put("BillSession", bi.getBillSession());
-                    }
-
-                    if (bi.getDiscount() != 0.0) {
-                        joBi.put("Discount", bi.getDiscount());
-                    }
-                    if (bi.getDiscountRate() != 0.0) {
-                        joBi.put("DiscountRate", bi.getDiscountRate());
-                    }
-                    if (bi.getGrossValue() != 0.0) {
-                        joBi.put("GrossValue", bi.getGrossValue());
-                    }
-                    if (bi.getHospitalFee() != 0.0) {
-                        joBi.put("HospitalFee", bi.getHospitalFee());
-                    }
-                    if (bi.getId() != null) {
-                        joBi.put("Id", bi.getId());
-                    }
-                    if (bi.getInsId() != null) {
-                        joBi.put("InsId", bi.getInsId());
-                    }
-                    if (bi.getInwardChargeType() != null) {
-                        joBi.put("InwardChargeType", bi.getInwardChargeType());
-                    }
-                    if (bi.getItemId() != null) {
-                        joBi.put("ItemId", bi.getItemId());
-                    }
-                    if (bi.getMarginRate() != 0.0) {
-                        joBi.put("MarginRate", bi.getMarginRate());
-                    }
-                    if (bi.getMarginValue() != 0.0) {
-                        joBi.put("MarginValue", bi.getMarginValue());
-                    }
-                    if (bi.getNetRate() != 0.0) {
-                        joBi.put("NetRate", bi.getNetRate());
-                    }
-                    if (bi.getNetValue() != 0.0) {
-                        joBi.put("NetValue", bi.getNetValue());
-                    }
-                    if (bi.getProFees() != null) {
-                        joBi.put("ProFees", bi.getProFees());
-                    }
-                    if (bi.getAbsoluteQty() != null) {
-                        joBi.put("Qty", bi.getAbsoluteQty());
-                    }
-                    if (bi.getRate() != 0.0) {
-                        joBi.put("Rate", bi.getRate());
-                    }
-                    if (bi.getRefunded() != null) {
-                        joBi.put("Refunded", bi.getRefunded());
-                    }
-                    if (bi.getSearialNo() != 0.0) {
-                        joBi.put("SearialNo", bi.getSearialNo());
-                    }
-                    if (bi.getSessionDate() != null) {
-                        joBi.put("SessionDate", bi.getSessionDate());
-                    }
-                    if (bi.getStaffFee() != 0.0) {
-                        joBi.put("StaffFee", bi.getStaffFee());
-                    }
-                    if (bi.getTotalGrnQty() != 0.0) {
-                        joBi.put("TotalGrnQty", bi.getTotalGrnQty());
-                    }
-                    if (bi.getVat() != 0.0) {
-                        joBi.put("Vat", bi.getVat());
-                    }
-                    if (bi.getVatPlusNetValue() != 0.0) {
-                        joBi.put("VatPlusNetValue", bi.getVatPlusNetValue());
-                    }
-
-                }
-                biArray.put(joBi);
-            }
-            jSONObject.put("bill_items", biArray);
-
-            if (bill.getBillType() != null) {
-                jSONObject.put("bill_categoty", bill.getBillType().name());
-            }
-
-            if (bill.getBillClassType() != null) {
-                jSONObject.put("type", bill.getBillClassType().name());
-            }
-
-            jSONObject.put("gross_total", bill.getTotal());
-            jSONObject.put("discount", bill.getDiscount());
-            jSONObject.put("net_total", bill.getNetTotal());
-
-            if (bill.getTax() != null) {
-                jSONObject.put("tax", bill.getTax());
-            }
-            if (bill.getVat() != 0.0) {
-                jSONObject.put("vat", bill.getVat());
-            }
-
-            if (bill.getHospitalFee() != 0.0) {
-                jSONObject.put("hospital_fee", bill.getHospitalFee());
-            }
-            if (bill.getStaffFee() != 0.0) {
-                jSONObject.put("staff_fee", bill.getStaffFee());
-            }
-            if (bill.getProfessionalFee() != 0.0) {
-                jSONObject.put("professional_fee", bill.getProfessionalFee());
-            }
-
-            if (bill.getCashBalance() != null) {
-                jSONObject.put("cash_balance", bill.getCashBalance());
-            }
-            if (bill.getCashPaid() != null) {
-                jSONObject.put("cash_paid", bill.getCashPaid());
-            }
-
-            if (bill.getPaymentMethod() != null) {
-                jSONObject.put("payment_method", bill.getPaymentMethod().name());
-            }
-
-            if (bill.getPaymentScheme() != null) {
-                jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
-            }
-
-            if (bill.getInstitution() != null) {
-                jSONObject.put("institution", bill.getInstitution().getName());
-            }
-            if (bill.getDepartment() != null) {
-                jSONObject.put("department", bill.getDepartment().getName());
-            }
-
-            if (bill.getGrantTotal() != 0.0) {
-                jSONObject.put("grand_total", bill.getGrantTotal());
-            }
-            if (bill.getGrnNetTotal() != 0.0) {
-                jSONObject.put("grn_net_total", bill.getGrnNetTotal());
-            }
-
-            if (bill.getInvoiceDate() != null) {
-                jSONObject.put("invoice_date", CommonFunctions.formatDate(bill.getInvoiceDate(), null));
-            }
-            if (bill.getInvoiceNumber() != null) {
-                jSONObject.put("invoice_number", bill.getInvoiceNumber());
-            }
-
-            array.put(jSONObject);
-        }
-        return array;
-    }
 
     private boolean isValidKey(String key) {
         if (key == null || key.trim().equals("")) {
@@ -1314,12 +1133,12 @@ public class Fhir {
                 map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", commonController.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
-                map.put("bill_session_start_time", commonController.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", commonController.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
-                map.put("bill_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal()));
-                map.put("bill_vat", commonController.getDouble(billObjects.get(0).getBill().getVat()));
-                map.put("bill_vat_plus_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
+                map.put("bill_session_date", CommonFunctions.formatDate(billObjects.get(0).getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
+                map.put("bill_total", CommonFunctions.getDouble(billObjects.get(0).getBill().getNetTotal()));
+                map.put("bill_vat", CommonFunctions.getDouble(billObjects.get(0).getBill().getVat()));
+                map.put("bill_vat_plus_total", CommonFunctions.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1348,8 +1167,8 @@ public class Fhir {
         }
 
         m.put("id", agentId);
-        m.put("fd", commonFunctions.getStartOfDay(fromDate));
-        m.put("td", commonFunctions.getEndOfDay(toDate));
+        m.put("fd", CommonFunctions.getStartOfDay(fromDate));
+        m.put("td", CommonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //System.out.println("m = " + m);
@@ -1365,10 +1184,10 @@ public class Fhir {
                 map.put("bill_patient_name", o.getBill().getPatient().getPerson().getName());
                 map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
                 map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
-                map.put("bill_session_date", commonController.getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
-                map.put("bill_session_start_time", commonController.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
-                map.put("bill_created_at", commonController.getDateTimeFormat24(o.getBill().getCreatedAt()));
-                map.put("bill_total", commonController.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
+                map.put("bill_session_date", CommonFunctions.formatDate(o.getBill().getSingleBillSession().getSessionDate(), "YYYY-MM-dd"));
+                map.put("bill_session_start_time", CommonFunctions.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", CommonFunctions.getDateTimeFormat24(o.getBill().getCreatedAt()));
+                map.put("bill_total", CommonFunctions.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
                 array.put(map);
             } catch (Exception e) {
                 e.printStackTrace();

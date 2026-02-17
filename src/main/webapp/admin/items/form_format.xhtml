@@ -212,7 +212,7 @@
                                 <div style="#{myIi.cssStyle}; position:absolute ;">
                                     <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label'}" value="#{myIi.name}" style="color: #{myIi.cssColor} " escape="false" ></h:outputText>
                                     <h:inputText id="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  style="color: #{myIi.cssColor}"  ></h:inputText>
-                                    <p:watermark for="txtValue" rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
+                                    
                                     <h:panelGroup rendered="#{myIi.retired ne true and myIi.ixItemType eq 'ItemsCatetgory'}" >
                                         <h:selectOneMenu id="cmbRefCat" style="#{myIi.innerCssStyle}" >
                                             <f:selectItem itemLabel="#{myIi.name}"></f:selectItem>

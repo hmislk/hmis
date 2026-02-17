@@ -1,0 +1,73 @@
+{
+    "version": "v2.1.3",
+    "description": "Complete Fix for ALL decimal precision issues in BILLFINANCEDETAILS - Production Critical",
+    "author": "Dr M H B Ariyaratne",
+    "date": "2025-12-02",
+    "githubIssue": "16989",
+    "branch": "16989-goods-in-transit-and-stock-transfer-reports---multiple-costvalue-display-issues",
+    "estimatedDurationMinutes": 5,
+    "requiresDowntime": false,
+    "affectedTables": ["BILLFINANCEDETAILS"],
+    "affectedModules": ["Finance", "Pharmacy", "Reports", "Payment Processing", "Stock Transfer"],
+    "dependencies": [],
+    "preRequisites": [
+        "Database backup completed and verified",
+        "Ensure no active long-running transactions on BILLFINANCEDETAILS table",
+        "Previous migrations v2.1.0, v2.1.1, v2.1.2 status checked",
+        "Application cache cleared for entity changes"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Backup verification and pre-migration checks",
+            "sql": "SELECT 'Pre-migration verification' AS step"
+        },
+        {
+            "step": 2,
+            "description": "Fix TOTALCOSTVALUE precision (main issue from GitHub #16989)",
+            "sql": "ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALCOSTVALUE DECIMAL(20,4)"
+        },
+        {
+            "step": 3,
+            "description": "Fix BILLDISCOUNT precision (scale 0 -> scale 4)",
+            "sql": "ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN BILLDISCOUNT DECIMAL(20,4)"
+        },
+        {
+            "step": 4,
+            "description": "Fix TOTALEXPENSE precision (scale 0 -> scale 4)",
+            "sql": "ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALEXPENSE DECIMAL(20,4)"
+        },
+        {
+            "step": 5,
+            "description": "Fix TOTALQUANTITY precision (keep as decimal but check if scale needed)",
+            "sql": "ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALQUANTITY DECIMAL(20,4)"
+        },
+        {
+            "step": 6,
+            "description": "Upgrade other critical financial columns to precision 20",
+            "sql": "-- Multiple ALTER statements for precision upgrade"
+        },
+        {
+            "step": 7,
+            "description": "Comprehensive verification and rollback preparation",
+            "sql": "-- Verification queries"
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'BILLFINANCEDETAILS' AND COLUMN_TYPE = 'decimal(38,0)'",
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'BILLFINANCEDETAILS' AND COLUMN_TYPE LIKE 'decimal(20,4)%'",
+        "SELECT COLUMN_NAME, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'BILLFINANCEDETAILS' AND COLUMN_NAME IN ('TOTALCOSTVALUE', 'TOTALPURCHASEVALUE', 'TOTALRETAILSALEVALUE', 'BILLDISCOUNT', 'TOTALEXPENSE', 'TOTALQUANTITY')"
+    ],
+    "rollbackNotes": [
+        "This migration changes column precision - rollback requires manual schema restoration",
+        "Data should not be lost as we're expanding precision, not reducing it",
+        "Test rollback in non-production environment first",
+        "Backup schema and data before rollback"
+    ],
+    "postMigrationVerification": [
+        "Verify SUM() operations return proper decimal scale in reports",
+        "Test pharmacy transfer reports for correct cost value display",
+        "Check that debug output shows scale=4 for all financial aggregations",
+        "Validate no performance degradation in financial reporting queries"
+    ]
+}

@@ -15,16 +15,17 @@
                 <h:form>
                     <p:panel header="Pharmacy Membership Discount Matrix" id="reportPrint">
 
-                        <p:panel header="Add new Matrix" >
-                            <p:panelGrid columns="2" >
+                        <p:panel header="Add New Matrix" >
+                            <p:panelGrid columns="2" class="w-25">
                                 <h:outputLabel value="Discount Scheme"/>
                                 <p:autoComplete forceSelection="true" 
                                                 value="#{opdMemberShipDiscountController.paymentScheme}" 
                                                 completeMethod="#{paymentSchemeController.completePaymentScheme}" 
-                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
+                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" class="w-100"
+                                                    inputStyleClass="w-100">
                                 </p:autoComplete>
                                 <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
-                                <p:selectOneMenu value="#{opdMemberShipDiscountController.category}" >
+                                <p:selectOneMenu value="#{opdMemberShipDiscountController.category}" class="w-100">
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
                                                    var="c"
@@ -47,18 +48,18 @@
                                     <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Discount" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
+                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" class="w-100"/>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton id="btnAdd" value="Add" ajax="false"
                                                 action="#{opdMemberShipDiscountController.savePharmacyCategoryPaymentScheme()}" >
                                 </p:commandButton>
 
-                                <p:defaultCommand target="btnAdd"/>
+                                
                             </p:panelGrid>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Fill"
+                            <p:commandButton ajax="false" value="Fill" class="m-1"
                                             action="#{opdMemberShipDiscountController.createItemsCategoryPharmacyPaymentScheme()}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>

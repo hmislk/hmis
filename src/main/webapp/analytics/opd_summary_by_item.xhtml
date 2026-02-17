@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="OPD BILL List "/>                          
+                    </f:facet>
+
+                    <h:form>
+                        <h:panelGrid columns="2" class="my-2">
+                            <h:outputLabel value="From Date" />
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <h:outputLabel value="To Date" />
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <h:outputLabel value="Institution" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeIns}" var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{searchController.institution}" />
+
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.department}" forceSelection="true" completeMethod="#{departmentController.completeDept}" var="dep" itemLabel="#{dep.name}" itemValue="#{dep}">
+                                <p:column>
+                                    <h:outputLabel value="#{dep.name}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{dep.institution.name}" />
+                                </p:column>
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" action="#{searchController.fillOpdSummaryByItem}" />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel">
+                                <p:dataExporter fileName="OPD Summary by Item" type="xlsx" target="tblBills" />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bundle.reportTemplateRows}" var="bill" class="w-100" rows="20" paginator="true" paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records" rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                                     scrollable="true" scrollWidth="100%" sortBy="#{bill.item.name}" filterBy="#{bill.item.name}">
+
+                            <!-- Header with formatted From Date and To Date -->
+                            <f:facet name="header">
+                                <h:outputText value="OPD Summary by Item" style="text-align: right;" />
+                                <h:outputText value="From:" />
+                                <p:spacer width="50" ></p:spacer>
+                                <h:outputText value="#{searchController.fromDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                                <p:spacer width="50" ></p:spacer>
+                                <h:outputText value="To:" />
+                                <h:outputText value="#{searchController.toDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+
+                            </f:facet>
+
+                            <!-- Data Columns with Sorting and Filtering -->
+                            <p:column headerText="Item" width="100" sortBy="#{bill.item.name}" filterBy="#{bill.item.name}">
+                                <p:outputLabel value="#{bill.item.name}" />
+                            </p:column>
+
+                            <!-- Data Columns with Sorting and Filtering -->
+                            <p:column headerText="Department" width="100" sortBy="#{bill.item.name}" filterBy="#{bill.item.name}">
+                                <p:outputLabel value="#{bill.item.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Category" width="80" sortBy="#{bill.item.category.name}" filterBy="#{bill.item.category.name}">
+                                <p:outputLabel value="#{bill.item.category.name}" />
+                            </p:column>
+
+                            <p:column headerText="Parent Category" width="80" sortBy="#{bill.item.category.parentCategory.name}" filterBy="#{bill.item.category.parentCategory.name}">
+                                <p:outputLabel value="#{bill.item.category.parentCategory.name}" />
+                            </p:column>
+
+                            <p:column headerText="Count" width="80" style="text-align: right;" sortBy="#{bill.rowCount}">
+                                <p:outputLabel value="#{bill.rowCount}" />
+                            </p:column>
+
+                            <p:column headerText="Value" width="80" style="text-align: right;" sortBy="#{bill.rowValue}">
+                                <p:outputLabel value="#{bill.rowValue}" />
+                            </p:column>
+
+                            
+
+                        </p:dataTable>
+                    </h:form>
+
+
+
+                </p:panel>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

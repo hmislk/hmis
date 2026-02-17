@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="controller" required="true" type="com.divudi.bean.common.ControllerWithReportFilters" />
+    </cc:interface>
+
+    <cc:implementation>
+        <h:panelGroup layout="block" styleClass="container-fluid">
+            <h:panelGroup layout="block" styleClass="row">
+                <!-- Institution Filter -->
+                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                            <h:outputLabel value="Institution" for="cmbIns" styleClass="mb-0"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbIns" value="#{cc.attrs.controller.institution}" filter="true" styleClass="w-100">
+                            <f:selectItem itemLabel="All Institutions" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            <p:ajax process="cmbIns" update="cmbDept" />
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <!-- Site Filter -->
+                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                            <h:outputLabel value="Site" for="siteMenu" styleClass="mb-0"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu id="siteMenu" value="#{cc.attrs.controller.site}" filter="true" styleClass="w-100">
+                            <f:selectItem itemLabel="All Sites" />
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            <p:ajax process="siteMenu" update="cmbDept" />
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <!-- Department Filter -->
+                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                            <h:outputLabel value="Department" for="cmbDept" styleClass="mb-0"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+                            <p:selectOneMenu rendered="#{cc.attrs.controller.institution eq null and cc.attrs.controller.site eq null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+                            <p:selectOneMenu rendered="#{cc.attrs.controller.institution eq null and cc.attrs.controller.site ne null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(cc.attrs.controller.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+                            <p:selectOneMenu rendered="#{cc.attrs.controller.institution ne null and cc.attrs.controller.site eq null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(cc.attrs.controller.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+                            <p:selectOneMenu rendered="#{cc.attrs.controller.institution ne null and cc.attrs.controller.site ne null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(cc.attrs.controller.institution, cc.attrs.controller.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+        </h:panelGroup>
+    </cc:implementation>
+</html>

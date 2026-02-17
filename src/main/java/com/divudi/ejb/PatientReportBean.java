@@ -4,24 +4,26 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.entity.Patient;
-import com.divudi.entity.lab.Antibiotic;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.facade.AntibioticFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.bean.common.EnumController;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.InvestigationItemValueType;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.lab.Antibiotic;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.facade.AntibioticFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientReportItemValueFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -46,6 +49,11 @@ public class PatientReportBean {
     private PatientReportItemValueFacade ptRivFacade;
     @EJB
     private PatientReportFacade prFacade;
+    @EJB
+    PatientFacade patientFacade;
+    
+    @Inject
+    EnumController enumController;
 
     public PatientReport patientReportFromPatientIx(PatientInvestigation pi) {
         String sql;
@@ -94,7 +102,7 @@ public class PatientReportBean {
             ii = getIxItemFacade().findByJpql(sql);
         }
         if (ii == null) {
-            ii = new ArrayList<InvestigationItem>();
+            ii = new ArrayList<>();
         }
         return ii;
     }
@@ -110,13 +118,13 @@ public class PatientReportBean {
             ii = null;
         } else {
             String sql;
-            sql = "select ii from InvestigationItem ii where ii.retired = false and ii.ixItemType = com.divudi.data.InvestigationItemType.Value and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
+            sql = "select ii from InvestigationItem ii where ii.retired = false and ii.ixItemType = com.divudi.core.data.InvestigationItemType.Value and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
             //////// // System.out.println(sql);
             ii = getIxItemFacade().findByJpql(sql);
             //////// // System.out.println("ii is " + ii + " and the cou");
         }
         if (ii == null) {
-            ii = new ArrayList<InvestigationItem>();
+            ii = new ArrayList<>();
         }
         return ii;
     }
@@ -132,21 +140,141 @@ public class PatientReportBean {
     }
 
     public String getDefaultMemoValue(InvestigationItem item, Patient patient) {
-        //TODO: Create Logic
-        return "";
+        String defaultValue = "";
+        if(item==null){
+            return defaultValue;
+        }
+        if(item.getHtmltext()!=null){
+            defaultValue=item.getHtmltext();
+        }
+        return defaultValue;
     }
 
     public byte[] getDefaultImageValue(InvestigationItem item, Patient patient) {
         //TODO: Create Logic
         return null;
     }
-
+    
     public void addPatientReportItemValuesForReport(PatientReport ptReport) {
+        String jpql = "";
+        Investigation temIx = (Investigation) ptReport.getItem();
+
+        for (ReportItem ii : temIx.getReportItems()) {
+
+            PatientReportItemValue val = null;
+            Patient currentReportPatient = patientFacade.findWithoutCache(ptReport.getPatientInvestigation().getPatient().getId());
+            List<InvestigationItemType> availableList = enumController.getAvailbleInvestigationItemType();
+            
+            if(availableList.contains(ii.getIxItemType()) && ii.isRetired() == false ){
+                if (ptReport.getId() == null || ptReport.getId() == 0) {
+                    
+                    val = new PatientReportItemValue();
+                    
+                    if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                        val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, currentReportPatient));
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+                        val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, currentReportPatient));
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                        val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, currentReportPatient));
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
+                        val.setBaImage(getDefaultImageValue((InvestigationItem) ii, currentReportPatient));
+                    }
+                    
+                    val.setInvestigationItem((InvestigationItem) ii);
+                    val.setPatient(currentReportPatient);
+                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                    val.setPatientReport(ptReport);
+
+                } else {
+                    HashMap hm = new HashMap();
+                    jpql = "select i from PatientReportItemValue i where i.patientReport=:ptRp and i.investigationItem=:inv ";
+                    hm.put("ptRp", ptReport);
+                    hm.put("inv", ii);
+
+                    val = getPtRivFacade().findFirstByJpql(jpql, hm);
+
+                    if (val == null) {
+                        val = new PatientReportItemValue();
+                        
+                        if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                            val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, currentReportPatient));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+                            val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, currentReportPatient));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                            val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, currentReportPatient));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
+                            val.setBaImage(getDefaultImageValue((InvestigationItem) ii, currentReportPatient));
+                        }
+                        
+                        val.setInvestigationItem((InvestigationItem) ii);
+                        val.setPatient(currentReportPatient);
+                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                        val.setPatientReport(ptReport);
+                    }
+                }
+            } else if (ii.getIxItemType() == InvestigationItemType.WorningFlag && !ii.isRetired()) {
+                val = new PatientReportItemValue();
+                
+                val.setStrValue(ii.getHtmltext());
+                val.setInvestigationItem((InvestigationItem) ii);
+                val.setPatient(currentReportPatient);
+                val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                val.setPatientReport(ptReport);
+                
+            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && !ii.isRetired()) {
+                if (ptReport.getId() == null || ptReport.getId() == 0) {
+                    val = new PatientReportItemValue();
+                    
+                    val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, currentReportPatient));
+                    val.setInvestigationItem((InvestigationItem) ii);
+                    val.setPatient(currentReportPatient);
+                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                    val.setPatientReport(ptReport);
+                    
+                } else {
+                    jpql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.DynamicLabel";
+
+                    val = getPtRivFacade().findFirstByJpql(jpql);
+
+                    if (val == null) {
+                        val = new PatientReportItemValue();
+                        
+                        val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, currentReportPatient));
+                        val.setInvestigationItem((InvestigationItem) ii);
+                        val.setPatient(currentReportPatient);
+                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                        val.setPatientReport(ptReport);
+                    }
+                }
+            }
+
+            if (val != null) {
+                if(val.getId() == null){
+                    val.setAllowToExportChart(ii.isAllowToExportChart());
+                    getPtRivFacade().create(val);
+                    ptReport.getPatientReportItemValues().add(val);
+                }
+            }
+        }
+    }
+    
+    public void addPatientReportItemValuesForTemplateReport(PatientReport ptReport) {
+         System.out.println("addPatientReportItemValuesForTemplateReport");
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
         for (ReportItem ii : temIx.getReportItems()) {
+            System.out.println("ii = " + ii);
+            System.out.println("ii.getName = " + ii.getName());
             PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+            if ((ii.getIxItemType() == InvestigationItemType.Value
+                    || ii.getIxItemType() == InvestigationItemType.Image
+                    || ii.getIxItemType() == InvestigationItemType.ExternalImage
+                    || ii.getIxItemType() == InvestigationItemType.ReportImage
+                    || ii.getIxItemType() == InvestigationItemType.Calculation
+                    || ii.getIxItemType() == InvestigationItemType.Flag
+                    || ii.getIxItemType() == InvestigationItemType.Html
+                    || ii.getIxItemType() == InvestigationItemType.Template)
+                    && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();
@@ -154,11 +282,10 @@ public class PatientReportBean {
                         val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
                         val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                    }  else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
                         val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                         val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else {
                     }
                     val.setInvestigationItem((InvestigationItem) ii);
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
@@ -185,7 +312,6 @@ public class PatientReportBean {
                             val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                         } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                             val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else {
                         }
                         val.setInvestigationItem((InvestigationItem) ii);
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
@@ -197,7 +323,7 @@ public class PatientReportBean {
                     }
 
                 }
-            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && ii.isRetired() == false) {
+            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
 
                     val = new PatientReportItemValue();
@@ -210,7 +336,7 @@ public class PatientReportBean {
                     ////// // System.out.println("New value added to pr teport" + ptReport);
 
                 } else {
-                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
+                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
                     val = getPtRivFacade().findFirstByJpql(sql);
                     if (val == null) {
                         val = new PatientReportItemValue();
@@ -296,7 +422,7 @@ public class PatientReportBean {
             if (val == null) {
                 val = new PatientReportItemValue();
                 val.setStrValue("");
-                val.setInvestigationItem((InvestigationItem) ii);
+                val.setInvestigationItem(ii);
                 val.setPatient(ptReport.getPatientInvestigation().getPatient());
                 val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                 val.setPatientReport(ptReport);
@@ -333,7 +459,7 @@ public class PatientReportBean {
             ii = new InvestigationItem();
             try {
                 getIiFacade().create(ii);
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             ii.setName(a.getName());
             ii.setItem(i);
@@ -341,11 +467,10 @@ public class PatientReportBean {
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
             getIiFacade().edit(ii);
-            
+
             i.getReportItems().add(ii);
             getIxFacade().edit(i);
 
-        } else {
         }
         return ii;
     }
@@ -369,9 +494,6 @@ public class PatientReportBean {
         this.antibioticFacade = antibioticFacade;
     }
 
-
-    CommonFunctions commonFunctions;
-
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
@@ -387,8 +509,8 @@ public class PatientReportBean {
         String dl;
         String sql;
         dl = ii.getName();
-        long ageInDays = commonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
-        sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
+        long ageInDays = CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
+        sql = "select f from InvestigationItemValueFlag f where f.retired=false and f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
         List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
             if (f.getSex() == p.getPerson().getSex()) {

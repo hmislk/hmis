@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Patient Investigation List"/>
+                        </f:facet>
+
+                        <ui:include src="/analytics/common_filters.xhtml" />
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton
+                                    class="ui-button-warning"
+                                    icon="fas fa-list"
+                                    id="btnSearch"
+                                    ajax="false"
+                                    value="List"
+                                    action="#{searchController.listPatientInvestigations()}"/>
+                            <p:commandButton
+                                    class="ui-button-success mx-2"
+                                    icon="fas fa-file-excel"
+                                    id="btnExcel"
+                                    ajax="false"
+                                    value="Excel">
+                                <p:dataExporter fileName="All Patient Investigations" type="xlsx" target="tblInvestigations"/>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <div style="width: 100%; overflow-x: auto;">
+                            <p:dataTable
+                                rowIndexVar="i"
+                                id="tblInvestigations"
+                                value="#{searchController.patientInvestigations}"
+                                scrollable="true"
+                                var="pi"
+                                rows="10"
+                                paginatorAlwaysVisible="false"
+                                paginator="true"
+                                paginatorPosition="top"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,50">
+
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" sortBy="#{pi.id}" filterBy="#{pi.id}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.id}"/>
+                                </p:column>
+
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill Item ID" sortBy="#{pi.billItem.id}" filterBy="#{pi.billItem.id}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.billItem.id}"/>
+                                </p:column>
+
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{pi.billItem.bill.id}" filterBy="#{pi.billItem.bill.id}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.billItem.bill.id}"/>
+                                </p:column>
+
+                                <p:column headerText="Bill Number" sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
+                                    <h:outputLabel value="#{pi.billItem.bill.deptId}"/>
+                                </p:column>
+
+                                <p:column headerText="Bill Type" sortBy="#{pi.billItem.bill.billTypeAtomic.label}" filterBy="#{pi.billItem.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                                    <h:outputText value="#{pi.billItem.bill.billTypeAtomic.label}"/>
+                                </p:column>
+
+                                <p:column headerText="Date/Time" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}">
+                                    <h:outputText value="#{pi.billItem.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="User" sortBy="#{pi.billItem.bill.creater.name}" filterBy="#{pi.billItem.bill.creater.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{pi.billItem.bill.creater.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Investigation" sortBy="#{pi.investigation.name}" filterBy="#{pi.investigation.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{pi.investigation.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Status" exportable="false">
+                                    <h:panelGroup>
+                                        <p:badge value="Bill Item Retired" styleClass="ui-badge-info" rendered="#{pi.billItem.retired}"/>
+                                        <p:badge value="Bill Retired" styleClass="ui-badge-info" rendered="#{pi.billItem.bill.retired}"/>
+                                        <p:badge value="Bill Cancelled" styleClass="ui-badge-danger" rendered="#{pi.billItem.bill.cancelled}"/>
+                                        <p:badge value="Bill Returned" styleClass="ui-badge-warning" rendered="#{pi.billItem.bill.refunded}"/>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Actions" exportable="false" width="9em">
+                                    <p:commandButton
+                                        title="View Bill"
+                                        icon="fa fa-eye"
+                                        class="m-1 ui-button-info"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                        ajax="false">
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        title="Manage Bill"
+                                        icon="fa fa-tools"
+                                        class="m-1 ui-button-warning"
+                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}"
+                                        ajax="false">
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        title="Admin"
+                                        icon="fa fa-shield-alt"
+                                        class="m-1 ui-button-danger"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

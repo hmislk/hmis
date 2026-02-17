@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.ApiKeyType;
-import com.divudi.entity.ApiKey;
-import com.divudi.facade.ApiKeyFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.ApiKeyType;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.facade.ApiKeyFacade;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,7 +49,7 @@ public class ApiKeyController implements Serializable {
 
     public String toManageMyApiKeys() {
         listMyApiKeys();
-        return "/user_api_key";
+        return "/user_api_key?faces-redirect=true";
     }
 
     public ApiKeyType[] getApiKeyTypes() {
@@ -71,7 +71,7 @@ public class ApiKeyController implements Serializable {
     }
 
     public boolean isValidKey(String key) {
-        if (key == null || key.trim().equals("")) {
+        if (key == null || key.trim().isEmpty()) {
             return false;
         }
         ApiKey k = findApiKey(key);
@@ -116,7 +116,7 @@ public class ApiKeyController implements Serializable {
         current = new ApiKey();
         current.setWebUser(sessionController.getLoggedUser());
         current.setInstitution(sessionController.getInstitution());
-        current.setKeyType(ApiKeyType.Finance);
+        current.setKeyType(ApiKeyType.Token);
         current.setKeyValue(uuid.toString());
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
@@ -186,7 +186,7 @@ public class ApiKeyController implements Serializable {
             getFacade().edit(removing);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         listMyApiKeys();
@@ -217,7 +217,7 @@ public class ApiKeyController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ApiKeyController controller = (ApiKeyController) facesContext.getApplication().getELResolver().
@@ -232,9 +232,7 @@ public class ApiKeyController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

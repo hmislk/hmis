@@ -4,10 +4,7 @@ import com.divudi.bean.clinical.DiagnosisController;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
-import org.primefaces.PrimeFaces;
-import org.primefaces.component.accordionpanel.AccordionPanel;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -39,10 +36,6 @@ public class EmrController implements Serializable {
 
     public String navigateToClinicalPatientForReceptionist() {
         return "/clinical/clinical_patient_for_receptionist.xhtml?faces-redirect=true";
-    }
-
-    public String navigateToMembershipRegistration() {
-        return "/clinical/membership_registration.xhtml?faces-redirect=true";
     }
 
     public String navigateToClinicalQueue() {

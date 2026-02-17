@@ -8,13 +8,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.Icon;
-import com.divudi.entity.Department;
-import com.divudi.entity.UserIcon;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.UserIconFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.Icon;
+import com.divudi.core.data.IconGroup;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.UserIcon;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.UserIconFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -33,6 +36,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -55,6 +60,10 @@ public class UserIconController implements Serializable {
     private Icon icon;
     private Department department;
     private List<Department> departments;
+    private TreeNode rootIconTreeNode;
+    private TreeNode[] selectedIconNodes;
+    private String iconSearchText;
+    private boolean iconsLoaded;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public void addUserIcon() {
@@ -71,6 +80,19 @@ public class UserIconController implements Serializable {
             return;
         }
 
+        // Check for an existing icon for the same user and department
+        Map<String, Object> params = new HashMap<>();
+        params.put("u", user);
+        params.put("i", icon);
+        params.put("d", department);
+        params.put("ret", false);
+        String jpql = "select ui from UserIcon ui where ui.webUser=:u and ui.icon=:i and ui.department=:d and ui.retired=:ret";
+        UserIcon duplicate = getFacade().findFirstByJpql(jpql, params);
+        if (duplicate != null) {
+            JsfUtil.addErrorMessage("Icon already added for this department");
+            return;
+        }
+
         double newOrder = getUserIcons().size() + 1;
         UserIcon existingUI = findUserIconByOrder(newOrder);
 
@@ -84,6 +106,8 @@ public class UserIconController implements Serializable {
             JsfUtil.addSuccessMessage("Save Success ");
             fillDepartmentIcon();
             reOrderUserIcons();
+            // Clear selected icon after successful addition
+            icon = null;
         } else {
             JsfUtil.addErrorMessage("Icon already exists at this position");
         }
@@ -93,7 +117,13 @@ public class UserIconController implements Serializable {
     public void fillDepartmentIcon() {
         if (user == null) {
             JsfUtil.addErrorMessage("User?");
+            return;
         }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Department?");
+            return;
+        }
+        
         Map m = new HashMap();
         String jpql = "SELECT i "
                 + " FROM UserIcon i "
@@ -219,6 +249,11 @@ public class UserIconController implements Serializable {
     public UserIconController() {
     }
 
+    @PostConstruct
+    public void init() {
+        rootIconTreeNode = createIconTreeNodes();
+    }
+
     public UserIcon getCurrent() {
         if (current == null) {
             current = new UserIcon();
@@ -236,6 +271,8 @@ public class UserIconController implements Serializable {
             current.setRetired(true);
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
+            fillDepartmentIcon();
+            reOrderUserIcons();
         } else {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }
@@ -247,9 +284,26 @@ public class UserIconController implements Serializable {
 
     public List<Icon> getIcons() {
         if (icons == null) {
-            icons = Arrays.asList(Icon.values());
+            icons = Arrays.stream(Icon.values())
+                    .sorted(Comparator.comparing(Icon::getLabel))
+                    .collect(Collectors.toList());
         }
         return icons;
+    }
+
+    public List<Icon> getFilteredIcons(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Arrays.asList(Icon.values()); // Return all if no input
+        }
+
+        String[] keywords = query.toLowerCase().split("\\s+"); // Split by spaces
+
+        return Arrays.stream(Icon.values())
+                .filter(icon -> {
+                    String label = icon.getLabel().toLowerCase();
+                    return Arrays.stream(keywords).allMatch(label::contains);
+                })
+                .collect(Collectors.toList());
     }
 
     public WebUser getUser() {
@@ -258,7 +312,7 @@ public class UserIconController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
-        userIcons = fillUserIcons(user, department);
+        fillDepartmentIcon();
     }
 
     public List<UserIcon> getUserIcons() {
@@ -286,6 +340,16 @@ public class UserIconController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+        fillDepartmentIcon();
+    }
+
+    public void setDepartmentToLoggedUser() {
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            setDepartment(sessionController.getDepartment());
+            JsfUtil.addSuccessMessage("Department set to " + sessionController.getDepartment().getName());
+        } else {
+            JsfUtil.addErrorMessage("No department found for logged user");
+        }
     }
 
     public List<Department> getDepartments() {
@@ -294,6 +358,291 @@ public class UserIconController implements Serializable {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    // Tree-based bulk icon selection methods
+
+    private TreeNode createIconTreeNodes() {
+        TreeNode root = new DefaultTreeNode(new IconHolder(null, "Root"), null);
+        TreeNode allNode = new DefaultTreeNode(new IconHolder(null, "All Icons"), root);
+
+        Map<IconGroup, TreeNode> groupNodes = new HashMap<>();
+        for (IconGroup g : IconGroup.values()) {
+            groupNodes.put(g, new DefaultTreeNode(new IconHolder(null, g.getLabel()), allNode));
+        }
+        for (Icon icon : Icon.values()) {
+            if (icon.getIconGroup() != null) {
+                TreeNode groupNode = groupNodes.get(icon.getIconGroup());
+                new DefaultTreeNode(new IconHolder(icon, icon.getLabel()), groupNode);
+            }
+        }
+        return root;
+    }
+
+    public void fillIconTreeSelections() {
+        if (user == null) {
+            JsfUtil.addErrorMessage("User?");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Department?");
+            return;
+        }
+        List<UserIcon> existingIcons = fillUserIcons(user, department);
+        List<IconHolder> holders = new ArrayList<>();
+        for (UserIcon ui : existingIcons) {
+            if (ui.getIcon() != null) {
+                holders.add(new IconHolder(ui.getIcon(), ui.getIcon().getLabel()));
+            }
+        }
+        unselectIconTreeNodes(rootIconTreeNode);
+        checkIconNodes(rootIconTreeNode, holders);
+        iconsLoaded = true;
+    }
+
+    public void saveIconsFromTree() {
+        if (user == null) {
+            JsfUtil.addErrorMessage("User?");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Department?");
+            return;
+        }
+
+        // Extract selected icons from tree
+        Set<Icon> selectedIcons = new HashSet<>();
+        if (selectedIconNodes != null) {
+            for (TreeNode node : selectedIconNodes) {
+                Object data = node.getData();
+                if (data instanceof IconHolder) {
+                    IconHolder ih = (IconHolder) data;
+                    if (ih.getIcon() != null) {
+                        selectedIcons.add(ih.getIcon());
+                    }
+                }
+            }
+        }
+
+        // Load existing UserIcon records
+        List<UserIcon> existingIcons = fillUserIcons(user, department);
+        Map<Icon, UserIcon> existingMap = new HashMap<>();
+        for (UserIcon ui : existingIcons) {
+            if (ui.getIcon() != null) {
+                existingMap.put(ui.getIcon(), ui);
+            }
+        }
+
+        // Retire unselected existing icons
+        List<UserIcon> toEdit = new ArrayList<>();
+        for (UserIcon ui : existingIcons) {
+            if (ui.getIcon() != null && !selectedIcons.contains(ui.getIcon())) {
+                ui.setRetired(true);
+                toEdit.add(ui);
+            }
+        }
+
+        // Determine max order number for appending new icons
+        double maxOrder = 0;
+        for (UserIcon ui : existingIcons) {
+            if (!ui.isRetired() && selectedIcons.contains(ui.getIcon())) {
+                if (ui.getOrderNumber() > maxOrder) {
+                    maxOrder = ui.getOrderNumber();
+                }
+            }
+        }
+
+        // Create new UserIcon records for newly selected icons
+        List<UserIcon> toCreate = new ArrayList<>();
+        for (Icon selectedIcon : selectedIcons) {
+            if (!existingMap.containsKey(selectedIcon)) {
+                maxOrder++;
+                UserIcon newUi = new UserIcon();
+                newUi.setWebUser(user);
+                newUi.setDepartment(department);
+                newUi.setIcon(selectedIcon);
+                newUi.setOrderNumber(maxOrder);
+                toCreate.add(newUi);
+            }
+        }
+
+        getFacade().batchEdit(toEdit);
+        getFacade().batchCreate(toCreate);
+
+        fillIconTreeSelections();
+        JsfUtil.addSuccessMessage("Icons Updated");
+    }
+
+    public void filterIcons() {
+        collapseAllIconNodes(rootIconTreeNode);
+        rootIconTreeNode.setExpanded(true);
+        if (iconSearchText == null || iconSearchText.trim().isEmpty()) {
+            return;
+        }
+        String st = iconSearchText.trim().toLowerCase();
+        expandIconMatches(rootIconTreeNode, st);
+    }
+
+    private void collapseAllIconNodes(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        node.setExpanded(false);
+        for (Object childObj : node.getChildren()) {
+            if (childObj instanceof TreeNode) {
+                collapseAllIconNodes((TreeNode) childObj);
+            }
+        }
+    }
+
+    private boolean expandIconMatches(TreeNode node, String search) {
+        boolean match = false;
+        if (node.getData() instanceof IconHolder) {
+            IconHolder ih = (IconHolder) node.getData();
+            if (ih.getName() != null && ih.getName().toLowerCase().contains(search)) {
+                match = true;
+            }
+        }
+        for (Object childObj : node.getChildren()) {
+            if (childObj instanceof TreeNode) {
+                if (expandIconMatches((TreeNode) childObj, search)) {
+                    match = true;
+                }
+            }
+        }
+        if (match) {
+            node.setExpanded(true);
+        }
+        return match;
+    }
+
+    private static void checkIconNodes(TreeNode root, List<IconHolder> holdersToCheck) {
+        if (root == null || holdersToCheck == null || holdersToCheck.isEmpty()) {
+            return;
+        }
+        for (Object childObject : root.getChildren()) {
+            if (childObject instanceof TreeNode) {
+                TreeNode childNode = (TreeNode) childObject;
+                checkIconNode(childNode, holdersToCheck);
+            }
+        }
+    }
+
+    private static void checkIconNode(TreeNode node, List<IconHolder> holdersToCheck) {
+        if (node.getData() instanceof IconHolder) {
+            IconHolder holder = (IconHolder) node.getData();
+            if (holdersToCheck.contains(holder)) {
+                ((DefaultTreeNode) node).setSelected(true);
+            }
+        }
+        for (Object childObject : node.getChildren()) {
+            if (childObject instanceof TreeNode) {
+                TreeNode childNode = (TreeNode) childObject;
+                checkIconNode(childNode, holdersToCheck);
+            }
+        }
+    }
+
+    private static void unselectIconTreeNodes(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        ((DefaultTreeNode) root).setSelected(false);
+        for (Object childObject : root.getChildren()) {
+            if (childObject instanceof TreeNode) {
+                TreeNode childNode = (TreeNode) childObject;
+                unselectIconTreeNodes(childNode);
+            }
+        }
+    }
+
+    public TreeNode getRootIconTreeNode() {
+        return rootIconTreeNode;
+    }
+
+    public void setRootIconTreeNode(TreeNode rootIconTreeNode) {
+        this.rootIconTreeNode = rootIconTreeNode;
+    }
+
+    public TreeNode[] getSelectedIconNodes() {
+        return selectedIconNodes;
+    }
+
+    public void setSelectedIconNodes(TreeNode[] selectedIconNodes) {
+        this.selectedIconNodes = selectedIconNodes;
+    }
+
+    public String getIconSearchText() {
+        return iconSearchText;
+    }
+
+    public void setIconSearchText(String iconSearchText) {
+        this.iconSearchText = iconSearchText;
+    }
+
+    public boolean isIconsLoaded() {
+        return iconsLoaded;
+    }
+
+    public void setIconsLoaded(boolean iconsLoaded) {
+        this.iconsLoaded = iconsLoaded;
+    }
+
+    // Inner class for tree node data
+    public static class IconHolder implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private Icon icon;
+        private String name;
+
+        public IconHolder(Icon icon, String name) {
+            this.icon = icon;
+            this.name = name;
+        }
+
+        public Icon getIcon() {
+            return icon;
+        }
+
+        public void setIcon(Icon icon) {
+            this.icon = icon;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 73 * hash + Objects.hashCode(this.icon);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final IconHolder other = (IconHolder) obj;
+            return Objects.equals(this.icon, other.icon);
+        }
     }
 
     /**

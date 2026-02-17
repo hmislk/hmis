@@ -10,7 +10,11 @@
 
     <ui:define name="admin">
 
-        <h:panelGroup >
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ManageCreditCompany')}">
+            <p:outputLabel value="YOU ARE NOT AUTHORIZED." />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('ManageCreditCompany')}">
             <h:form  >
 
                 <p:focus id="selectFocus" for="lstSelect" />

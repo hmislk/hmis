@@ -1,0 +1,321 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head >
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+        <ui:insert name="title" >
+            <title>
+                <h:panelGroup rendered="#{sessionController.logged}" >
+                    <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
+                    <h:outputText value=" - " ></h:outputText>
+                    <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                    <h:outputText value="- " ></h:outputText>
+                    <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not sessionController.logged}" >
+                    <h:outputText value="Hospital Information Management System" ></h:outputText>
+                </h:panelGroup>
+            </title>
+        </ui:insert>
+
+        <h:outputStylesheet library="css" name="ohmis.css"/>
+        <link rel="stylesheet" 
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <h:panelGroup rendered="false" >
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" 
+                  rel="stylesheet" 
+                  integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
+                  crossorigin="anonymous"/>
+        </h:panelGroup>
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
+        <h:outputScript library="js" name="jsfcrud.js"/>
+    </h:head>
+
+    <h:body>
+
+        <div class="container-fluid" >
+
+            <h:form >
+
+
+
+                <p:panel class="m-auto p-5" >
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="Shift Collection Details by Bill Type" ></h:outputLabel>
+                        <p:commandButton value="Close Tab" onclick="closeCurrentTab();" type="button" style="float: right;"/>
+                    </f:facet>
+
+
+                    <div class="row" >
+                        <div class="col" >
+                            <p:panelGrid columns="2" layout="tabular"  class="w-100">
+                                <h:outputText value="Type:" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.paymentHandover.description}" />
+
+                                <h:outputText value="Institution:" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.department.institution.name}" />
+
+                                <h:outputText value="Site:" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.department.site.name}" />
+
+                                <h:outputText value="Department:" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.department.name}" />
+
+                                <h:outputText value="User:" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.user.webUserPerson.nameWithTitle}" />
+
+                                <h:outputText value="Date:" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.date}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+
+
+
+                                <!-- Payment Method Label -->
+                                <h:outputText value="Payment Methods:" />
+                                <!-- Payment Methods -->
+                                <h:panelGroup>
+                                    <!-- Cash -->
+                                    <h:outputText value="Cash" class="mx-3 m-1" rendered="#{financialTransactionController.selectedBundle.hasCashTransaction}" />
+                                    <!-- Card -->
+                                    <h:outputText value="Card" rendered="#{financialTransactionController.selectedBundle.hasCardTransaction}" />
+                                    <!-- Credit -->
+                                    <h:outputText value="Credit" rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}" />
+                                    <!-- Staff -->
+                                    <h:outputText value="Staff" rendered="#{financialTransactionController.selectedBundle.hasStaffTransaction}" />
+                                    <!-- Voucher -->
+                                    <h:outputText value="Voucher" rendered="#{financialTransactionController.selectedBundle.hasVoucherTransaction}" />
+                                    <!-- IOU -->
+                                    <h:outputText value="IOU" rendered="#{financialTransactionController.selectedBundle.hasIouTransaction}" />
+                                    <!-- Agent -->
+                                    <h:outputText value="Agent" rendered="#{financialTransactionController.selectedBundle.hasAgentTransaction}" />
+                                    <!-- Cheque -->
+                                    <h:outputText value="Cheque" rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}" />
+                                    <!-- Slip -->
+                                    <h:outputText value="Slip" rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}" />
+                                    <!-- eWallet -->
+                                    <h:outputText value="eWallet" rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}" />
+                                    <!-- Patient Points -->
+                                    <h:outputText value="Patient Points" rendered="#{financialTransactionController.selectedBundle.hasPatientPointsTransaction}" />
+                                    <!-- Online Settlement -->
+                                    <h:outputText value="Online Settlement" rendered="#{financialTransactionController.selectedBundle.hasOnlineSettlementTransaction}" />
+                                    <!-- On Call -->
+                                    <h:outputText value="On Call" rendered="#{financialTransactionController.selectedBundle.hasOnCallTransaction}" />
+                                </h:panelGroup>
+
+
+                            </p:panelGrid>
+                        </div>
+                        <div class="col" >
+                            <p:panelGrid columns="2" layout="tabular" class="w-100" >
+                                <!-- Cash Value -->
+                                <h:outputText value="Cash Value:" rendered="#{financialTransactionController.selectedBundle.hasCashTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.cashValue}" rendered="#{financialTransactionController.selectedBundle.hasCashTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Card Value -->
+                                <h:outputText value="Card Value:" rendered="#{financialTransactionController.selectedBundle.hasCardTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.cardValue}" rendered="#{financialTransactionController.selectedBundle.hasCardTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Credit Value -->
+                                <h:outputText value="Credit Value:" rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.creditValue}" rendered="#{financialTransactionController.selectedBundle.hasCreditTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Staff Value -->
+                                <h:outputText value="Staff Value:" rendered="#{financialTransactionController.selectedBundle.hasStaffTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.staffValue}" rendered="#{financialTransactionController.selectedBundle.hasStaffTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Voucher Value -->
+                                <h:outputText value="Voucher Value:" rendered="#{financialTransactionController.selectedBundle.hasVoucherTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.voucherValue}" rendered="#{financialTransactionController.selectedBundle.hasVoucherTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- IOU Value -->
+                                <h:outputText value="IOU Value:" rendered="#{financialTransactionController.selectedBundle.hasIouTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.iouValue}" rendered="#{financialTransactionController.selectedBundle.hasIouTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Agent Value -->
+                                <h:outputText value="Agent Value:" rendered="#{financialTransactionController.selectedBundle.hasAgentTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.agentValue}" rendered="#{financialTransactionController.selectedBundle.hasAgentTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Cheque Value -->
+                                <h:outputText value="Cheque Value:" rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.chequeValue}" rendered="#{financialTransactionController.selectedBundle.hasChequeTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Slip Value -->
+                                <h:outputText value="Slip Value:" rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.slipValue}" rendered="#{financialTransactionController.selectedBundle.hasSlipTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- eWallet Value -->
+                                <h:outputText value="eWallet Value:" rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.ewalletValue}" rendered="#{financialTransactionController.selectedBundle.hasEWalletTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Patient Points Value -->
+                                <h:outputText value="Patient Points Value:" rendered="#{financialTransactionController.selectedBundle.hasPatientPointsTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.patientPointsValue}" rendered="#{financialTransactionController.selectedBundle.hasPatientPointsTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- Online Settlement Value -->
+                                <h:outputText value="Online Settlement Value:" rendered="#{financialTransactionController.selectedBundle.hasOnlineSettlementTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.onlineSettlementValue}" rendered="#{financialTransactionController.selectedBundle.hasOnlineSettlementTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- On Call Value -->
+                                <h:outputText value="On Call Value:" rendered="#{financialTransactionController.selectedBundle.hasOnCallTransaction}" />
+                                <h:outputText value="#{financialTransactionController.selectedBundle.onCallValue}" rendered="#{financialTransactionController.selectedBundle.hasOnCallTransaction}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:panelGrid>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+                    <p:dataTable id="cashDetailsTable" 
+                                 value="#{financialTransactionController.selectedBundle.reportTemplateRows}" 
+                                 var="cashRow"
+                                 rowIndexVar="n"
+                                 rowKey="#{cashRow.id}"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15,20,50"
+                                 sortBy="#{cashRow.payment.bill.createdAt}"
+                                 filterEvent="keyup"
+                                 globalFilterOnly="false"
+                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                 widgetVar="cashDetailsTable">
+
+                        <p:column headerText="Bill No" 
+                                  sortBy="#{cashRow.payment.bill.deptId}" 
+                                  filterBy="#{cashRow.payment.bill.deptId}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.bill.deptId}" />
+                        </p:column>
+
+                        <p:column headerText="Date Time" 
+                                  sortBy="#{cashRow.payment.bill.createdAt}" 
+                                  filterBy="#{cashRow.payment.bill.createdAt}"
+                                  filterMatchMode="equals">
+                            <h:outputText value="#{cashRow.payment.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="User" 
+                                  sortBy="#{cashRow.payment.bill.creater.webUserPerson.name}" 
+                                  filterBy="#{cashRow.payment.bill.creater.webUserPerson.name}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.bill.creater.webUserPerson.name}" />
+                        </p:column>
+
+                        <p:column headerText="Bill Type" 
+                                  sortBy="#{cashRow.payment.bill.billTypeAtomic.label}" 
+                                  filterBy="#{cashRow.payment.bill.billTypeAtomic.label}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" />
+                        </p:column>
+
+                        <p:column headerText="Bill Type" 
+                                  rendered="#{webUserController.hasPrivilege('Developers')}"
+                                  sortBy="#{cashRow.payment.bill.billTypeAtomic}" 
+                                  filterBy="#{cashRow.payment.bill.billTypeAtomic}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.bill.billTypeAtomic}" />
+                        </p:column>
+
+                        <p:column headerText="Payment Method" 
+                                  sortBy="#{cashRow.payment.paymentMethod.label}" 
+                                  filterBy="#{cashRow.payment.paymentMethod.label}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.paymentMethod.label}" />
+                        </p:column>
+
+                        <p:column headerText="Value" 
+                                  sortBy="#{cashRow.payment.paidValue}" 
+                                  filterBy="#{cashRow.payment.paidValue}" 
+                                  filterMatchMode="gte"
+                                  class="text-end">
+                            <h:outputText value="#{cashRow.payment.paidValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Actions">
+                            <p:commandButton value="View" icon="fa fa-eye" class="m-1 ui-button-info"  
+                                             action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false">
+                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Manage" icon="fa fa-tools" class="m-1 ui-button-warning"  
+                                             action="#{billSearch.navigateToManageBillByAtomicBillType()}" ajax="false">
+                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Admin" icon="fa fa-shield-alt" class="m-1 ui-button-danger"  
+                                             action="#{billSearch.navigateToAdminBillByAtomicBillType()}" ajax="false" 
+                                             rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
+                        </p:column>
+
+                    </p:dataTable>
+
+
+                    <script type="text/javascript">
+                        function closeCurrentTab() {
+                            // Attempt to close the tab
+                            window.open('', '_self', '');
+                            window.close();
+                        }
+                    </script>
+
+
+
+                </p:panel>
+
+            </h:form>
+        </div>
+
+
+
+
+
+
+    </h:body>
+</html>

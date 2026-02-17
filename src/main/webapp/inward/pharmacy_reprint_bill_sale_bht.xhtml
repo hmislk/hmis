@@ -30,21 +30,32 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Cancel" 
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}" 
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
-                                        action="pharmacy_cancel_bill_retail_bht"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
+                                        action="#{pharmacyBillSearch.navigateToCancelPharmacyDirectIssueToInpatients}" >                           
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Return Item" 
-                                        action="pharmacy_bill_return_bht_issue"   
+                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients()}"   
                                         icon="fa fa-undo"
                                         disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
                                         <f:setPropertyActionListener 
                                             value="#{pharmacyBillSearch.bill}" 
                                             target="#{bhtIssueReturnController.bill}"  />
                                     </p:commandButton>
+
+<!--                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Reverse Bill" 
+                                        class="ui-button-warning"
+                                        icon="fa fa-exchange-alt"
+                                        action="#{pharmacyBillSearch.navigateToReversePharmacyDirectIssueToInpatients}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        title="Create a reverse bill with negative quantities"  >                           
+                                    </p:commandButton>-->
 
                                     <p:commandButton 
                                         ajax="false" 
@@ -85,7 +96,7 @@
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between">
@@ -129,7 +140,9 @@
                                             </p:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;">
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Gross Value"/>
                                             </f:facet>
@@ -138,7 +151,9 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;">
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Matrix Value"/>
                                             </f:facet>
@@ -147,7 +162,9 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;">
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
@@ -158,14 +175,18 @@
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column  style="text-align: right;" colspan="4">
+                                                <p:column 
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                    style="text-align: right;" colspan="4">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
                                                         </h:outputLabel>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column  style="text-align: right;" colspan="2">
+                                                <p:column 
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                                    style="text-align: right;" colspan="2">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
                                                             <f:convertNumber pattern="#0.00" />
@@ -177,7 +198,7 @@
                                     </p:dataTable>
                                 </p:panel>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <div class="d-flex justify-content-between">
@@ -199,7 +220,7 @@
                                         </p:selectOneMenu>
                                         <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
                                     </div>
- 
+
                                     <h:panelGroup   id="gpBillPreview" class="mt-2"> 
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
@@ -208,7 +229,16 @@
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                             <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                        </h:panelGroup>                            
+                                        </h:panelGroup>        
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                            <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                            <phi:saleBill_Header_Inward bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
                                     </h:panelGroup>  
                                 </p:panel>
                             </div>

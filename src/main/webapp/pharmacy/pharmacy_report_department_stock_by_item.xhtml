@@ -26,8 +26,8 @@
                                              actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" ></p:commandButton>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                              
-                                              />
+
+                                                />
                             </p:commandButton>
                             <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
                                              oncomplete="$('#frm\\:print').click()"
@@ -40,13 +40,15 @@
 
                         <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
 
-                            <p:dataTable id="tbl" rowIndexVar="ii" 
-                                         value="#{reportsStock.pharmacyStockRows}" var="i"  
-                                         rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
-                                         rows="#{reportsStock.paginator?'20':reportsStock.pharmacyStockRows.size()}"
-                                         paginator="#{reportsStock.paginator}"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20, 50, 100">
+                            <p:dataTable 
+                                id="tbl" 
+                                rowIndexVar="ii" 
+                                value="#{reportsStock.pharmacyStockRows}" var="i"  
+                                rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
+                                rows="#{reportsStock.paginator?'20':reportsStock.pharmacyStockRows.size()}"
+                                paginator="#{reportsStock.paginator}"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100">
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock Report by Item - #{reportsStock.department.name}"/>                                     
                                 </f:facet> 

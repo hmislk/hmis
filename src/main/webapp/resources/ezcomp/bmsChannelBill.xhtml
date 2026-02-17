@@ -9,13 +9,15 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" class="com.divudi.entity.Bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" class="com.divudi.core.entity.Bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" type="java.lang.Boolean" />
         <cc:attribute name="ref" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+
+
 
         <div class="posbill" style="text-align: left!important; page-break-after: always;" >
             <div style="position: absolute; padding-left: 165px;">
@@ -36,13 +38,13 @@
                 <h:outputLabel value="Channel Payment Receipt"   style="text-align: center;"/><br/>
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/>
                 <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.ref eq true}" style="text-align: center;"/>
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/>
                 <br></br>
                 <!--                <h:outputLabel value="(Customer Copy)" style="text-align: center;"/> -->
             </div>
-            <div style="text-align: center;"> 
+            <div style="text-align: center;">
                 <h:outputLabel value="--------------------------------------------" style="text-align: center;"></h:outputLabel>
-            </div> 
+            </div>
 
             <div class="d-flex justify-content-center">
                 <b>
@@ -50,7 +52,7 @@
                         <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:40px !important; width: 70px; height: 70px; font-weight: bold; border: 1px solid black; color: red; border-radius: 50px; text-align: center; text-align-last: center; margin-top: 10px;" rendered="#{loop.index == 0}"></h:outputLabel>
                     </ui:repeat>
                 </b>
-            </div> 
+            </div>
 
             <p:spacer height="10"/>
 
@@ -136,34 +138,65 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-
-                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo}" style="font-weight: bold;">
+                        <h:outputLabel rendered="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo ne 0}" value="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo}" style="font-weight: bold;">
                         </h:outputLabel>
-
                     </td>
 
                 </tr>
 
-                <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
-                    <tr>
-                        <td>
-                            <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
-                        </td>
-                        <td>
-                            <p:spacer width="10" rendered="#{cbif.feeGrossValue ne 0.0}"></p:spacer>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
-                        </td>
-                        <td>
-                            <h:outputLabel value="#{cbif.feeGrossValue}" rendered="#{cbif.feeGrossValue ne 0.0}">
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                </ui:repeat>
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show Bill fees with Item Name in Channel Booking Bill')}" >
+<!--                    <h1>SSSS</h1>-->
+                    <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
+                        <tr>
+                            <td>
+                                <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="10" rendered="#{cbif.feeValue ne 0.0}"></p:spacer>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{cbif.feeValue}" rendered="#{cbif.feeValue ne 0.0}">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </h:panelGroup>
 
-                <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
+                <h:panelGroup class="my-2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Bill fees with Item Name in Channel Booking Bill')}">
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi"  >
+                        <tr>
+                            <td>
+                                <h:outputLabel value="#{cbi.item.name}" rendered="#{cc.attrs.bill.singleBillItem.item.name ne cbi.item.name}"></h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <ui:repeat value="#{cbi.billFees}" var="cbif" >
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.fee ne 0.0}"></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <p:spacer width="10" rendered="#{cbif.feeValue ne 0.0}"></p:spacer>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value=":" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cbif.feeValue}" rendered="#{cbif.feeValue ne 0.0}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tr>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" class="my-2" >
                     <tr>
                         <td>
                             <h:outputLabel value="Total" ></h:outputLabel>
@@ -326,13 +359,13 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.insId}"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"></h:outputLabel>
                     </td>
                 </tr>
 
                 <tr>
                     <td>
-                        <h:outputLabel value="Bill At" ></h:outputLabel>
+                        <h:outputLabel value="Booking At" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -346,10 +379,9 @@
                         </h:outputLabel>
                     </td>
                 </tr>
-
                 <tr>
                     <td>
-                        <h:outputLabel value="Cashier Name" ></h:outputLabel>
+                        <h:outputLabel value="Booked by" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -358,10 +390,42 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill eq null}" ></h:outputLabel>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.name}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"  ></h:outputLabel>
                     </td>
                 </tr>
+
+                <tr>
+                    <td>
+                        <h:outputLabel value="Paid At" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.createdAt}">
+                            <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h:outputLabel value="Cashier:" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.name}"  ></h:outputLabel>
+                    </td>
+                </tr>
+
+
 
                 <tr>
                     <td>
@@ -382,38 +446,44 @@
             </table>
 
             <div class="d-flex justify-content-center">
-                <p:graphicImage 
-                    cache="false" 
-                    value="#{barcodeController.createBarcodeCode128}" 
+                <p:graphicImage
+                    cache="false"
+                    value="#{barcodeController.createBarcodeCode128}"
                     style="max-width: 7.5cm; padding: 10px; margin: 10px;" >
                     <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
                 </p:graphicImage>
             </div>
 
             <div style="margin-left: 6%">
-                <div style="font-size: 8pt">
+                <div style="font-size: 8pt" class="d-flex">
                     <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputLabel>
+                    <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paymentMethod ne cc.attrs.bill.paidBill.paymentMethod}" >
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value=" -" />
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod}" />
+                        </div>
+                    </h:panelGroup>
                 </div>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="Paid by : Credit Card :"/>
                     <h:outputText
                         class="mx-1"
-                        style="font-size: 8pt"  
+                        style="font-size: 8pt"
                         value="#{cc.attrs.bill.paidAmount}">
-                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="(Card Last 4 Digits:#{cc.attrs.bill.creditCardRefNo})"/>
                 </h:panelGroup>
             </div>
 
-            <div style="text-align: center;"> 
+            <div style="text-align: center;">
                 <h:outputLabel value="--------------------------------------------" style="text-align: center;"></h:outputLabel>
             </div>
 

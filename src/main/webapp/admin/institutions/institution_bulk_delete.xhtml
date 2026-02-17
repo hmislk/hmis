@@ -21,7 +21,7 @@
                     <p:commandButton ajax="false" 
                                      value="Remove Selected"
                                      icon="fas fa-trash"
-                                         class="ui-button-danger"
+                                     class="ui-button-danger"
                                      action="#{institutionController.removeSelectedItems()}">
                     </p:commandButton>
 
@@ -29,10 +29,11 @@
                                  rowKey="#{sv.id}" selection="#{institutionController.itemsToRemove}" 
                                  rows="10"
                                  paginator="true"
+                                 selectionMode="multiple"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="10,50,100,500"
                                  >
-                        <p:column id="colSelect"  selectionMode="multiple" >
+                        <p:column id="colSelect"  selectionBox="true" >
                         </p:column>
 
                         <p:column headerText="Type" sortBy="#{sv.institutionType.label}" filterBy="#{sv.institutionType.label}" filterMatchMode="contains"
@@ -54,7 +55,7 @@
                                   sortBy="#{sv.creater.webUserPerson.name}" >
                             <h:outputLabel value="#{sv.creater.webUserPerson.name}" />
                         </p:column>
-                        
+
                         <p:column headerText="Created At" 
                                   style="font-weight:normal ;color: black;text-align: left;width: 200px;"
                                   sortBy="#{sv.createdAt}" >
@@ -62,7 +63,7 @@
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
-                        
+
                     </p:dataTable>
 
 

@@ -5,11 +5,11 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationValidator;
-import com.divudi.entity.lab.InvestigationValidaterComponent;
-import com.divudi.facade.InvestigationValidatorFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationValidator;
+import com.divudi.core.entity.lab.InvestigationValidaterComponent;
+import com.divudi.core.facade.InvestigationValidatorFacade;
+import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -39,8 +39,8 @@ public class InvestigationValidatorComponentController implements Serializable {
     private InvestigationValidatorFacade investigationItemValidatorFacade;
     private String newValidatorName;
 
-    
-    
+
+
 
     public void addNewValidator() {
         if(currentInvestigation==null){
@@ -67,8 +67,8 @@ public class InvestigationValidatorComponentController implements Serializable {
         this.currentInvestigation = currentInvestigation;
     }
 
-    
-    
+
+
     public Investigation getCurrentInvestigation() {
         return currentInvestigation;
     }
@@ -113,9 +113,9 @@ public class InvestigationValidatorComponentController implements Serializable {
         this.currentValidator = currentValidator;
     }
 
-    
-    
-    
-    
-    
+
+
+
+
+
 }

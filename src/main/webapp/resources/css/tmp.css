@@ -1,0 +1,87 @@
+.sticker {
+    font-size: 6pt;
+    line-height: 1;
+    margin: 0;
+    padding: 0px;
+    padding-top: 3mm;
+    border: none;
+    width: 5cm;
+    height: 2.5cm;
+    box-sizing: border-box;
+    page-break-after: always; /* Page break after each sticker */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Ensure content that exceeds the height is cut off */
+}
+
+.sticker .label {
+    display: inline-block;
+    margin-right: 2px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sticker .patient-info,
+.sticker .patient-sample-info {
+    display: flex;
+    justify-content: flex-start; /* Align items to the left */
+    margin-bottom: 2px;
+}
+
+.sticker .barcode-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align items to the left */
+    margin: 5px 0;
+    flex-direction: row; /* Ensure the barcode is aligned left */
+    overflow: hidden; /* Cut off content if it exceeds the container */
+}
+
+.sticker .barcode-info p\\:barcode {
+    display: inline-block;
+    margin: 0;
+    max-height: 100%; /* Ensure the barcode does not exceed the container height */
+}
+
+.patient-name {
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.patient-age {
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.patient-sex {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.patient-id {
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.patient-phn {
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.sample-id {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.patient-sample-info {
+    /* Add your styles for the patient sample info container here */
+}
+
+.sample-component {
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.barcode-info {
+    /* Add your styles for the barcode info container here */
+}

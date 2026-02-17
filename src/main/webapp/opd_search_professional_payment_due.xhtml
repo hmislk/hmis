@@ -8,9 +8,14 @@
       >
 
     <h:body>
+        
         <ui:composition template="/resources/template/template.xhtml">
+            
             <ui:define name="content">
-                <h:form>
+                
+                <h1>File Has Moved to OPD Professional Payments Folder. This will be deleted soon</h1>
+                
+                <h:form rendered="false">
                     <p:panel header="OPD Payments Due Search" >
                         <f:facet name="header">
                             <h:outputLabel value="OPD Payments Due Search"/>
@@ -38,6 +43,8 @@
                                     
                                     <h:outputLabel value="OPD Bill No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="my-1 w-100"/>
+                                    <h:outputLabel value="Bht No"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
                                     <h:outputLabel value="Patient Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="my-1 w-100"/>
                                     <h:outputLabel value="Speciality"/> 
@@ -79,8 +86,8 @@
                                         </p:column>
 
                                         <p:column headerText="Bill No">
-                                            <h:commandLink action="payment_staff_bill" >
-                                                <h:outputLabel value="#{bf.bill.insId}">
+                                            <h:commandLink action="/opd/payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.bill.deptId}">
                                                 </h:outputLabel>
                                                 <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                             </h:commandLink>

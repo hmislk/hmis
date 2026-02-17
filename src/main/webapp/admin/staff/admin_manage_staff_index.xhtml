@@ -25,6 +25,16 @@
 
                                     <p:tab title="Staff">
                                         <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Add New Staff" 
+                                                action="#{staffController.navigateToAddNewStaff}"/>
+                                            <p:commandButton  
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Staff List" 
+                                                action="#{staffController.navigateToListStaff()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Doctors (Excluding Consultants)" action="#{doctorController.navigateToDoctorsExcludingConsultants()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Doctors (Including Consultants)" action="#{doctorController.navigateToDoctorsIncludingConsultants()}"/>
 
@@ -33,6 +43,18 @@
                                             <p:commandButton  class="w-100" ajax="false" value="Doctors &amp; Staff" action="#{staffController.navigateToManageStaff}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{staffController.navigateToAdminStaffViewSignature()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToAdminStaffSignature()}"/>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Manage">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Adjust Staff Welfare Eligibility" 
+                                                icon="fa fa-user-check" 
+                                                action="#{staffController.navigateToStaffWelfareEligibilityAdjustmentList}" />
+
                                         </div>
                                     </p:tab>
 

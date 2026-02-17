@@ -8,8 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.ServiceCategory;
-import com.divudi.facade.ServiceCategoryFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.facade.ServiceCategoryFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -21,7 +22,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -120,7 +121,7 @@ public class ServiceCategoryController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -180,6 +181,46 @@ public class ServiceCategoryController implements Serializable {
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + ServiceCategoryController.class.getName());
+            }
+        }
+    }
+    
+    @FacesConverter(value = "categoryConverter")
+    public static class categoryControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            ServiceCategoryController controller = (ServiceCategoryController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "serviceCategoryController");
+            return controller.getEjbFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof ServiceCategory) {
+                ServiceCategory o = (ServiceCategory) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + Category.class.getName());
             }
         }
     }

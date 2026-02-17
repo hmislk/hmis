@@ -25,17 +25,13 @@
             </div>
             <div class="institutionContact" >
                 <div >
-                    <h:outputLabel value="Telephone : #{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
-
-                </div>
-                <!--                <div >
-                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
-                                </div>-->
-                <div >
-                    <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>                                                 
+                    <h:outputLabel value="Telephone : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email : "/>
+                    <h:outputLabel value="Fax : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="Email : &nbsp;"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.email}"/>                                                 
                 </div>
             </div>
@@ -47,41 +43,59 @@
                 <h:outputLabel value="***Canceled***" rendered="#{cc.attrs.Canceled eq true}" style="font-size: 18px;"/>
             </div>
 
-            <div  class="row">
+            <div class="row">
+                <!-- Left Column -->
                 <div class="col-6">
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Supplier Name " />
-                        <h:outputLabel value=" : "/>
-                        <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"   /> 
-                        <h:outputLabel value="P.O. No"/>
-                        <h:outputLabel value=" : "/>
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
-                        <h:outputLabel value="Payment Type "/>
-                        <h:outputLabel value=" : "/>
-                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
-                    </h:panelGrid>
+                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                        <h:outputText value="Supplier Name" />
+                        <h:outputText value=":" />
+                        <h:panelGroup>
+                            <h:outputText value="#{cc.attrs.bill.toInstitution.name}" />
+                            <h:outputText value=" (" rendered="#{cc.attrs.bill.toInstitution.code ne null}" />
+                            <h:outputText value="#{cc.attrs.bill.toInstitution.code}" rendered="#{cc.attrs.bill.toInstitution.code ne null}" />
+                            <h:outputText value=")" rendered="#{cc.attrs.bill.toInstitution.code ne null}" />
+                        </h:panelGroup>
 
-                </div>
-                <div class="col-6">
-                    <h:panelGrid columns="3">
-                        <h:outputLabel value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                        <h:outputLabel value=" : " rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                        <h:outputLabel value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                        <h:outputLabel value="P.O. Date "/>
-                        <h:outputLabel value=" : "/>
-                        <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                        </h:outputLabel>
-                        <h:outputLabel value="P.O. Time "/>
-                        <h:outputLabel value=" : "/>
-                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                        </h:outputLabel>
+                        <h:outputText value="P.O. No" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.deptId}" />
+
+                        <h:outputText value="Payment Method" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.paymentMethod}" />
+                        <h:outputText value="Consignment" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
                     </h:panelGrid>
                 </div>
 
-                <!--</h:panelGrid>-->
+                <!-- Right Column -->
+                <div class="col-6">
+                    <h:panelGrid columns="3" columnClasses="labelCol,valueCol,spacerCol" styleClass="table table-borderless">
+                        <h:outputText value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
+                        <h:outputText value=":" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
+                        <h:outputText value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" />
+
+                        <!-- New Field: Order Department -->
+                        <h:outputText value="Order Department" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{purchaseOrderRequestController.currentBill.department.name}" />
+
+                        <h:outputText value="P.O. Date" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.referenceBill.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputText>
+
+                        <h:outputText value="P.O. Time" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputText>
+                    </h:panelGrid>
+                </div>
             </div>
+
 
             <p:spacer height="10"/>
 
@@ -102,25 +116,32 @@
                             <h:panelGroup rendered="#{not bip.retired}" >
                                 <tr>
                                     <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
-                                    <td style="text-align: left; min-width: 400px; border: 1px solid black;">#{bip.item.name}</td>
+                                    <td style="text-align: left; min-width: 400px; border: 1px solid black;">
+                                        <h:outputLabel value="#{bip.item.name}"/>
+                                        <h:outputLabel value="&nbsp;&nbsp;(" />
+                                        <h:outputLabel value="#{bip.item.code}" />
+                                        <h:outputLabel value=")" />
+
+
+                                    </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
 
-                                    <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate * bip.pharmaceuticalBillItem.qty}">
+                                    <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossTotal}">
                                             <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </td>
@@ -128,17 +149,43 @@
                             </h:panelGroup>
                         </ui:repeat>
                     </tbody>
+                    <tfoot>
+                        <tr >
+                            <th></th>
+                            <th colspan="4" >Total</th>
+                            <th style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
+
+                                <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,###.00" />
+                                </h:outputText>
+                            </th>
+                        </tr>
+                    </tfoot>
                 </table>
 
             </div>
 
             <div class="preparedBy" style="padding-left: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
-                <h:outputLabel value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel style="margin-right: 30%;" value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Created Date/Time:"/>
+                <p:outputLabel value="#{sessionController.currentDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </p:outputLabel>
+
 
             </div>
 
             <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel value="Authorized By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Authorized By : #{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.nameWithTitle}"/>
+
+            </div>
+
+            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
+                <h:outputLabel style="margin-right: 30%;" value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Approved Date/Time:"/>
+                <p:outputLabel value="#{cc.attrs.bill.approveAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </p:outputLabel>
 
             </div>
 
@@ -150,8 +197,7 @@
 
                     <ol type="1">
                         <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
-                        <li>please be kind enough to supply above goods within 3 days.</li>
-                        <li>If unable to supply above goods within above period 10% penalty will be claimed on invoice value.</li>
+                        <li>Comments: </li>
                     </ol>
 
                     <h5 style="color: #000000;">
@@ -159,6 +205,14 @@
                     </h5>
 
                 </p>
+            </div>
+            <div style="width: 90%; margin-top: 4px; margin-left: 5%" >
+                <div class="d-flex justify-content-center align-items-center" style="font-size: 11pt">
+                    <h:outputLabel value="Printed At&nbsp;:&nbsp;"/>
+                    <h:outputLabel value="#{sessionController.currentDate}" >
+                        <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
+                    </h:outputLabel>
+                </div>
             </div>
         </div>
     </cc:implementation>

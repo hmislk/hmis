@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/courier/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Collection Centre Receipt Reports" class="text-2">
+
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{reportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{reportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{reportController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf201;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Collecting Centre Route" for="cmbCCroute" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                style=" max-width: 100%; overflow-x: auto; "
+                                class="w-100"
+                                value="#{reportController.route}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" />
+                                <f:selectItems 
+                                    value="#{routeController.items}"
+                                    var="r"
+                                    itemLabel="#{r.name}"
+                                    itemValue="#{r}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="CC Name" for="cmbCCname" class="mx-3"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                style=" max-width: 100%; overflow-x: auto; "
+                                class="w-100"
+                                value="#{reportController.collectingCentre}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="Select Collecting Centre"/>
+                                <f:selectItems 
+                                    var="r" itemLabel="#{r.code} :  #{r.name}" 
+                                    value="#{collectingCentreController.items}" 
+                                    itemValue="#{r}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                style="width: 150px"
+                                icon="fas fa-cogs"
+                                class="m-2 ui-button-warning"
+                                action="#{reportController.processCollectingCentreReciptReport()}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                icon="fa-solid fa-print"
+                                class="mx-1 ui-button-info"
+                                style="width: 150px"
+                                ajax="false" 
+                                value="Print">
+                                <p:printer target="tblData" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="m-2 ui-button-success" 
+                                style="width: 150px"
+                                icon="fas fa-file-excel"
+                                ajax="false" 
+                                value="Excel">
+                                <p:dataExporter type="xlsx" target="tblData"  fileName="collection_center_recipt_report" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="m-2 ui-button-danger" 
+                                icon="fa-solid fa-file-pdf"
+                                style="width: 150px"
+                                ajax="false" 
+                                onclick="generatePDF()"
+                                value="PDF">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+                        <p:dataTable 
+                            value="#{reportController.bundle.reportTemplateRows}"
+                            var="row" 
+                            rowIndexVar="i"
+                            id="tblData"
+                            class="mt-3"
+                            paginator="true"
+                            rowKey="#{row.bill.id}"
+                            paginatorPosition="bottom"
+                            rows="100"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="100,250,500"
+                            >
+                            <p:column headerText="S. No" width="3em" style="padding: 7px;" >
+                                <h:outputText value="#{i+1}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Type" rendered="#{webUserController.hasPrivilege('Developers')}" style="padding: 7px;">
+                                <h:outputText value="#{row.bill.billTypeAtomic}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill No" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains" style="padding: 7px; width: 20em;">
+                                <p:commandLink 
+                                    ajax="false"
+                                    value="#{row.bill.deptId}" 
+                                    action="#{courierController.navigateToCCBillViewFormPaymentReports()}">
+                                    <f:setPropertyActionListener 
+                                        value="#{row.bill}" 
+                                        target="#{courierController.currentCCBill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
+                            </p:column>
+                            <p:column headerText="Billed At" style="padding: 7px;" width="15em;">
+                                <h:outputText value="#{row.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Billed By" style="padding: 7px;" width="10em;">
+                                <h:outputText value="#{row.bill.creater.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" style="padding: 7px;" class="text-center" width="10em;">
+                                <p:badge rendered="#{row.bill.paymentMethod eq 'Cash'}"  value="#{row.bill.paymentMethod}" severity="success" styleClass="mr-2"></p:badge>
+                                <h:outputText rendered="#{row.bill.paymentMethod ne 'Cash'}" value="#{row.bill.paymentMethod}" ></h:outputText>
+                            </p:column>
+                            <p:column 
+                                width="10em;"
+                                headerText="Agent Code" 
+                                sortBy="#{row.bill.fromInstitution.code}" 
+                                filterBy="#{row.bill.fromInstitution.code}" 
+                                filterMatchMode="contains" 
+                                style="padding: 7px;">
+                                <h:outputText value="#{row.bill.fromInstitution.code}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Agent Name" style="padding: 7px;">
+                                <h:outputText value="#{row.bill.fromInstitution.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Amount" class="text-end" sortBy="#{row.bill.total}" width="10em;" style="padding: 7px;">
+                                <h:outputText value="#{row.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Comments" style="padding: 7px;" width="18em;">
+                                <h:outputText value="#{row.bill.comments}" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <table id="tbl" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 3em;">S. No</th>
+                                    <th>Bill No</th>
+                                    <th>Billed at</th>
+                                    <th>Billed By</th>
+                                    <th>Payment Method</th>
+                                    <th>Agent Code</th>
+                                    <th>Agent Name</th>
+                                    <th>Amount</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{reportController.bundle.reportTemplateRows}" var="row" varStatus="status">
+                                    <tr>
+                                        <td>#{status.index + 1}</td>
+                                        <td>
+                                            #{row.bill.referenceNumber}
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{row.bill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                            </h:outputText>
+                                        </td>
+                                        <td>#{row.bill.creater.name}</td>
+                                        <td>#{row.bill.paymentMethod}</td>
+                                        <td>#{row.bill.fromInstitution.code}</td>
+                                        <td>#{row.bill.fromInstitution.name}</td>
+                                        <td>#{row.bill.total}</td>
+                                        <td>#{row.bill.comments}</td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="7">Total</th>
+                                    <th>
+                                        <h:outputLabel value="#{reportController.bundle.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+
+                        <script>
+                                    function generatePDF() {
+                                        const {jsPDF} = window.jspdf;
+                                        const doc = new jsPDF();
+                                        doc.autoTable({html: '#tbl'});
+                                        doc.save('collecting_center_receipt_report.pdf');
+                                    }
+                        </script>
+
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

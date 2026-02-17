@@ -6,41 +6,49 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillSearch;
-import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.table.String1Value1;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.BillsTotals;
+import com.divudi.core.data.reports.FinancialReport;
+import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.data.table.String1Value1;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Service;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -69,8 +77,9 @@ public class CommonReport implements Serializable {
      */
     @EJB
     private BillFacade billFacade;
+    @Inject
+    private ReportTimerController reportTimerController;
 
-    CommonFunctions commonFunctions;
     @EJB
     private PriceMatrixFacade inwdPriceAdjFacade;
     @EJB
@@ -86,8 +95,6 @@ public class CommonReport implements Serializable {
     SessionController sessionController;
     @Inject
     BillSearch billSearch;
-    @Inject
-    private CommonController commonController;
 
     @Inject
     AuditEventApplicationController auditEventApplicationController;
@@ -97,7 +104,9 @@ public class CommonReport implements Serializable {
      *
      */
     List<BillFee> billFees;
+    private ReportTemplateRowBundle bundle;
     List<Bill> referralBills;
+    List<Bill> referralDoctorBills;
     List<BillItem> referralBillItems;
 
     List<Bill> pharmacyCashBilledBills;
@@ -137,6 +146,7 @@ public class CommonReport implements Serializable {
     ////////////////
     private Institution collectingIns;
     Institution institution;
+    private Institution supplier;
     Institution ins;
     private Date fromDate;
     private Date toDate;
@@ -246,6 +256,7 @@ public class CommonReport implements Serializable {
     boolean onlyHosFee = false;
     PaymentMethod paymentMethod;
     private String departmentId;
+    private Bill previewBill;
 
     public List<Bill> getBills() {
         return bills;
@@ -257,6 +268,35 @@ public class CommonReport implements Serializable {
 
     public String navigateToCashierDetailedReport() {
         return "/store/store_report_cashier_detailed_by_user?faces-redirect=true";
+    }
+
+    public String navigateToViewGrnBillFromGRNSummary(Bill b) {
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_grn_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPOBillFromGRNSummary(Bill b) {
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_reprint_po_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewCancelGRNBillFromGRNSummary(Bill b) {
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_cancel_grn_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewCancelGRNReturnBillFromGRNSummary(Bill b) {
+        previewBill = null;
+        previewBill = b;
+        return "/pharmacy/pharmacy_reprint_grn_return_bill?faces-redirect=true";
+    }
+
+    public String navigateBackToGRNSummary() {
+
+        return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
 
     public String navigateToReportCashierDetailedByUser1() {
@@ -937,7 +977,6 @@ public class CommonReport implements Serializable {
         totalFee = displayOutsideCalBillFees();
         billTotal = displayOutsideBillFeeBillTotals();
 
-        
         return "/lab/report_by_outside_institution";
 
     }
@@ -1038,7 +1077,7 @@ public class CommonReport implements Serializable {
         this.cashOutBills = cashOutBills;
     }
 
-    //////////////////    
+    //////////////////
     private List<String1Value1> dataTableData;
     private List<PriceMatrix> items = null;
 
@@ -1046,14 +1085,6 @@ public class CommonReport implements Serializable {
      * Creates a new instance of CommonReport
      */
     public CommonReport() {
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public SessionController getSessionController() {
@@ -1088,7 +1119,7 @@ public class CommonReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1100,7 +1131,7 @@ public class CommonReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1931,7 +1962,8 @@ public class CommonReport implements Serializable {
                 + " and b.retired=false and "
                 + " b.billType = :btp "
                 + " and b.department=:d "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.deptId is not null";
 
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";
@@ -1948,6 +1980,15 @@ public class CommonReport implements Serializable {
             temMap.put("ins", getReferenceInstitution());
         }
 
+        if (getSupplier() != null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
+        }
+
         sql += " order by b.id  ";
 
         temMap.put("fromDate", getFromDate());
@@ -1958,6 +1999,65 @@ public class CommonReport implements Serializable {
 
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    private List<Bill> getBills(List<BillTypeAtomic> billTypeAtomics,
+            Department dep,
+            Institution paramInstitution,
+            Institution paramFromInstitution,
+            Institution paramToInstitution,
+            Institution paramReferanceInstitution,
+            String paramDeptId) {
+
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b"
+                + " WHERE b.retired = false"
+                + " AND b.billTypeAtomic IN :billTypeAtomics"
+                + " AND b.createdAt BETWEEN :fromDate AND :toDate"
+        );
+
+        Map<String, Object> params = new HashMap<>(8);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("billTypeAtomics", billTypeAtomics);
+
+        if (dep != null) {
+            jpql.append(" AND b.department = :dep");
+            params.put("dep", dep);
+        }
+
+        if (paramInstitution != null) {
+            jpql.append(" AND b.institution = :ins");
+            params.put("ins", paramInstitution);
+        }
+
+        if (paramFromInstitution != null) {
+            jpql.append(" AND b.fromInstitution IS NOT NULL AND b.fromInstitution = :fIns");
+            params.put("fIns", paramFromInstitution);
+        }
+
+        if (paramToInstitution != null) {
+            jpql.append(" AND b.toInstitution IS NOT NULL AND b.toInstitution = :tIns");
+            params.put("tIns", paramToInstitution);
+        }
+
+        if (paramReferanceInstitution != null) {
+            jpql.append(" AND b.referenceInstitution = :refIns");
+            params.put("refIns", paramReferanceInstitution);
+        }
+
+        if (paramDeptId != null && !paramDeptId.trim().isEmpty()) {
+            jpql.append(" AND b.deptId LIKE :deptId");
+            params.put("deptId", "%" + paramDeptId.trim() + "%");
+        }
+
+        jpql.append(" ORDER BY b.id");
+
+        return getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     private List<Bill> getBills(Bill billClass, List<BillType> billTypes, Department dep) {
@@ -2304,7 +2404,6 @@ public class CommonReport implements Serializable {
     public BillsTotals getInstitutionRefundedBillsOwn() {
         if (refundedBills == null) {
             getRefundedBills().setBills(billsOwn(new RefundBill(), BillType.OpdBill));
-            System.out.println("getRefundedBills = " + getRefundedBills().getBills().size());
         }
         //  calTot(getRefundedBills());
         return refundedBills;
@@ -2892,6 +2991,24 @@ public class CommonReport implements Serializable {
 
     }
 
+    public double calValueNetTotal(List<Bill> bills, PaymentMethod paymentMethod) {
+        if (bills == null || bills.isEmpty()) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+
+        for (Bill b : bills) {
+            if (b != null
+                    && !b.isRetired()
+                    && b.getPaymentMethod() == paymentMethod) {
+                total += b.getNetTotal();
+            }
+        }
+
+        return total;
+    }
+
     private double calValueNetTotal(Bill billClass, BillType billType, PaymentMethod paymentMethod, Department dep) {
         String sql;
         Map temMap = new HashMap();
@@ -2910,6 +3027,25 @@ public class CommonReport implements Serializable {
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";
             temMap.put("fIns", institution);
+        }
+
+        if (getSupplier() != null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
+
+        }
+
+        if (getSupplier() != null) {
+            if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
+                sql += " AND b.toInstitution = :supplier";
+            } else {
+                sql += " AND b.fromInstitution = :supplier";
+            }
+            temMap.put("supplier", getSupplier());
         }
 
         temMap.put("fromDate", getFromDate());
@@ -2983,6 +3119,24 @@ public class CommonReport implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    public double calValueSaleValue(List<Bill> bills, PaymentMethod paymentMethod) {
+        if (bills == null || bills.isEmpty()) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+
+        for (Bill b : bills) {
+            if (b != null
+                    && !b.isRetired()
+                    && b.getPaymentMethod() == paymentMethod) {
+                total += b.getSaleValue();
+            }
+        }
+
+        return total;
     }
 
     private double calValueSaleValue(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, Department dep) {
@@ -3279,8 +3433,6 @@ public class CommonReport implements Serializable {
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
         createSum();
 
-        
-
     }
 
     public void createTableByBillTypeWebUser() {
@@ -3347,7 +3499,6 @@ public class CommonReport implements Serializable {
         //pharmacyUnitIssueCancelBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new CancelledBill());
         //pharmacyUnitIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new RefundBill());
 
-        
     }
 
     List<Bill> getPharmacyBills(PaymentMethod paymentMethod, BillType billType, Bill bill) {
@@ -3527,372 +3678,370 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        
-
     }
 
     String header = "";
 
     public void createCashierTableByUser() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("createCashierTableByUser()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("createCashierTableByUser()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
-        header = "Cashier Summary";
-        recreteModal();
-        //Opd Billed Bills
-        getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
-        getBilledBills().setCard(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getBilledBills().setCash(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getBilledBills().setCheque(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getBilledBills().setCredit(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getBilledBills().setSlip(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            header = "Cashier Summary";
+            recreteModal();
+            //Opd Billed Bills
+            getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
+            getBilledBills().setCard(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getBilledBills().setCash(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getBilledBills().setCheque(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getBilledBills().setCredit(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getBilledBills().setSlip(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Opd Cancelled Bill
-        getCancellededBills().setBills(userBillsOwn(new CancelledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
-        getCancellededBills().setCard(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCancellededBills().setCash(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCancellededBills().setCheque(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCancellededBills().setCredit(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCancellededBills().setSlip(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Opd Cancelled Bill
+            getCancellededBills().setBills(userBillsOwn(new CancelledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
+            getCancellededBills().setCard(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCancellededBills().setCash(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCancellededBills().setCheque(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCancellededBills().setCredit(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCancellededBills().setSlip(calValue(new CancelledBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Opd Refunded Bill
-        getRefundedBills().setBills(userBillsOwn(new RefundBill(), BillType.OpdBill, getWebUser(), getDepartment()));
-        getRefundedBills().setCard(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getRefundedBills().setCash(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getRefundedBills().setCheque(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getRefundedBills().setCredit(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Opd Refunded Bill
+            getRefundedBills().setBills(userBillsOwn(new RefundBill(), BillType.OpdBill, getWebUser(), getDepartment()));
+            getRefundedBills().setCard(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getRefundedBills().setCash(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getRefundedBills().setCheque(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getRefundedBills().setCredit(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getRefundedBills().setSlip(calValue(new RefundBill(), BillType.OpdBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Billed
-        getBilledBillsPh().setBills(userPharmacyBillsOwn(new BilledBill(), BillType.PharmacySale, getWebUser()));
-        getBilledBillsPh().setCard(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getBilledBillsPh().setCash(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getBilledBillsPh().setCheque(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getBilledBillsPh().setCredit(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getBilledBillsPh().setSlip(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy Billed
+            getBilledBillsPh().setBills(userPharmacyBillsOwn(new BilledBill(), BillType.PharmacySale, getWebUser()));
+            getBilledBillsPh().setCard(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getBilledBillsPh().setCash(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getBilledBillsPh().setCheque(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getBilledBillsPh().setCredit(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getBilledBillsPh().setSlip(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Cancelled       
-        getCancellededBillsPh().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacySale, getWebUser()));
-        getCancellededBillsPh().setCard(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCancellededBillsPh().setCash(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCancellededBillsPh().setCheque(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCancellededBillsPh().setCredit(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCancellededBillsPh().setSlip(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy Cancelled
+            getCancellededBillsPh().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacySale, getWebUser()));
+            getCancellededBillsPh().setCard(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCancellededBillsPh().setCash(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCancellededBillsPh().setCheque(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCancellededBillsPh().setCredit(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCancellededBillsPh().setSlip(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Refunded      
-        getRefundedBillsPh().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacySale, getWebUser()));
-        getRefundedBillsPh().setCard(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getRefundedBillsPh().setCash(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getRefundedBillsPh().setCheque(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getRefundedBillsPh().setCredit(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getRefundedBillsPh().setSlip(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy Refunded
+            getRefundedBillsPh().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacySale, getWebUser()));
+            getRefundedBillsPh().setCard(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getRefundedBillsPh().setCash(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getRefundedBillsPh().setCheque(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getRefundedBillsPh().setCredit(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getRefundedBillsPh().setSlip(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Whole Billed
-        getBilledPhWholeSale().setBills(userPharmacyBillsOwn(new BilledBill(), BillType.PharmacyWholeSale, getWebUser()));
-        getBilledPhWholeSale().setCard(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getBilledPhWholeSale().setCash(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getBilledPhWholeSale().setCheque(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getBilledPhWholeSale().setCredit(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getBilledPhWholeSale().setSlip(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy Whole Billed
+            getBilledPhWholeSale().setBills(userPharmacyBillsOwn(new BilledBill(), BillType.PharmacyWholeSale, getWebUser()));
+            getBilledPhWholeSale().setCard(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getBilledPhWholeSale().setCash(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getBilledPhWholeSale().setCheque(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getBilledPhWholeSale().setCredit(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getBilledPhWholeSale().setSlip(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Whole Cancelled       
-        getCancelledPhWholeSale().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacyWholeSale, getWebUser()));
-        getCancelledPhWholeSale().setCard(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCancelledPhWholeSale().setCash(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCancelledPhWholeSale().setCheque(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCancelledPhWholeSale().setCredit(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCancelledPhWholeSale().setSlip(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy Whole Cancelled
+            getCancelledPhWholeSale().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacyWholeSale, getWebUser()));
+            getCancelledPhWholeSale().setCard(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCancelledPhWholeSale().setCash(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCancelledPhWholeSale().setCheque(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCancelledPhWholeSale().setCredit(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCancelledPhWholeSale().setSlip(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Whole Refunded      
-        getRefundedPhWholeSale().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacyWholeSale, getWebUser()));
-        getRefundedPhWholeSale().setCard(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getRefundedPhWholeSale().setCash(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getRefundedPhWholeSale().setCheque(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getRefundedPhWholeSale().setCredit(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getRefundedPhWholeSale().setSlip(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy Whole Refunded
+            getRefundedPhWholeSale().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacyWholeSale, getWebUser()));
+            getRefundedPhWholeSale().setCard(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getRefundedPhWholeSale().setCash(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getRefundedPhWholeSale().setCheque(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getRefundedPhWholeSale().setCredit(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getRefundedPhWholeSale().setSlip(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy GRN Payment Billed
-        getGrnPaymentBill().setBills(userBillsOwn(new BilledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
-        getGrnPaymentBill().setCard(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getGrnPaymentBill().setCash(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getGrnPaymentBill().setCheque(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getGrnPaymentBill().setCredit(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getGrnPaymentBill().setSlip(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy GRN Payment Billed
+            getGrnPaymentBill().setBills(userBillsOwn(new BilledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
+            getGrnPaymentBill().setCard(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getGrnPaymentBill().setCash(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getGrnPaymentBill().setCheque(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getGrnPaymentBill().setCredit(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getGrnPaymentBill().setSlip(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy GRN Payment Cancelled       
-        getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
-        getGrnPaymentCancell().setCard(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getGrnPaymentCancell().setCash(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getGrnPaymentCancell().setCheque(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getGrnPaymentCancell().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getGrnPaymentCancell().setSlip(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy GRN Payment Cancelled
+            getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
+            getGrnPaymentCancell().setCard(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getGrnPaymentCancell().setCash(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getGrnPaymentCancell().setCheque(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getGrnPaymentCancell().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getGrnPaymentCancell().setSlip(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy GRN Payment Refunded      
-        getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
-        getGrnPaymentReturn().setCard(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getGrnPaymentReturn().setCash(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getGrnPaymentReturn().setCheque(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getGrnPaymentReturn().setCredit(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getGrnPaymentReturn().setSlip(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Pharmacy GRN Payment Refunded
+            getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
+            getGrnPaymentReturn().setCard(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getGrnPaymentReturn().setCash(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getGrnPaymentReturn().setCheque(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getGrnPaymentReturn().setCredit(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getGrnPaymentReturn().setSlip(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Payment Billed Bill
-        getPaymentBills().setBills(userBillsOwn(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment()));
-        getPaymentBills().setCard(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getPaymentBills().setCash(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getPaymentBills().setCheque(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getPaymentBills().setCredit(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getPaymentBills().setSlip(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Payment Billed Bill
+            getPaymentBills().setBills(userBillsOwn(new BilledBill(), BillType.PaymentBill, getWebUser(), getDepartment()));
+            getPaymentBills().setCard(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getPaymentBills().setCash(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getPaymentBills().setCheque(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getPaymentBills().setCredit(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getPaymentBills().setSlip(calValue(new BilledBill(), BillType.PaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Payment Cancelled Bill
-        getPaymentCancelBills().setBills(userBillsOwn(new CancelledBill(), BillType.PaymentBill, getWebUser(), getDepartment()));
-        getPaymentCancelBills().setCard(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getPaymentCancelBills().setCash(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getPaymentCancelBills().setCheque(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getPaymentCancelBills().setCredit(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getPaymentCancelBills().setSlip(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Payment Cancelled Bill
+            getPaymentCancelBills().setBills(userBillsOwn(new CancelledBill(), BillType.PaymentBill, getWebUser(), getDepartment()));
+            getPaymentCancelBills().setCard(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getPaymentCancelBills().setCash(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getPaymentCancelBills().setCheque(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getPaymentCancelBills().setCredit(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getPaymentCancelBills().setSlip(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Petty Cash Paymennt       
-        getPettyPayments().setBills(userBillsOwn(new BilledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
-        getPettyPayments().setCard(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getPettyPayments().setCash(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getPettyPayments().setCheque(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getPettyPayments().setCredit(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getPettyPayments().setSlip(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Petty Cash Paymennt
+            getPettyPayments().setBills(userBillsOwn(new BilledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
+            getPettyPayments().setCard(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getPettyPayments().setCash(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getPettyPayments().setCheque(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getPettyPayments().setCredit(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getPettyPayments().setSlip(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Petty Cash Paymennt Cancell       
-        getPettyPaymentsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
-        getPettyPaymentsCancel().setCard(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getPettyPaymentsCancel().setCash(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getPettyPaymentsCancel().setCheque(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getPettyPaymentsCancel().setCredit(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getPettyPaymentsCancel().setSlip(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Petty Cash Paymennt Cancell
+            getPettyPaymentsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
+            getPettyPaymentsCancel().setCard(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getPettyPaymentsCancel().setCash(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getPettyPaymentsCancel().setCheque(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getPettyPaymentsCancel().setCredit(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getPettyPaymentsCancel().setSlip(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Cash Receive Bill       
-        getCashRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
-        getCashRecieves().setCard(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCashRecieves().setCash(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCashRecieves().setCheque(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCashRecieves().setCredit(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCashRecieves().setSlip(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Cash Receive Bill
+            getCashRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
+            getCashRecieves().setCard(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCashRecieves().setCash(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCashRecieves().setCheque(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCashRecieves().setCredit(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCashRecieves().setSlip(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Cash Recieve Cancel      
-        getCashRecieveCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
-        getCashRecieveCancel().setCard(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCashRecieveCancel().setCash(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCashRecieveCancel().setCheque(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCashRecieveCancel().setCredit(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCashRecieveCancel().setSlip(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Cash Recieve Cancel
+            getCashRecieveCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
+            getCashRecieveCancel().setCard(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCashRecieveCancel().setCash(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCashRecieveCancel().setCheque(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCashRecieveCancel().setCredit(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCashRecieveCancel().setSlip(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Agent Recieve
-        getAgentRecieves().setBills(userBillsOwn(new BilledBill(), BillType.AgentPaymentReceiveBill, getWebUser(), getDepartment()));
-        getAgentRecieves().setCard(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getAgentRecieves().setCash(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getAgentRecieves().setCheque(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getAgentRecieves().setCredit(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getAgentRecieves().setSlip(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Agent Recieve
+            getAgentRecieves().setBills(userBillsOwn(new BilledBill(), BillType.AgentPaymentReceiveBill, getWebUser(), getDepartment()));
+            getAgentRecieves().setCard(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getAgentRecieves().setCash(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getAgentRecieves().setCheque(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getAgentRecieves().setCredit(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getAgentRecieves().setSlip(calValue(new BilledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Agent Receive Cancel
-        getAgentCancelBill().setBills(userBillsOwn(new CancelledBill(), BillType.AgentPaymentReceiveBill, getWebUser(), getDepartment()));
-        getAgentCancelBill().setCard(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getAgentCancelBill().setCash(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getAgentCancelBill().setCheque(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getAgentCancelBill().setCredit(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getAgentCancelBill().setSlip(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Agent Receive Cancel
+            getAgentCancelBill().setBills(userBillsOwn(new CancelledBill(), BillType.AgentPaymentReceiveBill, getWebUser(), getDepartment()));
+            getAgentCancelBill().setCard(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getAgentCancelBill().setCash(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getAgentCancelBill().setCheque(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getAgentCancelBill().setCredit(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getAgentCancelBill().setSlip(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Collecting Centre Recieve
-        getCollectingCentreRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, getWebUser(), getDepartment()));
-        getCollectingCentreRecieves().setCard(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCollectingCentreRecieves().setCash(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCollectingCentreRecieves().setCheque(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCollectingCentreRecieves().setCredit(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCollectingCentreRecieves().setSlip(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Collecting Centre Recieve
+            getCollectingCentreRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, getWebUser(), getDepartment()));
+            getCollectingCentreRecieves().setCard(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCollectingCentreRecieves().setCash(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCollectingCentreRecieves().setCheque(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCollectingCentreRecieves().setCredit(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCollectingCentreRecieves().setSlip(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Collecting Centre Receive Cancel
-        getCollectingCentreCancelBill().setBills(userBillsOwn(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, getWebUser(), getDepartment()));
-        getCollectingCentreCancelBill().setCard(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getCollectingCentreCancelBill().setCash(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getCollectingCentreCancelBill().setCheque(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getCollectingCentreCancelBill().setCredit(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getCollectingCentreCancelBill().setSlip(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Collecting Centre Receive Cancel
+            getCollectingCentreCancelBill().setBills(userBillsOwn(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, getWebUser(), getDepartment()));
+            getCollectingCentreCancelBill().setCard(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getCollectingCentreCancelBill().setCash(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getCollectingCentreCancelBill().setCheque(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getCollectingCentreCancelBill().setCredit(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getCollectingCentreCancelBill().setSlip(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Inward Payment
-        getInwardPayments().setBills(userBillsOwn(new BilledBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
-        getInwardPayments().setCard(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getInwardPayments().setCash(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getInwardPayments().setCheque(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getInwardPayments().setCredit(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getInwardPayments().setSlip(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Inward Payment
+            getInwardPayments().setBills(userBillsOwn(new BilledBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
+            getInwardPayments().setCard(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getInwardPayments().setCash(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getInwardPayments().setCheque(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getInwardPayments().setCredit(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getInwardPayments().setSlip(calValue(new BilledBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Inward Payment Cancel
-        getInwardPaymentCancel().setBills(userBillsOwn(new CancelledBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
-        getInwardPaymentCancel().setCard(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getInwardPaymentCancel().setCash(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getInwardPaymentCancel().setCheque(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getInwardPaymentCancel().setCredit(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getInwardPaymentCancel().setSlip(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Inward Payment Cancel
+            getInwardPaymentCancel().setBills(userBillsOwn(new CancelledBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
+            getInwardPaymentCancel().setCard(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getInwardPaymentCancel().setCash(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getInwardPaymentCancel().setCheque(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getInwardPaymentCancel().setCredit(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getInwardPaymentCancel().setSlip(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Inward Refund 
-        getInwardRefunds().setBills(userBillsOwn(new RefundBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
-        getInwardRefunds().setCard(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getInwardRefunds().setCash(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getInwardRefunds().setCheque(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getInwardRefunds().setCredit(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //Inward Refund
+            getInwardRefunds().setBills(userBillsOwn(new RefundBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
+            getInwardRefunds().setCard(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getInwardRefunds().setCash(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getInwardRefunds().setCheque(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getInwardRefunds().setCredit(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //channell bills
-        BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
-        List<BillType> btys = Arrays.asList(bty);
-        getChannelBilled().setBills(userBillsOwn(new BilledBill(), btys, getWebUser(), getDepartment()));
-        getChannelBilled().setCard(calValue(new BilledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilled().setCash(calValue(new BilledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-//        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //channell bills
+            BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
+            List<BillType> btys = Arrays.asList(bty);
+            getChannelBilled().setBills(userBillsOwn(new BilledBill(), btys, getWebUser(), getDepartment()));
+            getChannelBilled().setCard(calValue(new BilledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilled().setCash(calValue(new BilledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            //        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelBilledAgent().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
-        getChannelBilledAgent().setCredit(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelBilledAgent().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelBilledAgent().setCredit(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
-        getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
-        getChannelCancells().getBills().addAll(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCard(calValue(new CancelledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(calValue(new CancelledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(getChannelCancells().getCash() + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
+            getChannelCancells().getBills().addAll(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancells().setCard(calValue(new CancelledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancells().setCash(calValue(new CancelledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancells().setCash(getChannelCancells().getCash() + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellsAgent().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
-        getChannelCancellsAgent().setCredit(calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelCancellsAgent().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelCancellsAgent().setCredit(calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
-        getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
-        getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCash(getChannelRefunds().getCash() + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
+            getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefunds().setCash(getChannelRefunds().getCash() + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefundsAgent().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
-        getChannelRefundsAgent().setCredit(calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelRefundsAgent().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelRefundsAgent().setCredit(calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
-        //channel professional payment        
-        getChannelBilledProPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCard(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCash(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCheque(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCredit(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setSlip(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //channel professional payment
+            getChannelBilledProPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCard(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCash(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCheque(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCredit(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setSlip(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellProPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCard(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCash(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCard(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCash(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefundsProPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCard(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCash(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCheque(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCredit(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setSlip(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCard(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCash(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCheque(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCredit(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setSlip(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //channel agent payment
-        getChannelBilledAgnPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCard(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCash(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCheque(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCredit(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setSlip(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //channel agent payment
+            getChannelBilledAgnPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCard(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCash(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCheque(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCredit(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setSlip(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellAgnPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCard(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCash(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCard(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCash(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefundAgnPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCard(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCash(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCheque(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCredit(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setSlip(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCard(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCash(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCheque(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCredit(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setSlip(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //////////
-        createSum();
+            //////////
+            createSum();
 
-        //Cash IN Billed
-        getCashInBills().setBills(userBillsOwn(new BilledBill(), BillType.CashIn, getWebUser(), getDepartment()));
-        getCashInBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashIn, getWebUser()));
-        getCashInBills().setCash(calValueCash(new BilledBill(), BillType.CashIn, getWebUser()));
-        getCashInBills().setCheque(calValueCheque(new BilledBill(), BillType.CashIn, getWebUser()));
-        getCashInBills().setSlip(calValueSlip(new BilledBill(), BillType.CashIn, getWebUser()));
+            //Cash IN Billed
+            getCashInBills().setBills(userBillsOwn(new BilledBill(), BillType.CashIn, getWebUser(), getDepartment()));
+            getCashInBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashIn, getWebUser()));
+            getCashInBills().setCash(calValueCash(new BilledBill(), BillType.CashIn, getWebUser()));
+            getCashInBills().setCheque(calValueCheque(new BilledBill(), BillType.CashIn, getWebUser()));
+            getCashInBills().setSlip(calValueSlip(new BilledBill(), BillType.CashIn, getWebUser()));
 
-        //Cash IN Canceled
-        getCashInBillsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashIn, getWebUser(), getDepartment()));
-        getCashInBillsCancel().setCard(calValueCreditCard(new CancelledBill(), BillType.CashIn, getWebUser()));
-        getCashInBillsCancel().setCash(calValueCash(new CancelledBill(), BillType.CashIn, getWebUser()));
-        getCashInBillsCancel().setCheque(calValueCheque(new CancelledBill(), BillType.CashIn, getWebUser()));
-        getCashInBillsCancel().setSlip(calValueSlip(new CancelledBill(), BillType.CashIn, getWebUser()));
+            //Cash IN Canceled
+            getCashInBillsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashIn, getWebUser(), getDepartment()));
+            getCashInBillsCancel().setCard(calValueCreditCard(new CancelledBill(), BillType.CashIn, getWebUser()));
+            getCashInBillsCancel().setCash(calValueCash(new CancelledBill(), BillType.CashIn, getWebUser()));
+            getCashInBillsCancel().setCheque(calValueCheque(new CancelledBill(), BillType.CashIn, getWebUser()));
+            getCashInBillsCancel().setSlip(calValueSlip(new CancelledBill(), BillType.CashIn, getWebUser()));
 
-        //Cash Out Billled
-        getCashOutBills().setBills(userBillsOwn(new BilledBill(), BillType.CashOut, getWebUser(), getDepartment()));
-        getCashOutBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashOut, getWebUser()));
-        getCashOutBills().setCash(calValueCash(new BilledBill(), BillType.CashOut, getWebUser()));
-        getCashOutBills().setCheque(calValueCheque(new BilledBill(), BillType.CashOut, getWebUser()));
-        getCashOutBills().setSlip(calValueSlip(new BilledBill(), BillType.CashOut, getWebUser()));
+            //Cash Out Billled
+            getCashOutBills().setBills(userBillsOwn(new BilledBill(), BillType.CashOut, getWebUser(), getDepartment()));
+            getCashOutBills().setCard(calValueCreditCard(new BilledBill(), BillType.CashOut, getWebUser()));
+            getCashOutBills().setCash(calValueCash(new BilledBill(), BillType.CashOut, getWebUser()));
+            getCashOutBills().setCheque(calValueCheque(new BilledBill(), BillType.CashOut, getWebUser()));
+            getCashOutBills().setSlip(calValueSlip(new BilledBill(), BillType.CashOut, getWebUser()));
 
-        //Cash Out Cancelled
-        getCashOutBillsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashOut, getWebUser(), getDepartment()));
-        getCashOutBillsCancel().setCard(calValueCreditCard(new CancelledBill(), BillType.CashOut, getWebUser()));
-        getCashOutBillsCancel().setCash(calValueCash(new CancelledBill(), BillType.CashOut, getWebUser()));
-        getCashOutBillsCancel().setCheque(calValueCheque(new CancelledBill(), BillType.CashOut, getWebUser()));
-        getCashOutBillsCancel().setSlip(calValueSlip(new CancelledBill(), BillType.CashOut, getWebUser()));
+            //Cash Out Cancelled
+            getCashOutBillsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashOut, getWebUser(), getDepartment()));
+            getCashOutBillsCancel().setCard(calValueCreditCard(new CancelledBill(), BillType.CashOut, getWebUser()));
+            getCashOutBillsCancel().setCash(calValueCash(new CancelledBill(), BillType.CashOut, getWebUser()));
+            getCashOutBillsCancel().setCheque(calValueCheque(new CancelledBill(), BillType.CashOut, getWebUser()));
+            getCashOutBillsCancel().setSlip(calValueSlip(new CancelledBill(), BillType.CashOut, getWebUser()));
 
-        //Cash Adjustement
-        getCashAdjustmentBills().setBills(userBillsOwn(new BilledBill(), BillType.DrawerAdjustment, getWebUser(), getDepartment()));
-        getCashAdjustmentBills().setCard(calValueCreditCard(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
-        getCashAdjustmentBills().setCash(calValueCash(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
-        getCashAdjustmentBills().setCheque(calValueCheque(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
-        getCashAdjustmentBills().setSlip(calValueSlip(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+            //Cash Adjustement
+            getCashAdjustmentBills().setBills(userBillsOwn(new BilledBill(), BillType.DrawerAdjustment, getWebUser(), getDepartment()));
+            getCashAdjustmentBills().setCard(calValueCreditCard(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+            getCashAdjustmentBills().setCash(calValueCash(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+            getCashAdjustmentBills().setCheque(calValueCheque(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
+            getCashAdjustmentBills().setSlip(calValueSlip(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
 
-        //////////
-        createSumAfterCash();
+            //////////
+            createSumAfterCash();
 
-        
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.CASHIER_SUMMERY_BY_USER_ONLY_CASHIER_REPORT, sessionController.getLoggedUser());
     }
 
     public void createCashierTableByUserOnlyCashier() {
@@ -3958,7 +4107,7 @@ public class CommonReport implements Serializable {
         getBilledBillsPh().setCredit(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getBilledBillsPh().setSlip(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Cancelled       
+        //Pharmacy Cancelled
         getCancellededBillsPh().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacySale, getWebUser()));
         getCancellededBillsPh().setCard(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
         getCancellededBillsPh().setCash(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -3966,7 +4115,7 @@ public class CommonReport implements Serializable {
         getCancellededBillsPh().setCredit(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getCancellededBillsPh().setSlip(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Refunded      
+        //Pharmacy Refunded
         getRefundedBillsPh().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacySale, getWebUser()));
         getRefundedBillsPh().setCard(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
         getRefundedBillsPh().setCash(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -3982,7 +4131,7 @@ public class CommonReport implements Serializable {
         getBilledPhWholeSale().setCredit(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getBilledPhWholeSale().setSlip(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Whole Cancelled       
+        //Pharmacy Whole Cancelled
         getCancelledPhWholeSale().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacyWholeSale, getWebUser()));
         getCancelledPhWholeSale().setCard(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
         getCancelledPhWholeSale().setCash(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -3990,7 +4139,7 @@ public class CommonReport implements Serializable {
         getCancelledPhWholeSale().setCredit(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getCancelledPhWholeSale().setSlip(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy Whole Refunded      
+        //Pharmacy Whole Refunded
         getRefundedPhWholeSale().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacyWholeSale, getWebUser()));
         getRefundedPhWholeSale().setCard(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
         getRefundedPhWholeSale().setCash(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4006,7 +4155,7 @@ public class CommonReport implements Serializable {
         getGrnPaymentBill().setCredit(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getGrnPaymentBill().setSlip(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy GRN Payment Cancelled       
+        //Pharmacy GRN Payment Cancelled
         getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
         getGrnPaymentCancell().setCard(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
         getGrnPaymentCancell().setCash(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4014,7 +4163,7 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancell().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getGrnPaymentCancell().setSlip(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Pharmacy GRN Payment Refunded      
+        //Pharmacy GRN Payment Refunded
         getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setCard(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
         getGrnPaymentReturn().setCash(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4038,7 +4187,7 @@ public class CommonReport implements Serializable {
         getPaymentCancelBills().setCredit(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getPaymentCancelBills().setSlip(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Petty Cash Paymennt       
+        //Petty Cash Paymennt
         getPettyPayments().setBills(userBillsOwn(new BilledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
         getPettyPayments().setCard(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
         getPettyPayments().setCash(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4046,7 +4195,7 @@ public class CommonReport implements Serializable {
         getPettyPayments().setCredit(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getPettyPayments().setSlip(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Petty Cash Paymennt Cancell       
+        //Petty Cash Paymennt Cancell
         getPettyPaymentsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
         getPettyPaymentsCancel().setCard(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
         getPettyPaymentsCancel().setCash(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4054,7 +4203,7 @@ public class CommonReport implements Serializable {
         getPettyPaymentsCancel().setCredit(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getPettyPaymentsCancel().setSlip(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Cash Receive Bill       
+        //Cash Receive Bill
         getCashRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
         getCashRecieves().setCard(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
         getCashRecieves().setCash(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4062,7 +4211,7 @@ public class CommonReport implements Serializable {
         getCashRecieves().setCredit(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getCashRecieves().setSlip(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Cash Recieve Cancel      
+        //Cash Recieve Cancel
         getCashRecieveCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
         getCashRecieveCancel().setCard(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
         getCashRecieveCancel().setCash(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4118,7 +4267,7 @@ public class CommonReport implements Serializable {
         getInwardPaymentCancel().setCredit(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getInwardPaymentCancel().setSlip(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //Inward Refund 
+        //Inward Refund
         getInwardRefunds().setBills(userBillsOwn(new RefundBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
         getInwardRefunds().setCard(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
         getInwardRefunds().setCash(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4167,7 +4316,6 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -4200,16 +4348,16 @@ public class CommonReport implements Serializable {
         }
         createCashierTableByUser();
 
-        
     }
 
     public void createCashierTableByUserOnlyChannel() {
+        reportTimerController.trackReportExecution(() -> {
 
-        Date startTime = new Date();
+            Date startTime = new Date();
 
-        header = "Cashier Summary";
+            header = "Cashier Summary";
 
-        recreteModal();
+            recreteModal();
 //        //Opd Billed Bills
 //        getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
 //        getBilledBills().setCard(calValue(new BilledBill(), BillType.OpdBill, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -4242,7 +4390,7 @@ public class CommonReport implements Serializable {
 //        getBilledBillsPh().setCredit(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getBilledBillsPh().setSlip(calValue(new BilledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Pharmacy Cancelled       
+//        //Pharmacy Cancelled
 //        getCancellededBillsPh().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacySale, getWebUser()));
 //        getCancellededBillsPh().setCard(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getCancellededBillsPh().setCash(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4250,7 +4398,7 @@ public class CommonReport implements Serializable {
 //        getCancellededBillsPh().setCredit(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getCancellededBillsPh().setSlip(calValue(new CancelledBill(), BillType.PharmacySale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Pharmacy Refunded      
+//        //Pharmacy Refunded
 //        getRefundedBillsPh().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacySale, getWebUser()));
 //        getRefundedBillsPh().setCard(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getRefundedBillsPh().setCash(calValue(new RefundBill(), BillType.PharmacySale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4266,7 +4414,7 @@ public class CommonReport implements Serializable {
 //        getBilledPhWholeSale().setCredit(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getBilledPhWholeSale().setSlip(calValue(new BilledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Pharmacy Whole Cancelled       
+//        //Pharmacy Whole Cancelled
 //        getCancelledPhWholeSale().setBills(userPharmacyBillsOwn(new CancelledBill(), BillType.PharmacyWholeSale, getWebUser()));
 //        getCancelledPhWholeSale().setCard(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getCancelledPhWholeSale().setCash(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4274,7 +4422,7 @@ public class CommonReport implements Serializable {
 //        getCancelledPhWholeSale().setCredit(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getCancelledPhWholeSale().setSlip(calValue(new CancelledBill(), BillType.PharmacyWholeSale, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Pharmacy Whole Refunded      
+//        //Pharmacy Whole Refunded
 //        getRefundedPhWholeSale().setBills(userPharmacyBillsOwn(new RefundBill(), BillType.PharmacyWholeSale, getWebUser()));
 //        getRefundedPhWholeSale().setCard(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getRefundedPhWholeSale().setCash(calValue(new RefundBill(), BillType.PharmacyWholeSale, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4290,7 +4438,7 @@ public class CommonReport implements Serializable {
 //        getGrnPaymentBill().setCredit(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getGrnPaymentBill().setSlip(calValue(new BilledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Pharmacy GRN Payment Cancelled       
+//        //Pharmacy GRN Payment Cancelled
 //        getGrnPaymentCancell().setBills(userBillsOwn(new CancelledBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
 //        getGrnPaymentCancell().setCard(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getGrnPaymentCancell().setCash(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4298,7 +4446,7 @@ public class CommonReport implements Serializable {
 //        getGrnPaymentCancell().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getGrnPaymentCancell().setSlip(calValue(new CancelledBill(), BillType.GrnPaymentPre, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Pharmacy GRN Payment Refunded      
+//        //Pharmacy GRN Payment Refunded
 //        getGrnPaymentReturn().setBills(userBillsOwn(new RefundBill(), BillType.GrnPaymentPre, getWebUser(), getDepartment()));
 //        getGrnPaymentReturn().setCard(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getGrnPaymentReturn().setCash(calValue(new RefundBill(), BillType.GrnPaymentPre, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4322,7 +4470,7 @@ public class CommonReport implements Serializable {
 //        getPaymentCancelBills().setCredit(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getPaymentCancelBills().setSlip(calValue(new CancelledBill(), BillType.PaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Petty Cash Paymennt       
+//        //Petty Cash Paymennt
 //        getPettyPayments().setBills(userBillsOwn(new BilledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
 //        getPettyPayments().setCard(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getPettyPayments().setCash(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4330,7 +4478,7 @@ public class CommonReport implements Serializable {
 //        getPettyPayments().setCredit(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getPettyPayments().setSlip(calValue(new BilledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Petty Cash Paymennt Cancell       
+//        //Petty Cash Paymennt Cancell
 //        getPettyPaymentsCancel().setBills(userBillsOwn(new CancelledBill(), BillType.PettyCash, getWebUser(), getDepartment()));
 //        getPettyPaymentsCancel().setCard(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getPettyPaymentsCancel().setCash(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4338,7 +4486,7 @@ public class CommonReport implements Serializable {
 //        getPettyPaymentsCancel().setCredit(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getPettyPaymentsCancel().setSlip(calValue(new CancelledBill(), BillType.PettyCash, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Cash Receive Bill       
+//        //Cash Receive Bill
 //        getCashRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
 //        getCashRecieves().setCard(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getCashRecieves().setCash(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4346,7 +4494,7 @@ public class CommonReport implements Serializable {
 //        getCashRecieves().setCredit(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getCashRecieves().setSlip(calValue(new BilledBill(), BillType.CashRecieveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Cash Recieve Cancel      
+//        //Cash Recieve Cancel
 //        getCashRecieveCancel().setBills(userBillsOwn(new CancelledBill(), BillType.CashRecieveBill, getWebUser(), getDepartment()));
 //        getCashRecieveCancel().setCard(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getCashRecieveCancel().setCash(calValue(new CancelledBill(), BillType.CashRecieveBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4402,7 +4550,7 @@ public class CommonReport implements Serializable {
 //        getInwardPaymentCancel().setCredit(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getInwardPaymentCancel().setSlip(calValue(new CancelledBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 //
-//        //Inward Refund 
+//        //Inward Refund
 //        getInwardRefunds().setBills(userBillsOwn(new RefundBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
 //        getInwardRefunds().setCard(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Card, getWebUser(), getDepartment()));
 //        getInwardRefunds().setCash(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
@@ -4410,179 +4558,179 @@ public class CommonReport implements Serializable {
 //        getInwardRefunds().setCredit(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
 //        getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //channell bills
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+            //channell bills
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
 
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("createCashierTableByUserOnlyChannel()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
-        List<BillType> btys = Arrays.asList(bty);
-        getChannelBilled().setBills(userBillsOwn(new BilledBill(), btys, getWebUser(), getDepartment()));
-        getChannelBilled().setCard(calValue(new BilledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilled().setCash(calValue(new BilledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("createCashierTableByUserOnlyChannel()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+            BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
+            List<BillType> btys = Arrays.asList(bty);
+            getChannelBilled().setBills(userBillsOwn(new BilledBill(), btys, getWebUser(), getDepartment()));
+            getChannelBilled().setCard(calValue(new BilledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilled().setCash(calValue(new BilledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
 //        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelBilledAgent().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
-        getChannelBilledAgent().setCredit(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelBilledAgent().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelBilledAgent().setCredit(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
-        getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
-        getChannelCancells().getBills().addAll(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCard(calValue(new CancelledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(calValue(new CancelledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCash(getChannelCancells().getCash() + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancells().setBills(userBillsOwn(new CancelledBill(), btys, getWebUser(), getDepartment()));
+            getChannelCancells().getBills().addAll(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancells().setCard(calValue(new CancelledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancells().setCash(calValue(new CancelledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancells().setCash(getChannelCancells().getCash() + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancells().setCheque(calValue(new CancelledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            //getChannelCancells().setCredit(calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancells().setSlip(calValue(new CancelledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellsAgent().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
-        getChannelCancellsAgent().setCredit(calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelCancellsAgent().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelCancellsAgent().setCredit(calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
-        getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
-        getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCash(getChannelRefunds().getCash() + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelRefunds().setBills(userBillsOwn(new RefundBill(), btys, getWebUser(), getDepartment()));
+            getChannelRefunds().getBills().addAll(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefunds().setCard(calValue(new RefundBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelRefunds().setCash(calValue(new RefundBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefunds().setCash(getChannelRefunds().getCash() + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefunds().setCheque(calValue(new RefundBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            //getChannelRefunds().setCredit(calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelRefunds().setSlip(calValue(new RefundBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefundsAgent().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
-        getChannelRefundsAgent().setCredit(calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelRefundsAgent().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
+            getChannelRefundsAgent().setCredit(calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
 
-        //channel professional payment        
-        getChannelBilledProPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCard(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCash(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCheque(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setCredit(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledProPayment().setSlip(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //channel professional payment
+            getChannelBilledProPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCard(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCash(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCheque(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setCredit(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledProPayment().setSlip(calValue(new BilledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellProPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCard(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCash(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellProPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCard(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCash(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellProPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefundsProPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCard(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCash(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCheque(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setCredit(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefundsProPayment().setSlip(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelProPayment, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCard(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCash(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCheque(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setCredit(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelRefundsProPayment().setSlip(calValue(new RefundBill(), BillType.ChannelProPayment, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //channel agent payment
-        getChannelBilledAgnPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCard(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCash(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCheque(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setCredit(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledAgnPayment().setSlip(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //channel agent payment
+            getChannelBilledAgnPayment().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCard(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCash(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCheque(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setCredit(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledAgnPayment().setSlip(calValue(new BilledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellAgnPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCard(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCash(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellAgnPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCard(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCash(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCheque(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setCredit(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellAgnPayment().setSlip(calValue(new CancelledBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelRefundAgnPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCard(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCash(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCheque(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setCredit(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelRefundAgnPayment().setSlip(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setBills(userBillsOwn(new RefundBill(), BillType.ChannelAgencyCommission, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCard(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCash(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCheque(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setCredit(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelRefundAgnPayment().setSlip(calValue(new RefundBill(), BillType.ChannelAgencyCommission, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //channel agent payment
-        getChannelBilledIncome().setBills(userBillsOwn(new BilledBill(), BillType.ChannelIncomeBill, getWebUser(), getDepartment()));
-        getChannelBilledIncome().setCard(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledIncome().setCash(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledIncome().setCheque(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledIncome().setCredit(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledIncome().setSlip(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            //channel agent payment
+            getChannelBilledIncome().setBills(userBillsOwn(new BilledBill(), BillType.ChannelIncomeBill, getWebUser(), getDepartment()));
+            getChannelBilledIncome().setCard(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledIncome().setCash(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledIncome().setCheque(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledIncome().setCredit(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledIncome().setSlip(calValue(new BilledBill(), BillType.ChannelIncomeBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellIncome().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelIncomeBill, getWebUser(), getDepartment()));
-        getChannelCancellIncome().setCard(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellIncome().setCash(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellIncome().setCheque(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellIncome().setCredit(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellIncome().setSlip(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellIncome().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelIncomeBill, getWebUser(), getDepartment()));
+            getChannelCancellIncome().setCard(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellIncome().setCash(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellIncome().setCheque(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellIncome().setCredit(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellIncome().setSlip(calValue(new CancelledBill(), BillType.ChannelIncomeBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelBilledExpenses().setBills(userBillsOwn(new BilledBill(), BillType.ChannelExpenesBill, getWebUser(), getDepartment()));
-        getChannelBilledExpenses().setCard(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledExpenses().setCash(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledExpenses().setCheque(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledExpenses().setCredit(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledExpenses().setSlip(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelBilledExpenses().setBills(userBillsOwn(new BilledBill(), BillType.ChannelExpenesBill, getWebUser(), getDepartment()));
+            getChannelBilledExpenses().setCard(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledExpenses().setCash(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledExpenses().setCheque(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledExpenses().setCredit(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledExpenses().setSlip(calValue(new BilledBill(), BillType.ChannelExpenesBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellExpenses().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelExpenesBill, getWebUser(), getDepartment()));
-        getChannelCancellExpenses().setCard(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellExpenses().setCash(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellExpenses().setCheque(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellExpenses().setCredit(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellExpenses().setSlip(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellExpenses().setBills(userBillsOwn(new CancelledBill(), BillType.ChannelExpenesBill, getWebUser(), getDepartment()));
+            getChannelCancellExpenses().setCard(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellExpenses().setCash(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellExpenses().setCheque(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellExpenses().setCredit(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellExpenses().setSlip(calValue(new CancelledBill(), BillType.ChannelExpenesBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelBilledCredit().setBills(userBillsOwn(new BilledBill(), BillType.AgentCreditNoteBill, getWebUser(), getDepartment()));
-        getChannelBilledCredit().setCard(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledCredit().setCash(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledCredit().setCheque(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledCredit().setCredit(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledCredit().setSlip(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelBilledCredit().setBills(userBillsOwn(new BilledBill(), BillType.AgentCreditNoteBill, getWebUser(), getDepartment()));
+            getChannelBilledCredit().setCard(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledCredit().setCash(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledCredit().setCheque(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledCredit().setCredit(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledCredit().setSlip(calValue(new BilledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellCredit().setBills(userBillsOwn(new CancelledBill(), BillType.AgentCreditNoteBill, getWebUser(), getDepartment()));
-        getChannelCancellCredit().setCard(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellCredit().setCash(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellCredit().setCheque(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellCredit().setCredit(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellCredit().setSlip(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellCredit().setBills(userBillsOwn(new CancelledBill(), BillType.AgentCreditNoteBill, getWebUser(), getDepartment()));
+            getChannelCancellCredit().setCard(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellCredit().setCash(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellCredit().setCheque(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellCredit().setCredit(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellCredit().setSlip(calValue(new CancelledBill(), BillType.AgentCreditNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelBilledDebit().setBills(userBillsOwn(new BilledBill(), BillType.AgentDebitNoteBill, getWebUser(), getDepartment()));
-        getChannelBilledDebit().setCard(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelBilledDebit().setCash(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelBilledDebit().setCheque(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelBilledDebit().setCredit(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelBilledDebit().setSlip(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelBilledDebit().setBills(userBillsOwn(new BilledBill(), BillType.AgentDebitNoteBill, getWebUser(), getDepartment()));
+            getChannelBilledDebit().setCard(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelBilledDebit().setCash(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelBilledDebit().setCheque(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelBilledDebit().setCredit(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelBilledDebit().setSlip(calValue(new BilledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        getChannelCancellDebit().setBills(userBillsOwn(new CancelledBill(), BillType.AgentDebitNoteBill, getWebUser(), getDepartment()));
-        getChannelCancellDebit().setCard(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
-        getChannelCancellDebit().setCash(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
-        getChannelCancellDebit().setCheque(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-        getChannelCancellDebit().setCredit(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
-        getChannelCancellDebit().setSlip(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
+            getChannelCancellDebit().setBills(userBillsOwn(new CancelledBill(), BillType.AgentDebitNoteBill, getWebUser(), getDepartment()));
+            getChannelCancellDebit().setCard(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Card, getWebUser(), getDepartment()));
+            getChannelCancellDebit().setCash(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cash, getWebUser(), getDepartment()));
+            getChannelCancellDebit().setCheque(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
+            getChannelCancellDebit().setCredit(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            getChannelCancellDebit().setSlip(calValue(new CancelledBill(), BillType.AgentDebitNoteBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        //////////
-        createSum();
+            //////////
+            createSum();
 
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
 //        //Cash IN Billed
 //        getCashInBills().setBills(userBillsOwn(new BilledBill(), BillType.CashIn, getWebUser(), getDepartment()));
@@ -4618,11 +4766,9 @@ public class CommonReport implements Serializable {
 //        getCashAdjustmentBills().setCash(calValueCash(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
 //        getCashAdjustmentBills().setCheque(calValueCheque(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
 //        getCashAdjustmentBills().setSlip(calValueSlip(new BilledBill(), BillType.DrawerAdjustment, getWebUser()));
-        //////////
-        createSumAfterCash();
-
-        
-
+            //////////
+            createSumAfterCash();
+        }, PharmacyReports.CASHIER_SUMMERY_BY_USER_ONLY_CHANNEL_REPORT, sessionController.getLoggedUser());
     }
 
     public Date fetchDate(String s) {
@@ -4843,35 +4989,89 @@ public class CommonReport implements Serializable {
 
     }
 
+    @Deprecated
     public void createGrnDetailTable() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        reportTimerController.trackReportExecution(() -> {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
-        String url = request.getRequestURL().toString();
+            String url = request.getRequestURL().toString();
 
-        String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getRemoteAddr();
 
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            long duration;
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
 
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("createGrnDetailTable()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            auditEvent.setUrl(url);
+            auditEvent.setIpAddress(ipAddress);
+            auditEvent.setEventTrigger("createGrnDetailTable()");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
+            recreteModal();
+
+            grnBilled = new BillsTotals();
+            grnCancelled = new BillsTotals();
+            grnReturn = new BillsTotals();
+            grnReturnCancel = new BillsTotals();
+
+            if (getDepartment() == null) {
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+
+// GRN Billed Bills
+            getGrnBilled().setBills(getBills(new BilledBill(), BillType.PharmacyGrnBill, getDepartment()));
+            getGrnBilled().setCash(calValueNetTotal(getGrnBilled().getBills(), PaymentMethod.Cash));
+            getGrnBilled().setCredit(calValueNetTotal(getGrnBilled().getBills(), PaymentMethod.Credit));
+            getGrnBilled().setSaleCash(calValueSaleValue(getGrnBilled().getBills(), PaymentMethod.Cash));
+            getGrnBilled().setSaleCredit(calValueSaleValue(getGrnBilled().getBills(), PaymentMethod.Credit));
+
+// GRN Cancelled Bills
+            getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnBill, getDepartment()));
+            getGrnCancelled().setCash(calValueNetTotal(getGrnCancelled().getBills(), PaymentMethod.Cash));
+            getGrnCancelled().setCredit(calValueNetTotal(getGrnCancelled().getBills(), PaymentMethod.Credit));
+            getGrnCancelled().setSaleCash(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Cash));
+            getGrnCancelled().setSaleCredit(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Credit));
+
+// GRN Refunded Bills
+            getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+            getGrnReturn().setCash(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Cash));
+            getGrnReturn().setCredit(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Credit));
+            getGrnReturn().setSaleCash(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Cash));
+            getGrnReturn().setSaleCredit(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Credit));
+
+// GRN Refunded Bill Cancel
+//            List<BillTypeAtomic> grnReturnsOrRefunds = new ArrayList<>();
+//            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+//            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+//            getGrnReturnCancel().setBills(getBills(grnReturnsOrRefunds, department, institution, null, supplier, null, ""));
+//            getGrnReturnCancel().setCash(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
+//            getGrnReturnCancel().setCredit(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
+//            getGrnReturnCancel().setSaleCash(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
+//            getGrnReturnCancel().setSaleCredit(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
+
+            Date endTime = new Date();
+            duration = endTime.getTime() - startTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        }, PharmacyReports.GRN_SUMMARY, sessionController.getLoggedUser());
+    }
+
+    public void createGrnDetailTablewithouttresing() {
         recreteModal();
 
         grnBilled = new BillsTotals();
@@ -4880,48 +5080,29 @@ public class CommonReport implements Serializable {
         grnReturnCancel = new BillsTotals();
 
         if (getDepartment() == null) {
-            JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
 
         //GRN Billed Bills
-        getGrnBilled().setBills(getBills(new BilledBill(), BillType.PharmacyGrnBill, getDepartment()));
-        getGrnBilled().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-        getGrnBilled().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
+        getGrnBilled().setBills(getBills(new BilledBill(), BillType.PharmacyReturnWithoutTraising, getDepartment()));
+        getGrnBilled().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Cash, getDepartment()));
+        getGrnBilled().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Credit, getDepartment()));
 
-        getGrnBilled().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-        getGrnBilled().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
+//        //GRN Cancelled Bill
+//        getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, getDepartment()));
+//        getGrnCancelled().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Cash, getDepartment()));
+//        getGrnCancelled().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyReturnWithoutTraising, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill
+//        getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+//        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+//
+//        //GRN Refunded Bill Cancel
+//        getGrnReturnCancel().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+//        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
+//        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
-        //GRN Cancelled Bill
-        getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnBill, getDepartment()));
-        getGrnCancelled().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-        getGrnCancelled().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
-
-        getGrnCancelled().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-        getGrnCancelled().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
-
-        //GRN Refunded Bill
-        getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
-        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
-
-        getGrnReturn().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-        getGrnReturn().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
-
-        //GRN Refunded Bill Cancel
-        getGrnReturnCancel().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, getDepartment()));
-        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
-
-        getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-        getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
     }
 
     public void createGrnReturnDetailTable() {
@@ -4979,7 +5160,6 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
     }
 
     public void createGrnAndPurchaseBillsTable() {
@@ -5082,7 +5262,6 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
     public void createGrnExpensTableStore() {
@@ -5124,7 +5303,6 @@ public class CommonReport implements Serializable {
 //        getGrnReturnCancel().setBillItems(getBillItems(new CancelledBill(), BillType.StoreGrnReturn, getDepartment()));
 ////        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
 ////        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
-        
     }
 
 //    public void createGrnDetailTableStore() {
@@ -5216,7 +5394,7 @@ public class CommonReport implements Serializable {
 //        PharmacyBhtPreBilled = new BillsTotals();
 //        PharmacyBhtPreCancelled = new BillsTotals();
 //        PharmacyBhtPreRefunded = new BillsTotals();
-//        
+//
 //        if (getDepartment() == null) {
 //            return;
 //        }
@@ -5236,7 +5414,7 @@ public class CommonReport implements Serializable {
 //        getPharmacyBhtPreRefunded().setCash(calValue(new RefundBill(), BillType.PharmacyBhtPre, PaymentMethod.Cash, getDepartment()));
 //        getPharmacyBhtPreRefunded().setCredit(calValue(new RefundBill(), BillType.PharmacyBhtPre, PaymentMethod.Credit, getDepartment()));
 //
-//     
+//
 //
 //    }
     public void createGrnPaymentTable() {
@@ -5273,7 +5451,6 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancellReturn().setCash(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Cash, getDepartment()));
         getGrnPaymentCancellReturn().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
     public void createPurchaseDetailTable() {
@@ -5323,7 +5500,6 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
     public void createPurchaseDetailTableStore() {
@@ -5360,7 +5536,6 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        
     }
 
 //    public void createPurchaseDetailTableStore() {
@@ -5474,7 +5649,38 @@ public class CommonReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
+    }
+
+    public void createPharmacyGrnDetailTable() {
+        String jpql = "select bi from BillItem bi "
+                + "where bi.retired = false "
+                + "and bi.bill.billType in :btList "
+                + "and bi.bill.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> parameters = new HashMap<>();
+        List<BillType> bt = Arrays.asList(BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn);
+
+        parameters.put("btList", bt);
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dept";
+            parameters.put("dept", department);
+        }
+
+        if (institution != null) {
+            jpql += " and bi.bill.fromInstitution = :supplier";
+            parameters.put("supplier", institution);
+        }
+
+        jpql += " order by bi.bill.id";
+
+        try {
+            billItems = getBillItemFac().findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void createGrnDetailTableByDealorStore() {
@@ -5511,7 +5717,6 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
-        
     }
 
 //    public void createGrnDetailTableByDealorStore() {
@@ -5610,38 +5815,10 @@ public class CommonReport implements Serializable {
     }
 
     public void fillInstitutionReferralBills() {
-        Date startTime = new Date();
-
-        //Done By Pasan
-//        String jpql;
-//        Map m = new HashMap();
-//        if (institution != null) {
-//            jpql = "select b from Bill b "
-//                    + "where b.retired=false "
-//                    + "and b.referredByInstitution=:refIns "
-//                    + "and b.createdAt between :fd and :td "
-//                    + " order by b.id";
-//            m.put("refIns", institution);
-//            m.put("fd", fromDate);
-//            m.put("td", toDate);
-//            referralBills = getBillFacade().findByJpql(jpql, m);
-//        }else{
-//            jpql = "select b from Bill b "
-//                    + " where b.retired=false "
-//                    + " and b.referredByInstitution is not null "
-//                    + "and b.createdAt between :fd and :td "
-//                    + " order by b.id";
-//            m.put("fd", fromDate);
-//            m.put("td", toDate);
-//            referralBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-//        }
-        //Done By Safrin
         String jpql;
         Map m = new HashMap();
-
         jpql = "select b from Bill b "
                 + "where b.retired=false ";
-
         if (referenceInstitution != null) {
             jpql += "and b.referredByInstitution=:refIns ";
             m.put("refIns", referenceInstitution);
@@ -5655,7 +5832,239 @@ public class CommonReport implements Serializable {
         m.put("td", toDate);
         referralBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        
+    }
+
+    public void fillOpdReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.OPD));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.core.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.core.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        List<ReportTemplateRow> mergedResults = new ArrayList<>();
+
+        for (ReportTemplateRow row : combinedResults) {
+            if (row.getReferringInstitution() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringInstitution().getName());
+
+                mergedResults.add(newRow);
+            }
+
+            if (row.getReferringStaff() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringStaff().getPerson().getNameWithTitle());
+
+                mergedResults.add(newRow);
+            }
+        }
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(mergedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+
+    public void fillChannellingReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.core.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.core.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        List<ReportTemplateRow> mergedResults = new ArrayList<>();
+
+        for (ReportTemplateRow row : combinedResults) {
+            if (row.getReferringInstitution() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringInstitution().getName());
+
+                mergedResults.add(newRow);
+            }
+
+            if (row.getReferringStaff() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringStaff().getPerson().getNameWithTitle());
+
+                mergedResults.add(newRow);
+            }
+        }
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(mergedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "Channelling Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+
+    public void fillInpatientReferralBillSummary() {
+        // Map to hold query parameters
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", BillTypeAtomic.findByServiceType(ServiceType.INWARD));
+
+        // First Query: For referredBy condition
+        String jpql1 = "select new com.divudi.core.data.ReportTemplateRow("
+                + "rf, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredBy rf "
+                + " where b.retired=false "
+                + " and rf is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by rf";
+
+        // Second Query: For referredByInstitution condition
+        String jpql2 = "select new com.divudi.core.data.ReportTemplateRow("
+                + "ri, count(b), sum(b.netTotal))"
+                + " from Bill b "
+                + " left join b.referredByInstitution ri "
+                + " where b.retired=false "
+                + " and ri is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :bts "
+                + " group by ri";
+
+        // Execute both queries separately
+        List<ReportTemplateRow> rtrsByReferredBy = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql1, m);
+        List<ReportTemplateRow> rtrsByReferredByInstitution = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql2, m);
+
+        // Combine results into a single bundle
+        bundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> combinedResults = new ArrayList<>();
+
+        // Add results from the first query (Staff-based)
+        combinedResults.addAll(rtrsByReferredBy);
+
+        // Add results from the second query (Institution-based)
+        combinedResults.addAll(rtrsByReferredByInstitution);
+
+        // Set the combined results in the bundle
+        bundle.setReportTemplateRows(combinedResults);
+
+        // Format the report name with fromDate and toDate
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        String formattedFromDate = sdf.format(fromDate);
+        String formattedToDate = sdf.format(toDate);
+
+        String reportName = "OPD Referral Summary by Bill - From " + formattedFromDate + " to " + formattedToDate;
+        bundle.setName(reportName);
+    }
+
+    public void fillDoctorReferralBills() {
+        Date startTime = new Date();
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select b from Bill b "
+                + "where b.retired=false ";
+
+        jpql += " and b.referredBy is not null ";
+
+        jpql += "and b.createdAt between :fd and :td "
+                + " order by b.id";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        referralDoctorBills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void fillInstitutionReferralBillItems() {
@@ -5683,8 +6092,6 @@ public class CommonReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         referralBillItems = getBillItemFac().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-
-        
 
     }
 
@@ -5820,8 +6227,6 @@ public class CommonReport implements Serializable {
             }
         }
 
-        
-
     }
 
     public List<Object[]> fetchItems(Class[] billClasses,
@@ -5904,7 +6309,6 @@ public class CommonReport implements Serializable {
     public List<BillItem> fetchDirectPurchaseBillItems(Bill b) {
         Map m = new HashMap();
         String sql;
-
         sql = "Select b From BillItem b where "
                 + " b.retired=false "
                 + " and b.bill.billType=:btp "
@@ -5921,8 +6325,7 @@ public class CommonReport implements Serializable {
             m.put("pm", paymentMethod);
         }
 
-        sql += " group by b.bill.billClassType "
-                + " order by b.bill.billClassType , b.insId ";
+        sql += " order by b.bill.createdAt , b.id ";
 
         m.put("frm", getFromDate());
         m.put("to", getToDate());
@@ -6514,25 +6917,86 @@ public class CommonReport implements Serializable {
         list.add(getGrnReturn());
         list.add(getGrnReturnCancel());
 
+        if (getGrnBilled() == null) {
+            dataTableData = new ArrayList<>();
+            String1Value1 tmp5 = new String1Value1();
+            tmp5.setString("");
+            return dataTableData;
+        }
+
         dataTableData = new ArrayList<>();
         String1Value1 tmp1 = new String1Value1();
-        tmp1.setString("Final Credit Total");
-        tmp1.setValue(getFinalCreditTotal(list));
-        tmp1.setValue2(getFinalSaleCreditTotal(list));
+        tmp1.setString("Billed Credit Total");
+        tmp1.setValue(getGrnBilled().getCredit());
+        tmp1.setValue2(getGrnBilled().getSaleCredit());
 
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp2 = new String1Value1();
+        tmp2.setString("Cancelled Credit Total");
+        tmp2.setValue(getGrnCancelled().getCredit());
+        tmp2.setValue2(getGrnCancelled().getSaleCredit());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp3 = new String1Value1();
+        tmp3.setString("Returned Credit Total");
+        tmp3.setValue(getGrnReturn().getCredit());
+        tmp3.setValue2(getGrnReturn().getSaleCredit());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp4 = new String1Value1();
+        tmp4.setString("Final Credit Total");
+        tmp4.setValue(getFinalCreditTotal(list));
+        tmp4.setValue2(getFinalSaleCreditTotal(list));
+
+        dataTableData = new ArrayList<>();
         String1Value1 tmp5 = new String1Value1();
-        tmp5.setString("Final Cash Total");
-        tmp5.setValue(getFinalCashTotal(list));
-        tmp5.setValue2(getFinalSaleCashTotal(list));
+        tmp5.setString("");
 
+        dataTableData = new ArrayList<>();
         String1Value1 tmp6 = new String1Value1();
-        tmp6.setString("Final Credit & Cash Total");
-        tmp6.setValue(getFinalCashTotal(list) + getFinalCreditTotal(list));
-        tmp6.setValue2(getFinalSaleCashTotal(list) + getFinalSaleCreditTotal(list));
+        tmp6.setString("Billed Cash Total");
+        tmp6.setValue(getGrnBilled().getCash());
+        tmp6.setValue2(getGrnBilled().getSaleCash());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp7 = new String1Value1();
+        tmp7.setString("Cancelled Cash Total");
+        tmp7.setValue(getGrnCancelled().getCash());
+        tmp7.setValue2(getGrnCancelled().getSaleCash());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp8 = new String1Value1();
+        tmp8.setString("Returned Cash Total");
+        tmp8.setValue(getGrnReturn().getCash());
+        tmp8.setValue2(getGrnReturn().getSaleCash());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp9 = new String1Value1();
+        tmp9.setString("Final Cash Total");
+        tmp9.setValue(getFinalCashTotal(list));
+        tmp9.setValue2(getFinalSaleCashTotal(list));
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp10 = new String1Value1();
+        tmp10.setString("");
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp11 = new String1Value1();
+        tmp11.setString("Final Credit & Cash Total");
+        tmp11.setValue(getFinalCashTotal(list) + getFinalCreditTotal(list));
+        tmp11.setValue2(getFinalSaleCashTotal(list) + getFinalSaleCreditTotal(list));
 
         dataTableData.add(tmp1);
+        dataTableData.add(tmp2);
+        dataTableData.add(tmp3);
+        dataTableData.add(tmp4);
         dataTableData.add(tmp5);
         dataTableData.add(tmp6);
+        dataTableData.add(tmp7);
+        dataTableData.add(tmp8);
+        dataTableData.add(tmp9);
+        dataTableData.add(tmp10);
+        dataTableData.add(tmp11);
 
         return dataTableData;
     }
@@ -6802,7 +7266,6 @@ public class CommonReport implements Serializable {
             totalVat += b.getVat();
         }
 
-        
     }
 
     public void calculateTotalOfPuchaseOrderSummaryBills() {
@@ -6855,8 +7318,6 @@ public class CommonReport implements Serializable {
             total += tot;
             totalVat += totVat;
         }
-
-        
 
     }
 
@@ -6912,20 +7373,6 @@ public class CommonReport implements Serializable {
             b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
             b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
         }
-    }
-
-    /**
-     * @return the commonController
-     */
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    /**
-     * @param commonController the commonController to set
-     */
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -7022,6 +7469,38 @@ public class CommonReport implements Serializable {
 
     public void setDepartmentId(String departmentId) {
         this.departmentId = departmentId;
+    }
+
+    public List<Bill> getReferralDoctorBills() {
+        return referralDoctorBills;
+    }
+
+    public void setReferralDoctorBills(List<Bill> referralDoctorBills) {
+        this.referralDoctorBills = referralDoctorBills;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
+    }
+
+    public Bill getPreviewBill() {
+        return previewBill;
+    }
+
+    public void setPreviewBill(Bill previewBill) {
+        this.previewBill = previewBill;
+    }
+
+    public Institution getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Institution supplier) {
+        this.supplier = supplier;
     }
 
     public class CollectingCenteRow {

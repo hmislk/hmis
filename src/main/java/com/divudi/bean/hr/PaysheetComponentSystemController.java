@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.facade.PaysheetComponentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.facade.PaysheetComponentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,7 +44,7 @@ public class PaysheetComponentSystemController implements Serializable {
     private PaysheetComponent current;
     private List<PaysheetComponent> items = null;
     String selectText = "";
-   
+
     public List<PaysheetComponent> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from PaysheetComponent c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -168,7 +168,7 @@ public class PaysheetComponentSystemController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -233,5 +233,5 @@ public class PaysheetComponentSystemController implements Serializable {
         }
     }
 
-  
+
 }

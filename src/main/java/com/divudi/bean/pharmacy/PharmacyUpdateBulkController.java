@@ -5,12 +5,11 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Category;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.facade.AmpFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.facade.AmpFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -29,9 +27,6 @@ import javax.inject.Named;
 @Named("pharmacyUpdateBulkController")
 @SessionScoped
 public class PharmacyUpdateBulkController implements Serializable {
-
-    @Inject
-    CommonController commonController;
 
     @EJB
     AmpFacade ampFacade;
@@ -89,7 +84,7 @@ public class PharmacyUpdateBulkController implements Serializable {
 
         amps = getAmpFacade().findByJpql(sql, m);
 
-        
+
     }
 
     public void updatePharmacyItemCategory() {
@@ -183,14 +178,6 @@ public class PharmacyUpdateBulkController implements Serializable {
 
     public void setUpdateCategory(Category updateCategory) {
         this.updateCategory = updateCategory;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

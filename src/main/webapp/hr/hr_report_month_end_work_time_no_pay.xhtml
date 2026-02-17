@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -44,11 +44,11 @@
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton> 
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder">                     
+                        </p:commandButton>
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder">
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss">
                                 <f:facet name="header" >
-                                    
+
                                     <h:outputLabel value="Month End Employee (No Pay) Report-By Minute" /><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >
@@ -56,7 +56,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -142,7 +142,7 @@
                                     <h:outputLabel value="#{ss.total}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                               
+                                </p:column>
                                 <p:column headerText="No Pay Time">
                                     <f:facet name="header" >
                                         <h:outputLabel value="No Pay Time" />
@@ -155,7 +155,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

@@ -23,7 +23,7 @@
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyPoCancel()}" >
+                                        class="ui-button-danger" action="#{pharmacyBillSearch.pharmacyPoCancel}" >
                                     </p:commandButton>  
                                 </h:panelGrid>
                             </f:facet>
@@ -51,7 +51,7 @@
                                 <p:panel header="Bill Details">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
                                         <h:outputLabel value="Discount :" ></h:outputLabel>

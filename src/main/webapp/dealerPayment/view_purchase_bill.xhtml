@@ -1,0 +1,489 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html 
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:p="http://primefaces.org/ui"                
+    xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form>
+
+
+
+
+                    <div class="row" >
+                        <div class="col-md-12 p-2" >
+                            <p:panelGrid 
+                                layout="tabular"
+                                columns="2"
+                                rendered="#{supplierPaymentController.current.cancelled}"
+                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable w-100 m-1 border border-danger bg-light p-2"
+                                columnClasses="text-start font-weight-bold text-danger, text-end font-weight-bold text-dark">
+
+                                <f:facet name="header"> 
+                                    <h:outputText styleClass="fas fa-shopping-cart text-danger"/>
+                                    <h:outputText class="mx-4 text-danger" value="Bill Cancelled"/>  
+                                </f:facet>
+
+                                <h:outputText value="Bill Cancelled at" styleClass="text-danger font-weight-bold" />
+                                <h:outputText value="#{supplierPaymentController.current.cancelledBill.createdAt}" styleClass="text-warning">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+
+                                <h:outputLabel value="Cancellation Bill No" styleClass="text-danger font-weight-bold" />
+                                <h:outputLabel value="#{supplierPaymentController.current.cancelledBill.deptId}" styleClass="text-danger" />
+
+                                <h:outputLabel value="Cancellation Payment Type" styleClass="text-danger font-weight-bold" />
+                                <h:outputLabel value="#{supplierPaymentController.current.cancelledBill.paymentMethod.label}" styleClass="text-danger" />
+
+                                <h:outputText value="Cancelled User" styleClass="text-danger font-weight-bold" />
+                                <h:outputText value="#{supplierPaymentController.current.cancelledBill.creater.webUserPerson.name}" styleClass="text-warning" />
+
+                            </p:panelGrid>
+                        </div>
+                    </div>
+
+
+                    <div class="row ui-message-warn" >
+                        <div class="col-md-4" >
+                            <p:panel class="m-1" >
+                                <f:facet name="header"> 
+                                    <h:outputText styleClass="fas fa-shopping-cart"/>
+                                    <h:outputText class="mx-4" value="Bill Summary"/>  
+                                </f:facet>
+                                <h:panelGrid 
+                                    columns="2"
+                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                    columnClasses="text-start, text-end"
+                                    class="w-100">
+
+
+                                    <h:outputLabel value="Purchase Total Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Purchase Return Total Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseReturnTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Net Purchase Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseNetTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Total Payment Settled"/>
+                                    <h:outputText value="#{supplierPaymentController.currentTotalPaymentSettledValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Total Payment to Settle"/>
+                                    <h:outputText value="#{supplierPaymentController.currentTotalPaymentToSettleValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                </h:panelGrid>
+
+                            </p:panel>
+                        </div>
+                        <div class="col-md-8" >
+
+                            <p:panel class="m-1" >
+                                <f:facet name="header"> 
+                                    <h:outputText styleClass="fas fa-shopping-cart"/>
+                                    <h:outputText class="mx-4" value="Bill Item Summary"/>  
+                                </f:facet>
+                                <p:dataTable 
+                                    class="w-100" 
+                                    rowIndexVar="i" 
+                                    var="ph" 
+                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                    value="#{supplierPaymentController.currentSummeryBillItems}" 
+                                    id="itemList">  
+
+                                    <p:column headerText="No" width="2em" >  
+                                        <h:outputText value="#{i+1}"/>
+                                    </p:column> 
+
+                                    <p:column headerText="Item Name" width="20em">  
+                                        <h:outputText value="#{ph.item.name} - #{ph.item.code}"/>
+                                    </p:column>  
+
+                                    <p:column headerText="Qty" width="6em" class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.qty}"/>
+                                    </p:column>  
+
+                                    <p:column headerText="Free" class="text-end"  >       
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.freeQty}"/>
+                                    </p:column> 
+
+                                    <p:column headerText="P. Rate"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>              
+
+                                    <p:column headerText="S. Rate"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>  
+
+                                    <p:column headerText="P. Value"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.purchaseRate * ph.pharmaceuticalBillItem.qty}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText> 
+                                    </p:column>  
+
+                                    <p:column headerText="S. Value"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate * (ph.pharmaceuticalBillItem.qtyInUnit + ph.pharmaceuticalBillItem.freeQtyInUnit)}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column> 
+
+                                    <p:column headerText="Batch"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}"/>
+                                    </p:column>  
+
+                                    <p:column headerText="DOE" class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="GMT"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Profit %"  class="text-end" >  
+                                        <h:outputText value="#{((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate) * 100}">
+                                            <f:convertNumber pattern="0.0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="row ui-message-info" >
+                        <div class="col-md-4" >
+                            <p:panel class="m-1" >
+                                <f:facet name="header"> 
+                                    <h:outputText styleClass="fas fa-shopping-cart"/>
+                                    <h:outputText class="mx-4" value="Bill Details"/>  
+                                </f:facet>
+                                <h:panelGrid 
+                                    columns="2"
+                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                    columnClasses="text-start, text-end"
+                                    class="w-100">
+
+                                    <h:outputText value="Bill Created at"></h:outputText>
+                                    <h:outputText value="#{supplierPaymentController.current.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                    </h:outputText>
+
+                                    <h:outputText value="Bill Type Atomic"></h:outputText>
+                                    <h:outputText value="#{supplierPaymentController.current.billTypeAtomic}"></h:outputText>
+
+                                    <h:outputLabel value="Bill No"/>
+                                    <h:outputLabel value="#{supplierPaymentController.current.deptId}"></h:outputLabel>
+
+                                    <h:outputLabel value="Payment Type"/>
+                                    <h:outputLabel value="#{supplierPaymentController.current.paymentMethod.label}"></h:outputLabel>
+
+                                    <h:outputText value="Institution"></h:outputText>
+                                    <h:outputText value="#{supplierPaymentController.current.institution.name}"></h:outputText>
+
+                                    <h:outputText value="Department"></h:outputText>
+                                    <h:outputText value="#{supplierPaymentController.current.department.name}"></h:outputText>
+
+                                    <h:outputText value="Supplier"></h:outputText>
+                                    <h:outputText value="#{supplierPaymentController.current.fromInstitution.name}"></h:outputText>
+
+                                    <h:outputText value="User"></h:outputText>
+                                    <h:outputText value="#{supplierPaymentController.current.creater.webUserPerson.name}"></h:outputText>
+
+                                    <h:outputLabel value="Total"/>
+                                    <h:outputText value="#{supplierPaymentController.current.total}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Discount"/>
+                                    <h:outputText value="#{supplierPaymentController.current.discount}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Tax"/>
+                                    <h:outputText value="#{supplierPaymentController.current.tax}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Net Total"/>
+                                    <h:outputText value="#{supplierPaymentController.current.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <!-- Newly Added Fields -->
+                                    <h:outputLabel value="Purchase Total Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Purchase Return Total Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseReturnTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Net Purchase Value"/>
+                                    <h:outputText value="#{supplierPaymentController.currentSummaryPurchaseNetTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Total Payment Settled"/>
+                                    <h:outputText value="#{supplierPaymentController.currentTotalPaymentSettledValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                    <h:outputLabel value="Total Payment to Settle"/>
+                                    <h:outputText value="#{supplierPaymentController.currentTotalPaymentToSettleValue}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+
+                                </h:panelGrid>
+
+                            </p:panel>
+                        </div>
+                        <div class="col-md-8" >
+                            <p:panel class="m-1">
+                                <f:facet name="header"> 
+                                    <h:outputText styleClass="fas fa-shopping-cart"/>
+                                    <h:outputText class="mx-4" value="Billed Items"/>  
+                                </f:facet>
+                                <p:dataTable 
+                                    class="w-100" 
+                                    rowIndexVar="i" 
+                                    var="ph" 
+                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                    value="#{supplierPaymentController.current.billItems}" >  
+
+                                    <p:column headerText="No" width="2em" >  
+                                        <h:outputText value="#{i+1}"/>
+                                    </p:column> 
+
+                                    <p:column headerText="Item Name" width="20em">  
+                                        <h:outputText value="#{ph.item.name} - #{ph.item.code}"/>
+                                    </p:column>  
+
+                                    <p:column headerText="Qty" width="6em" class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.qty}"/>
+                                    </p:column>  
+
+                                    <p:column headerText="Free" class="text-end"  >       
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.freeQty}"/>
+                                    </p:column> 
+
+                                    <p:column headerText="P. Rate"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>              
+
+                                    <p:column headerText="S. Rate"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>  
+
+                                    <p:column headerText="P. Value"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.purchaseRate * ph.pharmaceuticalBillItem.qty}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText> 
+                                    </p:column>  
+
+                                    <p:column headerText="S. Value"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate * (ph.pharmaceuticalBillItem.qtyInUnit + ph.pharmaceuticalBillItem.freeQtyInUnit)}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column> 
+
+                                    <p:column headerText="Batch"  class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}"/>
+                                    </p:column>  
+
+                                    <p:column headerText="DOE" class="text-end" >  
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="GMT"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Profit %"  class="text-end" >  
+                                        <h:outputText value="#{((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate) * 100}">
+                                            <f:convertNumber pattern="0.0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+                    </div>
+
+
+                    <ui:repeat 
+                        value="#{supplierPaymentController.currentReturnBills}" 
+                        rendered="#{not empty supplierPaymentController.currentReturnBills}" 
+                        var="retrunBill">
+                        <div class="row ui-message-error" >
+                            <div class="col-md-4" >
+                                <p:panel class="m-1">
+                                    <f:facet name="header"> 
+                                        <h:outputText styleClass="fas fa-shopping-cart"/>
+                                        <h:outputText class="mx-4" value="Return Details"/>  
+                                    </f:facet>
+                                    <h:panelGrid 
+                                        columns="2"
+                                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                        columnClasses="text-start, text-end"
+                                        class="w-100" >
+
+
+                                        <h:outputText value="Returned At" ></h:outputText>
+                                        <h:outputText value="#{retrunBill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Return Bill No" />
+                                        <h:outputLabel value="#{retrunBill.deptId}" ></h:outputLabel>
+
+                                        <h:outputLabel value="Return Payment Type" ></h:outputLabel>
+                                        <h:outputLabel value="#{retrunBill.paymentMethod.label}" ></h:outputLabel>
+
+                                        <h:outputText value="Return User" ></h:outputText>
+                                        <h:outputText value="#{retrunBill.creater.webUserPerson.name}" ></h:outputText>
+
+
+                                        <h:outputLabel value="Returned Total" ></h:outputLabel>
+                                        <h:outputText value="#{retrunBill.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Returned Discount" ></h:outputLabel>
+                                        <h:outputText value="#{retrunBill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Returned Tax" ></h:outputLabel>
+                                        <h:outputText value="#{retrunBill.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Returned Net Total" ></h:outputLabel>
+                                        <h:outputText value="#{retrunBill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+
+                                    </h:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-8" >
+                                <p:panel class="m-1" >
+                                    <f:facet name="header"> 
+                                        <h:outputText styleClass="fas fa-shopping-cart"/>
+                                        <h:outputText class="mx-4" value="Returned Items"/>  
+                                    </f:facet>
+                                    <p:dataTable 
+                                        class="w-100" 
+                                        rowIndexVar="i" 
+                                        var="ph" 
+                                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                        value="#{retrunBill.billItems}" 
+                                        id="returnedItemList">  
+
+                                        <p:column headerText="No" width="2em" >  
+                                            <h:outputText value="#{i+1}"/>
+                                        </p:column> 
+
+                                        <p:column headerText="Item Name" width="20em">  
+                                            <h:outputText value="#{ph.item.name} - #{ph.item.code}"/>
+                                        </p:column>  
+
+                                        <p:column headerText="Qty" width="6em" class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.qty}"/>
+                                        </p:column>  
+
+                                        <p:column headerText="Free" class="text-end"  >       
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.freeQty}"/>
+                                        </p:column> 
+
+                                        <p:column headerText="P. Rate"  class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="text-align: right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>              
+
+                                        <p:column headerText="S. Rate"  class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate}" style="text-align: right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>  
+
+                                        <p:column headerText="P. Value"  class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.purchaseRate * ph.pharmaceuticalBillItem.qty}" style="text-align: right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText> 
+                                        </p:column>  
+
+                                        <p:column headerText="S. Value"  class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.retailRate * (ph.pharmaceuticalBillItem.qtyInUnit + ph.pharmaceuticalBillItem.freeQtyInUnit)}" style="text-align: right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column> 
+
+                                        <p:column headerText="Batch"  class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}"/>
+                                        </p:column>  
+
+                                        <p:column headerText="DOE" class="text-end" >  
+                                            <h:outputText value="#{ph.pharmaceuticalBillItem.doe}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="GMT"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Profit %"  class="text-end" >  
+                                            <h:outputText value="#{((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate) * 100}">
+                                                <f:convertNumber pattern="0.0"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </ui:repeat>
+
+
+
+
+
+                    <p:panel header="Bill Payments" >
+
+                    </p:panel>
+                    <p:panel header="Bill Payment Returns" >
+
+                    </p:panel>
+
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

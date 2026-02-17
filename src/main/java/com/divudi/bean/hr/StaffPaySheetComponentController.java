@@ -6,15 +6,15 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.facade.PaysheetComponentFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.facade.PaysheetComponentFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -127,8 +127,8 @@ public class StaffPaySheetComponentController implements Serializable {
 //        if (checkStaff()) {
 //            return true;
 //        }
-        
-       
+
+
 
         if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
             JsfUtil.addErrorMessage("There is Some component in Same Date Range");
@@ -140,7 +140,7 @@ public class StaffPaySheetComponentController implements Serializable {
 
     @EJB
     HumanResourceBean humanResourceBean;
-    
+
     public void remove() {
         getRemovingEntry().setRetired(true);
         getRemovingEntry().setRetiredAt(new Date());
@@ -161,7 +161,7 @@ public class StaffPaySheetComponentController implements Serializable {
         } else {
             getStaffPaysheetComponentFacade().edit(getCurrent());
         }
-        
+
         Staff s = getCurrent().getStaff();
         Date fd = getCurrent().getFromDate();
         Date td = getCurrent().getToDate();
@@ -197,7 +197,7 @@ public class StaffPaySheetComponentController implements Serializable {
         String sql = "Select ss from "
                 + " StaffPaysheetComponent ss"
                 + " where ss.retired=false ";
-        
+
         if (getFromDate() != null) {
             sql += " and ((ss.fromDate <=:fd "
                     + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";

@@ -14,12 +14,12 @@
     <cc:implementation>
         <h:panelGrid columns="5">         
             <h:outputLabel value="Req No"/>
-            <h:outputLabel value="Supplier Name"/>
+            <h:outputLabel value="Department Name"/>
             <h:outputLabel value="Net Total"/>
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toDepartment}"/>
+            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
@@ -29,7 +29,7 @@
                 <h:outputLabel value="TRANSFER ISSUE"/>
             </f:facet>
             <p:column>
-                <p:commandButton ajax="false" value="View Bill" action="pharmacy_reprint_transfer_isssue">
+                <p:commandButton ajax="false" value="View Bill" action="/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true">
                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{bill}"/>
                 </p:commandButton>
             </p:column>

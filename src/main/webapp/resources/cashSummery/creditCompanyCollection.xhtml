@@ -20,7 +20,7 @@
             <p:subTable value="#{c.billItems}" var="b">
 
                 <p:column headerText="#{c.bill.fromInstitution.name}" style="width: 200px;">  
-                    <p:outputLabel value="#{b.referenceBill.insId}(opd)" rendered="#{b.patientEncounter eq null}"/>
+                    <p:outputLabel value="#{b.referenceBill.deptId}(opd)" rendered="#{b.patientEncounter eq null}"/>
                     <p:outputLabel value="#{b.patientEncounter.bhtNo}(bht)" rendered="#{b.patientEncounter ne null}"/>
                 </p:column>                                    
                 <p:column headerText="Patient Name" style="width: 40%;">

@@ -1,0 +1,77 @@
+Token Management: /token/index.xhtml
+
+Retail Transactions:
+- Sale by Batch: /pharmacy/pharmacy_bill_retail_sale.xhtml
+- Sale by Item: /pharmacy/pharmacy_fast_retail_sale.xhtml
+- Sale for cashier: /pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml
+- Sale for Cashier - By Item: /pharmacy/pharmacy_fast_retail_sale_for_cashier.xhtml
+- Sale without Stocks: /pharmacy/pharmacy_sale_without_stock
+- Search Sale Bill: /pharmacy/pharmacy_search_sale_bill.xhtml
+- Search Sale for Cashier Bills: /pharmacy/pharmacy_search_sale_pre_bill.xhtml
+- Search Sale Bill Items: /pharmacy/pharmacy_search_sale_bill_item.xhtml
+- Return - Items Only: /pharmacy/pharmacy_search_pre_bill_for_return_item_only.xhtml
+- Return - Items and Payments: /pharmacy/pharmacy_search_pre_bill_for_return_item_and_cash.xhtml
+- Search Return Bill (Item): /pharmacy/pharmacy_search_return_bill_pre.xhtml
+- Add To Stock: /pharmacy/pharmacy_search_pre_bill_not_paid.xhtml
+
+Wholesale Transactions:
+- Sale: /pharmacy_wholesale/pharmacy_bill_retail_sale.xhtml
+- Sale for cashier: /pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier.xhtml
+- Search Sale Bill: /pharmacy_wholesale/pharmacy_search_sale_bill.xhtml
+- Search Sale Bill to Pay: /pharmacy_wholesale/pharmacy_search_sale_pre_bill.xhtml
+- Search Sale Bill Items: /pharmacy_wholesale/pharmacy_search_sale_bill_item.xhtml
+- Return - Items Only: /pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_only.xhtml
+- Return - Items and Payments: /pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_and_cash.xhtml
+- Search Return Bill (Item): /pharmacy/pharmacy_search_return_bill_pre.xhtml
+- Add To Stock: /pharmacy/pharmacy_search_pre_bill_not_paid.xhtml
+- Wholesale Purchase: /pharmacy_wholesale/pharmacy_purchase.xhtml
+
+Inpatient Medication Management:
+- Direct Issue to BHTs: /inward/pharmacy_bill_issue_bht.xhtml
+- Direct Issue to Theatre Cases: /theater/inward_bill_surgery_issue.xhtml
+- BHT Issue Requests: /ward/ward_pharmacy_bht_issue_request_list_for_issue.xhtml
+- Pharmacy Requested & Issued Drug Overview: /pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill.xhtml
+- Search Inpatient Direct Issues by Bill: /inward/pharmacy_search_sale_bill_bht.xhtml
+- Search Inpatient Direct Issues by Item: /inward/pharmacy_search_sale_bill_item_bht.xhtml
+- Search Inpatient Direct Issue Returns by Bill: /inward/pharmacy_search_return_bill_bht.xhtml
+- Search Inpatient Direct Issue Returns by Item: /inward/pharmacy_search_return_bill_bht.xhtml
+
+Procurement:
+- Create Purchase Order: /pharmacy/pharmacy_purhcase_order_request.xhtml
+- Auto Order (P Model): /pharmacy/auto_ordering_by_distributor.xhtml
+- Auto Order (Q Model): /pharmacy/auto_ordering_by_distributor.xhtml
+- Direct Purchase: /pharmacy/pharmacy_purchase.xhtml
+- Direct Purchase (with costing): /pharmacy/direct_purchase.xhtml
+- Pharmacy Donation: /pharmacy/donation.xhtml
+- To Finalize Purchase Orders: /pharmacy/pharmacy_purhcase_order_list_to_finalize.xhtml
+- To Approve Purchase Orders: /pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml
+- Goods Receipt: /pharmacy/pharmacy_purchase_order_list_for_recieve.xhtml
+- Goods Receipt With Approval: /pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval.xhtml
+- Return Received Goods: /pharmacy/pharmacy_grn_list_for_return.xhtml
+- Return without Receipt: /pharmacy/pharmacy_return_withouttresing.xhtml
+- Multiple Purchase Order Cancellation: /pharmacy/pharmacy_purhcase_order_list_to_cancel.xhtml
+
+Disposal:
+- Issue: /pharmacy/pharmacy_issue.xhtml
+- Search Issue Bill: /pharmacy/pharmacy_search_issue_bill.xhtml
+- Search Issue Bill Items: /pharmacy/pharmacy_search_issue_bill_item.xhtml
+- Search Issue Return Bill: /pharmacy/pharmacy_search_issue_bill_return.xhtml
+- Unit Issue Margin: /store/issue_rate_margin_manager.xhtml
+
+Disbursement:
+- Request: /pharmacy/pharmacy_transfer_request.xhtml
+- To Finalize Transfer Requests: /pharmacy/pharmacy_transfer_request_list_to_finalize.xhtml
+- Approve Requests: /pharmacy/pharmacy_transfer_request_list_search_for_approval.xhtml
+- Issue for Requests: /pharmacy/pharmacy_transfer_request_list.xhtml
+- Direct Issue: /pharmacy/pharmacy_transfer_issue_direct_department.xhtml
+- Receive: /pharmacy/pharmacy_transfer_issued_list.xhtml
+- Reports: /pharmacy/pharmacy_analytics.xhtml
+
+Adjustments: /pharmacy/adjustments/pharmacy_adjustment_index.xhtml
+
+Supplier Payments: /dealerPayment/index.xhtml
+
+Pharmacy Bill Search: /pharmacy/pharmacy_search.xhtml
+Pharmacy Bill Search (New): /pharmacy/pharmacy_search_by_bill_type_atomic.xhtml
+Pharmacy Issued Drug List: /pharmacy/reports/inpatient_pharmacy_item_list.xhtml
+Pharmacy Analytics: /pharmacy/pharmacy_analytics.xhtml

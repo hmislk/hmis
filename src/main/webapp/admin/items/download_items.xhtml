@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/admin/items/index.xhtml">
+            <ui:define name="item">
+                <p:growl id="msg"/>
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
+                        <h:outputText value="Download &amp; Upload Items" styleClass="m-2"></h:outputText>
+                    </f:facet>
+                    <p:panelGrid columns="4" >
+                        <h:form id="fill" >
+                            <p:commandButton value="Fill Base Item Fees" ajax="false" 
+                                             action="#{itemController.fillItemsWithInvestigationsAndServices()}" 
+                                             icon="fa fa-file" 
+                                             styleClass="ui-button-primary m-2"></p:commandButton>
+                        </h:form>
+                        <h:form id="download" >
+                            <p:commandButton value="Download Base Item Fees as Excel" 
+                                             ajax="false" 
+                                             icon="fa fa-download" 
+                                             styleClass="ui-button-success m-2" 
+                                             action="#{itemController.downloadItems()}"/>
+                        </h:form>
+                        <p:spacer width="50"/>
+                        <h:form id="upload" enctype="multipart/form-data">
+                            <p:fileUpload value="#{itemController.file}"
+                                          mode="simple"
+                                          label="Choose File"/>
+                            <p:commandButton 
+                                icon="fa fa-upload"
+                                value="Upload and Replace Fee Values"
+                                action="#{itemController.uploadAddReplaceItemsFromId()}"
+                                ajax="false"/>
+                        </h:form>
+                    </p:panelGrid>
+                    <h:form id="dataForm" >
+                        <p:dataTable id="tblFees" value="#{itemController.items}" var="f" rowIndexVar="n" rowKey="#{f.id}" paginator="true" rows="5" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                            <!-- ID Column with sorting and filtering -->
+                            <p:column headerText="ID" width="5em" sortBy="#{f.id}" filterBy="#{f.id}" filterMatchMode="contains">
+                                <h:outputText value="#{f.id}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Item Code Column with sorting and filtering -->
+                            <p:column headerText="Item Code" width="15em" sortBy="#{f.code}" filterBy="#{f.code}" filterMatchMode="contains">
+                                <h:outputText value="#{f.code}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Item Name Column with sorting and filtering -->
+                            <p:column headerText="Item Name" width="20em" sortBy="#{f.name}" filterBy="#{f.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.name}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Item Type Column with sorting and filtering -->
+                            <p:column headerText="Item Type" width="10em" sortBy="#{f.itemType}" filterBy="#{f.itemType}" filterMatchMode="contains">
+                                <h:outputText value="#{f.itemType}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Category Column with sorting and filtering -->
+                            <p:column headerText="Category" width="15em" sortBy="#{f.category.name}" filterBy="#{f.category.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.category.name}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Financial Category Column with sorting and filtering -->
+                            <p:column headerText="Financial Category" width="15em" sortBy="#{f.financialCategory.name}" filterBy="#{f.financialCategory.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.financialCategory.name}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Retired Column with sorting and filtering -->
+                            <p:column headerText="Retired" width="10em" sortBy="#{f.retired}" filterBy="#{f.retired}" filterMatchMode="contains">
+                                <h:outputText value="#{f.retired ? 'Yes' : 'No'}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Institution Column with sorting and filtering -->
+                            <p:column headerText="Institution" width="20em" sortBy="#{f.institution.name}" filterBy="#{f.institution.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.institution.name}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Department Column with sorting and filtering -->
+                            <p:column headerText="Department" width="20em" sortBy="#{f.department.name}" filterBy="#{f.department.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.department.name}" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                    </h:form>
+
+                </p:panel>
+
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

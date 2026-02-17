@@ -22,7 +22,7 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                        <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report" />
+                        <p:dataExporter type="xlsx" target="tbl"  fileName="Collecting_Centre_Sale_Report" />
                     </p:commandButton>  
 
                     <p:panelGrid columns="5" style="min-width: 100%;" styleClass="noPrintButton">
@@ -64,7 +64,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Bill Code"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.insId}"/>
+                        <h:outputLabel value="#{d.deptId}"/>
                     </p:column>
                     <p:column headerText="Patient Name"  >
                         <f:facet name="header">

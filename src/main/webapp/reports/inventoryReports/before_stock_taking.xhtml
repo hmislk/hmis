@@ -8,135 +8,182 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
+
                 <h:form >
-                    <p:panel header="Leave Form" >
 
-                        <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value="From Date" class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value="" 
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                    <p:panel header="Before Stock Taking" >                 
 
-                            
+                        <h:panelGrid columns="8" class="w-100">
 
-                            <p:outputLabel value="To Date" class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value=""
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            
 
-                            <p:outputLabel value="Staff" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="System Stock" for="phmDateRange" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDateRange"
+                                styleClass="w-100"
+                                value="#{pharmacyController.transferType}">
+                                <f:selectItem itemLabel="Equal to" itemValue="equal"/>
+                                <f:selectItem itemLabel="Not Equal to" itemValue="notEqual"/>
+                                <f:selectItem itemLabel="Greater than" itemValue="gThan"/>
+                                <f:selectItem itemLabel="Less than" itemValue="lThan"/>
+                                <f:selectItem itemLabel="Greater than or Equal to" itemValue="gThanOrEqual"/>
+                                <f:selectItem itemLabel="Less than or Equal to" itemValue="lThanOrEqual"/>
                             </p:selectOneMenu>
-                            
-                            
+                            <p:spacer width="20"/>
 
-                            <p:outputLabel value="Leave Type" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Stock Quantity" for="stkQty" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:inputText id="stkQty"
+                                         styleClass="w-100"
+                                         value="#{pharmacyController.qty}">
+
+                            </p:inputText>
+                            <p:spacer width="20"/><p:spacer width="20"/><p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup id="phmDept">
+
+                                <p:selectOneMenu
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyController.dept}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags mr-2"/>
+                                <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmCategory"
+                                value="#{pharmacyController.category}"
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems
+                                    value="#{pharmaceuticalItemCategoryController.items}"
+                                    var="category"
+                                    itemLabel="#{category.name}"
+                                    itemValue="#{category}"/>
+                                <p:ajax process="phmCategory" />
                             </p:selectOneMenu>
-                            
-                            
 
-                            <p:outputLabel value="Without Cancel" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            
-                            
-                            <p:outputLabel value="Leave Approved Person" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Search Created Date " class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value="" 
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"/>
 
-                            
 
-                            <p:outputLabel value="Search Shift Date " class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value=""
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            
-                            
+                        </h:panelGrid>
 
-                        </p:panelGrid>
 
-                        <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" 
+                                             icon="fas fa-cogs" 
+                                             ajax="false"  
+                                             value="Process" 
+                                             action="#{pharmacyController.createBeforeStockTakingReport()}">
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="null">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
-                            
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
                         </div>
 
-                        <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
+                        <div class="mt-5">
 
-                            <p:column headerText="Form Number ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Staff">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Code ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="From">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="To">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Leave Type ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Shift Name ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Request Date ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Approved By">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Leave Approved Date ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Comment">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Creator ">
-                                <h:outputText value="" />
-                            </p:column>
+                            <h5>Stock Taking Line Items</h5>
 
-                        </p:dataTable>
+                            <div class="mt-5">
+                                <h6>Document Number : </h6>
+                                <h6>Document : </h6>
+                            </div>
+
+                            <p:dataTable id="tbl1" value="#{pharmacyController.stockList}" 
+                                         var="s" 
+                                         rowKey="#{s.id}"
+                                         rowIndexVar="n" 
+                                         paginator="true" 
+                                         rows="10" 
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+
+                                <p:column headerText="Unique Id">
+                                    <h:outputText value="#{s.id}" />
+                                </p:column>
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="#{s.itemBatch.item.code}" />
+                                </p:column>
+                                <p:column headerText="Item Name">
+                                    <h:outputText value="#{s.itemBatch.item.name}" />
+                                </p:column>
+                                <p:column headerText="Locator">
+                                    <h:outputText value="#{s.stockLocator}" />
+                                </p:column>
+                                <p:column headerText="Batch Code">
+                                    <h:outputText value="#{s.itemBatch.batchNo}" />
+                                </p:column>
+                                <p:column headerText="Expiry Date">
+                                    <h:outputText value="#{s.itemBatch.dateOfExpire}" />
+                                </p:column>
+                                <p:column headerText="System Stock">
+                                    <h:outputText value="#{s.stock}" />
+                                </p:column>
+                                <p:column headerText="Physical Stock">
+                                    <h:outputText value="0.0" />
+                                </p:column>
+                                <p:column headerText="Rate(LKR)">
+                                    <h:outputText value="#{s.itemBatch.purcahseRate}" />
+                                </p:column>
+                                <p:column headerText="Mrp(LKR)">
+                                    <h:outputText value="#{s.itemBatch.retailsaleRate}" />
+                                </p:column>
+                                <p:column headerText="User">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Is Stock Adjust Required" width="15em">
+                                    <h:outputText value="NO" />
+                                </p:column>
+                                <p:column headerText="Remarks">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <h:outputText value="" />
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
+
         </ui:composition>
 
     </h:body>
+
 </html>

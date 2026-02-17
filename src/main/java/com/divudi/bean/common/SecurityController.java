@@ -14,7 +14,6 @@ import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.jasypt.util.text.BasicTextEncryptor;
 import java.security.SecureRandom;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -175,8 +174,7 @@ public class SecurityController implements Serializable {
 
     public static boolean matchPassword(String planePassword, String encryptedPassword) {
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
-        boolean mathingAccess =en.checkPassword(planePassword, encryptedPassword);
-        return  mathingAccess;
+        return en.checkPassword(planePassword, encryptedPassword);
     }
 
     public static boolean matchPassword(String planePassword, String encryptedPassword, boolean fake) {

@@ -16,19 +16,19 @@
 
                 <h:panelGrid columns="2" class="my-2">
                     <h:outputLabel value="From"/>
-                    <p:calendar 
-                        styleClass="dateTimePicker mx-2" 
-                        id="fromDate" 
-                        value="#{inwardReportController.fromDate}" 
-                        navigator="false" 
+                    <p:calendar
+                        styleClass="dateTimePicker mx-2"
+                        id="fromDate"
+                        value="#{inwardReportController.fromDate}"
+                        navigator="false"
                         class="mx-4"
                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                     <h:outputLabel value="To"/>
-                    <p:calendar 
-                        styleClass="dateTimePicker mx-4" 
-                        id="toDate" 
-                        value="#{inwardReportController.toDate}"   
+                    <p:calendar
+                        styleClass="dateTimePicker mx-4"
+                        id="toDate"
+                        value="#{inwardReportController.toDate}"
                         navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                     <h:outputLabel value="Institution"/>
@@ -42,7 +42,7 @@
                     </p:autoComplete>
 
                 </h:panelGrid>
-                <h:panelGrid columns="2" class="my-2">                    
+                <h:panelGrid columns="2" class="my-2">
                     <h:outputLabel value="Date" class="my-4"/>
                     <p:selectOneRadio class="mx-4" value="#{inwardReportController.reportKeyWord.string}">
                         <f:selectItem itemLabel="Discharge Date" itemValue="0" />
@@ -56,15 +56,15 @@
                         <f:selectItem itemLabel="All" itemValue="2" />
                     </p:selectOneRadio>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="3" class="my-4">
-                    <p:commandButton ajax="false" icon="fas fa-cogs" value="Process" 
+                    <p:commandButton ajax="false" icon="fas fa-cogs" value="Process"
                                      action="#{inwardReportController.createOutSideBills()}"
                                      class="ui-button-warning"/>
-                    <!--                    <p:commandButton ajax="false" value="Process By Added Date" 
+                    <!--                    <p:commandButton ajax="false" value="Process By Added Date"
                                                          action="#{inwardReportController.createOutSideBillsByAddedDate()}"
                                                          />
-                                        <p:commandButton ajax="false" value="Process By Discharge Date" 
+                                        <p:commandButton ajax="false" value="Process By Discharge Date"
                                                          action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
                                                          />-->
 
@@ -119,14 +119,14 @@
                             </p:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Cancelled/Refunded" >    
+                        <p:column headerText="Cancelled/Refunded" >
                             <f:facet name="header">
                                 <p:outputLabel value="Cancelled/Refunded" />
                             </f:facet>
-                            <p:outputLabel value="Refunded" rendered="#{bi.bill.class eq 'class com.divudi.entity.RefundBill'}"/>
-                            <p:outputLabel value="Cancelled" rendered="#{bi.bill.class eq 'class com.divudi.entity.CancelledBill'}"/>
+                            <p:outputLabel value="Refunded" rendered="#{bi.bill.class eq 'class com.divudi.core.entity.RefundBill'}"/>
+                            <p:outputLabel value="Cancelled" rendered="#{bi.bill.class eq 'class com.divudi.core.entity.CancelledBill'}"/>
                         </p:column>
-                        <p:column headerText="Inward Charge Type">     
+                        <p:column headerText="Inward Charge Type">
                             <f:facet name="header">
                                 <p:outputLabel value="Inward Charge Type" />
                             </f:facet>
@@ -140,7 +140,7 @@
                                 <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Creator Name">     
+                        <p:column headerText="Creator Name">
                             <f:facet name="header">
                                 <p:outputLabel value="Creator Name" />
                             </f:facet>
@@ -154,7 +154,7 @@
                                 <f:convertDateTime pattern="yyyy MM dd hh mm ss a" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Payer Name">     
+                        <p:column headerText="Payer Name">
                             <f:facet name="header">
                                 <p:outputLabel value="Payer Name" />
                             </f:facet>

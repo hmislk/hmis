@@ -6,14 +6,14 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
 
     <h:body>
         <ui:composition template="/admin/lims/index.xhtml">
 
             <ui:define name="subcontent">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabReportFormatEditing')}" >
-                    You are NOT Authorized
+                    <na:not_authorize />
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" >
@@ -28,7 +28,7 @@
 
                                         <p:selectOneMenu  id="mnuCat" value="#{commonReportItemController.category}"  style="width: 300px!important;">
                                             <f:selectItem itemLabel="Select" ></f:selectItem>
-                                            <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                            <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name} #{myItem.orderNo}" ></f:selectItems>
                                             <f:ajax event="change" execute="mnuCat" render="@all" />
                                         </p:selectOneMenu>
 
@@ -48,13 +48,13 @@
 
 
                                     <p:panel header="Actions" >
-                                        <p:panelGrid columns="4" >
+                                        <h:panelGrid columns="4" >
                                             <p:commandButton ajax="false" value="Add New Label" action="#{commonReportItemController.addNewLabel()}"/>
                                             <p:commandButton ajax="false"  value="Add New Value" action="#{commonReportItemController.addNewValue()}"/>
                                             <p:commandButton ajax="false"  value="Duplicate Report" action="#{commonReportItemController.duplicate()}"/>
                                             <p:commandButton  ajax="false" rendered="false" value="Add All" action="#{commonReportItemController.addAllToCat}"/>
 
-                                        </p:panelGrid>
+                                        </h:panelGrid>
 
                                     </p:panel>
 
@@ -62,7 +62,7 @@
                                 </p:panel>
 
                                 <p:panel header="Report Items List" id="pIx">
-                                    <p:panelGrid columns="3" >
+                                    <h:panelGrid columns="3" >
                                         <h:selectOneListbox size="1"  id="dtbItem" value="#{commonReportItemController.current}" style="width: 270px;" >
                                             <f:selectItems value="#{commonReportItemController.items}" var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" />
                                             <f:ajax event="change" execute="dtbItem" render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
@@ -71,7 +71,7 @@
                                         <p:commandButton ajax="false" action="#{commonReportItemController.duplicateItem()}" value="Duplicate"/>
                                         <p:commandButton ajax="false" action="#{commonReportItemController.removeItem()}" value="Remove"/>
 
-                                    </p:panelGrid>
+                                    </h:panelGrid>
 
                                 </p:panel>
 
@@ -79,16 +79,18 @@
 
                                     <f:facet name="header" >
                                         Item Details
-                                        <p:commandButton id="btnSave" value="Save" action="#{commonReportItemController.saveSelected()}" 
-                                                         ajax="false"
-                                                         update="pPreview pDetails dtbItem">
+                                        <p:commandButton 
+                                            id="btnSave" 
+                                            value="Save" action="#{commonReportItemController.saveSelected()}" 
+                                            ajax="false"
+                                            update="pPreview pDetails dtbItem">
                                         </p:commandButton>
 
                                     </f:facet>
 
                                     <p:panel  id="pNameDetails" >
 
-                                        <p:panelGrid  columns="2" class="w-100">
+                                        <h:panelGrid  columns="2" class="w-100">
                                             <h:outputText value="Name"   />
                                             <p:inputText 
                                                 class="w-100"
@@ -113,8 +115,8 @@
                                             </p:selectOneMenu>
 
 
-                                        </p:panelGrid>
-                                        <p:panelGrid columns="5" >
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="5" >
                                             <h:outputText value="Type"/>
                                             <p:selectOneMenu id="cmbItemType" value="#{commonReportItemController.current.ixItemType}" >
                                                 <f:selectItem itemLabel="Label" itemValue="Label"/>
@@ -129,18 +131,15 @@
                                             <p:selectOneMenu id="cmbValueType" value="#{commonReportItemController.current.ixItemValueType}"  >
                                                 <f:selectItems value="#{enumController.investigationItemValueTypes}" ></f:selectItems>
                                             </p:selectOneMenu>
-                                        </p:panelGrid>
-                                        <p:panelGrid columns="2" >
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="2" >
                                             <p:outputLabel value="Contents" ></p:outputLabel>
                                             <p:inputTextarea value="#{commonReportItemController.current.description}" style="min-width: 400px!important;"></p:inputTextarea>
-
-                                        </p:panelGrid>
-
-
+                                        </h:panelGrid>
                                     </p:panel>
 
                                     <p:panel header="Positioning" >
-                                        <p:panelGrid  columns="11">
+                                        <h:panelGrid  columns="11">
                                             <h:outputText value="Left" />
                                             <p:inputText style="width: 80px;"  autocomplete="off" id="txtLeft" value="#{commonReportItemController.current.riLeft}"/>
                                             <div style="min-width: 20px;"></div>
@@ -153,8 +152,8 @@
                                             <h:outputText value="Height"/>
                                             <p:inputText  style="width: 80px;"  autocomplete="off" id="txtHeight" value="#{commonReportItemController.current.riHeight}"/>
 
-                                        </p:panelGrid>
-                                        <p:panelGrid columns="5" >
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="5" >
                                             <h:outputText value="Height PX" />
                                             <p:inputText style="width: 50px;"  autocomplete="off" id="txtHtPx" 
                                                          value="#{commonReportItemController.current.htPix}"/>
@@ -164,9 +163,8 @@
                                                           value="#{commonReportItemController.current.wtPix}"/>
                                             <div style="min-width: 20px;"></div>
 
-                                        </p:panelGrid>
-                                        <p:panelGrid columns="5" >
-
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="5" >
                                             <h:outputText value="Text-Align"/>
                                             <p:selectOneMenu  id="cmbTxtAlign" value="#{commonReportItemController.current.cssTextAlign}"  >
                                                 <f:selectItem itemLabel="Left" itemValue="Left"/>
@@ -180,7 +178,7 @@
                                             <p:selectOneMenu  id="cmbTxtVerticalAlign" value="#{commonReportItemController.current.cssVerticalAlign}"  >
                                                 <f:selectItems value="#{enumController.cssVerticalAlign}" ></f:selectItems>
                                             </p:selectOneMenu>
-                                        </p:panelGrid>
+                                        </h:panelGrid>
                                     </p:panel>
 
 
@@ -195,7 +193,7 @@
                                             <p:inputText style="width: 50px;" autocomplete="off" id="txtFontSize" value="#{commonReportItemController.current.riFontSize}"/>
 
                                         </h:panelGrid>
-                                        <h:panelGrid  columns="5">
+                                        <h:panelGrid columns="5">
                                             <h:outputText value="Font Style"/>
                                             <p:selectOneMenu  id="cmbPos" value="#{commonReportItemController.current.cssFontStyle}" >
                                                 <f:selectItem itemLabel="Normal" itemValue="Normal"/>
@@ -228,12 +226,16 @@
 
                             </h:panelGroup>
 
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                                <p:printer target="priview" />
+                            </p:commandButton>
+
                             <h:panelGroup id="pPreview"  >
                                 <div style="border: 1px solid black; margin: 0px; padding: 0px;background-color: white!important;width:21.0cm!important; height: 29.7cm!important; position: relative; " >
-                                    <ez:common_report commonReportFormat="#{commonReportItemController.category}" showBorders="#{commonReportItemController.showBorders}"/>
+                                    <h:panelGroup id="priview"  >
+                                        <ez:common_report commonReportFormat="#{commonReportItemController.category}" showBorders="#{commonReportItemController.showBorders}"/>
+                                    </h:panelGroup>
                                 </div>
-
-
                             </h:panelGroup>
 
                             <h:panelGroup >

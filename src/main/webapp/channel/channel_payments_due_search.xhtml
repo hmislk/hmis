@@ -8,8 +8,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel  >
                         <f:facet name="header" >
@@ -59,7 +59,8 @@
 
                                     <p:column headerText="Patient" filterBy="#{bf.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
 
-                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                    
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/> 
+                                        <h:outputLabel value="#{bf.bill.referenceBill.onlineBooking.title}. #{bf.bill.referenceBill.onlineBooking.patientName}" rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"/>
 
                                     </p:column>
 
@@ -106,7 +107,7 @@
                                         <h:outputLabel value="#{bf.bill.singleBillSession.absent}" ></h:outputLabel>                                    
                                     </p:column>-->
 <!--                                    <p:column headerText="bill" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
-                                        <h:outputLabel value="#{bf.bill.insId}" ></h:outputLabel>                                    
+                                        <h:outputLabel value="#{bf.bill.deptId}" ></h:outputLabel>                                    
                                     </p:column>-->
                                 </p:dataTable>
                             </div>

@@ -34,12 +34,13 @@
                                  id="tbl1" 
                                  selection="#{agentReferenceBookController.selectedList}"
                                  rowIndexVar="i"
+                                 selectionMode="multiple"
                                  rowKey="#{a.id}">
                         
                         <f:facet name="header">
                             <p:outputLabel value="Channel Book Details" />
                         </f:facet>
-                        <p:column  selectionMode="multiple" >                            
+                        <p:column selectionBox="true"  >                            
                         </p:column>
                         <p:column>
                             <f:facet name="header">

@@ -47,6 +47,15 @@
                                         forceSelection="true" 
                                         value="#{searchController.reportKeyWord.department}" 
                                         />
+
+                                    <h:commandLink 
+                                        id="btnSearch0" 
+                                        action="#{searchController.fillToSelectedDepartmentPatientInvestigations()}" 
+                                        styleClass="mt-2 btn btn-success">
+                                        <h:outputText value="Selected Department Only" />
+                                        <i class="fa fa-search" style="margin-left: 5px;"></i>
+                                    </h:commandLink>
+
                                     <h:commandLink 
                                         id="btnSearch4" 
                                         action="#{searchController.fillToMyDepartmentPatientInvestigations()}" 
@@ -174,18 +183,17 @@
                                     class="tbl table-condensed"
 
                                     >
-                                    <p:column  headerText="Order No" style="width:5em;" >
-                                        <h:outputLabel
-                                            id="lblDeptId"
-                                            value="#{pi.billItem.bill.deptId}" 
-                                            ></h:outputLabel>
+                                    <p:column  headerText="Order No" style="width:8em;" >
+                                        <!--                                        <h:outputLabel
+                                                                                    rendered="false"
+                                                                                                                                                                                                        value="#{pi.billItem.bill.deptId}" 
+                                                                                               ></h:outputLabel>-->
 
                                         <h:outputLabel id="lblBillNo" 
-                                                       rendered="false"
-                                                       value="#{pi.billItem.bill.insId}" 
+                                                       value="#{pi.billItem.bill.deptId}" 
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
-                                        <p:tooltip for="lblDeptId"  >
-                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                        <p:tooltip for="lblBillNo"  >
+                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
                                             <br/>
@@ -299,6 +307,24 @@
 
                                     <p:column headerText="Investigation"  styleClass="alignTop" style="width: 32em;">
                                         <h:outputLabel value="#{pi.billItem.item.name}" >
+                                            <p:commandButton icon="pi pi-cog" action="#{investigationController.navigateToManageInvestigation()}" styleClass="ui-button-icon-only ui-p-primeng">
+                                                <f:setPropertyActionListener value="#{pi.investigation}" target="#{investigationController.current}"  />
+                                            </p:commandButton>
+                                        </h:outputLabel>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically')}" >
+                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(pi)}" var="psc">
+                                                <div class="ui-g d-grid" style="margin-bottom: 10px;">
+                                                    <div class="ui-g-6">
+                                                        <i class="fa fa-vial"></i>
+                                                        <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}" headerText="Local Number"  styleClass="alignTop" style="width: 32em;">
+                                        <h:outputLabel value="#{pi.billItem.bill.localNumber}" >
                                         </h:outputLabel>
                                     </p:column>
 
@@ -325,6 +351,7 @@
                                                 <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                             </p:commandLink>
                                         </h:panelGroup>
+
 
                                         <p:commandLink id="btnNewReport" ajax="false" 
                                                        disabled="#{!pi.received}" 
@@ -466,7 +493,7 @@
                                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                                     </h:outputLabel>
                                                 </p:tooltip>
-                                                
+
                                             </div>
                                             <p:badge value="Printed" severity="info" rendered="#{pi.printed}" ></p:badge>
                                         </ui:repeat>

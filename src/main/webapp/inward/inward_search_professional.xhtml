@@ -55,6 +55,8 @@
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                     <h:outputLabel value="Patient Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <h:outputLabel value="MRN / PHN No"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                     <h:outputLabel value="Patient Phone"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <!--                                    <h:outputLabel value="Total"/>
@@ -76,7 +78,7 @@
                                     rowsPerPageTemplate="5,10,25"
                                     >
                                     <p:column headerText="Bill No"  >
-                                        <h:outputLabel value="#{bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{bill.deptId}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="BHT No" >

@@ -6,147 +6,673 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop">
+                    <h:panelGroup rendered="#{!opdBillCancellationController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText value="Cancellation" class="mt-5"/>
-                                <h:panelGrid columns="3" style="float: right" class="w-50">
-                                    <p:selectOneMenu 
-                                        id="commentsMenu" 
-                                        value="#{billSearch.comment}" 
-                                        editable="true" 
-                                        filter="true" 
-                                        placeholder="Select or enter a comment"
-                                        filterMatchMode="contains"  
-                                        style="float: right; width: 100%" 
-                                        class="p-2">
-                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
-                                        <f:selectItems 
-                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
-                                            var="option" 
-                                            itemLabel="#{option}" 
-                                            itemValue="#{option}"/>
-                                    </p:selectOneMenu>
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Cancellation" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:selectOneMenu 
+                                            id="commentsMenu" 
+                                            value="#{opdBillCancellationController.comment}" 
+                                            editable="true" 
+                                            filter="true" 
+                                            placeholder="Select or enter a comment"
+                                            filterMatchMode="contains"
+                                            style="width: 600px;">
+                                            <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                            <f:selectItems 
+                                                value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
+                                                var="option" 
+                                                itemLabel="#{option}" 
+                                                itemValue="#{option}"/>
+                                        </p:selectOneMenu>
 
-                                    <p:commandButton 
-                                        ajax="false"
-                                        value="Cancel Bill" 
-                                        icon="fa fa-cancel"
-                                        style="float: right"
-                                        class="ui-button-danger" action="#{billSearch.cancelOpdBill()}">
-                                    </p:commandButton>
-                                    <p:commandButton  
-                                        class="ui-button-secondary d-flex justify-content-end mx-2"
-                                        style="float: right"
-                                        value="Back To Search"
-                                        icon="fa-solid fa-arrow-left"
-                                        action="/opd/opd_bill_search"
-                                        ajax="false">
-                                    </p:commandButton>
-                                </h:panelGrid>
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="Cancel Bill" 
+                                            icon="fa fa-cancel"
+                                            class="ui-button-danger" 
+                                            action="#{opdBillCancellationController.cancelOpdBill()}">
+                                        </p:commandButton>
+
+                                        <p:commandButton  
+                                            class="ui-button-secondary"
+                                            value="Back To Search"
+                                            icon="fa-solid fa-arrow-left"
+                                            action="/opd/opd_bill_search?faces-redirect=true"
+                                            ajax="false">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+
                             </f:facet>
 
-                            <!-- Payment Mode Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
-                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Cash'}"
-                                                 rendered="#{billSearch.bill.billType eq 'OpdBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
-                                </p:selectOneMenu>
-
-                                <p:selectOneMenu id="cmbPs2" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
-                                                 rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
-                                </p:selectOneMenu>
-                            </p:panel>
-
-                            <!-- Patient Details and Bill Details Panels -->
+                            <!--Payment Mode, Patient Details and Bill Details Panels -->
                             <div class="row">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                            <h:outputLabel value="Cancellation Payment Method" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:selectOneMenu
+                                            id="cmbPs"
+                                            value="#{opdBillCancellationController.paymentMethod}"
+                                            disabled="#{opdBillCancellationController.paymentMethod eq 'Credit'}" >
+                                            <f:selectItem itemLabel="Select a Cancellation Payment Method" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
+                                            <p:ajax
+                                                process="cmbPs"
+                                                update="paymentDetails testPanel"
+                                                event="change"
+                                                listener="#{opdBillCancellationController.onPaymentMethodChange()}"
+                                                onsuccess="console.log('AJAX SUCCESS: Payment method changed')"
+                                                onerror="console.log('AJAX ERROR: ' + xhr.status + ' - ' + xhr.statusText)" />
+                                        </p:selectOneMenu>
+                                    </p:panel>
+
+                                    <p:panel id="testPanel" >
+                                        Test Panel
+
+                                        Payment Method is 
+                                        #{opdBillCancellationController.paymentMethod}
+                                    </p:panel>
+
+                                    <!-- Cancellation Payment Details Panel -->
+                                    <p:panel class="mt-2" id="paymentDetails">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-credit-card me-2"></h:outputText>
+                                            <h:outputLabel value="Cancellation Payment Details"></h:outputLabel>
+
+                                            Payment Method is 
+                                            #{opdBillCancellationController.paymentMethod}
+
+                                        </f:facet>
+
+                                        <h:panelGroup >
+                                            <fieldset disabled="#{opdBillCancellationController.paymentMethod eq 'Credit'}"
+                                                      style="border: none; padding: 0; margin: 0;">
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'Credit'}" >
+                                                    <pa:creditDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'Staff'}" >
+                                                    <pa:staff_credit valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'Staff_Welfare'}" >
+                                                    <pa:staff_welfare_asOnlyPayment valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <!-- Card Payment Method Section -->
+                                                <h:panelGroup
+                                                    id="creditCard"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'Card'}">
+
+                                                    Batch bill
+                                                    #{opdBillCancellationController.bill.backwardReferenceBill}" 
+                                                    
+                                                    Batch bill payment method
+                                                    #{opdBillCancellationController.bill.backwardReferenceBill.paymentMethod}" 
+                                                    
+                                                    <!-- If original bill used multiple payment methods, show picker -->
+                                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.backwardReferenceBill != null and opdBillCancellationController.bill.backwardReferenceBill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
+                                                        <div class="card border-primary">
+                                                            <div class="card-header bg-primary text-white">
+                                                                <h6 class="mb-0">
+                                                                    <i class="fas fa-credit-card me-2"></i>
+                                                                    Select Card Payment from Original Bill
+                                                                </h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p class="text-muted mb-3">
+                                                                    <i class="fas fa-info-circle me-1"></i>
+                                                                    Select the card payment details from the original bill's payment methods:
+                                                                </p>
+
+                                                                <!-- Card Payment Picker -->
+                                                                <h:panelGroup layout="block">
+                                                                    <ui:repeat value="#{opdBillCancellationController.originalCardPayments}"
+                                                                               var="originalPm">
+                                                                        <div class="border rounded p-3 mb-2 bg-light">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="badge bg-primary">
+                                                                                    <i class="fas fa-credit-card me-1"></i>
+                                                                                    Card Payment
+                                                                                </span>
+                                                                                <h:commandButton value="Use This Card Data"
+                                                                                                 action="#{opdBillCancellationController.copyPaymentMethodData(originalPm)}"
+                                                                                                 class="btn btn-sm btn-primary"
+                                                                                                 immediate="true"
+                                                                                                 onclick="console.log('Use This Card Data button clicked!')">
+                                                                                    <f:ajax execute="@this" render="@form"
+                                                                                            onsuccess="console.log('AJAX SUCCESS: Card data copied')"
+                                                                                            onerror="console.log('AJAX ERROR: ' + xhr.status + ' - ' + xhr.statusText)"/>
+                                                                                </h:commandButton>
+                                                                            </div>
+                                                                            <!-- Display Card Details -->
+                                                                            <div class="row">
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Amount:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.totalValue}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Reference:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.referenceNo}</p>
+                                                                                </div>
+                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
+                                                                                    <label class="form-label">Comment:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </ui:repeat>
+
+                                                                    <!-- Message if no Card payment in original bill -->
+                                                                    <ui:fragment rendered="#{empty opdBillCancellationController.originalCardPayments}">
+                                                                        <div class="alert alert-info">
+                                                                            <i class="fas fa-info-circle me-2"></i>
+                                                                            No Card payment found in the original bill. Please enter new card details below.
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Divider -->
+                                                        <div class="my-3">
+                                                            <hr class="text-muted"/>
+                                                            <p class="text-center text-muted mb-0">OR enter new card details</p>
+                                                            <hr class="text-muted"/>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                    <!-- Regular card input (always shown) -->
+                                                    <pa:creditCardDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="ptdeposit"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'PatientDeposit'}">
+                                                    <pa:patient_deposit valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <!-- eWallet Payment Method Section -->
+                                                <h:panelGroup
+                                                    id="ewallet"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'ewallet'}" >
+
+                                                    <!-- If original bill used multiple payment methods, show picker -->
+                                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.backwardReferenceBill != null and opdBillCancellationController.bill.backwardReferenceBill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
+                                                        <div class="card border-success">
+                                                            <div class="card-header bg-success text-white">
+                                                                <h6 class="mb-0">
+                                                                    <i class="fas fa-mobile-alt me-2"></i>
+                                                                    Select eWallet Payment from Original Bill
+                                                                </h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p class="text-muted mb-3">
+                                                                    <i class="fas fa-info-circle me-1"></i>
+                                                                    Select the eWallet payment details from the original bill's payment methods:
+                                                                </p>
+
+                                                                <!-- eWallet Payment Picker -->
+                                                                <h:panelGroup layout="block">
+                                                                    <ui:repeat value="#{opdBillCancellationController.originalEWalletPayments}"
+                                                                               var="originalPm">
+                                                                        <div class="border rounded p-3 mb-2 bg-light">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="badge bg-success">
+                                                                                    <i class="fas fa-mobile-alt me-1"></i>
+                                                                                    eWallet Payment
+                                                                                </span>
+                                                                                <h:commandButton value="Use This eWallet Data"
+                                                                                                 action="#{opdBillCancellationController.copyPaymentMethodData(originalPm)}"
+                                                                                                 class="btn btn-sm btn-success"
+                                                                                                 immediate="true">
+                                                                                    <f:ajax execute="@this" render="@form"/>
+                                                                                </h:commandButton>
+                                                                            </div>
+                                                                            <!-- Display eWallet Details -->
+                                                                            <div class="row">
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Amount:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.totalValue}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Reference:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.referenceNo}</p>
+                                                                                </div>
+                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
+                                                                                    <label class="form-label">Comment:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </ui:repeat>
+
+                                                                    <!-- Message if no eWallet payment in original bill -->
+                                                                    <ui:fragment rendered="#{empty opdBillCancellationController.originalEWalletPayments}">
+                                                                        <div class="alert alert-info">
+                                                                            <i class="fas fa-info-circle me-2"></i>
+                                                                            No eWallet payment found in the original bill. Please enter new eWallet details below.
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Divider -->
+                                                        <div class="my-3">
+                                                            <hr class="text-muted"/>
+                                                            <p class="text-center text-muted mb-0">OR enter new eWallet details</p>
+                                                            <hr class="text-muted"/>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                    <!-- Regular eWallet input (always shown) -->
+                                                    <pa:ewalletDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <!-- Cheque Payment Method Section -->
+                                                <h:panelGroup
+                                                    id="cheque"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'Cheque'}">
+
+                                                    <!-- If original bill used multiple payment methods, show picker -->
+                                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.backwardReferenceBill != null and opdBillCancellationController.bill.backwardReferenceBill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
+                                                        <div class="card border-warning">
+                                                            <div class="card-header bg-warning text-dark">
+                                                                <h6 class="mb-0">
+                                                                    <i class="fas fa-money-check me-2"></i>
+                                                                    Select Cheque Payment from Original Bill
+                                                                </h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p class="text-muted mb-3">
+                                                                    <i class="fas fa-info-circle me-1"></i>
+                                                                    Select the cheque payment details from the original bill's payment methods:
+                                                                </p>
+
+                                                                <!-- Cheque Payment Picker -->
+                                                                <h:panelGroup layout="block">
+                                                                    <ui:repeat value="#{opdBillCancellationController.originalChequePayments}"
+                                                                               var="originalPm">
+                                                                        <div class="border rounded p-3 mb-2 bg-light">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="badge bg-warning text-dark">
+                                                                                    <i class="fas fa-money-check me-1"></i>
+                                                                                    Cheque Payment
+                                                                                </span>
+                                                                                <h:commandButton value="Use This Cheque Data"
+                                                                                                 action="#{opdBillCancellationController.copyPaymentMethodData(originalPm)}"
+                                                                                                 class="btn btn-sm btn-warning"
+                                                                                                 immediate="true">
+                                                                                    <f:ajax execute="@this" render="@form"/>
+                                                                                </h:commandButton>
+                                                                            </div>
+                                                                            <!-- Display Cheque Details -->
+                                                                            <div class="row">
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Amount:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.totalValue}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Cheque No:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.no}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6" rendered="#{originalPm.date != null}">
+                                                                                    <label class="form-label">Date:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.date}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6" rendered="#{originalPm.institution != null}">
+                                                                                    <label class="form-label">Bank:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.institution.name}</p>
+                                                                                </div>
+                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
+                                                                                    <label class="form-label">Comment:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </ui:repeat>
+
+                                                                    <!-- Message if no Cheque payment in original bill -->
+                                                                    <ui:fragment rendered="#{empty opdBillCancellationController.originalChequePayments}">
+                                                                        <div class="alert alert-info">
+                                                                            <i class="fas fa-info-circle me-2"></i>
+                                                                            No Cheque payment found in the original bill. Please enter new cheque details below.
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Divider -->
+                                                        <div class="my-3">
+                                                            <hr class="text-muted"/>
+                                                            <p class="text-center text-muted mb-0">OR enter new cheque details</p>
+                                                            <hr class="text-muted"/>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                    <!-- Regular cheque input (always shown) -->
+                                                    <pa:chequeDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <!-- Slip Payment Method Section -->
+                                                <h:panelGroup
+                                                    id="slip"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'Slip'}">
+
+                                                    <!-- If original bill used multiple payment methods, show picker -->
+                                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.backwardReferenceBill != null and opdBillCancellationController.bill.backwardReferenceBill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
+                                                        <div class="card border-secondary">
+                                                            <div class="card-header bg-secondary text-white">
+                                                                <h6 class="mb-0">
+                                                                    <i class="fas fa-receipt me-2"></i>
+                                                                    Select Slip Payment from Original Bill
+                                                                </h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p class="text-muted mb-3">
+                                                                    <i class="fas fa-info-circle me-1"></i>
+                                                                    Select the slip payment details from the original bill's payment methods:
+                                                                </p>
+
+                                                                <!-- Slip Payment Picker -->
+                                                                <h:panelGroup layout="block">
+                                                                    <ui:repeat value="#{opdBillCancellationController.originalSlipPayments}"
+                                                                               var="originalPm">
+                                                                        <div class="border rounded p-3 mb-2 bg-light">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="badge bg-secondary">
+                                                                                    <i class="fas fa-receipt me-1"></i>
+                                                                                    Slip Payment
+                                                                                </span>
+                                                                                <h:commandButton value="Use This Slip Data"
+                                                                                                 action="#{opdBillCancellationController.copyPaymentMethodData(originalPm)}"
+                                                                                                 class="btn btn-sm btn-secondary"
+                                                                                                 immediate="true">
+                                                                                    <f:ajax execute="@this" render="@form"/>
+                                                                                </h:commandButton>
+                                                                            </div>
+                                                                            <!-- Display Slip Details -->
+                                                                            <div class="row">
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Amount:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.totalValue}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Slip No:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.no}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6" rendered="#{originalPm.date != null}">
+                                                                                    <label class="form-label">Date:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.date}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6" rendered="#{originalPm.institution != null}">
+                                                                                    <label class="form-label">Institution:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.institution.name}</p>
+                                                                                </div>
+                                                                                <div class="col-md-12" rendered="#{originalPm.comment != null and originalPm.comment != ''}">
+                                                                                    <label class="form-label">Comment:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.comment}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </ui:repeat>
+
+                                                                    <!-- Message if no Slip payment in original bill -->
+                                                                    <ui:fragment rendered="#{empty opdBillCancellationController.originalSlipPayments}">
+                                                                        <div class="alert alert-info">
+                                                                            <i class="fas fa-info-circle me-2"></i>
+                                                                            No Slip payment found in the original bill. Please enter new slip details below.
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Divider -->
+                                                        <div class="my-3">
+                                                            <hr class="text-muted"/>
+                                                            <p class="text-center text-muted mb-0">OR enter new slip details</p>
+                                                            <hr class="text-muted"/>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                    <!-- Regular slip input (always shown) -->
+                                                    <pa:slipDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{opdBillCancellationController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <!-- Multiple Payment Methods Section -->
+                                                <h:panelGroup
+                                                    class="row my-1 w-100"
+                                                    layout="block"
+                                                    id="multiplePaymentMethods"
+                                                    rendered="#{opdBillCancellationController.paymentMethod eq 'MultiplePaymentMethods'}" >
+
+                                                    <!-- Check if original bill used Multiple Payment Methods -->
+                                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
+                                                        <!-- Warning message for original multiple payment method bills -->
+                                                        <div class="alert alert-warning mb-3">
+                                                            <div class="d-flex align-items-start">
+                                                                <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
+                                                                <div>
+                                                                    <h6 class="alert-heading mb-2">
+                                                                        <i class="fas fa-credit-card me-1"></i>
+                                                                        Multiple Payment Method Cannot Be Used for Individual Bill Cancellation
+                                                                    </h6>
+                                                                    <p class="mb-2">
+                                                                        This bill was originally paid using multiple payment methods. Individual bill cancellation with multiple payment methods is not allowed.
+                                                                    </p>
+                                                                    <div class="alert-actions">
+                                                                        <p class="mb-2"><strong>Available Options:</strong></p>
+                                                                        <ul class="mb-2">
+                                                                            <li>Cancel the entire batch bill instead</li>
+                                                                            <li>Use a different single payment method for cancellation (Cash, Card, Cheque, etc.)</li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </h:panelGroup>
+
+                                                    <!-- Editable multiple payment methods for bills not originally paid with multiple methods -->
+                                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.paymentMethod ne 'MultiplePaymentMethods'}" layout="block">
+                                                        <pa:multiple_payment_methods
+                                                            id="panelMultiplePaymentDetails"
+                                                            class="w-100"
+                                                            controller="#{opdBillCancellationController}"
+                                                            paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"/>
+                                                    </h:panelGroup>
+
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{opdBillCancellationController.paymentMethod eq 'Cash' or opdBillCancellationController.paymentMethod eq null}">
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        No additional payment details required for Cash payment.
+                                                    </div>
+                                                </h:panelGroup>
+                                            </fieldset>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
                                 <div class="col-6">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                        <common:patient patient="#{opdBillCancellationController.bill.patient}" class="w-100"/>
                                     </p:panel>
-                                </div>
-                                <div class="col-6">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                            <h:outputLabel value="Original Bill Detail" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <p:panelGrid columns="2">
-                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
-                                            <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
-                                            <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
-                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                        <p:panelGrid columns="3">
+                                            <h:outputLabel value="Bill No" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 50px;" ></h:outputLabel>
+                                            <h:outputLabel value="#{opdBillCancellationController.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Total" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 50px;" ></h:outputLabel>
+                                            <h:outputLabel value="#{opdBillCancellationController.bill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Discount" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 50px;" ></h:outputLabel>
+                                            <h:outputLabel value="#{opdBillCancellationController.bill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 50px;" ></h:outputLabel>
+                                            <h:outputLabel value="#{opdBillCancellationController.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
+                                    <!-- Bill Item Detail Panel -->
+                                    <p:panel class="mt-2">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:dataTable rowIndexVar="rowIndex" value="#{opdBillCancellationController.billItems}" var="bip">
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bip.item.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Fee</f:facet>
+                                                <h:outputLabel value="#{bip.netValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+
+                                    <!-- Original Payment Details Panel -->
+                                    <h:panelGroup layout="block" class="row mt-2" rendered="#{not empty opdBillCancellationController.billPayments}">
+                                        <h:panelGroup layout="block" class="col-12">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-money-check-alt me-2"></h:outputText>
+                                                    <h:outputLabel value="Original Payment Details"></h:outputLabel>
+                                                </f:facet>
+                                                <p:dataTable
+                                                    value="#{opdBillCancellationController.billPayments}"
+                                                    var="op"
+                                                    styleClass="table table-sm"
+                                                    emptyMessage="No original payments found">
+
+                                                    <p:column headerText="Method" width="120">
+                                                        <h:outputText value="#{op.paymentMethod}" />
+                                                    </p:column>
+
+                                                    <p:column headerText="Amount" styleClass="text-end" width="100">
+                                                        <h:outputText value="#{op.paidValue}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                    <p:column headerText="Bank" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                        <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
+                                                        <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Ref/Card No" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                        <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
+                                                        <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
+                                                        <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Date" rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                        <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputText>
+                                                        <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputText>
+                                                        <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                    <p:column headerText="Credit Company" rendered="#{op.paymentMethod eq 'Credit'}">
+                                                        <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Policy No" rendered="#{op.paymentMethod eq 'Credit'}">
+                                                        <h:outputText value="#{op.policyNo}" />
+                                                    </p:column>
+
+                                                    <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare'}">
+                                                        <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Comments">
+                                                        <h:outputText value="#{op.comments}" styleClass="text-muted small"/>
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                            </p:panel>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </div>
                             </div>
 
-                            <!-- Bill Item Detail Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                    <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:dataTable rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="bip">
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip.item.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
-                                        <h:outputLabel value="#{bip.netValue}"/>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+
+
+
+
+
                         </p:panel>
                     </h:panelGroup>
 
                     <!-- Print Preview Panel -->
-                    <p:panel rendered="#{billSearch.printPreview}">
+                    <p:panel rendered="#{opdBillCancellationController.printPreview}">
                         <f:facet name="header" >
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel value="Bill Preview" class="mt-2"></h:outputLabel>
                                 <div>
-                                    <h:panelGroup rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
+                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.billType ne 'CollectingCentreBill'}">
                                         <p:commandButton  
                                             class="ui-button-secondary d-flex justify-content-end mx-2"
                                             style="float: right"
                                             value="Back To Search"
                                             icon="fa-solid fa-arrow-left"
-                                            action="/opd/opd_bill_search"
+                                            action="/opd/opd_bill_search?faces-redirect=true"
                                             ajax="false">
                                         </p:commandButton>
                                     </h:panelGroup> 
 
-                                    <h:panelGroup rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                    <h:panelGroup rendered="#{opdBillCancellationController.bill.billType eq 'CollectingCentreBill'}">
                                         <p:commandButton 
                                             value="New Collectiong Centre Bill" 
                                             ajax="false" 
@@ -166,39 +692,48 @@
                                 <f:selectItems value="#{enumController.paperTypes}" />
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                            <p:commandButton value="Print" 
-                                             class="ui-button-info m-1"
-                                             icon="fa fa-print"
-                                             ajax="false">
+                            <p:commandButton 
+                                value="Print" 
+                                class="ui-button-info m-1"
+                                icon="fa fa-print"
+                                ajax="false">
+                                <p:printer target="groupPrint" />
                             </p:commandButton> 
 
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
-                                <prints:five_five_paper_with_headings bill="#{billSearch.bill}"/>
+                                <prints:five_five_paper_with_headings bill="#{opdBillCancellationController.bill}"/>
                             </h:panelGroup>
-
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >       
+                                <prints:five_five_paper_coustom_cancellation  
+                                    duplicate="#{opdBillCancellationController.duplicate}"
+                                    bill="#{opdBillCancellationController.bill}"/>
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <prints:five_five_paper_without_headings 
-                                    bill="#{billSearch.bill}" 
+                                    bill="#{opdBillCancellationController.bill}" 
                                     duplicate="#{opdBillController.duplicatePrint}" 
                                     payments="#{opdBillController.payments}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >     
-                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>         
+                                <prints:posOpdBillWithoutLogo bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>         
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                <prints:posOpdBill bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:posOpdBill bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >   
-                                <prints:A4_paper_with_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_with_headings bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                <prints:A4_paper_without_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_without_headings bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+                                <prints:five_five_custom_3 bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
 
                         </h:panelGroup>

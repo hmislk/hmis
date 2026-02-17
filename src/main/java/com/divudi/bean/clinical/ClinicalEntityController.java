@@ -9,10 +9,11 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,11 +28,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -51,9 +47,33 @@ public class ClinicalEntityController implements Serializable {
     private ClinicalEntity current;
     private List<ClinicalEntity> items = null;
     String selectText = "";
+    Department department;
 
     public String navigateToManageClinicalEntities() {
         return "/emr/admin/clinical_entities";
+    }
+
+    public String navigateToMangeSurgeries() {
+        return "/emr/admin/clinical_entities";
+    }
+
+    public ClinicalEntity findItemByName(String name,Department dept) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from ClinicalEntity i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.name=:name ";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("dept", dept);
+            ClinicalEntity item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public List<ClinicalEntity> listClinicalEntity(SymanticType type) {
@@ -74,6 +94,11 @@ public class ClinicalEntityController implements Serializable {
     }
 
     public List<ClinicalEntity> getEhnicity() {
+        // Kept for backward compatibility with older views
+        return listClinicalEntity(SymanticType.Religion);
+    }
+
+    public List<ClinicalEntity> getReligion() {
         return listClinicalEntity(SymanticType.Religion);
     }
 
@@ -84,11 +109,11 @@ public class ClinicalEntityController implements Serializable {
     public List<ClinicalEntity> getBloodGroup() {
         return listClinicalEntity(SymanticType.Blood_Group);
     }
-    
+
     public List<ClinicalEntity> getCivilStatus() {
         return listClinicalEntity(SymanticType.Civil_status);
     }
-    
+
      public List<ClinicalEntity> getRelationships() {
         return listClinicalEntity(SymanticType.Relationships);
     }
@@ -176,7 +201,7 @@ public class ClinicalEntityController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

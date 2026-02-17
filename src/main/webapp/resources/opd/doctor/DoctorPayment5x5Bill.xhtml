@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -70,7 +70,7 @@
                     <h:outputText value="#{-cc.attrs.bill.total}" >
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
-                </div>    
+                </div>
             </div>
 
             <hr/>

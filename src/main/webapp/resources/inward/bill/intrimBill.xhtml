@@ -167,22 +167,53 @@
 
 
                         <table class="tbl"  >
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                <h:panelGroup rendered="#{bip.adjustedValue !=0}">
-                                    <tr>
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.adjustedValue !=0}">
+                                        <tr>
+                                            <td style="text-align: left;" >
+                                                <h:outputLabel  value="#{bip.inwardChargeType.name}" />
+                                            </td>                                   
+                                            <td style="text-align: right;" >
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>  
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </h:panelGroup>
 
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.adjustedValue != 0 and bip.inwardChargeType ne 'LinenCharges' and bip.inwardChargeType ne 'MOCharges' and bip.inwardChargeType ne 'NursingCharges' and bip.inwardChargeType ne 'MaintainCharges' and bip.inwardChargeType ne 'MedicalCareICU' and bip.inwardChargeType ne 'AdministrationCharge'}">
+                                        <tr>
+                                            <td style="text-align: left;" >
+                                                <h:outputLabel  value="#{bip.inwardChargeType.name}" />
+                                            </td>                                   
+                                            <td style="text-align: right;" >
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>  
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Grouped Bed Charges -->
+                                <h:panelGroup rendered="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems) > 0}">
+                                    <tr>
                                         <td style="text-align: left;" >
-                                            <h:outputLabel  value="#{bip.inwardChargeType.label}" />
+                                            <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Bed Charges Label', 'Bed Charges')}" />
                                         </td>                                   
                                         <td style="text-align: right;" >
-                                            <h:outputLabel value="#{bip.adjustedValue}">
+                                            <h:outputLabel value="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems)}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
+                                            </h:outputLabel>
                                         </td>
-
                                     </tr>
                                 </h:panelGroup>
-                            </ui:repeat>
+                            </h:panelGroup>
 
                             <h:panelGroup>
                                 <tr>   

@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      >
+
+    <h:body>
+
+        <ui:composition template="/inward/inward_reports.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Admission Report by Consultant" >
+                        <div class="row w-100">
+                            <div class="col-6">
+                                <h:panelGrid columns="2">
+                                    <p:outputLabel value="From" />
+                                    <p:calendar id="fdate"
+                                                class="mx-4 w-100"
+                                                inputStyleClass="w-100"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                value="#{mdInwardReportController.fromDate}"></p:calendar>
+                                    <p:outputLabel value="To" />
+                                    <p:calendar  id="tdate" 
+                                                 class="mx-4 w-100"
+                                                 inputStyleClass="w-100"
+                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                 value="#{mdInwardReportController.toDate}"></p:calendar>
+
+                                    <h:outputLabel  value="Speciality" ></h:outputLabel>
+                                    <p:autoComplete class="mx-4 w-100" forceSelection="true" value="#{mdInwardReportController.speciality}" id="acSpeciality"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    inputStyleClass="w-100"
+                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    >
+                                        <f:ajax event="itemSelect" execute="acSpeciality"  render="scStaff"  />
+                                    </p:autoComplete>
+                                    <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
+                                    <p:autoComplete class="mx-4 w-100" 
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true" 
+                                                    value="#{mdInwardReportController.currentStaff}" 
+                                                    id="scStaff"
+                                                    completeMethod="#{mdInwardReportController.completeStaff}" 
+                                                    var="mys" itemLabel="#{mys.person.nameWithTitle}" 
+                                                    itemValue="#{mys}"
+                                                    >
+                                    </p:autoComplete>
+                                </h:panelGrid>
+                            </div>
+                        </div>
+
+
+
+                        <h:panelGrid columns="4" class="my-4" >
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning mx-1" action="#{mdInwardReportController.fillAdmissionsByConsultants}"   />
+                            <p:commandButton value="Print" icon="fas fa-print" class="ui-button-info mx-1" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1"  >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="admission_report_by_consultant" />
+                            </p:commandButton>
+
+
+                        </h:panelGrid>
+                        <p:panel id="gpBillPreview">
+
+                            <p:dataTable id="tbl" value="#{mdInwardReportController.admissions}" var="ad" rowIndexVar="index" >
+                                
+                                <p:column style="width: 2%">
+                                    <p:outputLabel value="#{index+1}" />
+                                </p:column>
+
+                                <p:column headerText="BHT No" filterBy="#{ad.bhtNo}" filterMatchMode="contains" sortBy="#{ad.bhtNo}">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="BHT No" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.bhtNo}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient Name">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Patient Name" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.patient.person.nameWithTitle}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Telephone No">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Telephone No" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.patient.person.smsNumber}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Consultant Name">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Consultant Name" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.referringConsultant ne null ? ad.referringConsultant.person.nameWithTitle : 'N/A'}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Room No">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Room No" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.currentPatientRoom.roomFacilityCharge.name}" >
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date of Admission">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Date of Admission" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.dateOfAdmission}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Discharged Date">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Discharged Date" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ad.dateOfDischarge}" rendered="#{ad.dateOfDischarge ne null}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                    </p:outputLabel>
+                                    <p:outputLabel value="N/A" rendered="#{ad.dateOfDischarge eq null}" />
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

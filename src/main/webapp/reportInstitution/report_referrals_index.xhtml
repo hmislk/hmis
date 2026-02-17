@@ -18,9 +18,29 @@
                 <p:accordionPanel>
                     <p:tab title="Referral Reports">
                          <div class="d-grid gap-2">
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Institution Referrals" action="report_referral_institution_detail"/>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Institution Referrals Bill Item Wise" action="report_referral_institution_detail_by_billItem"/>                             
-                        </div>                        
+                             <p:commandButton 
+                                 ajax="false" 
+                                 value="OPD Referral Bill Summary" 
+                                 action="report_referral_summary_opd_bill?faces-redirect=true"/>
+                             <p:commandButton 
+                                 ajax="false" 
+                                 value="Channelling Referral Bill Summary" 
+                                 action="report_referral_summary_channelling_bill?faces-redirect=true"/>
+                             <p:commandButton 
+                                 ajax="false" 
+                                 value="Inpatient Referral Bill Summary" 
+                                 action="report_referral_summary_inpatient_bill?faces-redirect=true"/>
+                             <p:commandButton 
+                                 ajax="false" value="Institution Referral Bills" 
+                                 action="report_referral_institution_detail?faces-redirect=true"/>
+                             <p:commandButton 
+                                 ajax="false"
+                                 value="Doctor Referra Bills"
+                                 action="report_referral_institution_detail?faces-redirect=true"/>
+                             <p:commandButton  
+                                 ajax="false" value="OPD Referrals - for Items" action="report_referral_institution_detail_by_billItem?faces-redirect=true"/>
+                             <p:commandButton  ajax="false" value="Doctor Referrals" action="report_referral_doctor_details?faces-redirect=true"/>
+                         </div>                        
                </p:tab>
                 </p:accordionPanel>                        
                 </h:form>

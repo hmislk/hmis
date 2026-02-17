@@ -44,9 +44,7 @@
                                             action="#{reportsStockVariant.saveRecord()}"
                                              disabled="#{reportsStockVariant.recordedBill.id ne null}"/>
 
-                            <p:watermark for="dep" value="Department"/>
-                            <p:watermark for="cat" value="Category"/>
-                        </h:panelGrid>
+                                                                                </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl" value="#{reportsStockVariant.records}" var="i"  >

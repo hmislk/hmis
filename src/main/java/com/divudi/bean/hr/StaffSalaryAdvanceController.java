@@ -4,29 +4,28 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.DayType;
+import com.divudi.core.data.hr.LeaveType;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffSalary;
-import com.divudi.entity.hr.StaffSalaryComponant;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.StaffEmploymentFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.StaffSalaryComponantFacade;
-import com.divudi.facade.StaffSalaryFacade;
-import com.divudi.facade.StaffShiftFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.SalaryCycle;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.entity.hr.StaffSalary;
+import com.divudi.core.entity.hr.StaffSalaryComponant;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.StaffEmploymentFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.facade.StaffSalaryComponantFacade;
+import com.divudi.core.facade.StaffSalaryFacade;
+import com.divudi.core.facade.StaffShiftFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ import org.primefaces.event.RowEditEvent;
 public class StaffSalaryAdvanceController implements Serializable {
 
     private StaffSalary current;
-    //////////   
+    //////////
     List<StaffSalary> items;
     List<StaffSalary> getSelectedStaffSalaryList;
     ///////
@@ -70,11 +69,7 @@ public class StaffSalaryAdvanceController implements Serializable {
     @EJB
     private HumanResourceBean humanResourceBean;
 
-    
-    private CommonFunctions commonFunctions;
     /////////////
-    @Inject
-    CommonController commonController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -161,8 +156,8 @@ public class StaffSalaryAdvanceController implements Serializable {
 //    private void updateComponent(List<StaffSalaryComponant> list) {
 //        for (StaffSalaryComponant ssc : list) {
 ////            ssc.setStaffSalary(getCurrent());
-//          
-//            
+//
+//
 //            if (ssc.getId() == null) {
 //                getStaffSalaryComponantFacade().create(ssc);
 //            } else {
@@ -436,7 +431,7 @@ public class StaffSalaryAdvanceController implements Serializable {
     public Long calculateOverTimeMinute() {
         double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
         workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff());
-        Long dateCount = commonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
+        Long dateCount = CommonFunctions.getDayCount(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate());
         Long numOfWeeks = dateCount / 7;
         Double overTimeSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), numOfWeeks, workedWithinTimeFrameVarified);
         return (overTimeSec.longValue() / 60L);
@@ -838,8 +833,8 @@ public class StaffSalaryAdvanceController implements Serializable {
             getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
 
-            //Record Late No Pay Leave 
-            //Not consider in any calcualtion is alredy with general NO Pay 
+            //Record Late No Pay Leave
+            //Not consider in any calcualtion is alredy with general NO Pay
             //only for reporting purpose
             double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay,
                     getSalaryCycle().getSalaryAdvanceFromDate(), getSalaryCycle().getSalaryAdvanceToDate());
@@ -924,7 +919,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 ////                ss.setConsideredForSalary(Boolean.FALSE);
 ////                ss.setConsideredForExtraDuty(Boolean.FALSE);
 ////                ss.setLieuPaid(false);
-//                
+//
 //                getStaffShiftFacade().edit(ss);
 //            }
             getStaffSalaryFacade().edit(staffSalary);
@@ -956,7 +951,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 ////                staffShiftFacade.flush();
 //            }
 //
-//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //            staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -988,7 +983,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //                staffShiftFacade.edit(earlyOut);
 //            }
 //
-//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//            LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //            HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //            staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //            staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -1004,7 +999,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
 //        stfCurrent.setConsiderForEarlyOut(true);
 //        staffShiftFacade.edit(stfCurrent);
-//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //        HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //        staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //        staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -1019,7 +1014,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        stfCurrent.setConsiderForLateIn(true);
 //        staffShiftFacade.edit(stfCurrent);
 //
-//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), commonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), commonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
+//        LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), CommonFunctions.getFirstDayOfYear(stfCurrent.getShiftDate()), CommonFunctions.getLastDayOfYear(stfCurrent.getShiftDate()));
 //        HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 //        staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
 //        staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -1125,7 +1120,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
         //   createStaffSalaryTable();
 
-        
+
     }
 
     private void fetchAndSetBankData() {
@@ -1252,9 +1247,9 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         //   createStaffSalaryTable();
-         
-        
-        
+
+
+
     }
 
     private void updateStaffShift(Staff staff, Date fromDate, Date toDate) {
@@ -1378,14 +1373,6 @@ public class StaffSalaryAdvanceController implements Serializable {
         this.humanResourceBean = humanResourceBean;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void setItems(List<StaffSalary> items) {
         this.items = items;
     }
@@ -1395,7 +1382,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             StaffSalaryAdvanceController controller = (StaffSalaryAdvanceController) facesContext.getApplication().getELResolver().
@@ -1410,9 +1397,7 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -1429,14 +1414,4 @@ public class StaffSalaryAdvanceController implements Serializable {
             }
         }
     }
-
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

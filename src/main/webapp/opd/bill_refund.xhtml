@@ -7,7 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -56,22 +57,23 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                         <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                     </f:facet>
-                                    <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
+                                    <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"
                                                        rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
-                                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                                        <f:selectItems value="#{billSearch.paymentMethods}"/>
+                                        <p:ajax process="@this" event="change" listener="#{billSearch.onPaymentMethodChange()}" />
                                     </p:selectOneMenu>
 
-                                    <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
+                                    <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"
                                                        disabled="#{billSearch.bill.paymentMethod eq 'Agent'}" rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
                                         <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
+                                        <p:ajax process="@this" event="change" listener="#{billSearch.onPaymentMethodChange()}" />
                                     </p:selectOneMenu>
                                 </p:panel>
 
@@ -95,7 +97,7 @@
                                             </f:facet>
                                             <p:panelGrid columns="2">
                                                 <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                                <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
                                                 <h:outputLabel value="Total :" ></h:outputLabel>
                                                 <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
                                                 <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -159,10 +161,17 @@
                                                         <h:outputText value="#{bf.referenceBillFee.feeValue}" ></h:outputText>
                                                     </td>
                                                     <td >
-                                                        <p:inputText id="txtRefVal" value="#{bf.feeValue}" >
-                                                            <p:ajax event="keyup" process="txtRefVal" 
-                                                                    listener="#{billSearch.calculateRefundTotalForOpdBillForAjex}"
-                                                                    update=":#{p:resolveFirstComponentWithId('panelRefundBillDetails',view).clientId}" ></p:ajax>
+                                                        <p:inputText 
+                                                            id="txtRefVal" 
+                                                            onfocus="this.select();"
+                                                            value="#{bf.feeValue}" 
+                                                            disabled="#{configOptionApplicationController.getBooleanValueByKey('OPD - User Must not be able to Edit the Refund Amount',false)}" >
+                                                            <p:ajax 
+                                                                event="keyup" 
+                                                                process="txtRefVal" 
+                                                                listener="#{billSearch.calculateRefundTotalForOpdBillForAjex}"
+                                                                update=":#{p:resolveFirstComponentWithId('panelRefundBillDetails',view).clientId}" >
+                                                            </p:ajax>
                                                         </p:inputText>
                                                     </td>
                                                 </tr>
@@ -177,41 +186,6 @@
                                 </p:panel>
 
 
-                                <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="b" 
-                                             rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
-
-
-
-                                    <p:column id="colSelect"   selectionMode="multiple"    >
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}" />
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">ID</f:facet>
-                                        <h:outputLabel value="#{b.id}"/>
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">ID</f:facet>
-                                        <h:outputLabel value="#{b.id}"/>
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">Item Name</f:facet>
-                                        <h:outputLabel value="#{b.item.name}"/>
-                                    </p:column>
-                                    <p:column >
-                                        <f:facet name="header">Fee Value</f:facet>
-                                        <h:outputLabel value="#{b.netValue}"/>
-                                    </p:column >
-                                    <p:column headerText="Refunded" >
-                                        <h:outputLabel  value="#{b.refunded}" />
-                                    </p:column>
-                                </p:dataTable>
                             </p:panel>
                         </h:panelGroup>
 
@@ -252,7 +226,7 @@
 
                             <h:panelGroup id="printPreview">
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>
+                                    <bi:opdPOSReturnBill bill="#{billSearch.currentRefundBill}"/>
                                 </h:panelGroup>
 
 
@@ -261,6 +235,9 @@
                                         bill="#{billSearch.currentRefundBill}" 
                                         payments="#{opdBillController.payments}"/>
 
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFiveCustom3'}">
+                                    <prints:five_five_custom_3 bill="#{billSearch.currentRefundBill}"/>
                                 </h:panelGroup>
 
 

@@ -12,32 +12,47 @@
     <ui:define name="content">
         <p:growl />
 
-        <p:panelGrid columns="2" >
+        <p:panelGrid columns="2" layout="tabular" >
             <f:facet name="header" >
                 <p:outputLabel value="Manage My API Keys" ></p:outputLabel>
             </f:facet>
 
             <h:form >
-                <h:panelGrid columns="2" >
+                <p:panelGrid columns="2" style="width: 40em;" columnClasses="ui-md-3,ui-md-9" >
                     <f:facet name="header" >
                         <p:outputLabel value="Add New API Key" ></p:outputLabel>
                     </f:facet>
                     <p:outputLabel for="keyname" value="Key Name" ></p:outputLabel>
-                    <p:selectOneMenu id="keyname" value="#{apiKeyController.current.keyType}" required="true" requiredMessage="Please select key name" >
+                    <p:selectOneMenu 
+                        id="keyname" 
+                        class="w-100"
+                        value="#{apiKeyController.current.keyType}" 
+                        required="true" requiredMessage="Please select key name" >
                         <f:selectItems value="#{apiKeyController.apiKeyTypes}" ></f:selectItems>
                     </p:selectOneMenu>
                     <p:outputLabel for="keyvalue" value="Key Value" ></p:outputLabel>
-                    <p:inputText id="keyvalue" value="#{apiKeyController.current.keyValue}"  required="true" requiredMessage="Please select key value"></p:inputText>
+                    <p:inputText 
+                        id="keyvalue" 
+                        class="w-100"
+                        value="#{apiKeyController.current.keyValue}"  required="true" requiredMessage="Please select key value"></p:inputText>
                     <p:outputLabel for="doe" value="Date of Expiary" ></p:outputLabel>
-                    <p:calendar id="doe" value="#{apiKeyController.current.dateOfExpiary}" ></p:calendar>
+                    <p:calendar 
+                        id="doe"
+                        inputStyleClass="w-100"
+                        class="w-100"
+                        value="#{apiKeyController.current.dateOfExpiary}" ></p:calendar>
                     <p:spacer ></p:spacer>
-                    <p:commandButton ajax="false" value="Add Key" action="#{apiKeyController.saveSelected()}" ></p:commandButton>
-                </h:panelGrid>
+                    <p:commandButton
+                        ajax="false" 
+                        class="w-100"
+                        value="Add Key"
+                        action="#{apiKeyController.saveSelected()}" ></p:commandButton>
+                </p:panelGrid>
             </h:form>
 
             <h:form >
                 <p:dataTable value="#{apiKeyController.items}" var="i" rowKey="#{i.id}" >
-                     <f:facet name="header" >
+                    <f:facet name="header" >
                         <p:outputLabel value="My Active API Keys" ></p:outputLabel>
                     </f:facet>
                     <p:column headerText="Key Name" >

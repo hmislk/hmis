@@ -15,13 +15,14 @@
                 <h:form>
                     <p:panel header="Channel Discount Matrix" id="reportPrint">
 
-                        <p:panel header="Add new Matrix" >
-                            <h:panelGrid columns="2" >
+                        <p:panel header="Add New Matrix" >
+                            <p:panelGrid columns="2" >
                                 <h:outputLabel value="Discount Scheme"/>
                                 <p:autoComplete forceSelection="true" 
                                                 value="#{opdMemberShipDiscountController.paymentScheme}" 
                                                 completeMethod="#{paymentSchemeController.completePaymentSchemeChannel}" 
-                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" styleClass="mediuminput" >
+                                                var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" styleClass="mediuminput"
+                                                class="w-100" inputStyleClass="w-100" >
                                 </p:autoComplete>
                                 <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}"  >
@@ -30,26 +31,27 @@
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Category"/>
                                 <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
-                                                forceSelection="true"
+                                                forceSelection="true" 
                                                 completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
-                                                var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
+                                                var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}"
+                                                class="w-100" inputStyleClass="w-100" >
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Discount" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
+                                <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" class="w-100" />
                                 <h:outputLabel value="" />
-                                <p:commandButton id="btnAdd" value="Add" ajax="false" 
+                                <p:commandButton id="btnAdd" value="Add" ajax="false" class="ui-button-success" icon="fa fa-plus"
                                                  action="#{opdMemberShipDiscountController.saveSelectedChannelPaymentScheme}" />
 
-                                <p:defaultCommand target="btnAdd"/>
-                            </h:panelGrid>
+                                
+                            </p:panelGrid>
 
                             <p:commandButton ajax="false" value="Fill" 
                                              action="#{opdMemberShipDiscountController.createItemsChannelPaymentScheme()}" />
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" class="ui-button-success" icon="fas fa-file-excel">
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" class="ui-button-info m-1" icon="fas fa-print" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
 

@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+
+
+
+
+        <table class="table w-100">
+            <thead>
+                <tr>
+                    <th colspan="2">Net Collection</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Net Collection Total</td>
+                    <td class="text-end">
+                        <h:outputText value="#{cc.attrs.bundle.total}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">Included in Collection Total</th>
+                </tr>
+                <ui:repeat value="#{searchController.collectionIncludedMethodsWithValues(cc.attrs.bundle)}" var="pm">
+                    <tr>
+                        <td>#{pm.label}</td>
+                        <td class="text-end">
+                            <h:outputText value="#{searchController.bundlePaymentMethodValue(cc.attrs.bundle, pm)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </ui:repeat>
+                <tr>
+                    <th>Collection Total</th>
+                    <th class="text-end">
+                        <h:outputText value="#{searchController.bundleCashierCollectionTotal(cc.attrs.bundle)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="2">Not Included in Collection Total</th>
+                </tr>
+                <ui:repeat value="#{searchController.collectionExcludedMethodsWithValues(cc.attrs.bundle)}" var="pm">
+                    <tr>
+                        <td>#{pm.label}</td>
+                        <td class="text-end">
+                            <h:outputText value="#{searchController.bundlePaymentMethodValue(cc.attrs.bundle, pm)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </ui:repeat>
+                <tr>
+                    <th>Total NOT included in Collection Total</th>
+                    <th class="text-end">
+                        <h:outputText value="#{searchController.bundleCashierExcludedTotal(cc.attrs.bundle)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </th>
+                </tr>
+                <tr>
+                    <th>Grand Total</th>
+                    <th class="text-end">
+                        <h:outputText value="#{searchController.bundleCashierGrandTotal(cc.attrs.bundle)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+
+
+
+
+    </cc:implementation>
+</html>

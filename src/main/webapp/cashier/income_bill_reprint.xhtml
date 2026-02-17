@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div><h:outputText value="Income Bill" ></h:outputText></div>
+                                <div class="d-flex">
+                                    <h:outputText value="Total : "></h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.total}" ></h:outputText>
+                                </div>
+                            </div>
+                        </f:facet>
+
+
+                        <div class="row">
+
+                            <div class="col-lg-12">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputText value="Income Bill Details" ></h:outputText>
+                                    </f:facet>
+
+                                    <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                                        <p:column headerText="Payment Method" >
+                                            <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Comments" >
+                                            <h:outputText value="#{bp.comments}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Payment Amount" >
+                                            <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+
+                            </div>
+
+                            <p:panel >
+                                <f:facet name="header">
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        ajax="false"
+                                        icon="fas fa-arrow-left"
+                                        class="ui-button-warning mx-1"
+                                        value="Back"
+                                        action="/cashier/trace_income_expenses?faces-redirect=true">
+                                    </p:commandButton>                               
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        ajax="false"
+                                        class="ui-button-danger mx-1"
+                                        icon="fas fa-ban"
+                                        disabled="#{billSearch.bill.cancelled}"
+                                        action="#{billSearch.navigateToCancelIncomeBill()}"
+                                        value="To Cancel" >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        ajax="false"
+                                        class="ui-button-info mx-1"
+                                        icon="fa fa-print"
+                                        value="Print" >
+                                        <p:printer target="divPrint" />
+                                    </p:commandButton>
+                                    
+
+                                </f:facet>
+                                <h:panelGrid id="divPrint">
+                                    <div class="d-flex justify-content-center">
+                                        <prints:five_five_paper_with_headings_for_income_bill
+                                            payments="#{financialTransactionController.currentBillPayments}"
+                                            bill="#{financialTransactionController.currentBill}"/>  
+                                    </div>
+                                </h:panelGrid>
+
+                            </p:panel>
+                        </div>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

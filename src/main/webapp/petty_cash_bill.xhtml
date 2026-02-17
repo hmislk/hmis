@@ -28,44 +28,11 @@
                     </f:facet>
 
                     <div class="d-flex justify-content-end my-2">
-                        <div class="d-flex">
-                            <div class="d-flex gap-2">
-                                <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
-                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                    <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-                                </p:selectOneMenu>
 
-                                <p:inputText value="#{pettyCashBillController.comment}" id="comment"/>
-                                <p:watermark value="Comment" for="comment"/>
-                            </div>
-                            <div>
-                                <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                    <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                    <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                    <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
-                                </h:panelGroup>
-                            </div>
-                            <div style="margin-left: 10px;">
-                                <p:commandButton  
-                                    value="Settle"
-                                    class=" ui-button-success "
-                                    icon="fa fa-check"
-                                    action="#{pettyCashBillController.settleBill()}" 
-                                    ajax="false"  
-                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                                </p:commandButton>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-5">
                             <p:panel header="Details of Preson">
                                 <p:tabView id="tvPt" style="min-height: 250px;"  >
                                     <p:ajax event="tabChange"  process="@this" listener="#{pettyCashBillController.onTabChange}" />
@@ -90,7 +57,26 @@
                                             </p:column>
                                         </p:autoComplete>
                                     </p:tab> 
-
+                                    <p:tab id="tabDepartment" title="Department" >
+                                        <p:autoComplete   
+                                            id="cmbDept1" 
+                                            value="#{pettyCashBillController.current.toDepartment}" 
+                                            completeMethod="#{departmentController.completeDept}" 
+                                            forceSelection="true"
+                                            var="w" 
+                                            itemLabel="#{w.name}" 
+                                            itemValue="#{w}"
+                                            size="20"
+                                            inputStyleClass="form-control"
+                                            style="width: 400px;">
+                                            <p:column headerText="Department Name">
+                                                #{w.name}
+                                            </p:column>
+                                            <p:column headerText="Institution Name">
+                                                #{w.institution.name}
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:tab> 
                                     <p:tab id="tabSearchPerson" title="Search Person">
                                         <p:autoComplete 
                                             widgetVar="aPt" 
@@ -203,21 +189,89 @@
                                 </p:tabView>
                             </p:panel>
                         </div>
-                        <div class="col-6">
-                            <p:panel header="Payment Details">
-                                <div class="row">
-                                    <div class="col-3"><p:outputLabel value="Amount" /></div>
-                                    <div class="col-9"><p:inputText class="w-100" autocomplete="off" value="#{pettyCashBillController.current.netTotal}"/></div>
+                        <div class="col-7">
+                            <p:panel header="">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputLabel value="Payment Details" class="mt-2"/>
+                                        <p:commandButton  
+                                            value="Settle"
+                                            class="ui-button-success "
+                                            icon="fa fa-check"
+                                            action="#{pettyCashBillController.settleBill()}" 
+                                            ajax="false"  
+                                            style="width: 150px; ">
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
+
+                                <div class="my-2">
+
+
+                                    <div class="row">
+                                        <div class="col-3"><p:outputLabel value="Payment Method" /></div>
+                                        <div class="col-9">
+                                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">
+                                                <f:selectItems value="#{enumController.paymentMethodsForPettyCashBilling}"
+                                                               var="p"
+                                                               itemLabel="#{p.label}"
+                                                               itemValue="#{p}"/>
+                                                <p:ajax process="@this"
+                                                        update="cash creditCard cheque slip eWallet"
+                                                        event="change"
+                                                        listener="#{pettyCashBillController.listnerForPaymentMethodChange()}"/>
+                                            </p:selectOneMenu></div>
+                                    </div>
+                                        <!--<p:inputText value="#{pettyCashBillController.comment}" id="comment"/>-->
+
+                                    <div class="row">
+                                        <div class="col-3"></div>
+                                        <div class="col-9 mt-2" >
+
+                                            <!-- Cash Payment - No additional form -->
+                                            <h:panelGroup id="cash" rendered="#{pettyCashBillController.current.paymentMethod eq 'Cash'}">
+                                                <!-- No additional fields needed for Cash -->
+                                            </h:panelGroup>
+
+                                            <!-- Credit Card Payment -->
+                                            <h:panelGroup id="creditCard" rendered="#{pettyCashBillController.current.paymentMethod eq 'Card'}" >
+                                                <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- Cheque Payment -->
+                                            <h:panelGroup id="cheque" rendered="#{pettyCashBillController.current.paymentMethod eq 'Cheque'}" >
+                                                <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- Slip Payment -->
+                                            <h:panelGroup id="slip" rendered="#{pettyCashBillController.current.paymentMethod eq 'Slip'}" >
+                                                <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- E-Wallet Payment -->
+                                            <h:panelGroup id="eWallet" rendered="#{pettyCashBillController.current.paymentMethod eq 'ewallet'}" >
+                                                <pa:ewallet_collect paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="row my-1">
-                                    <div class="col-3"><p:outputLabel value="Petty Cash Voucher No"/></div>
-                                    <div class="col-9"><p:inputText class="w-100" autocomplete="off"  value="#{pettyCashBillController.current.intInvoiceNumber}" /></div>
-                                </div>
+                                <div>
 
-                                <div class="row">
-                                    <div class="col-3"><p:outputLabel value="Description"/></div>
-                                    <div class="col-9"><p:inputTextarea class=" w-100" value="#{pettyCashBillController.current.comments}"/></div>
+                                    <div class="row">
+                                        <div class="col-3"><p:outputLabel value="Amount" /></div>
+                                        <div class="col-9"><p:inputText class="w-100" autocomplete="off" value="#{pettyCashBillController.current.netTotal}"/></div>
+                                    </div>
+
+                                    <div class="row my-1">
+                                        <div class="col-3"><p:outputLabel value="Petty Cash Voucher No"/></div>
+                                        <div class="col-9"><p:inputText class="w-100" autocomplete="off"  value="#{pettyCashBillController.current.intInvoiceNumber}" /></div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-3"><p:outputLabel value="Description"/></div>
+                                        <div class="col-9"><p:inputTextarea class=" w-100" value="#{pettyCashBillController.current.comments}"/></div>
+                                    </div>
                                 </div>
 
                             </p:panel>
@@ -239,22 +293,40 @@
                         </div>
                     </f:facet>
                     <div class="d-flex justify-content-end">
-                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                            <f:selectItem itemLabel="Please Select Paper Type" />
-                            <f:selectItems value="#{enumController.paperTypes}" />
-                        </p:selectOneMenu>
-                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        <p:commandButton value="Print" 
-                                         class="ui-button-info m-1"
-                                         icon="fa fa-print"
-                                         ajax="false">
+                        <p:commandButton
+                            value="Print"
+                            ajax="false"
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2">
                             <p:printer target="gpBillPreview" />
-                        </p:commandButton> 
+                        </p:commandButton>
+
+                        <!-- Settings button for paper type configuration -->
+                        <p:commandButton
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
+                            class="ui-button-secondary mx-1"
+                            type="button"
+                            onclick="PF('pettyCashConfigDialog').show();" />
                     </div>
 
                     <h:panelGroup   id="gpBillPreview">
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                        <!-- POS/5.5 inch Format (Default) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
+                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                        </h:panelGroup>
+
+                        <!-- A4 Format -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
+                            <!-- For now, use the same component until A4 format is created -->
+                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                            <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
+                        </h:panelGroup>
+
+                        <!-- Custom Format -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
+                            <!-- Use existing format for now -->
                             <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
                         </h:panelGroup>
                     </h:panelGroup>
@@ -262,6 +334,85 @@
 
             </h:form>
         </h:panelGroup>
+
+        <!-- Petty Cash Printer Configuration Dialog -->
+        <p:dialog id="pettyCashConfigDialog"
+                  header="Petty Cash Receipt Printer Configuration"
+                  widgetVar="pettyCashConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="pettyCashConfigForm" />
+
+            <h:form id="pettyCashConfigForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h:outputText value="Petty Cash Receipt Paper Settings">
+                                    <f:facet name="before">
+                                        <i class="fas fa-file-alt"></i>
+                                    </f:facet>
+                                </h:outputText>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="pettyCashPosPaper"
+                                        value="#{pharmacyConfigController.pettyCashPosPaper}" />
+                                    <h:outputLabel for="pettyCashPosPaper" value="POS/5.5 inch Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard 5.5 inch thermal receipt format (Default)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="pettyCashA4Paper"
+                                        value="#{pharmacyConfigController.pettyCashA4Paper}" />
+                                    <h:outputLabel for="pettyCashA4Paper" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 size paper format for detailed receipts</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="pettyCashCustomPaper"
+                                        value="#{pharmacyConfigController.pettyCashCustomPaper}" />
+                                    <h:outputLabel for="pettyCashCustomPaper" value="Custom Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom format for special printing requirements</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="pettyCashConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.savePettyCashConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('pettyCashConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
 
     </ui:define>
 </ui:composition>

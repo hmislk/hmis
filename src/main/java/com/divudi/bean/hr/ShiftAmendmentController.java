@@ -6,13 +6,13 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.Shift;
-import com.divudi.entity.hr.ShiftAmendment;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.facade.ShiftAmendmentFacade;
-import com.divudi.facade.StaffShiftFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.ShiftAmendment;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.facade.ShiftAmendmentFacade;
+import com.divudi.core.facade.StaffShiftFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

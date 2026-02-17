@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="editable" type="java.lang.Boolean" default="false"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:accordionPanel activeIndex="0,1,2,3" multiple="true">
+            <!-- Bill Information Section -->
+            <p:tab title="Bill Information">
+                <p:panelGrid columns="4" layout="tabular" styleClass="w-100" columnClasses="w-15,w-35,w-15,w-35">
+                    <p:outputLabel value="Bill ID" />
+                    <p:outputLabel value="#{cc.attrs.bill.id}" />
+                    <p:outputLabel value="Ins ID" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Bill Type" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.billType}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.billType}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+                    <p:outputLabel value="Payment Type" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Credit Company" />
+                    <h:panelGroup>
+                        <p:autoComplete value="#{cc.attrs.bill.creditCompany}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="i" itemLabel="#{i.name}" itemValue="#{i}"
+                                        rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+                    <p:outputLabel value="Session ID" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.sessionId}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.sessionId}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Invoice Number" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.invoiceNumber}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.invoiceNumber}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+                    <p:outputLabel value="Invoice Date" />
+                    <h:panelGroup>
+                        <p:calendar value="#{cc.attrs.bill.invoiceDate}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.invoiceDate}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Bill Date" />
+                    <h:panelGroup>
+                        <p:calendar value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+                    <p:outputLabel value="Bill Time" />
+                    <h:panelGroup>
+                        <p:calendar value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Agent Ref No" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.agentRefNo}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.agentRefNo}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+                    <p:outputLabel value="Local Number" />
+                    <h:panelGroup>
+                        <p:inputText value="#{cc.attrs.bill.localNumber}" rendered="#{cc.attrs.editable}" styleClass="w-100" />
+                        <p:outputLabel value="#{cc.attrs.bill.localNumber}" rendered="#{!cc.attrs.editable}" />
+                    </h:panelGroup>
+                </p:panelGrid>
+            </p:tab>
+
+            <!-- Amounts Section -->
+            <p:tab title="Amounts">
+                <p:panelGrid columns="4" layout="tabular" styleClass="w-100" columnClasses="w-15,w-35,w-15,w-35">
+                    <p:outputLabel value="Total" />
+                    <p:inputText value="#{cc.attrs.bill.total}" styleClass="w-100" />
+                    <p:outputLabel value="Net Total" />
+                    <p:inputText value="#{cc.attrs.bill.netTotal}" styleClass="w-100" />
+
+                    <p:outputLabel value="Bill Total" />
+                    <p:inputText value="#{cc.attrs.bill.billTotal}" styleClass="w-100" />
+                    <p:outputLabel value="Paid Amount" />
+                    <p:inputText value="#{cc.attrs.bill.paidAmount}" styleClass="w-100" />
+
+                    <p:outputLabel value="Balance Amount" />
+                    <p:inputText value="#{cc.attrs.bill.balance}" styleClass="w-100" />
+
+                    <p:outputLabel value="Refund Amount" />
+                    <p:inputText value="#{cc.attrs.bill.refundAmount}" styleClass="w-100" />
+                    
+                    <p:outputLabel value="Service Charge" />
+                    <p:inputText value="#{cc.attrs.bill.serviceCharge}" styleClass="w-100" />
+                    <p:outputLabel value="Margin" />
+                    <p:inputText value="#{cc.attrs.bill.margin}" styleClass="w-100" />
+
+                    <p:outputLabel value="Cash Paid" />
+                    <p:inputText value="#{cc.attrs.bill.cashPaid}" styleClass="w-100" />
+
+                    <p:outputLabel value="Cash Balance" />
+                    <p:inputText value="#{cc.attrs.bill.cashBalance}" styleClass="w-100" />
+                    <p:outputLabel value="Sale Value" />
+                    <p:inputText value="#{cc.attrs.bill.saleValue}" styleClass="w-100" />
+
+                    <p:outputLabel value="Free Value" />
+                    <p:inputText value="#{cc.attrs.bill.freeValue}" styleClass="w-100" />
+                    <p:outputLabel value="Grant Total" />
+                    <p:inputText value="#{cc.attrs.bill.grantTotal}" styleClass="w-100" />
+
+                    <p:outputLabel value="Expense Total" />
+                    <p:inputText value="#{cc.attrs.bill.expenseTotal}" styleClass="w-100" />
+                    <p:outputLabel value="GRN Net Total" />
+                    <p:inputText value="#{cc.attrs.bill.grnNetTotal}" styleClass="w-100" />
+
+                    <p:outputLabel value="Cat ID" />
+                    <p:inputText value="#{cc.attrs.bill.catId}" styleClass="w-100" />
+                    <p:outputLabel value="Tendered Amount" />
+                    <p:inputText value="#{cc.attrs.bill.tenderedAmount}" styleClass="w-100" />
+                    <p:outputLabel value="Tax" />
+                    <p:inputText value="#{cc.attrs.bill.tax}" styleClass="w-100" />
+                </p:panelGrid>
+            </p:tab>
+
+            <!-- Fees Section -->
+            <p:tab title="Fees">
+                <p:panelGrid columns="4" layout="tabular" styleClass="w-100" columnClasses="w-15,w-35,w-15,w-35">
+                    <p:outputLabel value="Perform Inst. Fee" />
+                    <p:inputText value="#{cc.attrs.bill.performInstitutionFee}" styleClass="w-100" />
+                    <p:outputLabel value="Staff Fee" />
+                    <p:inputText value="#{cc.attrs.bill.staffFee}" styleClass="w-100" />
+
+                    <p:outputLabel value="Biller Fee" />
+                    <p:inputText value="#{cc.attrs.bill.billerFee}" styleClass="w-100" />
+                    <p:outputLabel value="Hospital Fee" />
+                    <p:inputText value="#{cc.attrs.bill.hospitalFee}" styleClass="w-100" />
+
+                    <p:outputLabel value="Professional Fee" />
+                    <p:inputText value="#{cc.attrs.bill.professionalFee}" styleClass="w-100" />
+                    <p:outputLabel value="Total Hospital Fee" />
+                    <p:inputText value="#{cc.attrs.bill.totalHospitalFee}" styleClass="w-100" />
+
+                    <p:outputLabel value="Total Center Fee" />
+                    <p:inputText value="#{cc.attrs.bill.totalCenterFee}" styleClass="w-100" />
+                    <p:outputLabel value="Total Staff Fee" />
+                    <p:inputText value="#{cc.attrs.bill.totalStaffFee}" styleClass="w-100" />
+                </p:panelGrid>
+            </p:tab>
+
+            <!-- Status Flags Section -->
+            <p:tab title="Status Flags">
+                <p:panelGrid columns="4" layout="tabular" styleClass="w-100" columnClasses="w-15,w-35,w-15,w-35">
+                    <p:outputLabel value="Paid" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.paid}" />
+
+
+                    <p:outputLabel value="Cancelled" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.cancelled}" />
+                    <p:outputLabel value="Refunded" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.refunded}" />
+
+                    <p:outputLabel value="Reactivated" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.reactivated}" />
+                    <p:outputLabel value="Retired" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.retired}" />
+
+                    <p:outputLabel value="Completed" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.completed}" />
+                    <p:outputLabel value="Printed" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.printed}" />
+
+                    <p:outputLabel value="Dup. Printed" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.duplicatedPrinted}" />
+                    <p:outputLabel value="Bill Closed" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.billClosed}" />
+
+                    <p:outputLabel value="Payment Settled" />
+                    <p:selectBooleanCheckbox value="#{cc.attrs.bill.billPaymentCompletelySettled}" />
+                </p:panelGrid>
+            </p:tab>
+        </p:accordionPanel>
+    </cc:implementation>
+</html>

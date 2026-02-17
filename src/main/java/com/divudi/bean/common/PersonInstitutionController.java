@@ -5,19 +5,17 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PersonInstitution;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.PersonInstitutionFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PersonInstitution;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.PersonInstitutionFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.FacesException;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -301,7 +298,7 @@ public class PersonInstitutionController implements Serializable {
         return getPersonInstitutionFacade().findByJpql(sql, m);
     }
 
-   
+
 
     public PersonInstitutionFacade getJpaController() {
         if (jpaController == null) {
@@ -342,11 +339,11 @@ public class PersonInstitutionController implements Serializable {
         personInstitutionItems = null;
     }
 
-   
+
     private PersonInstitutionFacade getFacade() {
         return personInstitutionFacade;
     }
-    // new method for create doctor session 
+    // new method for create doctor session
 
     @FacesConverter(forClass = PersonInstitution.class)
     public static class PersonInstitutionConverter implements Converter {

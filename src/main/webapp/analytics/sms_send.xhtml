@@ -14,20 +14,22 @@
                         <f:facet name="header" >
                             <h:outputLabel value="All SMS List"/>                          
                         </f:facet>
-                        <p:panelGrid columns="2" class="my-2" >
+                        <p:panelGrid columns="2" class="w-100 p-3" >
 
                             <h:outputLabel value="Number"/>
-                            <p:inputText value="#{smsController.smsNumber}" ></p:inputText>
+                            <p:inputText value="#{smsController.smsNumber}" class="w-100" ></p:inputText>
 
                             <h:outputLabel value="Message"/>
-                            <p:inputTextarea value="#{smsController.smsMessage}" ></p:inputTextarea>
+                            <p:inputTextarea value="#{smsController.smsMessage}"  class="w-100"></p:inputTextarea>
 
-                            <p:commandButton id="btnSearch"
-                                             class="ui-button-warning"
-                                             icon="fas fa-magnifying-glass"
-                                             ajax="false" 
-                                             value="Send SMS" 
-                                             action="#{smsController.sendSms}"/>
+                            <p:spacer ></p:spacer>
+                            <p:commandButton 
+                                id="btnSearch"
+                                class="ui-button-warning"
+                                icon="fas fa-magnifying-glass"
+                                ajax="false" 
+                                value="Send SMS" 
+                                action="#{smsController.sendSmsFromWeb}"/>
                         </p:panelGrid>
 
                         <p:outputLabel value="#{smsController.selectedSms.receivedMessage}" ></p:outputLabel>

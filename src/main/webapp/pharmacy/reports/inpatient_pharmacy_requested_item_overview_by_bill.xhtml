@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="inpatientDashboardGrowl" ></p:growl>
+
+            <h:panelGroup class="row" rendered="#{inwardReportControllerBht.patientEncounter eq null}"> 
+                <div class="col-12">
+                    <h:panelGroup>
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
+                            <div>
+                                <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
+
+                                <p:autoComplete 
+                                    widgetVar="aPt2"  
+                                    id="acPt2" 
+                                    forceSelection="true" 
+                                    value="#{inwardReportControllerBht.patientEncounter}" 
+                                    completeMethod="#{admissionController.completePatient}"
+                                    var="apt2"
+                                    itemLabel="#{apt2.bhtNo}"
+                                    itemValue="#{apt2}" 
+                                    size="30"  
+                                    inputStyleClass="form-control"
+                                    class="mx-2 w-50"
+                                    >
+                                    <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 150px;">
+                                        <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                    </p:column>
+                                    <p:column headerText="Patient Name" style="padding: 6px;">
+                                        <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                    </p:column>
+                                    <p:column headerText="Room No" style="padding: 6px; width: 200px;">
+                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                </p:autoComplete> 
+
+                                <p:commandButton 
+                                    value="Select" 
+                                    ajax="false" action="#{inwardReportControllerBht.fetchIssueBill}" >
+                                </p:commandButton>
+
+                            </div>
+
+                        </p:panel>
+                    </h:panelGroup>
+                </div>
+                <br/><br/>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{inwardReportControllerBht.patientEncounter ne null}">
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fa fa-id-card"></h:outputText>
+                        <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+
+                        <!--                                                <p:commandButton 
+                                                                            value="Download" 
+                                                                            ajax="false"
+                                                                            class="ui-button-primary m-1"
+                                                                            icon="fa fa-download">
+                                                                            <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
+                                                                        </p:commandButton>
+                        
+                                                                        <p:commandButton 
+                                                                            value="Print" 
+                                                                            ajax="false"
+                                                                            class="ui-button-primary m-1"
+                                                                            icon="fa fa-print">
+                                                                            <p:printer target="tbl1"></p:printer>
+                                                                        </p:commandButton>-->
+
+                        <p:commandButton 
+                            value="Back to Inpatient Profile" 
+                            action="#{admissionController.navigateToSearchAdmissions()}" 
+                            style="float: right;"
+                            class="ui-button-secondary m-1"
+                            rendered="false"
+                            icon="fa fa-arrow-circle-left">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="New Search" 
+                            action="#{inwardReportControllerBht.madeNullIssue()}" 
+                            style="float: right;"
+                            class="ui-button-warning m-1"
+                            icon="fa fa-arrow-circle-left">
+                        </p:commandButton>
+
+
+                    </f:facet>
+
+                    <style>
+                        @media print{
+
+                            body {
+                                margin :0px 5px;
+                            }
+                        }
+                    </style>
+
+                    <div class="row my-2">
+                        <div class="col-3">
+                            <common:patient_details_view patient="#{inwardReportControllerBht.patientEncounter.patient}" class="w-100"/>
+                        </div>
+                        <div class="col-6">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Search Requested Bill" />
+                                </f:facet>
+                                <h:panelGrid columns="1" class="w-100">
+                                    <h:outputLabel value="Requested Bill" />
+                                    <p:selectOneMenu   
+                                        id="pay"
+                                        value="#{inwardReportControllerBht.bill}"
+                                        class="w-100"
+                                        >     
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{inwardReportControllerBht.issueBills}"  
+                                            var="b"
+                                            itemLabel="#{b.deptId}"
+                                            itemValue="#{b}"/>
+                                        <p:ajax process="@this" update="tblreq reqtbls" event="change"/>
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
+                            </p:panel>
+                        </div>
+                        <div class="col-3">
+                            <common:admission_details admission="#{inwardReportControllerBht.patientEncounter}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                    </div>
+                    <div class="row my-2">
+                        <div class="col-6">
+                            <p:dataTable id="tblreq" value="#{billBeanController.fetchBillItems(inwardReportControllerBht.bill)}" var="bi">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Requested From &nbsp;" />
+                                    <h:outputLabel value="&nbsp;:&nbsp;" />
+                                    <h:outputLabel value="#{inwardReportControllerBht.bill.department.name}" /><br/>
+                                    <h:outputLabel value="Requested User&nbsp;" />
+                                    <h:outputLabel value="&nbsp;:&nbsp;" />
+                                    <h:outputLabel value="#{inwardReportControllerBht.bill.creater.webUserPerson.nameWithTitle}" />
+                                </f:facet>
+                                <p:column headerText="Item">
+                                    <h:outputLabel value="#{bi.item.name}" />
+                                </p:column>
+                                <p:column headerText="Qty">
+                                    <h:outputLabel value="#{commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                        <div class="col-6">
+                            <h:panelGroup id="reqtbls">
+                                <ui:repeat value="#{inwardReportControllerBht.getBHTIssudBills(inwardReportControllerBht.bill)}" var="b">
+                                    <p:dataTable id="tblIssue" value="#{billBeanController.fetchBillItems(b)}" var="bi">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Issued From &nbsp;" />
+                                            <h:outputLabel value="&nbsp;:&nbsp;" />
+                                            <h:outputLabel value="#{b.department.name}" /><br/>
+                                            <h:outputLabel value="Issued User&nbsp;" />
+                                            <h:outputLabel value="&nbsp;:&nbsp;" />
+                                            <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
+                                        </f:facet>
+                                        <p:column headerText="Item">
+                                            <h:outputLabel value="#{bi.item.name}" />
+                                        </p:column>
+                                        <p:column headerText="Qty">
+                                            <h:outputLabel value="#{commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                    <ui:repeat value="#{inwardReportControllerBht.getReturnAndCancelBHTIssueBills(b)}" var="b">
+                                        <p:dataTable id="tblIssueRet" value="#{billBeanController.fetchBillItems(b)}" var="bi">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} From &nbsp;" />
+                                                <h:outputLabel value="&nbsp;:&nbsp;" />
+                                                <h:outputLabel value="#{b.department.name}" /><br/>
+                                                <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} User&nbsp;" />
+                                                <h:outputLabel value="&nbsp;:&nbsp;" />
+                                                <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
+                                            </f:facet>
+                                            <p:column headerText="Item" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}" >
+                                                <h:outputLabel value="#{bi.item.name}" />
+                                            </p:column>
+                                            <p:column headerText="Qty" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}">
+                                                <h:outputLabel value="#{-commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </ui:repeat>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:panelGroup>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+

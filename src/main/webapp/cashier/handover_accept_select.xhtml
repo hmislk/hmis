@@ -1,0 +1,420 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ezb="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel  class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <div class="row">
+                                <div class="col">
+                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
+                                    <p:outputLabel value="Handover Accept" />
+                                </div>
+                                <div class="col float-right">
+                                    <p:commandButton 
+                                        value="Back to Shift Accept" 
+                                        class="m-1 ui-button-success"
+                                        icon="pi pi-arrow-left" 
+                                        action="#{financialTransactionController.navigateBackToPaymentHandoverAccept()}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="gpPrint" >
+                            <div class="row mx-2" >
+                                <div class="col-6">
+                                    <p:panelGrid layout="tabular" columns="2" class="w-100" >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Shift" class="font-weight-bold" ></p:outputLabel>
+                                        </f:facet>
+                                        <!-- User with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-user" style="margin-right:5px; color: #007bff;"></i>
+                                            <p:outputLabel value="User" />
+                                        </h:panelGroup>
+                                        <p:badge value="#{financialTransactionController.bundle.user.webUserPerson.nameWithTitle}" styleClass="ui-badge-primary"></p:badge>
+
+                                        <!-- Shift Start with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-clock" style="margin-right:5px; color: #28a745;"></i>
+                                            <p:outputLabel value="Shift Start" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:panelGrid columns="2">
+                                                <h:panelGroup>
+                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                                    <p:outputLabel value="Shift Start Bill ID" />
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.startBill.deptId}" />
+                                                <h:panelGroup>
+                                                    <i class="pi pi-calendar-plus" style="margin-right:5px; color: #ffc107;"></i>
+                                                    <p:outputLabel value="Shift Started At" />
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.startBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </p:outputLabel>
+                                            </p:panelGrid>
+                                        </h:panelGroup>
+
+                                        <!-- Shift End with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-clock" style="margin-right:5px; color: #dc3545;"></i>
+                                            <p:outputLabel value="Shift End" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:badge value="Shift Not Yet Ended" 
+                                                     rendered="#{financialTransactionController.bundle.endBill eq null}" 
+                                                     styleClass="ui-badge-danger" 
+                                                     icon="pi pi-times">
+                                            </p:badge>
+
+                                            <p:panelGrid columns="2" rendered="#{financialTransactionController.bundle.endBill ne null}">
+                                                <h:panelGroup>
+                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                                    <p:outputLabel value="Shift End Bill ID" />
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.deptId}" />
+                                                <h:panelGroup>
+                                                    <i class="pi pi-calendar-minus" style="margin-right:5px; color: #ffc107;"></i>
+                                                    <p:outputLabel value="Shift Ended At" />
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </p:outputLabel>
+                                            </p:panelGrid>
+                                        </h:panelGroup>
+
+                                        <!-- Total Handover Value with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
+                                            <p:outputLabel value="Total Handover Value" />
+                                        </h:panelGroup>
+                                        <p:outputLabel value="#{financialTransactionController.bundle.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </p:panelGrid>
+                                </div>
+
+
+                                <div class="col-6" >
+
+
+                                    <p:panelGrid id="gpHandoverValues" columns="2" layout="tabular" class="w-100 m-1">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Handover Values" class="font-weight-bold" ></p:outputLabel>
+                                        </f:facet>
+
+
+
+                                        <h:outputText value="Institution" />
+                                        <h:outputText value="#{financialTransactionController.selectedBundle.department.institution.name}" />
+                                        <h:outputText value="Site" />
+                                        <h:outputText value="#{financialTransactionController.selectedBundle.department.site.name}" />
+                                        <h:outputText value="Department" />
+                                        <h:outputText value="#{financialTransactionController.selectedBundle.department.name}" />
+                                        <h:outputText value="Date" />
+                                        <h:outputText value="#{financialTransactionController.selectedBundle.date}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                        <h:outputText value="Payment Method" />
+                                        <h:outputText value="#{financialTransactionController.selectedPaymentMethod.label}">
+                                        </h:outputText>
+                                        <h:outputText value="Value to Handover" />
+                                        <h:panelGroup>
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}"
+                                                value="#{financialTransactionController.selectedBundle.cashValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}"
+                                                value="#{financialTransactionController.selectedBundle.cardValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Agent'}"
+                                                value="#{financialTransactionController.selectedBundle.agentValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}"
+                                                value="#{financialTransactionController.selectedBundle.chequeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}"
+                                                value="#{financialTransactionController.selectedBundle.creditValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'IOU'}"
+                                                value="#{financialTransactionController.selectedBundle.iouValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'MultiplePaymentMethods'}"
+                                                value="#{financialTransactionController.selectedBundle.multiplePaymentMethodsValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'OnlineSettlement'}"
+                                                value="#{financialTransactionController.selectedBundle.onlineSettlementValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'PatientDeposit'}"
+                                                value="#{financialTransactionController.selectedBundle.patientDepositValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'PatientPoints'}"
+                                                value="#{financialTransactionController.selectedBundle.patientPointsValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}"
+                                                value="#{financialTransactionController.selectedBundle.slipValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff'}"
+                                                value="#{financialTransactionController.selectedBundle.staffValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}"
+                                                value="#{financialTransactionController.selectedBundle.staffWelfareValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Voucher'}"
+                                                value="#{financialTransactionController.selectedBundle.voucherValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'YouOweMe'}"
+                                                value="#{financialTransactionController.selectedBundle.iouValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}"
+                                                value="#{financialTransactionController.selectedBundle.ewalletValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+
+
+
+                                        <h:outputText value="Handing Over Value" />
+                                        <h:panelGroup>
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}"
+                                                value="#{financialTransactionController.selectedBundle.cashHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}"
+                                                value="#{financialTransactionController.selectedBundle.cardHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Agent'}"
+                                                value="#{financialTransactionController.selectedBundle.agentHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cheque'}"
+                                                value="#{financialTransactionController.selectedBundle.chequeHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Credit'}"
+                                                value="#{financialTransactionController.selectedBundle.creditHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'IOU'}"
+                                                value="#{financialTransactionController.selectedBundle.iouHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'MultiplePaymentMethods'}"
+                                                value="#{financialTransactionController.selectedBundle.multiplePaymentMethodsHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'OnlineSettlement'}"
+                                                value="#{financialTransactionController.selectedBundle.onlineSettlementHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'PatientDeposit'}"
+                                                value="#{financialTransactionController.selectedBundle.patientDepositHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'PatientPoints'}"
+                                                value="#{financialTransactionController.selectedBundle.patientPointsHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Slip'}"
+                                                value="#{financialTransactionController.selectedBundle.slipHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff'}"
+                                                value="#{financialTransactionController.selectedBundle.staffHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Staff_Welfare'}"
+                                                value="#{financialTransactionController.selectedBundle.staffWelfareHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Voucher'}"
+                                                value="#{financialTransactionController.selectedBundle.voucherHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'YouOweMe'}"
+                                                value="#{financialTransactionController.selectedBundle.iouHandoverValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'ewallet'}"
+                                                value="#{financialTransactionController.selectedBundle.ewalletValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+
+
+                                        <h:outputText value="Recorded Shortages" />
+                                        <h:panelGroup>
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}"
+                                                value="#{financialTransactionController.shortageBillTotal(financialTransactionController.selectedBundle, 'Cash' )}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+
+                                    </p:panelGrid>
+
+                                </div>
+
+                            </div>
+                            <div class="row mx-2" >
+                                <h:panelGroup id="gpDenominations" rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}">
+                                    <p:dataTable   value="#{financialTransactionController.selectedBundle.denominationTransactions}" var="deno"  >
+                                        <p:column title="Denomination">
+                                            <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column  title="Denomination">
+                                            <p:inputText 
+                                                class="text-end w-100" 
+                                                id="txtDenoQtyHandover"
+                                                value="#{deno.denominationQty}" 
+                                                style="width: 100%;" 
+                                                label="Cash Handover" 
+                                                onfocus="this.select()">
+                                                <f:convertNumber integerOnly="true" />
+                                                <p:ajax 
+                                                    event="blur"
+                                                    process="txtDenoQtyHandover" 
+                                                    listener="#{financialTransactionController.selectedBundle.calculateTotalHandoverByDenominationQuantities()}"
+                                                    update=":#{p:resolveFirstComponentWithId('txtDenoVal',view).clientId} :#{p:resolveFirstComponentWithId('gpHandoverValues',view).clientId}" ></p:ajax>
+                                            </p:inputText>  
+                                        </p:column>
+                                        <p:column >
+                                            <p:outputLabel
+                                                class="ui-button text-end w-100"
+                                                id="txtDenoVal" value="#{deno.denominationValue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </p:column>
+
+
+                                    </p:dataTable>
+                                </h:panelGroup>
+                            </div>
+
+                            <h:panelGroup rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}" >
+                                <p:dataTable
+                                    value="#{financialTransactionController.selectedBundle.getPaymentRows('Card')}" var="cardPayment" >
+                                    <p:column  headerText="ID">
+                                        <h:outputText value="#{cardPayment.payment.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Bank">
+                                        <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Ref No">
+                                        <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Value">
+                                        <h:outputText value="#{cardPayment.payment.paidValue}" >
+                                            <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Ref No">
+                                        <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForCashbookEntry}" >
+                                            <p:ajax update="checkCardSelected" ></p:ajax>
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

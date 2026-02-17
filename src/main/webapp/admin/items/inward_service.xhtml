@@ -105,7 +105,7 @@
                                             <p:column>#{pta.parentCategory}</p:column>                                        
                                         </p:autoComplete>
 
-                                        <p:selectBooleanCheckbox   id="chkBilledAs" value="#{inwardServiceController.billedAs}" itemLabel="Billed as a seperate investigation"  >
+                                        <p:selectBooleanCheckbox   id="chkBilledAs" value="#{inwardServiceController.billedAs}" itemLabel="Billed as a separate investigation"  >
                                             <p:ajax event="change" process="@this" update="billedAsIx" />
                                         </p:selectBooleanCheckbox>
                                         <p:autoComplete   disabled="#{!inwardServiceController.billedAs}" 
@@ -113,7 +113,7 @@
                                                           value="#{inwardServiceController.current.billedAs}" completeMethod="#{inwardServiceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30">
                                         </p:autoComplete>
 
-                                        <p:selectBooleanCheckbox  id="chkReportedAs" value="#{inwardServiceController.reportedAs}" itemLabel="Reported as a seperate investigation" >
+                                        <p:selectBooleanCheckbox  id="chkReportedAs" value="#{inwardServiceController.reportedAs}" itemLabel="Reported as a separate investigation" >
                                             <p:ajax event="change" process="@this" update="reportedAsIx" />
                                         </p:selectBooleanCheckbox>
                                         <p:autoComplete  

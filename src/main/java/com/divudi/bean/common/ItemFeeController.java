@@ -7,22 +7,22 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Staff;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.StaffFacade;
+
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -34,8 +34,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -86,7 +86,25 @@ public class ItemFeeController implements Serializable {
 
         return d;
     }
-    
+
+
+    public List<ItemFee> fillDepartmentItemFees(Department department) {
+        String jpql = "SELECT f"
+                + " FROM ItemFee f "
+                + " WHERE f.retired=:ret "
+                + " and f.item.retired=:ret ";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        jpql += " and f.item.department=:dep ";
+        parameters.put("dep", department);
+
+        jpql += " ORDER BY f.item.name, f.name ";
+
+        return itemFeeFacade.findByJpql(jpql, parameters);
+    }
+
+
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
         List<Department> d;
         //////// // System.out.println("gettin ins dep ");
@@ -210,7 +228,7 @@ public class ItemFeeController implements Serializable {
             getFacade().edit(currentIx);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
 
         currentIx = null;
@@ -225,20 +243,37 @@ public class ItemFeeController implements Serializable {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
         fees = itemFeeFacade.findByJpql(sql);
     }
-    
-    public List<ItemFee> getFees(Item i){
-        String sql="select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
-        List<ItemFee> fees=itemFeeFacade.findByJpql(sql);
+
+    public List<ItemFee> getFees(Item i) {
+        String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
+        List<ItemFee> fees = itemFeeFacade.findByJpql(sql);
         return fees;
     }
-    
-    public ItemFee findItemFeeFromItemFeeId(Long id){
+
+    public ItemFee findItemFeeFromItemFeeId(Long id) {
+        if (id == null) {
+            return null;
+        }
         return getItemFeeFacade().find(id);
+    }
+
+    public ItemFee findItemFeeFromItemFeeId(String id) {
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+        try {
+            Long longId = Long.parseLong(id);
+            return findItemFeeFromItemFeeId(longId);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public List<ItemFee> getCharges() {
         return fees;
     }
+
+
 
     public void setCharges(List<ItemFee> charges) {
         this.fees = charges;

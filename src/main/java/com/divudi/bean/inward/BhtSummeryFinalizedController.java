@@ -6,34 +6,33 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.InwardChargeType;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,70 +75,10 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<BillItem> billItemsInward;
     List<bhtWithVat> bhtWithVats;
 
-    public BhtSummeryFinalizedController(BillFacade billfacade, BillFeeFacade billFeeFacade, PatientEncounter patientEncounter, List<PatientRoom> patientRooms, List<PatientItem> patientItems, List<BillItem> billItems, List<BillFee> billFees, List<BillItem> pharmacyItems, List<BillItem> storeItems, List<BillFee> proBillFee, List<BillFee> assistBillFee, List<Bill> outSideBills, List<Bill> paymentBills, List<Bill> paidbyPatientBillList, List<BillItem> creditPayment, List<BillItem> billItemsInward, Date fromDate, Date toDate, CommonFunctions commonFunctions, AdmissionType admissionType, InwardChargeType inwardChargeType, Bill bill, InwardBeanController inwardBean, InwardReportControllerBht inwardReportControllerBht, CommonController commonController, double billItemGross, double billItemMargin, double billItemDiscount, double billItemNetValue, double billItemGrossPharmacy, double billItemMarginPharmacy, double billItemDiscountPharmacy, double billFeeGross, double billFeeMargin, double billFeeDiscount, double billFeeNetValue, double paidbyPatientTotalValue, double creditCompanyPaymentTotal, PatientRoomFacade patientRoomFacade, double totalGross, double totalDiscount, double totalNet, double totalVat, double totalMed, PatientEncounterFacade patientEncounterFacade, List<BillFee> fillteredFees, List<BillItem> filterItems, BillItemFacade billItemFacade, SpecialityFacade specialityFacade, StaffFacade staffFacade, BillBeanController billBeanController, ItemFeeFacade itemFeeFacade, BhtIssueReturnController bhtIssueReturnController, SessionController sessionController, PatientItemFacade patientItemFacade) {
-        this.billfacade = billfacade;
-        this.billFeeFacade = billFeeFacade;
-        this.patientEncounter = patientEncounter;
-        this.patientRooms = patientRooms;
-        this.patientItems = patientItems;
-        this.billItems = billItems;
-        this.billFees = billFees;
-        this.pharmacyItems = pharmacyItems;
-        this.storeItems = storeItems;
-        this.proBillFee = proBillFee;
-        this.assistBillFee = assistBillFee;
-        this.outSideBills = outSideBills;
-        this.paymentBills = paymentBills;
-        this.paidbyPatientBillList = paidbyPatientBillList;
-        this.creditPayment = creditPayment;
-        this.billItemsInward = billItemsInward;
-        this.fromDate = fromDate;
-        this.toDate = toDate;
-        this.commonFunctions = commonFunctions;
-        this.admissionType = admissionType;
-        this.inwardChargeType = inwardChargeType;
-        this.bill = bill;
-        this.inwardBean = inwardBean;
-        this.inwardReportControllerBht = inwardReportControllerBht;
-        this.commonController = commonController;
-        this.billItemGross = billItemGross;
-        this.billItemMargin = billItemMargin;
-        this.billItemDiscount = billItemDiscount;
-        this.billItemNetValue = billItemNetValue;
-        this.billItemGrossPharmacy = billItemGrossPharmacy;
-        this.billItemMarginPharmacy = billItemMarginPharmacy;
-        this.billItemDiscountPharmacy = billItemDiscountPharmacy;
-        this.billFeeGross = billFeeGross;
-        this.billFeeMargin = billFeeMargin;
-        this.billFeeDiscount = billFeeDiscount;
-        this.billFeeNetValue = billFeeNetValue;
-        this.paidbyPatientTotalValue = paidbyPatientTotalValue;
-        this.creditCompanyPaymentTotal = creditCompanyPaymentTotal;
-        this.patientRoomFacade = patientRoomFacade;
-        this.totalGross = totalGross;
-        this.totalDiscount = totalDiscount;
-        this.totalNet = totalNet;
-        this.totalVat = totalVat;
-        this.totalMed = totalMed;
-        this.patientEncounterFacade = patientEncounterFacade;
-        this.fillteredFees = fillteredFees;
-        this.filterItems = filterItems;
-        this.billItemFacade = billItemFacade;
-        this.specialityFacade = specialityFacade;
-        this.staffFacade = staffFacade;
-        this.billBeanController = billBeanController;
-        this.itemFeeFacade = itemFeeFacade;
-        this.bhtIssueReturnController = bhtIssueReturnController;
-        this.sessionController = sessionController;
-        this.patientItemFacade = patientItemFacade;
-    }
-
     @Temporal(TemporalType.TIMESTAMP)
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
-
-    private CommonFunctions commonFunctions;
 
     AdmissionType admissionType;
     InwardChargeType inwardChargeType;
@@ -148,8 +87,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     InwardBeanController inwardBean;
     @Inject
     InwardReportControllerBht inwardReportControllerBht;
-    @Inject
-    CommonController commonController;
+
     double billItemGross;
     double billItemMargin;
     double billItemDiscount;
@@ -461,7 +399,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalNet += bi.getNetValue();
         }
 
-        
+
 
     }
 
@@ -527,7 +465,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalRoom += room;
         }
 
-        
+
 
     }
 
@@ -563,7 +501,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             sql += " and c.admissionType=:at ";
             m.put("at", admissionType);
         }
-        
+
         if (paymentMethod != null) {
             sql = sql + " and c.paymentMethod=:pm ";
             m.put("pm", paymentMethod);
@@ -759,15 +697,17 @@ public class BhtSummeryFinalizedController implements Serializable {
     }
 
     public void createTablesFinalized() {
+        
+        List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         makeNullList();
-        patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
+        patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(),cpts);
         billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
-        patientItems = getInwardBean().fetchPatientItem(getPatientEncounter());
+        patientItems = getInwardBean().fetchPatientItem(getPatientEncounter(),cpts);
         outSideBills = getInwardBean().fetchOutSideBill2(getPatientEncounter());
-        proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter());
-        assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter());
-        paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter());
+        proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter(),cpts);
+        assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(),cpts);
+        paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter(),cpts);
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
         pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.PharmacyBhtPre);
         storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.StoreBhtPre);
@@ -976,7 +916,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 //            bi.setGrossValue(bi.getNetValue());
 //            billItemFacade.edit(bi);
 //        }
-//        
+//
 //         for (BillFee bi : inwardBean.fetchBillFee2(BillType.InwardBill)) {
 //            System.err.println("Id " + bi.getId());
 //            System.err.println("Gross " + bi.getFeeGrossValue());
@@ -991,7 +931,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 //            System.err.println("Net " + bi.getNetValue());
 ////            billItemFacade.edit(bi);
 //        }
-//        
+//
 //        for (BillFee bi : inwardBean.fetchBillFee3(BillType.InwardBill)) {
 //            System.err.println("Id " + bi.getId());
 //            System.err.println("Gross " + bi.getFeeGrossValue());
@@ -1359,7 +1299,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1370,7 +1310,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1379,28 +1319,12 @@ public class BhtSummeryFinalizedController implements Serializable {
         this.fromDate = fromDate;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public boolean isActiveBackButton() {
         return activeBackButton;
     }
 
     public void setActiveBackButton(boolean activeBackButton) {
         this.activeBackButton = activeBackButton;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public AdmissionType getAdmissionType() {

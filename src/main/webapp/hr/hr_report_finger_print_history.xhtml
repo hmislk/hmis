@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -28,7 +28,7 @@
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/> 
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Designation : "/>
@@ -46,11 +46,11 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecordHistorys}" var="ss">
 
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Finger Print Histoy" /><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >
@@ -58,7 +58,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -81,60 +81,60 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.createdAt}" ></p:outputLabel>
 
-                                </p:column>    
+                                </p:column>
                                 <p:column headerText="Changed by">
                                     <f:facet name="header">
                                         <h:outputLabel value="Changed by"/>
                                     </f:facet>
                                     <p:outputLabel value=" #{ss.creater.webUserPerson.name}" ></p:outputLabel>
 
-                                </p:column>    
+                                </p:column>
                                 <p:column headerText="Employee">
                                     <f:facet name="header">
                                         <h:outputLabel value="Employee"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}" ></p:outputLabel>
 
-                                </p:column>                                                           
+                                </p:column>
                                 <p:column headerText="Roster">
                                     <f:facet name="header">
                                         <h:outputLabel value="Roster"/>
                                     </f:facet>
                                     <p:outputLabel value="  #{ss.roster.name}" ></p:outputLabel>
 
-                                </p:column>   
+                                </p:column>
                                 <p:column headerText="Shift">
                                     <f:facet name="header">
                                         <h:outputLabel value="Shift"/>
                                     </f:facet>
                                     <p:outputLabel value="  #{ss.shift.name}" ></p:outputLabel>
 
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Record Type">
                                     <f:facet name="header">
                                         <h:outputLabel value="Record Type"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.fingerPrintRecord.times}" ></p:outputLabel>
 
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Before Change">
                                     <f:facet name="header">
                                         <h:outputLabel value="Before Change"/>
                                     </f:facet>
                                     <p:outputLabel value=" #{ss.beforeChange}" ></p:outputLabel>
 
-                                </p:column>                                                           
+                                </p:column>
                                 <p:column headerText="After Change">
                                     <f:facet name="header">
                                         <h:outputLabel value="After Change"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.afterChange}" ></p:outputLabel>
 
-                                </p:column>                                 
+                                </p:column>
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

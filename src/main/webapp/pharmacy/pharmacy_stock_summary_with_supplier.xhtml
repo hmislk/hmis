@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Stock Summary (with Suppliers)" >
+                        <h:panelGrid columns="8" class="my-2" >
+
+                            <h:outputText value="Department"/>
+                            <p:autoComplete 
+                                class="mx-2" 
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept" 
+                                itemLabel="#{dept.name}" 
+                                itemValue="#{dept}" 
+                                forceSelection="true" 
+                                maxlength="15"
+                                value="#{reportsStock.department}"  >
+                                <p:column headerText="Code" style="padding: 5px; width: 6em;">
+                                    <h:outputText value="#{dept.code}" />
+                                </p:column>
+                                <p:column headerText="Name" style="padding: 5px; min-width: 20em;">
+                                    <h:outputText value="#{dept.name}" />
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:commandButton
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-cog"
+                                    ajax="false"
+                                    value="Process"
+                                    action="#{reportsStock.fillAllSuppliersStocks()}" >
+                            </p:commandButton>
+
+                            <p:commandButton
+                                    styleClass="ui-button-info m-1"
+                                    icon="pi pi-download"
+                                    ajax="false"
+                                    value="Download">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Summary_with_Suppliers"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print"
+                                    value="Print"
+                                    ajax="false" action="pharmacy_stock_summary_with_supplier_print?faces-redirect=true">
+                            </p:commandButton>
+
+
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable 
+                                id="tbl" 
+                                value="#{reportsStock.records}" 
+                                var="i"
+                                rowIndexVar="ii"
+                                rows="20"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100" 
+                                >
+                                <f:facet name="header">
+                                    <h:outputText value="Supplier Stock Summary - #{reportsStock.department.name}"/>  
+                                </f:facet>
+
+                                <p:column headerText="No." style="width: 40px;">
+                                    <h:outputText value="#{ii+1}" />
+                                </p:column>
+
+                                <p:column
+                                    headerText="Supplier" 
+                                    sortBy="#{i.institution.name}"
+                                    filterBy="#{i.institution.name}"
+                                    filterMatchMode="contains">
+                                    <p:commandLink 
+                                        value="#{i.institution.name}"
+                                        action="#{reportsStock.fillSupplierStocks()}" 
+                                        ajax="false" >
+                                        <f:setPropertyActionListener target="#{reportsStock.institution}" value="#{i.institution}"/>
+                                    </p:commandLink>
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Stock" 
+                                    sortBy="#{i.qty}"
+                                    style="width: 12em;"
+                                    styleClass="averageNumericColumn">
+                                    <h:outputText value="#{i.qty}"  >
+                                        <f:convertNumber pattern="#,###"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Purchase Value" 
+                                    styleClass="averageNumericColumn"
+                                    style="text-align: right; width: 12em;"
+                                    sortBy="#{i.purchaseValue}">
+                                    <h:outputText value="#{i.purchaseValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{reportsStock.stockPurchaseValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Sale Value"
+                                    styleClass="averageNumericColumn"
+                                    style="text-align: right; width: 12em;"
+                                    sortBy="#{i.retailsaleValue}">
+                                    <h:outputText value="#{i.retailsaleValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{reportsStock.stockSaleValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -8,8 +8,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
@@ -35,7 +35,7 @@
                                 <h:outputLabel value="Channel Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />
                                 <h:outputLabel value="Payment Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" class="w-100"  />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" class="w-100"  />
                                 <h:outputLabel value="Patient Name"/> 
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100" />
                                 <h:outputLabel value="Speciality"/> 
@@ -55,11 +55,11 @@
                                              sortBy="#{billItem.bill.billClass}">
 
                                     <p:column headerText="Payment Bill No" >
-                                        <h:outputLabel value="#{billItem.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billItem.bill.deptId}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Channel Bill No" >
-                                        <h:outputLabel value="#{billItem.paidForBillFee.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billItem.paidForBillFee.bill.deptId}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Specility" >
@@ -92,7 +92,7 @@
                                     </p:column> 
 
                                     <p:column headerText="Net Value" >
-                                        <h:outputLabel value="#{billItem.bill.netTotal}" >
+                                        <h:outputLabel value="#{billItem.netValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -104,7 +104,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action" >
-                                        <p:commandButton action="channel_payment_bill_reprint" value="View Bill" ajax="false" >
+                                        <p:commandButton action="channel_payment_bill_reprint?faces-redirect=true" value="View Bill" ajax="false" >
                                             <f:setPropertyActionListener value="#{billItem.bill}" target="#{channelSearchController.bill}"/>
                                         </p:commandButton>
                                     </p:column>

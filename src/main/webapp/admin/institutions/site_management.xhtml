@@ -1,0 +1,265 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/institutions/admin_institutions_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="admin">
+
+        <h:panelGroup>
+            <h:form id="siteForm">
+                <p:growl id="msg" life="3000"/>
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="gpDetail" />
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <p:panel header="Site Management" class="mb-3 w-100">
+
+                            <!-- Status Filter Section -->
+                            <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <label class="form-label mb-0">Filter:</label>
+                                    <p:commandButton
+                                        id="btnFilterActive"
+                                        value="Active"
+                                        action="#{institutionController.setFilterToActive()}"
+                                        update="lstSelect siteDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{institutionController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                        icon="fas fa-check-circle"
+                                        disabled="#{institutionController.editable}"
+                                        title="Show only active Sites"/>
+
+                                    <p:commandButton
+                                        id="btnFilterInactive"
+                                        value="Inactive"
+                                        action="#{institutionController.setFilterToInactive()}"
+                                        update="lstSelect siteDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{institutionController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                        icon="fas fa-times-circle"
+                                        disabled="#{institutionController.editable}"
+                                        title="Show only inactive Sites"/>
+
+                                    <p:commandButton
+                                        id="btnFilterAll"
+                                        value="All"
+                                        action="#{institutionController.setFilterToAll()}"
+                                        update="lstSelect siteDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{institutionController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                        icon="fas fa-list"
+                                        disabled="#{institutionController.editable}"
+                                        title="Show all Sites"/>
+                                </div>
+
+                                <p:outputLabel id="filterStatusLabel"
+                                               value="Currently showing: #{institutionController.filterStatusDisplay}"
+                                               styleClass="text-muted small mt-1"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="actionButtons">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            value="Add New"
+                                            icon="fa fa-plus"
+                                            action="#{institutionController.prepareAddSite()}"
+                                            class="m-1 ui-button-success"
+                                            update="lstSelect gpDetail actionButtons statusFilterPanel siteDetails"
+                                            process="@this"
+                                            disabled="#{institutionController.editable}">
+                                            <f:setPropertyActionListener target="#{institutionController.editable}" value="#{true}" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnEdit"
+                                            value="Edit"
+                                            icon="fas fa-edit"
+                                            action="#{institutionController.edit()}"
+                                            class="m-1 ui-button-info"
+                                            update="siteDetails lstSelect actionButtons statusFilterPanel"
+                                            process="@this"
+                                            disabled="#{institutionController.editable or institutionController.current == null or institutionController.current.id == null}">
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnDelete"
+                                            action="#{institutionController.deleteSite()}"
+                                            value="Delete"
+                                            icon="fas fa-trash"
+                                            class="m-1 ui-button-danger"
+                                            update="siteForm:msg lstSelect gpDetail actionButtons statusFilterPanel siteDetails"
+                                            process="@this"
+                                            disabled="#{institutionController.editable or institutionController.current == null or institutionController.current.id == null}">
+                                            <p:confirm
+                                                header="Confirm Delete"
+                                                message="Are you sure you want to delete this Site record?"
+                                                icon="fas fa-exclamation-triangle" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnToggleStatus"
+                                            value="#{institutionController.toggleStatusButtonText}"
+                                            action="#{institutionController.toggleSiteStatus()}"
+                                            icon="#{institutionController.toggleStatusButtonIcon}"
+                                            update="siteForm:msg lstSelect gpDetail actionButtons statusFilterPanel siteDetails filterStatusLabel"
+                                            process="@this"
+                                            styleClass="#{institutionController.toggleStatusButtonClass} m-1"
+                                            disabled="#{institutionController.editable or institutionController.current == null or institutionController.current.id == null}"
+                                            title="Toggle Site active/inactive status">
+                                            <p:confirm
+                                                header="Confirm Status Change"
+                                                message="Are you sure you want to #{institutionController.current.retired ? 'ACTIVATE' : 'DEACTIVATE'} this Site: #{institutionController.current.name}?"
+                                                icon="fas fa-question-circle" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnViewAuditEvents"
+                                            value="History"
+                                            icon="fas fa-history"
+                                            action="#{institutionController.navigateToInstitutionAuditEvents()}"
+                                            class="m-1 ui-button-secondary"
+                                            process="@this"
+                                            ajax="false"
+                                            disabled="#{institutionController.current == null or institutionController.current.id == null}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:selectOneListbox id="lstSelect"
+                                                         value="#{institutionController.current}"
+                                                         style="width: 100%; height: 400px;"
+                                                         filter="true"
+                                                         disabled="#{institutionController.editable}">
+                                        <f:selectItems value="#{institutionController.sites}" var="myItem" itemValue="#{myItem}"
+                                                       itemLabel="#{myItem.name eq null ? 'Unnamed' : myItem.name}#{myItem.retired ? ' (Inactive)' : ''}" />
+                                        <p:ajax update="gpDetail actionButtons siteDetails" process="lstSelect" />
+                                    </p:selectOneListbox>
+                                </div>
+                            </div>
+
+                        </p:panel>
+                    </div>
+
+                    <div class="col-md-7">
+                        <p:panel id="siteDetails">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa fa-map-marker" /> Site Details
+                                    </span>
+                                    <h:panelGroup rendered="#{institutionController.current ne null and institutionController.current.id ne null}"
+                                                  styleClass="badge #{institutionController.current.retired ? 'badge-danger' : 'badge-success'}">
+                                        #{institutionController.current.retired ? 'Inactive' : 'Active'}
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{institutionController.editable and institutionController.current ne null}"
+                                                  styleClass="badge badge-warning">
+                                        #{institutionController.current.id ne null ? 'Editing' : 'Adding New'}
+                                    </h:panelGroup>
+                                </div>
+                            </f:facet>
+
+                            <p:panelGrid
+                                id="gpDetail"
+                                columns="1"
+                                class="w-100"
+                                rendered="#{institutionController.current ne null}">
+
+                                <p:tabView class="w-100">
+                                    <p:tab title="Basic Details" class="w-100">
+                                        <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Name" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtName"
+                                                         value="#{institutionController.current.name}"
+                                                         class="w-100"
+                                                         placeholder="Enter Site name"
+                                                         disabled="#{!institutionController.editable}" />
+
+                                            <h:outputText value="Code" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtCode"
+                                                         value="#{institutionController.current.code}"
+                                                         class="w-100"
+                                                         placeholder="Enter code (optional)"
+                                                         disabled="#{!institutionController.editable}" />
+                                        </p:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Editing Details" class="w-100">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Creator" />
+                                            <p:outputLabel class="w-100" value="#{institutionController.current.creater.webUserPerson.name}"/>
+
+                                            <h:outputText value="Status" />
+                                            <h:panelGroup>
+                                                <h:outputText value="Active" rendered="#{not institutionController.current.retired}"
+                                                              style="color: green; font-weight: bold;"/>
+                                                <h:outputText value="Inactive" rendered="#{institutionController.current.retired}"
+                                                              style="color: orange; font-weight: bold;"/>
+                                            </h:panelGroup>
+
+                                            <h:outputText value="Retired At" rendered="#{institutionController.current.retired}" />
+                                            <h:outputText value="#{institutionController.current.retiredAt}" rendered="#{institutionController.current.retired}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Retired By" rendered="#{institutionController.current.retired}" />
+                                            <h:outputText value="#{institutionController.current.retirer.webUserPerson.name}" rendered="#{institutionController.current.retired}" />
+                                        </p:panelGrid>
+                                    </p:tab>
+                                </p:tabView>
+
+                                <h:panelGroup layout="block" class="text-end">
+                                    <div>
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Save"
+                                            icon="fas fa-save"
+                                            action="#{institutionController.saveSelectedSite()}"
+                                            class="m-1 ui-button-warning w-25"
+                                            process="btnSave gpDetail"
+                                            update="lstSelect gpDetail siteForm:msg actionButtons siteDetails statusFilterPanel"
+                                            disabled="#{!institutionController.editable}">
+                                            <f:setPropertyActionListener target="#{institutionController.editable}" value="#{false}" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            immediate="true"
+                                            id="btnCancel"
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            action="#{institutionController.cancel()}"
+                                            class="m-1 ui-button-secondary w-25"
+                                            process="btnCancel"
+                                            update="lstSelect actionButtons siteDetails statusFilterPanel"
+                                            disabled="#{!institutionController.editable}">
+                                        </p:commandButton>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
+                <!-- Confirmation Dialog -->
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                </p:confirmDialog>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

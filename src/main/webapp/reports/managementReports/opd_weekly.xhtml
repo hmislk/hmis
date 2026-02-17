@@ -1,0 +1,394 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<h:body class="w-100 border">
+
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="OPD Weekly Report" class="w-100">
+                    <h:panelGrid columns="8" class="w-100 ">
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.institution}"
+                                filter="true">
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <p:ajax process="cmbIns" update="cmbDept"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{reportsController.site}"
+                                filter="true">
+                            <f:selectItem itemLabel="All Sites"/>
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                           itemValue="#{site}"/>
+                            <p:ajax process="siteMenu" update="cmbDept"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution eq null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportsController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{reportsController.institution ne null and reportsController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
+                            <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportsController.department}"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportsController.institution, reportsController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel value="Month" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100" value="#{reportsController.month}">
+                            <f:selectItem itemLabel="Please Select a Month"/>
+                            <f:selectItems value="#{reportsController.months}" var="month" itemLabel="#{month}"
+                                           itemValue="#{month}"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Visit Type" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100" value="#{reportsController.visitType}">
+                            <f:selectItem itemLabel="Any"/>
+                            <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                            <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf15b;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Report Type" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100 " value="#{reportsController.reportType}">
+                            <f:selectItem itemValue="detail" itemLabel="Detail"/>
+                            <f:selectItem itemValue="summary" itemLabel="Summary"/>
+                        </p:selectOneMenu>
+
+                    </h:panelGrid>
+
+                    <p:commandButton
+                            class="ui-button-warning my-4 mx-2"
+                            style="width: 150px"
+                            ajax="false"
+                            value="Process"
+                            action="#{reportsController.generateOPDWeeklyReport()}"
+                            icon="fas fa-cogs">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-info my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-print"
+                            ajax="false"
+                            value="Print">
+                        <p:printer target="printableContent"/>
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel"
+                            ajax="false"
+                            action="#{reportsController.exportDetailedWeeklyOPDReportToExcel()}"
+                            rendered="#{reportsController.reportType eq 'detail'}"
+                            value="Excel">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="ui-button-success my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-excel"
+                            ajax="false"
+                            action="#{reportsController.exportWeeklyOPDSummaryReportToExcel()}"
+                            rendered="#{reportsController.reportType eq 'summary'}"
+                            value="Excel">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="m-2 ui-button-danger"
+                            icon="fa-solid fa-file-pdf"
+                            style="width: 150px"
+                            ajax="false"
+                            action="#{reportsController.exportDetailedWeeklyOPDReportToPDF()}"
+                            rendered="#{reportsController.reportType eq 'detail'}"
+                            value="PDF">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            class="m-2 ui-button-danger"
+                            icon="fa-solid fa-file-pdf"
+                            style="width: 150px"
+                            ajax="false"
+                            action="#{reportsController.exportWeeklyOPDSummaryReportToPDF()}"
+                            rendered="#{reportsController.reportType eq 'summary'}"
+                            value="PDF">
+                    </p:commandButton>
+
+                <p:panel id="printableContent" header="OPD Weekly Report" class="w-100">
+                <ui:repeat value="#{reportsController.groupedBillItemsWeekly.entrySet()}" var="entry"
+                               rendered="#{reportsController.reportType eq 'summary'}">
+                        <p:dataTable
+                                id="summary#{entry.key}"
+                                value="#{entry.value}"
+                                var="row"
+                                rowIndexVar="b">
+
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Report Type : Summary"
+                                        style="font-weight: bold; text-align: left; display: block;"
+                                        rendered="#{entry.key eq 1}"/>
+                                <br/>
+                                <h:outputLabel value="Month &emsp;&emsp; :  &emsp;"
+                                               style="font-weight: bold; text-align: left;"
+                                               rendered="#{entry.key eq 1}"/>
+                                <h:outputLabel value="#{reportsController.month}"
+                                               style="font-weight: bold; text-align: left;"
+                                               rendered="#{entry.key eq 1}"/>
+                            </f:facet>
+
+                            <p:column headerText="Weekly Report OPD (7.00pm - 7.00am) Night" width="5rem"
+                                      rendered="#{entry.key eq 1}">
+                                <h:outputText value="#{row.key}"/>
+                            </p:column>
+                            <p:column headerText="Weekly Report OPD (7.00am - 1.00pm)" width="5rem"
+                                      rendered="#{entry.key eq 2}">
+                                <h:outputText value="#{row.key}"/>
+                            </p:column>
+                            <p:column headerText="Weekly Report OPD (1.00pm - 7.00pm)" width="5rem"
+                                      rendered="#{entry.key eq 3}">
+                                <h:outputText value="#{row.key}"/>
+                            </p:column>
+
+                            <p:column headerText="#{reportsController.getDateRangeText(1, true)}" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getWeeklyGroupedBillValues(row.key, 1, entry.key)}"/>
+                            </p:column>
+                            <p:column headerText="#{reportsController.getDateRangeText(2, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 2}">
+                                <h:outputText
+                                        value="#{reportsController.getWeeklyGroupedBillValues(row.key, 2, entry.key)}"/>
+                            </p:column>
+                            <p:column headerText="#{reportsController.getDateRangeText(3, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 3}">
+                                <h:outputText
+                                        value="#{reportsController.getWeeklyGroupedBillValues(row.key, 3, entry.key)}"/>
+                            </p:column>
+                            <p:column headerText="#{reportsController.getDateRangeText(4, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 4}">
+                                <h:outputText
+                                        value="#{reportsController.getWeeklyGroupedBillValues(row.key, 4, entry.key)}"/>
+                            </p:column>
+                            <p:column headerText="#{reportsController.getDateRangeText(5, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 5}">
+                                <h:outputText
+                                        value="#{reportsController.getWeeklyGroupedBillValues(row.key, 5, entry.key)}"/>
+                            </p:column>
+                            <p:column headerText="#{reportsController.getDateRangeText(6, true)}" width="5rem" rendered="#{reportsController.getNumberOfWeeksOfMonth() >= 6}">
+                                <h:outputText
+                                        value="#{reportsController.getWeeklyGroupedBillValues(row.key, 6, entry.key)}"/>
+                            </p:column>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getTotalWeeklyGroupedBillValues(row.key, entry.key)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </ui:repeat>
+
+                    <c:forEach var="i" begin="1" end="6">
+                        <p:dataTable
+                                id="detail7to7"
+                                value="#{reportsController.getItemListByWeek(i, reportsController.weeklyDailyBillItemMap7to7)}"
+                                var="item"
+                                rowIndexVar="b"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.getDaysOfWeek(i).size() ne 0}">
+
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Report Type : Detail"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <br/>
+                                <h:outputLabel value="Week &emsp;&emsp; :  &emsp;"
+                                               style="font-weight: bold; text-align: left;"/>
+                                <h:outputLabel value="#{i}"
+                                               style="font-weight: bold; text-align: left;"/>
+                                <br/>
+                                <h:outputText
+                                        value="Weekly Report OPD (7.00pm - 7.00am) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i, false)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Item" width="5rem">
+                                <h:outputText value="#{item}"/>
+                            </p:column>
+                            <p:columns value="#{reportsController.getDaysOfWeek(i)}" var="day" headerText="#{day}"
+                                       width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getCountByWeekAndDay(i, day, item, reportsController.weeklyDailyBillItemMap7to7)}"/>
+                            </p:columns>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getSumByWeek(i, item, reportsController.weeklyDailyBillItemMap7to7)}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable
+                                id="detail7to1"
+                                value="#{reportsController.getItemListByWeek(i, reportsController.weeklyDailyBillItemMap7to1)}"
+                                var="item"
+                                rowIndexVar="b"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.getDaysOfWeek(i).size() ne 0}">
+
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Weekly Report OPD (7.00am - 1.00pm) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i, false)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Item" width="5rem">
+                                <h:outputText value="#{item}"/>
+                            </p:column>
+                            <p:columns value="#{reportsController.getDaysOfWeek(i)}" var="day" headerText="#{day}"
+                                       width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getCountByWeekAndDay(i, day, item, reportsController.weeklyDailyBillItemMap7to1)}"/>
+                            </p:columns>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getSumByWeek(i, item, reportsController.weeklyDailyBillItemMap7to1)}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable
+                                id="detail1to7"
+                                value="#{reportsController.getItemListByWeek(i, reportsController.weeklyDailyBillItemMap1to7)}"
+                                var="item"
+                                rowIndexVar="b"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.getDaysOfWeek(i).size() ne 0}">
+
+                            <f:facet name="header">
+                                <h:outputText
+                                        value="Weekly Report OPD (1.00pm - 7.00pm) Night"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText
+                                        value="#{reportsController.getDateRangeText(i, false)}"
+                                        style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Item" width="5rem">
+                                <h:outputText value="#{item}"/>
+                            </p:column>
+                            <p:columns value="#{reportsController.getDaysOfWeek(i)}" var="day" headerText="#{day}"
+                                       width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getCountByWeekAndDay(i, day, item, reportsController.weeklyDailyBillItemMap1to7)}"/>
+                            </p:columns>
+                            <p:column headerText="Total" width="5rem">
+                                <h:outputText
+                                        value="#{reportsController.getSumByWeek(i, item, reportsController.weeklyDailyBillItemMap1to7)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </c:forEach>
+                </p:panel>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

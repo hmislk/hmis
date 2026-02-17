@@ -180,15 +180,6 @@
                                         value="#{sessionController.currentPreference.partialPaymentOfOpdPreBillsAllowed}" />
 
                                     <h:outputLabel 
-                                        class="form-label"
-                                        value="Allow to Change Payment Method During Settle"></h:outputLabel>
-                                    <p:selectBooleanButton 
-                                        class="form-control"
-                                        offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
-                                        value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
-
-                                    <h:outputLabel 
                                         value="Five Five Bill With Labels and Headings"
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
@@ -345,7 +336,7 @@
 
 
                                     <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
-                                    <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
+                                    <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" disabled="true" />
 
                                     <h:outputLabel value="Inward Add Service Bill Time With Out Check"></h:outputLabel>
                                     <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.inwardAddServiceBillTimeCheck}"/>
@@ -469,8 +460,7 @@
 
                                         <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
                                         <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
-                                        <p:watermark for="fontName" value="Eg- Courier New" />
-
+                                        
                                     </h:panelGrid>
                                 </p:panel>
                             </p:tab>
@@ -484,7 +474,7 @@
                                         <h:outputLabel value="Need Phone number for patient registration"></h:outputLabel>
                                         <p:selectBooleanButton value="#{sessionController.currentPreference.needPhoneNumberForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
 
-                                        <h:outputLabel value="Need NIC for patient registration"></h:outputLabel>
+                                        <h:outputLabel value="Need NIC / Passport for patient registration"></h:outputLabel>
                                         <p:selectBooleanButton value="#{sessionController.currentPreference.needNicForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
 
 

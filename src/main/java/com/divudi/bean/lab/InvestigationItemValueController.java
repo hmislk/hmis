@@ -8,11 +8,11 @@
  */
 package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValue;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.facade.InvestigationItemValueFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValue;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.InvestigationItemValueFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -161,7 +161,7 @@ public class InvestigationItemValueController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         current = null;
@@ -216,5 +216,5 @@ public class InvestigationItemValueController implements Serializable {
         }
     }
 
-    
+
 }

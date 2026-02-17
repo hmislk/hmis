@@ -18,12 +18,12 @@ public class ApplicationConfig extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new java.util.HashSet<>();
-        // following code can be used to customize Jersey 1.x JSON provider:
+        // Use Jackson 2.x JAXB-aware provider and fail fast if not found
         try {
-            Class jacksonProvider = Class.forName("org.codehaus.jackson.jaxrs.JacksonJsonProvider");
+            Class<?> jacksonProvider = Class.forName("com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider");
             resources.add(jacksonProvider);
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            throw new RuntimeException("Jackson JSON provider not found", ex);
         }
         addRestResourceClasses(resources);
         return resources;
@@ -36,16 +36,29 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(com.divudi.ws.channel.Api.class);
+        resources.add(com.divudi.ws.channel.ChannelApi.class);
+        resources.add(com.divudi.ws.channel.CorsResponseFilter.class);
+        resources.add(com.divudi.ws.clinical.FavouriteMedicineApi.class);
         resources.add(com.divudi.ws.common.ApiMembership.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
         resources.add(com.divudi.ws.fhir.Fhir.class);
+        resources.add(com.divudi.ws.finance.BalanceHistoryApi.class);
+        resources.add(com.divudi.ws.finance.CostingData.class);
         resources.add(com.divudi.ws.finance.Finance.class);
         resources.add(com.divudi.ws.finance.Qb.class);
         resources.add(com.divudi.ws.finance.clinical.Fhir.class);
+        resources.add(com.divudi.ws.institution.DepartmentApi.class);
+        resources.add(com.divudi.ws.institution.InstitutionApi.class);
+        resources.add(com.divudi.ws.institution.SiteApi.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.lims.Lims.class);
         resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
+        resources.add(com.divudi.ws.lims.MiddlewareController.class);
+        resources.add(com.divudi.ws.pharmacy.PharmaceuticalConfigApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmaceuticalItemApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyAdjustmentApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyBatchApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
     }
     
 }

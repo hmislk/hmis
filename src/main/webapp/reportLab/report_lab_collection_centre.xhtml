@@ -81,7 +81,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Bill No"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.insId}"/>
+                        <h:outputLabel value="#{d.deptId}"/>
                     </p:column>
                     <p:column headerText="Ref. No">
                         <f:facet name="header">
@@ -106,8 +106,8 @@
                         <f:facet name="header">
                             <h:outputLabel value="Reference Bill"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.cancelledBill.insId}" rendered="#{d.cancelledBill ne null}"/>
-                        <h:outputLabel value="#{d.referenceBill.insId}" rendered="#{d.referenceBill ne null}"/>
+                        <h:outputLabel value="#{d.cancelledBill.deptId}" rendered="#{d.cancelledBill ne null}"/>
+                        <h:outputLabel value="#{d.referenceBill.deptId}" rendered="#{d.referenceBill ne null}"/>
                     </p:column>                   
                     <p:column headerText="CC Total" styleClass="averageNumericColumn">
                         <f:facet name="header">

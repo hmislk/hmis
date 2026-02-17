@@ -4,134 +4,274 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles">
 
     <h:body class="w-100 border">
 
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Daily Return" class="w-100">
-                        <h:panelGrid columns="5" class="w-100 ">
-                            <p:outputLabel value="From (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="To (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                <h:form >
+                    <p:panel   header="Daily Return" class="m-1">
 
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
-                                <f:selectItem itemLabel="Select Institution Type"/>
-                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>
-                            </p:selectOneMenu>
-                            <p:spacer/>
-                            <p:outputLabel value="Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
                                 >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectBooleanButton>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
 
-                            
-                           
-                            
-                            <p:outputLabel value="Professionality" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneRadio>
-                                <f:selectItem itemLabel="With Professional"></f:selectItem>
-                                <f:selectItem itemLabel="Without Professional"></f:selectItem>
-                            </p:selectOneRadio>
-                            
-                           <p:outputLabel value="Type" for=""></p:outputLabel>
-                            <p:selectOneRadio>
-                                <f:selectItem itemLabel="Summary"></f:selectItem>
-                                <f:selectItem itemLabel="Detail"></f:selectItem>
-                            </p:selectOneRadio>
-                           <p:spacer/>
-                           <p:commandButton ajax="false" value="Process" action="null" >
-                            </p:commandButton>
-                        </h:panelGrid><br />
-                        
-                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
-                                     rowKey="#{b}" 
-                                     rows="#{searchController.rows}"
-                                     selection="#{searchController.selectedTelephoneNumbers}"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+                            <p:spacer ></p:spacer>
 
-                            <f:facet name="header" >
-                                <p:outputLabel value="Asset Register Reports" />                                
-                            </f:facet>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Item Service" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
 
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Item Count" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Hospital Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
+                            <p:spacer ></p:spacer>
 
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Discount Amount" >
-                                    </p:outputLabel>
-                                </f:facet> 
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Total Hospital Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Professional Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Total Amount" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                           
-                            
-                        </p:dataTable>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
 
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <p:commandButton 
+                            value="Process" 
+                            ajax="false"
+                            action="#{searchController.generateDailyReturn()}" 
+                            class="ui-button-success m-1" 
+                            icon="fas fa-cogs" 
+                            style="background-color: #28a745; border-color: #28a745;"> 
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Update"
+                            ajax="false"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            action="#{searchController.updateBillItemValues()}"
+                            class="ui-button-danger m-1"
+                            icon="pi pi-pencil"
+                            onclick="return confirm('Are you sure you want to update the bill item values?');">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            icon="fas fa-download"
+                            class="ui-button-warning mx-2"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download PDF" 
+                            ajax="false" 
+                            icon="pi pi-file-pdf" 
+                            class="ui-button-info  m-1"
+                            style="background-color: #17a2b8; border-color: #17a2b8;" 
+                            onclick="PrimeFaces.monitorDownload(start, stop);">
+                            <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Print" 
+                            class="m-1"
+                            icon="pi pi-print" 
+                            style="background-color: #f0ad4e; border-color: #f0ad4e;"> 
+                            <p:printer target="printPanel" />
+                        </p:commandButton>
+
+                        <!--Do not remove this part-->
+                        <h:panelGroup style="display: none;" >
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
+                                #{myBundle1.name} - #{myBundle1.bundleType} <br/>
+                            </ui:repeat>
+                        </h:panelGroup>
+                        <!--Do not remove the above part-->
+
+                        <h:panelGroup id="printPanel">        
+
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
+                                <ez:opdServiceCollection bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollection'}"/>
+                                <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
+                                <ez:ccCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ccCollection'}"/>
+                                <ez:companyPaymentBillOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}"/>
+                                <ez:companyPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}"/>
+                                <ez:companyPaymentBillPharmacy bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}"/>
+                                <ez:companyPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}"/>
+                                <ez:patientDepositPayments id="ccPatientDepositSection" bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'patientDepositPayments'}" ></ez:patientDepositPayments>
+                                <ez:inwardDepositPayments id="inwardPatientDepositSection" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'inwardDepositPayments'}"/>
+                                <ez:collectionForTheDay bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'collectionForTheDay'}"/>
+                                <ez:pettyCashPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'pettyCashPayments'}"/>
+
+                                <ez:professionalPaymentBillOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}"/>
+                                <ez:professionalPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
+                                <ez:professionalPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportInward'}"/>
+
+                                <ez:paymentReportCards  id="cardPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
+
+                                <ez:staffPayments  id="staffPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
+                                <ez:voucherPayments  id="voucherPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
+                                <ez:chequePayments id="chequePaymentPanel" bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
+                                <ez:ewalletPayments  id="ewalletPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
+                                <ez:slipPayments  id="slipPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
+                                <ez:patientDepositUtilization id="patientDepositUtilizationPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositUtilization'}"/>
+                                
+                                <ez:opdPatientDepositPayments id="opdPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdPatientDepositPayments'}"/>
+                                <ez:opdPatientDepositPayments id="pharmacyPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyPatientDepositPayments'}"/>
+                                <ez:inwardPatientDepositPayments id="inwardPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'inwardPatientDepositPayments'}"/>
+
+                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
+
+                                <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
+
+
+                                <ez:pharmacyCreditBills
+                                    id="panelPharmacyCreditBills"
+                                    bundle="#{myBundle}"
+                                    rendered="#{myBundle.bundleType eq 'pharmacyCreditBills'}"/>
+                                <ez:pharmacyCreditCancel 
+                                    id="pharmacyCreditCancel"
+                                    bundle="#{myBundle}"
+                                    rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
+                                <ez:pharmacyCreditRefund 
+                                    id="pharmacyCreditRefund" 
+                                    bundle="#{myBundle}"
+                                    rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
+
+                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
+
+                                <!-- Patient Deposit Reconciliation Section -->
+                                <ez:patientDepositReceiptsSummary bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositReceiptsSummary'}"/>
+                                <ez:patientDepositUtilization id="patientDepositUtilizationSummaryPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositUtilizationSummary'}"/>
+                                <ez:carriedOutPatientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'carriedOutPatientDeposit'}"/>
+
+                            </ui:repeat>
+
+                        </h:panelGroup>
                     </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

@@ -14,13 +14,15 @@
                 <p:panel>
                     <f:facet name="header" >                                  
 
-                        <p:outputLabel value="Staff : &nbsp;#{storeTransferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
+                        <p:outputLabel value="Staff : &nbsp;#{storeTransferReceiveController.issuedBill.toStaff.person.nameWithTitle}" class="col-md-4"/>
+                        
+                        <p:inputText placeholder="Enter Comments to Receive Bill" value="#{storeTransferReceiveController.receivedBill.comments}" class="p-2 w-25 col-md-4"/>
 
                         <p:commandButton  
                             value="Recieve" 
                             icon="fas fa-check"
                             style="float: right;"
-                            class="ui-button-success mx-2"
+                            class="ui-button-success w-10 mx-2 col-md-2 "
                             action="#{storeTransferReceiveController.settle}" 
                             ajax="false" >
                         </p:commandButton>

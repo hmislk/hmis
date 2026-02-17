@@ -1,0 +1,385 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/institutions/admin_institutions_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="admin">
+
+        <h:panelGroup>
+            <h:form id="form">
+                <p:growl id="msg" life="3000"/>
+                <p:focus id="selectFocus" for="acDept" />
+                <p:focus id="detailFocus" for="gpDetail" />
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <p:panel header="Manage Departments" class="mb-3 w-100">
+
+                            <!-- Status Filter Section -->
+                            <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <label class="form-label mb-0">Filter:</label>
+                                    <p:commandButton
+                                        id="btnFilterActive"
+                                        value="Active"
+                                        action="#{departmentController.setFilterToActive()}"
+                                        update="acDept deptDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{departmentController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                        icon="fas fa-check-circle"
+                                        disabled="#{departmentController.editable}"
+                                        title="Show only active Departments"/>
+
+                                    <p:commandButton
+                                        id="btnFilterInactive"
+                                        value="Inactive"
+                                        action="#{departmentController.setFilterToInactive()}"
+                                        update="acDept deptDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{departmentController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                        icon="fas fa-times-circle"
+                                        disabled="#{departmentController.editable}"
+                                        title="Show only inactive Departments"/>
+
+                                    <p:commandButton
+                                        id="btnFilterAll"
+                                        value="All"
+                                        action="#{departmentController.setFilterToAll()}"
+                                        update="acDept deptDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{departmentController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                        icon="fas fa-list"
+                                        disabled="#{departmentController.editable}"
+                                        title="Show all Departments"/>
+                                </div>
+
+                                <p:outputLabel id="filterStatusLabel"
+                                               value="Currently showing: #{departmentController.filterStatusDisplay}"
+                                               styleClass="text-muted small mt-1"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="actionButtons">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            value="Add New"
+                                            icon="fa fa-plus"
+                                            action="#{departmentController.prepareAdd()}"
+                                            class="m-1 ui-button-success"
+                                            update="acDept gpDetail actionButtons statusFilterPanel deptDetails"
+                                            process="@this"
+                                            disabled="#{departmentController.editable}">
+                                            <f:setPropertyActionListener target="#{departmentController.selectedDepartmentDto}" value="#{null}" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnEdit"
+                                            value="Edit"
+                                            icon="fas fa-edit"
+                                            action="#{departmentController.edit()}"
+                                            class="m-1 ui-button-info"
+                                            update="deptDetails acDept actionButtons statusFilterPanel"
+                                            process="@this"
+                                            disabled="#{departmentController.editable or departmentController.selectedDepartmentDto eq null}">
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnDelete"
+                                            action="#{departmentController.delete()}"
+                                            value="Delete"
+                                            icon="fas fa-trash"
+                                            class="m-1 ui-button-danger"
+                                            update="form:msg acDept gpDetail actionButtons statusFilterPanel deptDetails"
+                                            process="@this"
+                                            disabled="#{departmentController.editable or departmentController.selectedDepartmentDto eq null}">
+                                            <p:confirm
+                                                header="Confirm Delete"
+                                                message="Are you sure you want to delete this Department record?"
+                                                icon="fas fa-exclamation-triangle" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnToggleStatus"
+                                            value="#{departmentController.toggleStatusButtonText}"
+                                            action="#{departmentController.toggleDepartmentStatus()}"
+                                            icon="#{departmentController.toggleStatusButtonIcon}"
+                                            update="form:msg acDept gpDetail actionButtons statusFilterPanel deptDetails filterStatusLabel"
+                                            process="@this"
+                                            styleClass="#{departmentController.toggleStatusButtonClass} m-1"
+                                            disabled="#{departmentController.editable or departmentController.selectedDepartmentDto eq null}"
+                                            title="Toggle Department active/inactive status">
+                                            <p:confirm
+                                                header="Confirm Status Change"
+                                                message="Are you sure you want to #{departmentController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Department: #{departmentController.current.name}?"
+                                                icon="fas fa-question-circle" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnViewAuditEvents"
+                                            value="History"
+                                            icon="fas fa-history"
+                                            action="#{departmentController.navigateToDepartmentAuditEvents()}"
+                                            class="m-1 ui-button-secondary"
+                                            process="@this"
+                                            ajax="false"
+                                            disabled="#{departmentController.selectedDepartmentDto eq null}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:autoComplete
+                                        class="w-100 m-1"
+                                        inputStyleClass="w-100"
+                                        id="acDept"
+                                        widgetVar="acDept"
+                                        value="#{departmentController.selectedDepartmentDto}"
+                                        completeMethod="#{departmentController.completeDepartmentDto}"
+                                        var="dto"
+                                        itemLabel="#{dto.name}"
+                                        itemValue="#{dto}"
+                                        converter="departmentDtoConverter"
+                                        forceSelection="true"
+                                        disabled="#{departmentController.editable}"
+                                        placeholder="Type to search Departments..."
+                                        cache="false"
+                                        minQueryLength="2">
+                                        <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons deptDetails" />
+                                        <p:ajax event="change" process="@this" update="gpDetail actionButtons deptDetails" />
+                                        <p:column headerText="Name">
+                                            <h:outputText value="#{dto.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{dto.code}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+                            </div>
+
+                        </p:panel>
+                    </div>
+
+                    <div class="col-md-7">
+                        <p:panel id="deptDetails">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa fa-building" /> Department Details
+                                    </span>
+                                    <h:panelGroup rendered="#{departmentController.current ne null and departmentController.current.id ne null}"
+                                                  styleClass="badge #{departmentController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                        #{departmentController.current.inactive ? 'Inactive' : 'Active'}
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{departmentController.editable}"
+                                                  styleClass="badge badge-warning">
+                                        #{departmentController.current.id ne null ? 'Editing' : 'Adding New'}
+                                    </h:panelGroup>
+                                </div>
+                            </f:facet>
+
+                            <p:panelGrid
+                                id="gpDetail"
+                                columns="1"
+                                class="w-100"
+                                rendered="#{departmentController.current ne null}">
+
+                                <p:tabView class="w-100">
+                                    <p:tab title="Basic Details" class="w-100">
+                                        <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Name" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtName"
+                                                         value="#{departmentController.current.name}"
+                                                         class="w-100"
+                                                         placeholder="Enter Department name"
+                                                         disabled="#{!departmentController.editable}" />
+
+                                            <h:outputText value="Code" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtCode"
+                                                         value="#{departmentController.current.code}"
+                                                         class="w-100"
+                                                         placeholder="Enter code (optional)"
+                                                         disabled="#{!departmentController.editable}" />
+
+                                            <h:outputText value="Income Name" />
+                                            <p:inputText autocomplete="off"
+                                                         class="w-100"
+                                                         value="#{departmentController.current.departmentCode}"
+                                                         disabled="#{!departmentController.editable}" />
+
+                                            <h:outputText value="Department Code" />
+                                            <p:inputText autocomplete="off" class="w-100"
+                                                         value="#{departmentController.current.departmentCode}"
+                                                         disabled="#{!departmentController.editable}" />
+
+                                            <h:outputText value="Department Type" />
+                                            <p:selectOneMenu class="w-100" id="cmbDept" filter="true" filterMatchMode="contains"
+                                                             value="#{departmentController.current.departmentType}"
+                                                             disabled="#{!departmentController.editable}">
+                                                <f:selectItem itemLabel="Select the Department Type" />
+                                                <f:selectItems value="#{departmentController.departmentType}"/>
+                                            </p:selectOneMenu>
+
+                                            <h:outputText value="Institution" />
+                                            <h:panelGroup id="pnlInstitution" layout="block">
+                                                <p:autoComplete
+                                                    id="acIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    completeMethod="#{institutionController.completeActiveIns}"
+                                                    var="pta"
+                                                    itemLabel="#{pta.name}"
+                                                    itemValue="#{pta}"
+                                                    forceSelection="true"
+                                                    value="#{departmentController.current.institution}"
+                                                    disabled="#{!departmentController.editable}">
+                                                    <p:ajax process="acIns" update="cmbSupDept pnlInstitution"/>
+                                                </p:autoComplete>
+                                                <h:panelGroup rendered="#{departmentController.current.institution ne null and departmentController.current.institution.id ne null and departmentController.current.institution.retired}"
+                                                              styleClass="text-danger small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This institution is retired.
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{departmentController.current.institution ne null and departmentController.current.institution.id ne null and departmentController.current.institution.inactive and !departmentController.current.institution.retired}"
+                                                              styleClass="text-warning small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This institution is inactive.
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:outputText value="Super Department" />
+                                            <h:panelGroup id="cmbSupDept">
+                                                <p:selectOneMenu
+                                                    rendered="#{departmentController.current.institution ne null}"
+                                                    class="w-100"
+                                                    value="#{departmentController.current.superDepartment}"
+                                                    disabled="#{!departmentController.editable}">
+                                                    <f:selectItem itemLabel="Select the Department" />
+                                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(departmentController.current.institution)}"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
+
+                                            <h:outputText value="Site" />
+                                            <h:panelGroup id="pnlSite" layout="block">
+                                                <p:autoComplete
+                                                    id="acSite"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    completeMethod="#{institutionController.completeActiveSite}"
+                                                    var="site"
+                                                    itemLabel="#{site.name}"
+                                                    itemValue="#{site}"
+                                                    forceSelection="true"
+                                                    value="#{departmentController.current.site}"
+                                                    disabled="#{!departmentController.editable}">
+                                                    <p:ajax process="acSite" update="pnlSite"/>
+                                                </p:autoComplete>
+                                                <h:panelGroup rendered="#{departmentController.current.site ne null and departmentController.current.site.id ne null and departmentController.current.site.retired}"
+                                                              styleClass="text-danger small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This site is retired.
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{departmentController.current.site ne null and departmentController.current.site.id ne null and departmentController.current.site.inactive and !departmentController.current.site.retired}"
+                                                              styleClass="text-warning small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This site is inactive.
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </p:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Contact Details">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Printing Name" />
+                                            <p:inputText autocomplete="off" class="w-100"
+                                                         value="#{departmentController.current.printingName}"
+                                                         disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Address" />
+                                            <p:inputTextarea class="w-100"
+                                                             value="#{departmentController.current.address}"
+                                                             disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Tel. No. 1" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.telephone1}"
+                                                         disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Tel. No. 2" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.telephone2}"
+                                                         disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Fax" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.fax}"
+                                                         disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Email" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.email}"
+                                                         disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Description" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.description}"
+                                                         disabled="#{!departmentController.editable}" />
+                                        </p:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Pricing Details" class="w-100">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="OPD Margin Percentage" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.margin}"
+                                                         disabled="#{!departmentController.editable}" />
+                                            <h:outputText value="Pharmacy Margin Percentage" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"
+                                                         disabled="#{!departmentController.editable}" />
+                                        </p:panelGrid>
+                                    </p:tab>
+
+                                  
+                                </p:tabView>
+
+                                <h:panelGroup layout="block" class="text-end">
+                                    <div>
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Save"
+                                            icon="fas fa-save"
+                                            action="#{departmentController.saveDepartment()}"
+                                            class="m-1 ui-button-warning w-25"
+                                            process="btnSave gpDetail"
+                                            update="acDept gpDetail form:msg actionButtons deptDetails statusFilterPanel"
+                                            disabled="#{!departmentController.editable}"
+                                            oncomplete="try { if (PF('acDept')) { PF('acDept').cache = {}; } } catch(e) {}">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            immediate="true"
+                                            id="btnCancel"
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            action="#{departmentController.cancel()}"
+                                            class="m-1 ui-button-secondary w-25"
+                                            ajax="false"
+                                            disabled="#{!departmentController.editable}">
+                                        </p:commandButton>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
+                <!-- Confirmation Dialog -->
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                </p:confirmDialog>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

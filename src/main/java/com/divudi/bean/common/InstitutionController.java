@@ -1,12 +1,16 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Institution;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dto.InstitutionDto;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AuditEventFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -16,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -24,6 +29,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -41,8 +47,6 @@ public class InstitutionController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     /**
      * EJBs
      */
@@ -50,6 +54,10 @@ public class InstitutionController implements Serializable {
     private InstitutionFacade ejbFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    AuditEventFacade auditEventFacade;
+    @EJB
+    AuditService auditService;
     /**
      * Properties
      */
@@ -71,6 +79,67 @@ public class InstitutionController implements Serializable {
     private String selectText = "";
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex = -1;
+    private List<Institution> sites;
+    private List<InstitutionDuplicateGroup> duplicateGroups;
+
+    // Status filtering - following VMP/AMP pattern
+    private String filterStatus = "active";
+    private List<AuditEvent> institutionAuditEvents;
+
+    // DTO properties
+    private List<InstitutionDto> institutionDtoList;
+    private InstitutionDto selectedInstitutionDto;
+    private boolean editable;
+
+    public void fillAllSites() {
+        sites = new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType =:type";
+
+        sql += " order by c.name";
+        hm.put("type", InstitutionType.Site);
+        sites = getFacade().findByJpql(sql, hm);
+    }
+
+    private List<Institution> institutions;
+    private InstitutionType institutionType;
+
+    public void fillRetiredInstitution() {
+        institutions = new ArrayList<>();
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=true ";
+
+        if(institutionType != null){
+            sql += " and c.institutionType =:type ";
+            hm.put("type", institutionType);
+        }
+
+        sql += " order by c.name";
+        institutions = getFacade().findByJpql(sql, hm);
+    }
+
+    public void reactivateRetiredInstitution(Institution institution) {
+        Institution currentRetiredInstitution = getFacade().find(institution.getId());
+
+        if(currentRetiredInstitution == null){
+            JsfUtil.addErrorMessage("No Found Institution");
+            return;
+        }
+        if(!currentRetiredInstitution.isRetired()){
+            JsfUtil.addErrorMessage("Already Active");
+            return;
+        }
+
+        currentRetiredInstitution.setRetired(false);
+        getFacade().edit(currentRetiredInstitution);
+
+        JsfUtil.addSuccessMessage("Successfully Reactiveed");
+    }
 
     public String toAdminManageInstitutions() {
         return "/admin/institutions/admin_institutions_index?faces-redirect=true";
@@ -79,6 +148,10 @@ public class InstitutionController implements Serializable {
     public String toListInstitutions() {
         fillItems();
         return "/admin/institutions/institutions?faces-redirect=true";
+    }
+
+    public String navigatetoActivateInstitutions() {
+        return "/admin/institutions/activate_institutions?faces-redirect=true";
     }
 
     public String toAddNewInstitution() {
@@ -94,6 +167,11 @@ public class InstitutionController implements Serializable {
         return "/admin/institutions/institution?faces-redirect=true";
     }
 
+    public void makeNull() {
+        current = null;
+
+    }
+
     public String deleteInstitution() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -107,6 +185,10 @@ public class InstitutionController implements Serializable {
     public String saveSelectedInstitution() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (isDuplicateName(current)) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
             return "";
         }
         if (current.getId() == null) {
@@ -146,6 +228,10 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> completeIns(String qry) {
         return completeInstitution(qry, InstitutionType.values());
+    }
+
+    public List<Institution> completeActiveIns(String qry) {
+        return completeActiveInstitution(qry, null);
     }
 
     public List<Institution> getSearchItems() {
@@ -191,18 +277,30 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
+        return completeInstitution(qry, types, null);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType type, Institution parent) {
+        return completeInstitution(qry, new InstitutionType[]{type}, parent);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType[] types, Institution parent) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.code) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
             List<InstitutionType> lstTypes = Arrays.asList(types);
             hm.put("types", lstTypes);
             sql += "  and c.institutionType in :types";
+        }
+        if (parent != null) {
+            hm.put("parent", parent);
+            sql += "  and c.parentInstitution=:parent";
         }
         sql += " order by c.name";
         return getFacade().findByJpql(sql, hm);
@@ -242,8 +340,6 @@ public class InstitutionController implements Serializable {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
 
-        
-
         return agencies;
     }
 
@@ -256,8 +352,39 @@ public class InstitutionController implements Serializable {
         return completeInstitution(qry, types);
     }
 
+    public List<Institution> completeActiveInstitution(String qry, InstitutionType type) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.inactive=false ";
+        if (qry != null) {
+            sql += " and ((c.name) like :qry or (c.code) like :qry) ";
+            hm.put("qry", "%" + qry.toUpperCase() + "%");
+        }
+        if (type != null) {
+            hm.put("type", type);
+            sql += " and c.institutionType=:type";
+        }
+        sql += " order by c.name";
+        return getFacade().findByJpql(sql, hm);
+    }
+
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
+    }
+
+    public List<Institution> completeActiveCompany(String qry) {
+        return completeActiveInstitution(qry, InstitutionType.Company);
+    }
+
+    public List<Institution> completeSite(String qry) {
+        //Sites
+        return completeInstitution(qry, InstitutionType.Site);
+    }
+
+    public List<Institution> completeActiveSite(String qry) {
+        return completeActiveInstitution(qry, InstitutionType.Site);
     }
 
     public List<Institution> completeCollectingCenter(String qry) {
@@ -312,34 +439,86 @@ public class InstitutionController implements Serializable {
         return banks;
     }
 
+    public List<Institution> getBranches(Institution bank) {
+        return completeInstitution(null, InstitutionType.branch, bank);
+    }
+
     public Institution getInstitutionByName(String name, InstitutionType type) {
-        if (name == null) {
+        if (name == null || type == null) {
             return null;
         }
-        if (type == null) {
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("n", name.toUpperCase());
+
+        String sql = "select i from Institution i where upper(i.name)=:n and i.institutionType=:t";
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", cleanedName.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
         Institution i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Institution();
-            i.setName(name);
+            i.setName(cleanedName);
             i.setInstitutionType(type);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Institution findAndSaveInstitutionByName(String name) {
+        if (name == null) {
+            return null;
+        }
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Institution i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
+        m.put("ret", false);
+        Institution i = getFacade().findFirstByJpql(sql, m);
+
+        if (i == null) {
+            i = new Institution();
+            i.setName(cleanedName);
+            getFacade().create(i);
+        } else if (i.isRetired()) {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+
+        return i;
+    }
+
+    public Institution findAndSaveInstitutionByCode(String code) {
+        if (code == null || code.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("code", code);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.code=:code"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
+
+    public Institution findExistingInstitutionByName(String name) {
         if (name == null || name.trim().equals("")) {
             return null;
         }
@@ -352,14 +531,6 @@ public class InstitutionController implements Serializable {
                 + " where i.name=:name"
                 + " and i.retired=:ret";
         Institution i = getFacade().findFirstByJpql(sql, m);
-        if (i == null) {
-            i = new Institution();
-            i.setName(name);
-            getFacade().create(i);
-        } else {
-            i.setRetired(false);
-            getFacade().edit(i);
-        }
         return i;
     }
 
@@ -400,6 +571,14 @@ public class InstitutionController implements Serializable {
     public void prepareAdd() {
         codeDisabled = false;
         current = new Institution();
+        selectedInstitutionDto = null;
+        editable = true;
+    }
+
+    public void prepareAddSite() {
+        codeDisabled = false;
+        current = new Institution();
+        current.setInstitutionType(InstitutionType.Site);
     }
 
     public void prepareAddAgency() {
@@ -430,6 +609,10 @@ public class InstitutionController implements Serializable {
     }
 
     public void save(Institution ins) {
+        if (!ins.isRetired() && isDuplicateName(ins)) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
+            return;
+        }
         if (ins.getId() == null) {
             getFacade().create(ins);
         } else {
@@ -437,9 +620,49 @@ public class InstitutionController implements Serializable {
         }
     }
 
+    public void saveSelectedSite() {
+        if (getCurrent().getInstitutionType() != InstitutionType.Site) {
+            JsfUtil.addErrorMessage("Invalid Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(getCurrent())) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
+            return;
+        }
+
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+//
+//            if (getCurrent().getCode() != null) {
+//                getCurrent().setInstitutionCode(getCurrent().getCode());
+//            }
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+//            if (getCurrent().getCode() != null) {
+//                if (!checkCodeExist()) {
+//                    getCurrent().setInstitutionCode(getCurrent().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+        fillAllSites();
+    }
+
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
             JsfUtil.addErrorMessage("Select Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(getCurrent())) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
             return;
         }
 
@@ -470,6 +693,11 @@ public class InstitutionController implements Serializable {
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
             JsfUtil.addErrorMessage("Select Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(getAgency())) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
             return;
         }
 
@@ -568,17 +796,43 @@ public class InstitutionController implements Serializable {
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
-        agentHistory.setBeforeBallance(historyValue);
+        agentHistory.setBalanceBeforeTransaction(historyValue);
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistory.setComment(comment);
+        agentHistory.setAgency(ins);
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
         JsfUtil.addSuccessMessage("History Saved");
     }
 
     public Institution findInstitution(Long id) {
+        if (id == null) {
+            return null;
+        }
         return getFacade().find(id);
+    }
+
+    // Overloaded method to handle Integer input
+    public Institution findInstitution(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return findInstitution(Long.valueOf(id));
+    }
+
+    // Overloaded method to handle String input
+    public Institution findInstitution(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Long longId = Long.parseLong(id);
+            return findInstitution(longId);
+        } catch (NumberFormatException e) {
+// Handle the case where the string is not a valid long number
+                        return null;
+        }
     }
 
     public void setSelectText(String selectText) {
@@ -597,15 +851,18 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getCurrent() {
-        if (current == null) {
-            current = new Institution();
-        }
         return current;
     }
 
     public void setCurrent(Institution current) {
         codeDisabled = true;
         this.current = current;
+    }
+
+    public void ensureCurrent() {
+        if (current == null) {
+            current = new Institution();
+        }
     }
 
     public void delete() {
@@ -617,13 +874,31 @@ public class InstitutionController implements Serializable {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
         fetchSelectedAgencys();
         current = null;
-        getCurrent();
+        ensureCurrent();
+    }
+
+    public void deleteSite() {
+
+        if (getCurrent() != null) {
+            getCurrent().setRetired(true);
+            getCurrent().setRetiredAt(new Date());
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+
+        current = null;
+        ensureCurrent();
+        fillAllSites();
+        getSites();
     }
 
     public void deleteAgency() {
@@ -635,7 +910,7 @@ public class InstitutionController implements Serializable {
             getFacade().edit(getAgency());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         fetchSelectedAgencys();
         prepareAddAgency();
@@ -643,6 +918,21 @@ public class InstitutionController implements Serializable {
 
     private InstitutionFacade getFacade() {
         return ejbFacade;
+    }
+
+    private boolean isDuplicateName(Institution ins) {
+        if (ins == null || ins.getName() == null) {
+            return false;
+        }
+        String name = ins.getName().trim();
+        if (name.isEmpty()) {
+            return false;
+        }
+        String jpql = "select i from Institution i where i.retired=false and upper(trim(i.name))=:n";
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", name.toUpperCase());
+        Institution other = getFacade().findFirstByJpql(jpql, m);
+        return other != null && (ins.getId() == null || !other.getId().equals(ins.getId()));
     }
 
     public List<Institution> getItems() {
@@ -654,12 +944,22 @@ public class InstitutionController implements Serializable {
 
     public void fillItems() {
         String j;
+        Map<String, Object> m = new HashMap<>();
         j = "select i "
                 + " from Institution i "
-                + " where i.retired=:ret"
-                + " order by i.name";
-        Map m = new HashMap();
-        m.put("ret", false);
+                + " where i.retired=false ";
+
+        // Apply status filter on inactive field
+        if ("active".equals(filterStatus)) {
+            j += " and i.inactive=:inactive ";
+            m.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            j += " and i.inactive=:inactive ";
+            m.put("inactive", true);
+        }
+        // For "all", no additional filter needed
+
+        j += " order by i.name";
         items = getFacade().findByJpql(j, m);
     }
 
@@ -761,6 +1061,469 @@ public class InstitutionController implements Serializable {
         this.collectingCentresAndManagedInstitutions = collectingCentresAndManagedInstitutions;
     }
 
+    public List<Institution> getSites() {
+        if (sites == null) {
+            fillAllSitesWithFilter();
+        }
+
+        return sites;
+    }
+
+    public void setSites(List<Institution> sites) {
+        this.sites = sites;
+    }
+
+    public InstitutionType getInstitutionType() {
+        return institutionType;
+    }
+
+    public void setInstitutionType(InstitutionType institutionType) {
+        this.institutionType = institutionType;
+    }
+
+    public List<Institution> getInstitutions() {
+        return institutions;
+    }
+
+    public void setInstitutions(List<Institution> institutions) {
+        this.institutions = institutions;
+    }
+
+    public String navigateToDuplicateInstitutions() {
+        detectDuplicateInstitutions();
+        return "/admin/institutions/institution_duplicates?faces-redirect=true";
+    }
+
+    public List<InstitutionDuplicateGroup> getDuplicateGroups() {
+        return duplicateGroups;
+    }
+
+    public void detectDuplicateInstitutions() {
+        String jpql = "SELECT i FROM Institution i WHERE i.retired=false ORDER BY upper(trim(i.name)), i.id";
+        List<Institution> all = getFacade().findByJpql(jpql);
+        Map<String, List<Institution>> grouped = all.stream()
+                .filter(ins -> ins.getName() != null)
+                .collect(Collectors.groupingBy(ins -> ins.getName().trim().toUpperCase()));
+        duplicateGroups = grouped.values().stream()
+                .filter(l -> l.size() > 1)
+                .map(l -> new InstitutionDuplicateGroup(l))
+                .collect(Collectors.toList());
+    }
+
+    public void retireDuplicateGroup(InstitutionDuplicateGroup g) {
+        if (g == null || g.getInstitutions() == null || g.getInstitutions().size() < 2) {
+            return;
+        }
+        g.getInstitutions().sort((a, b) -> a.getId().compareTo(b.getId()));
+        for (int i = 1; i < g.getInstitutions().size(); i++) {
+            Institution ins = g.getInstitutions().get(i);
+            ins.setRetired(true);
+            ins.setRetiredAt(new Date());
+            ins.setRetirer(sessionController.getLoggedUser());
+            save(ins);
+        }
+        detectDuplicateInstitutions();
+        JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    // ===================== Filter Status Management (VMP/AMP Pattern) =====================
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        recreateModel();
+        clearDtoCache();
+        sites = null; // Reset sites list for site_management page
+
+        // Clear selection if current item doesn't match new filter
+        if (current != null && current.getId() != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isInactive();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isInactive();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                selectedInstitutionDto = null;
+                institutionAuditEvents = null;
+            }
+        }
+
+        // Refresh sites list with new filter
+        fillAllSitesWithFilter();
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active Institutions";
+            case "inactive":
+                return "Inactive Institutions";
+            case "all":
+                return "All Institutions";
+            default:
+                return "Active Institutions";
+        }
+    }
+
+    // ===================== Status Toggle Methods =====================
+
+    /**
+     * Toggle Institution inactive status with audit logging
+     */
+    public void toggleInstitutionStatus() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No Institution selected");
+            return;
+        }
+
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasInactive = current.isInactive();
+
+        if (wasInactive) {
+            current.setInactive(false);
+            JsfUtil.addSuccessMessage("Institution Activated Successfully");
+        } else {
+            current.setInactive(true);
+            JsfUtil.addSuccessMessage("Institution Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasInactive ? "Activate Institution" : "Deactivate Institution";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Institution", action, current.getId());
+
+        recreateModel();
+        clearDtoCache();
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isInactive() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
+    }
+
+    // ===================== Audit Trail Methods =====================
+
+    /**
+     * Create audit map with Institution-specific fields
+     */
+    private Map<String, Object> createAuditMap(Institution inst) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (inst != null) {
+            // Core identification
+            auditData.put("id", inst.getId());
+            auditData.put("name", inst.getName());
+            auditData.put("code", inst.getCode());
+            auditData.put("retired", inst.isRetired());
+            auditData.put("inactive", inst.isInactive());
+            auditData.put("institutionType", inst.getInstitutionType() != null ?
+                    inst.getInstitutionType().toString() : null);
+
+            // Contact information
+            auditData.put("address", inst.getAddress());
+            auditData.put("phone", inst.getPhone());
+            auditData.put("mobile", inst.getMobile());
+            auditData.put("email", inst.getEmail());
+
+            // Relationships
+            auditData.put("parentInstitutionId", inst.getParentInstitution() != null ?
+                    inst.getParentInstitution().getId() : null);
+            auditData.put("parentInstitutionName", inst.getParentInstitution() != null ?
+                    inst.getParentInstitution().getName() : null);
+
+            // Credit settings
+            auditData.put("allowedCredit", inst.getAllowedCredit());
+            auditData.put("maxCreditLimit", inst.getMaxCreditLimit());
+            auditData.put("standardCreditLimit", inst.getStandardCreditLimit());
+        }
+        return auditData;
+    }
+
+    public void fillInstitutionAuditEvents() {
+        if (current != null && current.getId() != null) {
+            try {
+                String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
+                        + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("objectId", current.getId());
+                parameters.put("entityType", "Institution");
+
+                institutionAuditEvents = auditEventFacade.findByJpql(jpql, parameters);
+            } catch (Exception e) {
+                institutionAuditEvents = new ArrayList<>();
+            }
+        } else {
+            institutionAuditEvents = new ArrayList<>();
+        }
+    }
+
+    public String navigateToInstitutionAuditEvents() {
+        fillInstitutionAuditEvents();
+        return "/admin/institutions/institution_audit_events?faces-redirect=true";
+    }
+
+    public List<AuditEvent> getInstitutionAuditEvents() {
+        if (institutionAuditEvents == null) {
+            fillInstitutionAuditEvents();
+        }
+        return institutionAuditEvents;
+    }
+
+    public void setInstitutionAuditEvents(List<AuditEvent> institutionAuditEvents) {
+        this.institutionAuditEvents = institutionAuditEvents;
+    }
+
+    public void refreshAuditEvents() {
+        institutionAuditEvents = null;
+        fillInstitutionAuditEvents();
+    }
+
+    // ===================== Site-Specific Status Methods =====================
+
+    public void fillAllSitesWithFilter() {
+        sites = new ArrayList<>();
+        String sql;
+        HashMap<String, Object> hm = new HashMap<>();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType =:type";
+
+        hm.put("type", InstitutionType.Site);
+
+        // Apply status filter on inactive field
+        if ("active".equals(filterStatus)) {
+            sql += " and c.inactive=:inactive ";
+            hm.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            sql += " and c.inactive=:inactive ";
+            hm.put("inactive", true);
+        }
+        // For "all", no additional filter needed
+
+        sql += " order by c.name";
+        sites = getFacade().findByJpql(sql, hm);
+    }
+
+    public void toggleSiteStatus() {
+        toggleInstitutionStatus();
+        fillAllSitesWithFilter();
+    }
+
+    public static class InstitutionDuplicateGroup {
+        private List<Institution> institutions;
+
+        public InstitutionDuplicateGroup(List<Institution> institutions) {
+            this.institutions = institutions;
+        }
+
+        public List<Institution> getInstitutions() {
+            return institutions;
+        }
+
+        public String getName() {
+            return institutions.get(0).getName();
+        }
+    }
+
+    // ===================== DTO Methods =====================
+
+    public List<InstitutionDto> completeInstitutionDto(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.InstitutionDto("
+                + "i.id, i.name, i.code, i.institutionCode, i.retired, i.inactive) "
+                + "FROM Institution i WHERE i.retired=:ret "
+                + "AND UPPER(i.name) LIKE :query ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("query", "%" + query.toUpperCase() + "%");
+
+        if ("active".equals(filterStatus)) {
+            jpql += "AND i.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND i.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+
+        jpql += "ORDER BY i.name";
+
+        try {
+            return (List<InstitutionDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public InstitutionDto createInstitutionDto(Institution inst) {
+        if (inst == null) {
+            return null;
+        }
+        return new InstitutionDto(
+                inst.getId(),
+                inst.getName(),
+                inst.getCode(),
+                inst.getInstitutionCode(),
+                inst.isRetired(),
+                inst.isInactive()
+        );
+    }
+
+    public void clearDtoCache() {
+        institutionDtoList = null;
+    }
+
+    public InstitutionDto getSelectedInstitutionDto() {
+        return selectedInstitutionDto;
+    }
+
+    public void setSelectedInstitutionDto(InstitutionDto selectedInstitutionDto) {
+        this.selectedInstitutionDto = selectedInstitutionDto;
+        if (selectedInstitutionDto != null && selectedInstitutionDto.getId() != null) {
+            this.current = getFacade().find(selectedInstitutionDto.getId());
+        } else {
+            this.current = null;
+        }
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
+    public void edit() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Please select an Institution to edit");
+            return;
+        }
+        if (current.isInactive()) {
+            JsfUtil.addWarningMessage("Editing inactive Institution '" + current.getName() + "'");
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        selectedInstitutionDto = null;
+        editable = false;
+    }
+
+    public void saveInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (current.getInstitutionType() == null) {
+            JsfUtil.addErrorMessage("Please select an Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(current)) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
+            return;
+        }
+
+        try {
+            boolean isNew = current.getId() == null;
+            Map<String, Object> beforeData = isNew ? null : createAuditMap(getFacade().find(current.getId()));
+
+            if (isNew) {
+                current.setCreatedAt(new Date());
+                current.setCreater(getSessionController().getLoggedUser());
+                getFacade().create(current);
+                JsfUtil.addSuccessMessage("Institution '" + current.getName() + "' created successfully");
+            } else {
+                getFacade().edit(current);
+                JsfUtil.addSuccessMessage("Institution '" + current.getName() + "' updated successfully");
+            }
+
+            Map<String, Object> afterData = createAuditMap(current);
+            String action = isNew ? "Create Institution" : "Update Institution";
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Institution", action, current.getId());
+
+            selectedInstitutionDto = createInstitutionDto(current);
+
+            editable = false;
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Institution: " + e.getMessage());
+        }
+
+        recreateModel();
+        clearDtoCache();
+    }
+
     /**
      *
      */
@@ -769,7 +1532,7 @@ public class InstitutionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InstitutionController controller = (InstitutionController) facesContext.getApplication().getELResolver().
@@ -804,12 +1567,43 @@ public class InstitutionController implements Serializable {
         }
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
+    @FacesConverter("institutionDtoConverter")
+    public static class InstitutionDtoConverter implements Converter {
 
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.parseLong(value);
+                InstitutionController controller = (InstitutionController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "institutionController");
 
+                if (controller == null) {
+                    return null;
+                }
+
+                Institution entity = controller.getEjbFacade().find(id);
+                if (entity != null) {
+                    return controller.createInstitutionDto(entity);
+                }
+                return null;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof InstitutionDto) {
+                InstitutionDto dto = (InstitutionDto) object;
+                return dto.getId() != null ? dto.getId().toString() : null;
+            }
+            throw new IllegalArgumentException("Expected InstitutionDto object");
+        }
+    }
 }

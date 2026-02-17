@@ -1,0 +1,282 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="item">
+
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    Upload Items and Fees for Collecting Centres
+                </div>
+                <div class="card-body" >
+
+                    <div class="row" >
+
+                        <div class="col-6" >
+                            <h:form enctype="multipart/form-data">
+                                <p:fileUpload value="#{dataUploadController.file}"
+                                              mode="simple"
+                                              label="Choose File"/>
+                                <p:commandButton value="Upload"
+                                                 class="ui-button-warning m-1"
+                                                 action="#{dataUploadController.uploadCollectingCentreSpecialFeeUpload()}"
+                                                 ajax="false"/>
+
+
+
+
+                                <h:panelGroup id="gpPoll" >
+                                    <h:panelGroup rendered="#{dataUploadController.pollActive}" >
+                                        <p:poll interval="10" process="@this" update="tbls gpPoll" ></p:poll>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                                </p:dialog>
+                                <script type="text/javascript">
+                                    function start() {
+                                        PF('statusDialog').show();
+                                    }
+
+                                    function stop() {
+                                        PF('statusDialog').hide();
+                                    }
+                                </script>
+
+                                <h:panelGroup id="tbls" >
+
+
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Column</th>
+                                                <th>Title</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>A</td>
+                                                <td>Name</td>
+                                                <td>Mandatory. Item Name.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>B</td>
+                                                <td>Item Code</td>
+                                                <td>Mandatory. Item Code.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>C</td>
+                                                <td>Institution</td>
+                                                <td>Mandatory. Institution.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>D</td>
+                                                <td>Department</td>
+                                                <td>Mandatory. Department.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>E</td>
+                                                <td>Fee Name</td>
+                                                <td>Mandatory. Fee Name.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>F</td>
+                                                <td>Fee Type</td>
+                                                <td>Mandatory. Type of Fee (e.g., OwnInstitution).</td>
+                                            </tr>
+                                            <tr>
+                                                <td>G</td>
+                                                <td>Speciality</td>
+                                                <td>Optional. Speciality associated with the fee.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>H</td>
+                                                <td>Staff</td>
+                                                <td>Optional. Staff associated with the fee.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>I</td>
+                                                <td>Fee Institution</td>
+                                                <td>Optional. Institution where the fee is applied.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>J</td>
+                                                <td>Fee Department</td>
+                                                <td>Optional. Department where the fee is applied.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>K</td>
+                                                <td>Collecting Centre</td>
+                                                <td>Mandatory. Collecting Centre.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>L</td>
+                                                <td>Fee Value for Locals</td>
+                                                <td>Mandatory. New Fee value for locals.</td>
+                                            </tr>
+                                            <tr>
+                                                <td>M</td>
+                                                <td>Fee Value for Foreigners</td>
+                                                <td>Mandatory. New Fee value for foreigners.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+
+                                </h:panelGroup>
+
+                            </h:form>
+                        </div>
+
+                        <div class="col-6" >
+                            <h:form >
+
+                                <p:panelGrid columns="2" >
+                                    <h:panelGroup id="gpLblIns"  >
+                                        <p:outputLabel value="Institution" ></p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="gpAcIns"  >
+                                        <p:autoComplete 
+                                            id="acInstitution" 
+                                            value="#{dataUploadController.institution}" 
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ins" 
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{ins.name}" 
+                                            itemValue="#{ins}" 
+                                            >
+                                            <p:ajax event="itemSelect" process="acInstitution" update="gpDepartment"  ></p:ajax>
+                                        </p:autoComplete>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="gpLblDep"  >
+                                        <p:outputLabel value="Department" ></p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="gpDepartment" >
+                                        <p:outputLabel rendered="#{dataUploadController.institution eq null}" value="Select Institution" ></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            id="lstDepartment"
+                                            class="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            rendered="#{dataUploadController.institution ne null}"
+                                            value="#{dataUploadController.department}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{departmentController.getInstitutionDepatrments(dataUploadController.institution)}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+
+
+                                    <p:commandButton 
+                                        value="Download Template" 
+                                        ajax="false" 
+                                        class="ui-button-success m-1"
+                                        onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                        icon="ui-icon-arrowthick-1-s">
+                                        <p:fileDownload value="#{dataUploadController.getTemplateForCollectingCentreSpecialFeeUpload()}" />
+                                    </p:commandButton>
+                                </p:panelGrid>
+
+
+                            </h:form>
+                        </div>
+                    </div>
+
+                     <div class="row" >
+                         <div class="col-12" >
+                             <h:outputLabel 
+                                 value="#{dataUploadController.outputString}" 
+                                 class="text-danger w-100 m-5 b-1"></h:outputLabel>
+                         </div>
+                     </div>
+
+                    <div class="row" >
+                        <div class="col-12" >
+                            <p:poll update="tbl"></p:poll>
+                            <p:commandButton ajax="false" value="Download Excel" >
+                                <p:dataExporter target="tbl" type="xlsx" fileName="Uploaded Fee List" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:dataTable
+                                paginator="true"
+                                rows="10"
+                                rowKey="#{fee.id}"
+                                id="tbl" 
+                                value="#{dataUploadController.itemFees}" 
+                                var="fee">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Items Saved: #{dataUploadController.itemFees.size()}"></p:outputLabel>
+                                </f:facet>
+                                <p:column headerText="Name">
+                                    <h:outputText value="#{fee.item.name}" />
+                                </p:column>
+                                <p:column headerText="Item Code">
+                                    <h:outputText value="#{fee.item.code}" />
+                                </p:column>
+                                <p:column headerText="Institution">
+                                    <h:outputText value="#{fee.item.institution.name}" />
+                                </p:column>
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{fee.item.department.name}" />
+                                </p:column>
+                                <p:column headerText="Fee Name">
+                                    <h:outputText value="#{fee.name}" />
+                                </p:column>
+                                <p:column headerText="Fee Type">
+                                    <h:outputText value="#{fee.feeType}" />
+                                </p:column>
+                                <p:column headerText="Speciality">
+                                    <h:outputText value="#{fee.speciality != null ? fee.speciality.name : ''}" />
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    <h:outputText value="#{fee.staff != null ? fee.staff.name : ''}" />
+                                </p:column>
+                                <p:column headerText="Fee Institution">
+                                    <h:outputText value="#{fee.institution != null ? fee.institution.name : ''}" />
+                                </p:column>
+                                <p:column headerText="Fee Department">
+                                    <h:outputText value="#{fee.department != null ? fee.department.name : ''}" />
+                                </p:column>
+                                <p:column headerText="Collecting Centre">
+                                    <h:outputText value="#{fee.forInstitution != null ? fee.forInstitution.name : ''}" />
+                                </p:column>
+                                <p:column headerText="Fee Value for Locals">
+                                    <h:outputText value="#{fee.fee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Fee Value for Foreigners">
+                                    <h:outputText value="#{fee.ffee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </ui:define>
+</ui:composition>

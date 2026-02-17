@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:pat="http://java.sun.com/jsf/composite/patient"
+                xmlns:ezcommon="http://java.sun.com/jsf/composite/ezcomp/common"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+
+
+        <h:form class="form" >
+
+            <p:commandButton value="Save" 
+                             ajax="false"
+                             action="#{captureComponentController.saveDataForm()}" ></p:commandButton>
+
+            <p:commandButton value="Back" 
+                             ajax="false"
+                             ></p:commandButton>
+
+
+
+            <h:form>
+                <p:panelGrid columns="1" >
+                    <f:facet name="header" >
+                        <h:outputLabel value="Data Entry for #{captureComponentController.selectedDataEntryForm.description}" ></h:outputLabel>
+                        <p:commandButton value="Submit" action="#{captureComponentController.saveCurrent()}"></p:commandButton>
+                    </f:facet>
+
+                    <ui:repeat value="#{captureComponentController.formComponents}" var="fc">
+                        <!-- Render static HTML content when not a JSF component -->
+                        <h:outputText value="#{fc.htmlContent}" rendered="#{!fc.containsJsfComponent}" escape="false"/>
+
+                        <!-- Render input text for Short_Text data type -->
+                        <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Short_Text'}">
+                            <p:inputText value="#{fc.jsfComponent.shortTextValue}" placeholder="#{fc.jsfComponent.designComponent.code}" />
+                        </h:panelGroup>
+
+                        <!-- Render textarea for Long_Text data type -->
+                        <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Long_Text'}">
+                            <p:inputTextarea value="#{fc.jsfComponent.longTextValue}" placeholder="#{fc.jsfComponent.designComponent.code}" />
+                        </h:panelGroup>
+
+                        <!-- Render input number for Integer data type -->
+                        <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Integer'}">
+                            <p:inputNumber value="#{fc.jsfComponent.intValue}" placeholder="Enter Integer" />
+                        </h:panelGroup>
+
+                        <!-- Render input number for Double data type -->
+                        <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Double'}">
+                            <p:inputNumber value="#{fc.jsfComponent.doubleValue}" decimalPlaces="2" placeholder="Enter Decimal Value" />
+                        </h:panelGroup>
+
+                        <!-- Render checkbox for Boolean data type -->
+                        <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Boolean'}">
+                            <p:selectBooleanCheckbox value="#{fc.jsfComponent.booleanValue}" />
+                        </h:panelGroup>
+
+
+
+                        <!--                     Render select one menu for Select_One data type 
+                                            <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Select_One'}">
+                                                <p:selectOneMenu value="#{fc.jsfComponent.selectedValue}">
+                                                    <f:selectItems value="#{fc.jsfComponent.options}" var="option" itemValue="#{option}" itemLabel="#{option.label}" />
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
+                        
+                                             Render select many checkbox for Select_Many data type 
+                                            <h:panelGroup rendered="#{fc.containsJsfComponent and fc.jsfComponent.designComponent.componentDataType eq 'Select_Many'}">
+                                                <p:selectManyCheckbox value="#{fc.jsfComponent.selectedValues}">
+                                                    <f:selectItems value="#{fc.jsfComponent.options}" var="option" itemValue="#{option}" itemLabel="#{option.label}" />
+                                                </p:selectManyCheckbox>
+                                            </h:panelGroup>-->
+                    </ui:repeat>
+
+
+                </p:panelGrid>
+
+
+
+
+            </h:form>
+
+
+
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,225 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header">
+                            <i class="fa fa-money-bill-wave mt-2"/>
+                            <p:outputLabel value="Record Income" class="mx-2 mt-2"></p:outputLabel>
+                            <p:commandButton 
+                                icon="pi pi-play"
+                                class="ui-button-success"
+                                value="Settle Income" 
+                                ajax="false" 
+                                style="float: right;"
+                                action="#{financialTransactionController.settleIncomeBill()}" >
+                            </p:commandButton>
+
+                            <div  style="float: right;" class="mx-3">
+                                <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
+                            </div>
+
+
+                        </f:facet>
+
+
+
+
+                        <p:panel header="Payments"  class="my-2">
+                            <f:facet name="header" >
+                                <h:outputText value="Payments" ></h:outputText>
+                                <p:commandButton
+                                    id="btnAdd"
+                                    style="float: right;"
+                                    value="Add"
+                                    ajax="false"
+                                    action="#{financialTransactionController.addPaymentToIncomeBill()}" >
+                                </p:commandButton>
+                            </f:facet>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        class="m-1"
+                                        style="width: 16em"
+                                        id="cmdPayment" 
+                                        value="#{financialTransactionController.currentPayment.paymentMethod}" >
+                                        <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethodsForIncome}" ></f:selectItems>
+                                        <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Comment" class="ms-5"></p:outputLabel>
+                                    <p:inputText value="#{financialTransactionController.currentPayment.comments}" class="m-1"></p:inputText>
+
+                                    <p:outputLabel value="Value" class="ms-5" ></p:outputLabel>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        value="#{financialTransactionController.currentPayment.paidValue}" 
+                                        onfocus="this.select()"
+                                        class="m-1"
+                                        id="txtVal">
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:inputText>
+                                </div>
+
+                            </div>
+                            <div class="row">
+                                <h:panelGroup id="paymentDetails" layout="block" class="col-md-12" >
+
+
+                                    <h:panelGroup     
+                                        id="card"  
+                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
+
+                                        <p:outputLabel value="Bank" class="m-1"></p:outputLabel>
+                                        <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                            <f:selectItem itemLabel="Select Bank"/>
+                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Card Last 4 Digits" class="ms-5 m-1"></p:outputLabel>
+                                        <p:inputText class="m-1" autocomplete="off"  value="#{financialTransactionController.currentPayment.creditCardRefNo}">
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:inputText>
+                                    </h:panelGroup>
+
+
+                                    <h:panelGroup
+                                        id="cheque" 
+                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
+
+                                        <p:outputLabel value="Bank" class="m-1"></p:outputLabel>
+                                        <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                            <f:selectItem itemLabel="Select Bank"/>
+                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Cheque No" class="ms-5 m-1"></p:outputLabel>
+                                        <p:inputText class="m-1" autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:inputText>
+                                        <p:outputLabel value="Cheque Date" class="ms-5 m-1"></p:outputLabel>
+                                        <p:calendar class="m-1" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:calendar>
+                                    </h:panelGroup>                                  
+
+
+                                    <h:panelGroup
+                                        id="slip" 
+                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Slip'}" >
+
+                                        <p:outputLabel value="Bank" class="m-1"></p:outputLabel>
+                                        <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                            <f:selectItem itemLabel="Select Bank"/>
+                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Slip Date" class="ms-5 m-1"></p:outputLabel>
+                                        <p:calendar class="m-1" value="#{financialTransactionController.currentPayment.paymentDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="SlipDate">                            
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:calendar>
+                                    </h:panelGroup>
+
+
+                                </h:panelGroup>
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                            </div>
+
+                            <p:messages ></p:messages>
+                        </p:panel>
+
+                        <p:panel  header="Funds" >
+                            <f:facet name="header">
+                                <h:panelGroup id="totals">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h:outputText value="Funds List" ></h:outputText>
+                                        </div>
+                                        <div class="d-flex">
+                                            <h:outputText value=" Total Funds : " ></h:outputText>
+                                            <p:outputLabel 
+
+                                                class="mx-2"
+                                                value="#{financialTransactionController.currentBill.total}" >
+                                            </p:outputLabel>
+                                        </div>
+                                    </div>
+
+                                </h:panelGroup>
+                            </f:facet>
+
+                            <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                                <p:column headerText="Payment Method" width="20%">
+                                    <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Comments" width="20%">
+                                    <h:outputText value="#{bp.comments}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Details"  >
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Card'}">
+                                        <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Card Last 4 Digits : #{bp.creditCardRefNo}" ></h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
+                                        <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Cheque No : #{bp.chequeRefNo}" ></h:outputLabel>
+                                        <h:outputLabel value="Cheque Date : #{bp.chequeDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Slip'}">
+                                        <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Slip Date : #{bp.paymentDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Value" width="20%">
+                                    <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Action" width="20%">
+                                    <p:commandButton 
+                                        class="ui-button-danger"
+                                        icon=" fa-solid fa-trash"
+                                        id="btnRemove"
+                                        value="Remove" 
+                                        action="#{financialTransactionController.removePayment}" 
+                                        process="btnRemove tblPayments"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panel>
+
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,0 +1,73 @@
+Transfer Request need improvements of data as per the comments
+
+{
+    "code": 200,
+    "data": {
+        "id": 5661288,
+        "dtype": "BilledBill",
+        "createdAt": "2025-10-11 21:52:56",
+        "fromDepartmentId": 90094,
+        "toDepartmentId": 485,
+        "departmentId": 90094,
+        "fromInstitutionId": 2,
+        "toInstitutionId": 2,
+        "billTypeAtomic": "PHARMACY_TRANSFER_REQUEST",
+        "billType": "PharmacyTransferRequest",
+        "discount": 0.0,
+        "tax": 0.0,
+        "expenseTotal": 0.0,
+        "netTotal": -31.5, // request have not sings, so keep them as positives
+        "total": -31.5, // request have not sings, so keep them as positives
+        "billFinanceDetailsId": 5661289,
+        "billFinanceDetails": {
+            "id": 5661289,
+            "netTotal": -31.5, // request have not sings, so keep them as positives
+            "grossTotal": -31.5, // request have not sings, so keep them as positives
+            "totalCostValue": 0.0,
+            "totalPurchaseValue": 0.0,
+            "totalRetailSaleValue": 0.0
+        },
+        "billItems": [
+            {
+                "id": 5661285,
+                "createdAt": "2025-10-11 21:52:56",
+                "billId": 5661288,
+                "itemId": 115945,
+                "billItemFinanceDetailsId": 5661286,
+                "qty": 10.0,
+                "rate": 0.0,
+                "netRate": 0.0,
+                "grossValue": 0.0, // request have not sings, so keep them as positives. but there should be a value
+                "netValue": -0.0, // request have not sings, so keep them as positives. but there should be a value
+                "retired": false,
+                "billItemFinanceDetails": {
+                    "id": 5661286,
+                    "createdAt": "2025-10-11 21:52:42",
+                    "quantity": 10.0,
+                    "quantityByUnits": 10.0,
+                    "lineNetRate": 3.15,
+                    "lineGrossRate": 3.15,
+                    "retailSaleRate": 3.15,
+                    "lineCostRate": 3.15,
+                    "lineGrossTotal": 31.5,
+                    "grossTotal": 31.5,
+                    "lineCost": 31.5,
+                    "totalCost": 0.0
+                },
+                "pharmaceuticalBillItem": {
+                    "id": 5661287,
+                    "billItemId": 5661285,
+                    "qty": 10.0,
+                    "freeQty": 0.0,
+                    "retailRate": 3.15,
+                    "purchaseRate": 3.15,
+                    "costRate": 0.0,
+                    "purchaseValue": 31.5,
+                    "retailValue": 31.5,
+                    "costValue": 0.0
+                }
+            }
+        ]
+    },
+    "status": "success"
+}

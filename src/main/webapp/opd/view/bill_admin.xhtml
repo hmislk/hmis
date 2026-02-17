@@ -1,0 +1,509 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:view="http://xmlns.jcp.org/jsf/composite/ezcomp/view"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Bill Administration" class="mt-2"></p:outputLabel>
+                                <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
+                                <p:commandButton value="Bill Search" action="#{billSearch.navigateToBillListFromAdminBill()}" ajax="false" ></p:commandButton>
+                                <p:commandButton value="Export JSON" ajax="false" icon="pi pi-download">
+                                    <p:fileDownload value="#{billSearch.exportAsJson()}"/>
+                                </p:commandButton>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+
+                            <div class="col-12">
+                                <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+                                    <p:outputLabel value="Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                    <p:outputLabel value="Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+                                <p:tabView orientation="left">
+                                    <p:tab title="Summary" >
+                                        <p:panel header="Bill Summary">
+                                            <p:commandButton
+                                                value="Apply Discount"
+                                                icon="pi pi-percentage"
+                                                styleClass="ui-button-warning mb-3"
+                                                action="#{adminOpdBillDiscountController.navigateToApplyDiscount()}"
+                                                ajax="false"
+                                                rendered="#{billSearch.viewingBill.billTypeAtomic eq 'OPD_BILL_WITH_PAYMENT'}">
+                                                <f:setPropertyActionListener
+                                                    value="#{billSearch.viewingBill}"
+                                                    target="#{adminOpdBillDiscountController.selectedBill}" />
+                                            </p:commandButton>
+                                            <p:panelGrid
+                                                columns="4"
+                                                styleClass="w-100"
+                                                columnClasses="w-15,w-35,w-15,w-35"
+                                                layout="tabular">
+
+                                                <h:outputLabel value="Bill Number:" />
+                                                <h:outputText value="#{billSearch.viewingBill.deptId}" />
+                                                <h:outputLabel value="Bill Type:" />
+
+                                                <p:selectOneMenu class="w-100" style="width: 150px"  filterMatchMode="contains" filter="true" id="group" value="#{billSearch.viewingBill.billTypeAtomic}">
+                                                    <f:selectItems class="w-50" value="#{enumController.billTypesAtomic}"/>
+                                                </p:selectOneMenu>
+
+                                                <h:outputLabel value="Total:" />
+                                                <h:outputText value="#{billSearch.viewingBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputLabel value="Discount:" />
+                                                <h:outputText value="#{billSearch.viewingBill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Net Total:" />
+                                                <h:outputText value="#{billSearch.viewingBill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputLabel value="Created By:" />
+                                                <h:outputText value="#{billSearch.viewingBill.creater.webUserPerson.name}" />
+
+                                                <h:outputLabel value="Created At:" />
+                                                <h:outputText value="#{billSearch.viewingBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+
+                                                <h:outputLabel value="Institution" />
+                                                <p:autoComplete
+                                                    id="acIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeCompany}"
+                                                    var="ins"
+                                                    itemLabel="#{ins.name}"
+                                                    itemValue="#{ins}"
+                                                    value="#{billSearch.viewingBill.institution}">
+                                                    <p:ajax event="itemSelect" update="acDept"/>
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="Department" />
+                                                <p:autoComplete
+                                                    id="acDept"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="dept"
+                                                    itemLabel="#{dept.name}"
+                                                    itemValue="#{dept}"
+                                                    value="#{billSearch.viewingBill.department}"/>
+
+                                                <h:outputLabel value="From Institution" />
+                                                <p:autoComplete
+                                                    id="acFIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeIns}"
+                                                    var="fins"
+                                                    itemLabel="#{fins.name}"
+                                                    itemValue="#{fins}"
+                                                    value="#{billSearch.viewingBill.fromInstitution}">
+                                                    <p:ajax event="itemSelect" update="acFDept"/>
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="From Department" />
+                                                <p:autoComplete
+                                                    id="acFDept"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="fdept"
+                                                    itemLabel="#{fdept.name}"
+                                                    itemValue="#{fdept}"
+                                                    value="#{billSearch.viewingBill.fromDepartment}"/>
+
+                                                <h:outputLabel value="To Institution" />
+                                                <p:autoComplete
+                                                    id="acTIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeIns}"
+                                                    var="tins"
+                                                    itemLabel="#{tins.name}"
+                                                    itemValue="#{tins}"
+                                                    value="#{billSearch.viewingBill.toInstitution}">
+                                                    <p:ajax event="itemSelect" update="acTDept"/>
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="To Department" />
+                                                <p:autoComplete
+                                                    id="acTDept"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="tdept"
+                                                    itemLabel="#{tdept.name}"
+                                                    itemValue="#{tdept}"
+                                                    value="#{billSearch.viewingBill.toDepartment}"/>
+
+
+                                                <h:outputLabel value="From:" />
+                                                <h:outputText value="#{billSearch.viewingBill.fromDepartment.name}" />
+
+                                                <h:outputLabel value="To:" />
+                                                <h:outputText value="#{billSearch.viewingBill.toDepartment.name}" />
+                                                <h:outputLabel value="Cancelled:" />
+                                                <h:outputText value="#{billSearch.viewingBill.cancelled ? 'Yes' : 'No'}" />
+
+                                                <h:outputLabel value="Refunded:" />
+                                                <h:outputText value="#{billSearch.viewingBill.refunded ? 'Yes' : 'No'}" />
+
+                                            </p:panelGrid>
+                                        </p:panel>
+
+                                    </p:tab>
+                                    <p:tab title="Bill Details" >
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                            </f:facet>
+                                            <div class="my-2">
+                                                <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
+                                            </div>
+                                        </p:panel>
+                                    </p:tab>
+                                    <p:tab title="Bill Items" >
+
+                                        <p:accordionPanel styleClass="p-grid">
+                                            <p:tab title="Bill Items" >
+                                                <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
+                                            </p:tab>
+                                            <p:tab title="Pharmaceutical Bill Items" >
+                                                <view:pharmaceutical_bill_item_list_edit
+                                                    editable="true" 
+                                                    pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
+                                            </p:tab>
+                                            <p:tab title="Patient Investigations" >
+                                                <view:patient_investigation_list_edit 
+                                                    ptixs="#{billSearch.viewingPatientInvestigations}"
+                                                    editable="true"
+                                                    ></view:patient_investigation_list_edit>
+                                            </p:tab>
+                                        </p:accordionPanel>
+
+                                        <div class="p-grid">
+                                            <ui:repeat value="#{billSearch.viewingBillItems}" var="bi">
+                                                <div class="p-col-12 mb-2">
+                                                    <ph:bill_item_finance_details pbi="#{bi}"/>
+                                                </div>
+                                            </ui:repeat>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Bill Fees" >
+                                        <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
+                                    </p:tab>
+                                    <p:tab title="Bill Payments" >
+                                        <p:commandButton
+                                            value="Add New Payment"
+                                            icon="pi pi-plus"
+                                            styleClass="ui-button-success mb-2"
+                                            ajax="false"
+                                            action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" />
+                                        <p:dataTable
+                                            value="#{billSearch.viewingBillPayments}"
+                                            var="p"
+                                            rowKey="#{p.id}"
+                                            size="small"
+                                            styleClass="compact-table">
+                                            <p:column headerText="ID" width="80">
+                                                <h:outputText value="#{p.id}" />
+                                            </p:column>
+                                            <p:column headerText="Payment Method">
+                                                <h:outputText value="#{p.paymentMethod}" />
+                                            </p:column>
+                                            <p:column headerText="Value" styleClass="text-end" width="150">
+                                                <h:outputText value="#{p.paidValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Actions" width="100" styleClass="text-center">
+                                                <p:commandButton
+                                                    icon="pi pi-eye"
+                                                    styleClass="ui-button-rounded ui-button-info ui-button-sm m-1"
+                                                    title="View"
+                                                    ajax="false"
+                                                    action="#{billSearch.navigateToViewPayment()}">
+                                                    <f:setPropertyActionListener
+                                                        value="#{p}"
+                                                        target="#{billSearch.payment}" />
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    icon="pi pi-pencil"
+                                                    styleClass="ui-button-rounded ui-button-warning ui-button-sm m-1"
+                                                    title="Edit"
+                                                    ajax="false"
+                                                    action="#{billSearch.navigateToEditPayment()}">
+                                                    <f:setPropertyActionListener
+                                                        value="#{p}"
+                                                        target="#{billSearch.payment}" />
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+
+                                    <p:tab title="Finance Summary" >
+                                        <p:panel id="billFinanceDetails">
+                                            <ph:bill_finance_details bill="#{billSearch.viewingBill}"/>
+                                        </p:panel>
+                                    </p:tab>
+
+
+                                    <p:tab title="Cancellations" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.cancelled}" >
+                                            <p:outputLabel value="Not Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+                                            <p:commandButton 
+                                                value="Admin" 
+                                                icon="fa fa-shield-alt" 
+                                                class="m-1 ui-button-danger" 
+                                                style="width: 100px;"
+                                                action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                                ajax="false" 
+                                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}" 
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-eye"
+                                                value="View Cancelled Bill"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}" 
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-pencil"
+                                                value="Manage Cancelled Bill"
+                                                action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}"  
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <view:out bill="#{billSearch.viewingBill.cancelledBill}" ></view:out>
+                                        </h:panelGroup>
+                                    </p:tab>
+                                    <p:tab title="Refunded" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.refunded}" >
+                                            <p:outputLabel value="Not Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                            <ui:repeat value="#{billSearch.viewingBill.refundBills}" var="rb" >
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    value="View Refund Bill"
+                                                    class="m-1"
+                                                    icon="pi pi-eye"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    class="m-1"
+                                                    icon="pi pi-pencil"
+                                                    value="Manage Refund Bill"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+
+                                                <view:out bill="#{rb}" ></view:out>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </p:tab>
+                                    <p:tab title="Referances" >
+
+                                        <p:dataTable 
+                                            rowIndexVar="i" 
+                                            id="tblRefBills" 
+                                            value="#{billSearch.viewingReferanceBills}" 
+                                            scrollable="true"
+                                            var="bill"
+                                            rows="10"
+                                            paginatorAlwaysVisible="false"
+                                            paginator="true"
+                                            paginatorPosition="top"
+                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                            rowsPerPageTemplate="5,10,15,50"
+                                            >
+
+                                            <p:column headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
+                                                <h:outputLabel value="#{bill.id}"/>
+                                            </p:column>
+            <!--                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Ins ID" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains" >                                
+                                                <h:outputLabel value="#{bill.insId}"/>
+                                            </p:column>-->
+                                            <p:column
+                                                headerText="Bill No" 
+                                                filterMatchMode="contains" >                                
+                                                <h:outputLabel value="#{bill.deptId}"/>
+                                            </p:column>
+                                            <!--                                            <p:column headerText="Bill Class" >                                
+                                                                                            <h:outputLabel value="#{bill.billClass}"/>
+                                                                                        </p:column>-->
+                                            <p:column headerText="Bill Type" >                                
+                                                <h:outputLabel value="#{bill.billTypeAtomic}"/>
+                                            </p:column>
+                                            <p:column headerText="Date/Time">
+                                                <p:outputLabel value="#{bill.createdAt}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="User">
+                                                <h:outputText value="#{bill.creater.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Status" exportable="false">
+                                                <h:panelGroup>
+                                                    <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
+                                                    <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />
+                                                    <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{bill.refunded}" />
+                                                </h:panelGroup>
+                                            </p:column>
+                                            <p:column headerText="Gross Value" styleClass="averageNumericColumn">
+                                                <h:outputLabel value="#{bill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{searchController.total}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Discount" styleClass="averageNumericColumn">
+                                                <h:outputLabel value="#{bill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{searchController.discount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                                <h:outputLabel value="#{bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{searchController.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <p:column headerText="No" exportable="false" styleClass="alignTop">
+                                                <p:commandButton 
+                                                    value="View" 
+                                                    icon="fa fa-eye" 
+                                                    class="m-1 ui-button-info"
+                                                    style="width: 100px;"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                                    ajax="false">
+                                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                                </p:commandButton>
+
+                                                <p:commandButton 
+                                                    value="Manage" 
+                                                    icon="fa fa-tools" 
+                                                    class="m-1 ui-button-warning" 
+                                                    style="width: 100px;"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                                    ajax="false">
+                                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                                </p:commandButton>
+
+                                                <p:commandButton 
+                                                    value="Admin" 
+                                                    icon="fa fa-shield-alt" 
+                                                    class="m-1 ui-button-danger" 
+                                                    style="width: 100px;"
+                                                    action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                                    ajax="false" 
+                                                    rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                                </p:commandButton>
+                                            </p:column>
+
+                                        </p:dataTable>
+
+                                    </p:tab>
+
+                                    <p:tab title="Functions" >
+                                        <p:panel header="Administrative Functions">
+                                            <div class="p-grid">
+                                                <div class="p-col-12 p-md-6 p-lg-4 mb-3">
+                                                    <p:commandButton
+                                                        value="Change From Institution"
+                                                        icon="pi pi-building"
+                                                        styleClass="ui-button-warning"
+                                                        action="#{billSearch.navigateToChangeFromInstitution()}"
+                                                        ajax="false"
+                                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                                        style="width: 100%;">
+                                                        <f:setPropertyActionListener
+                                                            value="#{billSearch.viewingBill}"
+                                                            target="#{billSearch.bill}" />
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </p:panel>
+                                    </p:tab>
+
+                                </p:tabView>
+
+
+
+
+
+
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+
+
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

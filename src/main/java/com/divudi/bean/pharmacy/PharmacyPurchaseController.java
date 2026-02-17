@@ -4,44 +4,52 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillListWithTotals;
-import com.divudi.data.dataStructure.PharmacyStockRow;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportViewType;
+import com.divudi.core.data.dataStructure.BillListWithTotals;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Payment;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillNumber;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.ejb.PharmacyService;
+import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -56,6 +64,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -88,7 +97,14 @@ public class PharmacyPurchaseController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillEjb billEjb;
-
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    private AmppFacade amppFacade;
+    @EJB
+    PharmacyService pharmacyService;
+    @EJB
+    BillService billService;
     /**
      * Controllers
      */
@@ -97,7 +113,9 @@ public class PharmacyPurchaseController implements Serializable {
     @Inject
     PharmacyCalculation pharmacyBillBean;
     @Inject
-    CommonController commonController;
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ItemController itemController;
     /**
      * Properties
      */
@@ -105,22 +123,68 @@ public class PharmacyPurchaseController implements Serializable {
     private BillItem currentBillItem;
     private boolean printPreview;
 
+    private String warningMessage;
+
     double saleRate;
     double wsRate;
     AmpController ampController;
 
     Institution institution;
     Department department;
+    Institution supplier;
     Date fromDate;
     Date toDate;
-    List<PharmacyStockRow> rows;
+    Item selectedItem;
+    ReportViewType reportType = ReportViewType.BY_BILL_ITEM;
+    List<PharmacyItemPurchaseDTO> rows;
+    List<PharmacyItemPurchaseDTO> filteredRows;
+    String globalFilter;
+    PaymentMethod paymentMethodFilter;
 
     BillListWithTotals billListWithTotals;
     private double billItemsTotalQty;
 
-    public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
-        Date startTime = new Date();
+    private PaymentMethodData paymentMethodData;
+    private Institution site;
+    private Institution toInstitution;
+    private PaymentMethod paymentMethod;
 
+    private BillItem currentExpense;
+    private List<BillItem> billExpenses;
+
+    public List<BillItem> getBillExpenses() {
+        if (billExpenses == null) {
+            billExpenses = new ArrayList<>();
+        }
+        return billExpenses;
+    }
+
+    public String navigateToItemWiseProcurementReport() {
+        reportType = ReportViewType.BY_BILL;
+        return "/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true";
+    }
+
+    public void setBillExpenses(List<BillItem> billExpenses) {
+        this.billExpenses = billExpenses;
+    }
+
+    public BillItem getCurrentExpense() {
+        if (currentExpense == null) {
+            currentExpense = new BillItem();
+        }
+        return currentExpense;
+    }
+
+    public void setCurrentExpense(BillItem currentExpense) {
+        this.currentExpense = currentExpense;
+    }
+
+    public void onItemSelect(SelectEvent event) {
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+    }
+
+    public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.PharmacyGrnReturn, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
@@ -128,8 +192,6 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
-        Date startTime = new Date();
-
         BillType[] bts = new BillType[]{BillType.PharmacyPurchaseBill, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
@@ -137,71 +199,250 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment() {
-        Date startTime = new Date();
-
         BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
 
     }
 
-    public void fillItemVicePurchaseAndGoodReceive() {
-        Date startTime = new Date();
+    private void processItemVicePurchaseAndGoodReceiveByBill() {
 
-        Map m = new HashMap();
-        String sql;
-        BillItem bi = new BillItem();
-        List<BillType> bts = new ArrayList<>();
+        Map<String, Object> m = new HashMap<>();
 
-        bts.add(BillType.PharmacyGrnBill);
-        bts.add(BillType.PharmacyGrnReturn);
-        bts.add(BillType.PharmacyPurchaseBill);
+        List<Item> itemsReferredByBillItem = new ArrayList<>();
 
-        sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
-                + " (bi.item.name, "
-                + " sum(bi.qty), "
-                + " sum(bi.pharmaceuticalBillItem.freeQty)) "
-                + " from BillItem bi "
-                + " where bi.bill.billType in :bts "
-                + " and bi.bill.createdAt between :fd and :td ";
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_GRN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("b.id, b.deptId, b.createdAt, ");
+        jpql.append("b.institution.name, b.department.name, b.fromInstitution.name, ");
+        jpql.append("b.billType, b.total, b.netTotal, b.discount) ");
+        jpql.append(" from Bill b");
+        jpql.append(" where b.billTypeAtomic in :bts");
+        jpql.append(" and b.createdAt between :fd and :td");
 
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bts", bts);
 
         if (department != null) {
-            sql = sql + " and bi.bill.department=:dept ";
+            jpql.append(" and b.department=:dept");
             m.put("dept", department);
         }
 
         if (institution != null) {
-            sql = sql + " and bi.bill.institution=:ins ";
+            jpql.append(" and b.institution=:ins");
             m.put("ins", institution);
         }
 
-        sql = sql + "group by bi.item "
-                + "order by bi.item.name";
+        if (selectedItem != null) {
+            if (selectedItem instanceof Ampp) {
+                itemsReferredByBillItem.add(selectedItem);
+            } else if (selectedItem instanceof Amp) {
+                itemsReferredByBillItem.add(selectedItem);
+                itemsReferredByBillItem.addAll(pharmacyService.findRelatedItems((Amp) selectedItem));
+            } else {
+                JsfUtil.addErrorMessage("Not yet Supported");
+                return;
+            }
+            jpql.append(" and exists (select bi from BillItem bi where bi.bill=b and bi.item in :items)");
+            m.put("items", itemsReferredByBillItem);
+        }
 
-        List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m, TemporalType.TIMESTAMP);
+        if (supplier != null) {
+            jpql.append(" and b.fromInstitution=:supplier");
+            m.put("supplier", supplier);
+        }
 
-        rows = lsts;
+        jpql.append(" order by b.createdAt");
 
+        rows = (List<PharmacyItemPurchaseDTO>) billFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    private void processItemVicePurchaseAndGoodReceiveByBillItem() {
+        Map<String, Object> m = new HashMap<>();
+
+        List<Item> itemsReferredByBillItem = new ArrayList<>();
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.PHARMACY_GRN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        bts.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        bts.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_CANCELLED);
+        bts.add(BillTypeAtomic.PHARMACY_DONATION_BILL_REFUND);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
+        jpql.append("bi.id, bi.bill.deptId, bi.bill.createdAt, ");
+        jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.fromInstitution.name, ");
+        jpql.append("bi.bill.billType, bi.grossValue, bi.discount, bi.netValue, ");
+        jpql.append("bi.item.id, bi.item.name, bi.item.code, ");
+        jpql.append("bi.qty, bi.pharmaceuticalBillItem.freeQty) ");
+        jpql.append(" from BillItem bi");
+        jpql.append(" where bi.bill.billTypeAtomic in :bts");
+        jpql.append(" and bi.bill.createdAt between :fd and :td");
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", bts);
+
+        if (department != null) {
+            jpql.append(" and bi.bill.department=:dept");
+            m.put("dept", department);
+        }
+
+        if (institution != null) {
+            jpql.append(" and bi.bill.institution=:ins");
+            m.put("ins", institution);
+        }
+
+        if (supplier != null) {
+            jpql.append(" and bi.bill.fromInstitution=:supplier");
+            m.put("supplier", supplier);
+        }
+
+        if (selectedItem != null) {
+            if (selectedItem instanceof Ampp) {
+                itemsReferredByBillItem.add(selectedItem);
+            } else if (selectedItem instanceof Amp) {
+                itemsReferredByBillItem.add(selectedItem);
+                itemsReferredByBillItem.addAll(pharmacyService.findRelatedItems((Amp) selectedItem));
+            } else {
+                itemsReferredByBillItem.add(selectedItem);
+            }
+            jpql.append(" and bi.item in :items");
+            m.put("items", itemsReferredByBillItem);
+        }
+
+        jpql.append(" order by bi.bill.createdAt, bi.item.name");
+
+        rows = (List<PharmacyItemPurchaseDTO>) billFacade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+    }
+
+    public void processItemVicePurchaseAndGoodReceive() {
+        if (reportType == null) {
+            JsfUtil.addErrorMessage("Please select a report view type.");
+            return;
+        }
+        if (selectedItem == null) {
+            JsfUtil.addErrorMessage("Please select an item.");
+            return;
+        }
+        switch (reportType) {
+            case BY_BILL:
+                processItemVicePurchaseAndGoodReceiveByBill();
+                break;
+            case BY_BILL_ITEM:
+                processItemVicePurchaseAndGoodReceiveByBillItem();
+                break;
+            default:
+                JsfUtil.addErrorMessage("Unsupported report view type: " + reportType.getLabel());
+                break;
+        }
+
+    }
+
+    // Legacy method - keep for backward compatibility  
+    public String viewBill(Bill b) {
+        if (b == null) {
+            return "";
+        }
+        String page;
+        switch (b.getBillType()) {
+            case PharmacyGrnBill:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+                break;
+            case PharmacyPurchaseBill:
+                page = "/pharmacy/pharmacy_purchase.xhtml";
+                break;
+            case PharmacyDonationBill:
+                page = "/pharmacy/pharmacy_donation_bill.xhtml";
+                break;
+            case PharmacyGrnReturn:
+                page = "/pharmacy/pharmacy_reprint_grn_return.xhtml";
+                break;
+            case PurchaseReturn:
+                page = "/pharmacy/pharmacy_return_purchase.xhtml";
+                break;
+            default:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+        }
+        return page + "?faces-redirect=true&billId=" + b.getId();
+    }
+
+    public String viewBillFromDto(Long billId, BillType billType) {
+        if (billId == null || billType == null) {
+            return "";
+        }
+        String page;
+        switch (billType) {
+            case PharmacyGrnBill:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+                break;
+            case PharmacyPurchaseBill:
+                page = "/pharmacy/pharmacy_purchase.xhtml";
+                break;
+            case PharmacyDonationBill:
+                page = "/pharmacy/pharmacy_donation_bill.xhtml";
+                break;
+            case PharmacyGrnReturn:
+                page = "/pharmacy/pharmacy_reprint_grn_return.xhtml";
+                break;
+            case PurchaseReturn:
+                page = "/pharmacy/pharmacy_return_purchase.xhtml";
+                break;
+            default:
+                page = "/pharmacy/pharmacy_grn.xhtml";
+        }
+        return page + "?faces-redirect=true&billId=" + billId;
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
         if (currentBillItem == null || currentBillItem.getPharmaceuticalBillItem() == null || currentBillItem.getPharmaceuticalBillItem().getRetailRate() == 0) {
             return;
         }
-        currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / 1.15);
-        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * 1.08);
+        double retailToPurchase = configOptionApplicationController.getDoubleValueByKey("Retail to Purchase Factor", 1.15);
+        double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / retailToPurchase);
+        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * wholesaleFactor);
     }
 
-    public List<PharmacyStockRow> getRows() {
+    public List<PharmacyItemPurchaseDTO> getRows() {
         return rows;
     }
 
-    public void setRows(List<PharmacyStockRow> rows) {
+    public void setRows(List<PharmacyItemPurchaseDTO> rows) {
         this.rows = rows;
+    }
+
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    public ReportViewType getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(ReportViewType reportType) {
+        this.reportType = reportType;
     }
 
     public Institution getInstitution() {
@@ -236,7 +477,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -251,6 +492,9 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem = null;
         bill = null;
         billItems = null;
+        billExpenses = null;
+        currentExpense = null;
+        warningMessage = null;
     }
 
     public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill() {
@@ -282,7 +526,7 @@ public class PharmacyPurchaseController implements Serializable {
     public void onEditPurchaseRate(BillItem tmp) {
 
         double retail = tmp.getPharmaceuticalBillItem().getPurchaseRate() + (tmp.getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
-        tmp.getPharmaceuticalBillItem().setRetailRate((double) retail);
+        tmp.getPharmaceuticalBillItem().setRetailRate(retail);
 
         onEdit(tmp);
     }
@@ -290,7 +534,7 @@ public class PharmacyPurchaseController implements Serializable {
     public void onEditPurchaseRate() {
 
         double retail = getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() + (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate((double) retail);
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(retail);
 
         onEdit(getCurrentBillItem());
     }
@@ -310,34 +554,41 @@ public class PharmacyPurchaseController implements Serializable {
             }
         }
 
-        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
+        double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * wholesaleFactor) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
         wsRate = CommonFunctions.round(wsRate);
         tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
         calTotal();
     }
 
     public void setBatch(BillItem pid) {
-        if (pid.getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
+        if (pid.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
             Date date = pid.getPharmaceuticalBillItem().getDoe();
             DateFormat df = new SimpleDateFormat("ddMMyyyy");
             String reportDate = df.format(date);
-// Print what date is today!
-            //       //System.err.println("Report Date: " + reportDate);
             pid.getPharmaceuticalBillItem().setStringValue(reportDate);
         }
         onEdit(pid);
     }
 
     public void setBatch() {
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
-            Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
-            DateFormat df = new SimpleDateFormat("ddMMyyyy");
-            String reportDate = df.format(date);
-// Print what date is today!
-            //       //System.err.println("Report Date: " + reportDate);
-            getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(reportDate);
-        }
+        if (getCurrentBillItem() != null) {
+            PharmaceuticalBillItem pharmaceuticalBillItem = getCurrentBillItem().getPharmaceuticalBillItem();
 
+            if (pharmaceuticalBillItem != null) {
+                String stringValue = pharmaceuticalBillItem.getStringValue();
+
+                if (stringValue != null && stringValue.trim().isEmpty()) {
+                    Date date = pharmaceuticalBillItem.getDoe();
+
+                    if (date != null) {
+                        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+                        String reportDate = df.format(date);
+                        pharmaceuticalBillItem.setStringValue(reportDate);
+                    }
+                }
+            }
+        }
     }
 
     public String errorCheck() {
@@ -367,17 +618,44 @@ public class PharmacyPurchaseController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void calSaleRte() {
+    public void calculateSaleRate() {
         saleRate = 0.0;
-        if (getCurrentBillItem().getItem() == null) {
+        double categoryMarginPercentage = 0;
+        if (getCurrentBillItem() == null || getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Bill Item is Null");
+        } else {
+
+            Object item = getCurrentBillItem().getItem();
+
+            if (item instanceof Ampp) {
+                Ampp tmpAmpp = (Ampp) item;
+                if (tmpAmpp.getAmp() != null
+                        && tmpAmpp.getCategory() != null
+                        && tmpAmpp.getCategory().getSaleMargin() != null) {
+                    categoryMarginPercentage = tmpAmpp.getCategory().getSaleMargin() + 100;
+                }
+            } else if (item instanceof Amp) {
+                Amp tmpAmp = (Amp) item;
+                if (tmpAmp.getCategory() != null
+                        && tmpAmp.getCategory().getSaleMargin() != null) {
+                    categoryMarginPercentage = tmpAmp.getCategory().getSaleMargin() + 100;
+                }
+            }
         }
-        double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
-        saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+
+        double tmpPurchaseRate;
+        if (getCurrentBillItem().getItem() instanceof Ampp) {
+            saleRate = (categoryMarginPercentage * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue()) / 100;
+            tmpPurchaseRate = getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue();
+            getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(tmpPurchaseRate);
+        } else if (getCurrentBillItem().getItem() instanceof Amp) {
+            saleRate = (categoryMarginPercentage * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+        }
+
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
 
-        temp = 108;
-        wsRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+        categoryMarginPercentage = 108;
+        wsRate = (categoryMarginPercentage * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
         if (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() != 0) {
             wsRate = wsRate * getCurrentBillItem().getTmpQty() / (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty());
         }
@@ -387,22 +665,39 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void calNetTotal() {
-        double grossTotal = 0.0;
-        if (getBill().getDiscount() > 0 || getBill().getTax()>0) {
+        double grossTotal;
+        if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
-            ////// // System.out.println("gross" + grossTotal);
-            ////// // System.out.println("net1" + getBill().getNetTotal());
             getBill().setNetTotal(grossTotal);
-            ////// // System.out.println("net2" + getBill().getNetTotal());
         }
 
     }
 
-    public void settle() {
+    public void addExpense() {
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        }
+        if (getCurrentExpense().getItem() == null) {
+            JsfUtil.addErrorMessage("Expense ?");
+            return;
+        }
+        if (currentExpense.getQty() == null || currentExpense.getQty().equals(0.0)) {
+            currentExpense.setQty(1.0);
+        }
+        if (currentExpense.getNetRate() == 0.0) {
+            currentExpense.setNetRate(currentExpense.getRate());
+        }
 
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
+        currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
+
+        getCurrentExpense().setSearialNo(getBillExpenses().size());
+        getBillExpenses().add(currentExpense);
+        currentExpense = null;
+
+    }
+
+    public void settle() {
 
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
@@ -415,12 +710,28 @@ public class PharmacyPurchaseController implements Serializable {
         if (getBill().getReferenceInstitution() == null) {
             JsfUtil.addErrorMessage("Select Reference Institution");
         }
-        if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Number");
-            return;
+        if (getBill().getInvoiceNumber() == null || getBill().getInvoiceNumber().trim().isEmpty()) {
+            boolean autogenerateInvoiceNumber = configOptionApplicationController.getBooleanValueByKey("Autogenerate Invoice Number for Pharmacy Direct Purchase", false);
+            if (autogenerateInvoiceNumber) {
+                BillNumber bn = billNumberBean.fetchLastBillNumberForYear(sessionController.getInstitution(), sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+                String invoiceNumber = configOptionApplicationController.getShortTextValueByKey("Invoice Number Prefix for Pharmacy Direct Purchase", "") + bn.getLastBillNumber();
+                getBill().setInvoiceNumber(invoiceNumber);
+            } else {
+                JsfUtil.addErrorMessage("Please Enter Invoice Number");
+                return;
+            }
         }
         if (getBill().getInvoiceDate() == null) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Date");
+            boolean useCurrentDataIfInvoiceDataIsNotProvided = configOptionApplicationController.getBooleanValueByKey("If Invoice Number is not provided for Pharmacy Direct Purchase, use the current date", false);
+            if (useCurrentDataIfInvoiceDataIsNotProvided) {
+                getBill().setInvoiceDate(new Date());
+            } else {
+                JsfUtil.addErrorMessage("Please Fill Invoice Date");
+                return;
+            }
+        }
+        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
             return;
         }
 
@@ -434,9 +745,15 @@ public class PharmacyPurchaseController implements Serializable {
         saveBill();
         //   saveBillComponent();
 
-        Payment p = createPayment(getBill());
+//        Payment p = createPayment(getBill());
+        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
+
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
+
+            double lastPurchaseRate = 0.0;
+            lastPurchaseRate = getPharmacyBean().getLastPurchaseRate(i.getItem());
+
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
                 continue;
             }
@@ -460,13 +777,13 @@ public class PharmacyPurchaseController implements Serializable {
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
-            saveBillFee(i, p);
+            saveBillFee(i);
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
             tmpPh.setItemBatch(itemBatch);
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
-
+            tmpPh.setLastPurchaseRate(lastPurchaseRate);
             tmpPh.setStock(stock);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
@@ -476,6 +793,20 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please Add Item Quantities To Bill");
             return;
         }
+
+        //check and calculate expenses separately
+        if (billExpenses != null && !billExpenses.isEmpty()) {
+            getBill().setBillExpenses(billExpenses);
+
+            double totalForExpenses = 0;
+            for (BillItem expense : getBillExpenses()) {
+                totalForExpenses += expense.getNetValue();
+            }
+
+            getBill().setExpenseTotal(-totalForExpenses);
+            getBill().setNetTotal(getBill().getNetTotal() - totalForExpenses);
+        }
+
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
 
         getBillFacade().edit(getBill());
@@ -523,7 +854,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     }
 
-    public void saveBillFee(BillItem bi, Payment p) {
+    public void saveBillFee(BillItem bi) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
@@ -541,9 +872,10 @@ public class PharmacyPurchaseController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
-        createBillFeePaymentAndPayment(bf, p);
+//        createBillFeePaymentAndPayment(bf, p);
     }
 
+    @Deprecated
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -557,7 +889,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 //
 //    public void recreate() {
-//       
+//
 ////        cashPaid = 0.0;
 //        currentPharmacyItemData = null;
 //        pharmacyItemDatas = null;
@@ -586,39 +918,59 @@ public class PharmacyPurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
-            JsfUtil.addErrorMessage("Please enter a purchase rate");
-            return;
-        }
+//        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
+//            JsfUtil.addErrorMessage("Please enter a purchase rate");
+//            return;
+//        }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
             JsfUtil.addErrorMessage("Please set the date of expiry");
             return;
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
-            JsfUtil.addErrorMessage("Please enter the purchase quantity");
-            return;
+        if (getCurrentBillItem().getItem() instanceof Amp) {
+            if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
+                JsfUtil.addErrorMessage("Please enter the purchase quantity");
+                return;
+            }
         }
+        if (getCurrentBillItem().getItem() instanceof Ampp) {
+            if (getCurrentBillItem().getPharmaceuticalBillItem().getQtyPacks() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() <= 0) {
+                JsfUtil.addErrorMessage("Please enter the purchase quantity");
+                return;
+            }
+        }
+
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
             return;
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
-            JsfUtil.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
-            return;
+        //TODO: Calculate when packs
+//        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
+//            JsfUtil.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
+//            return;
+//        }
+
+        if (getCurrentBillItem().getItem() instanceof Ampp) {
+            getCurrentBillItem().getPharmaceuticalBillItem().setQty(getCurrentBillItem().getPharmaceuticalBillItem().getQtyPacks() * getCurrentBillItem().getItem().getDblValue());
+            getCurrentBillItem().getPharmaceuticalBillItem().setFreeQty(getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() * getCurrentBillItem().getItem().getDblValue());
+            getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue());
         }
+
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
 
         currentBillItem = null;
 
-        calTotal();
+        calulateTotalsWhenAddingItems();
     }
 
     public void saveBill() {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPurchaseBill, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyPurchaseBill, BillClassType.BilledBill, BillNumberSuffix.PHPUR));
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+
+        getBill().setDeptId(deptId);
+        getBill().setInsId(deptId);
+        getBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
 
         getBill().setInstitution(getSessionController().getInstitution());
         getBill().setDepartment(getSessionController().getDepartment());
@@ -670,13 +1022,36 @@ public class PharmacyPurchaseController implements Serializable {
         double saleValue = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
-            p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
+            p.setQty(p.getPharmaceuticalBillItem().getQtyInUnit());
             p.setRate(p.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             p.setSearialNo(serialNo++);
             double netValue = p.getQty() * p.getRate();
             p.setNetValue(0 - netValue);
             tot += p.getNetValue();
             saleValue += (p.getPharmaceuticalBillItem().getQtyInUnit() + p.getPharmaceuticalBillItem().getFreeQtyInUnit()) * p.getPharmaceuticalBillItem().getRetailRate();
+        }
+        getBill().setTotal(tot);
+        getBill().setNetTotal(tot);
+        getBill().setSaleValue(saleValue);
+    }
+
+    public void calulateTotalsWhenAddingItems() {
+        double tot = 0.0;
+        double saleValue = 0.0;
+        int serialNo = 0;
+        for (BillItem p : getBillItems()) {
+            if (p.getItem() instanceof Ampp) {
+                p.setQty(p.getPharmaceuticalBillItem().getQtyPacks());
+                p.setRate(p.getPharmaceuticalBillItem().getPurchaseRatePack());
+            } else if (p.getItem() instanceof Amp) {
+                p.setQty(p.getPharmaceuticalBillItem().getQty());
+                p.setRate(p.getPharmaceuticalBillItem().getPurchaseRate());
+            }
+            p.setSearialNo(serialNo++);
+            double netValue = p.getQty() * p.getRate();
+            p.setNetValue(0 - netValue);
+            tot += p.getNetValue();
+            saleValue += (p.getPharmaceuticalBillItem().getQty() + p.getPharmaceuticalBillItem().getFreeQty()) * p.getPharmaceuticalBillItem().getRetailRate();
         }
         getBill().setTotal(tot);
         getBill().setNetTotal(tot);
@@ -691,6 +1066,10 @@ public class PharmacyPurchaseController implements Serializable {
             bill.setReferenceInstitution(getSessionController().getInstitution());
         }
         return bill;
+    }
+
+    public double findLastRetailRate(Amp amp) {
+        return getPharmacyBean().getLastRetailRate(amp, getSessionController().getDepartment());
     }
 
     public void setBill(BilledBill bill) {
@@ -834,20 +1213,87 @@ public class PharmacyPurchaseController implements Serializable {
         this.billListWithTotals = billListWithTotals;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public double getBillItemsTotalQty() {
         return billItemsTotalQty;
     }
 
     public void setBillItemsTotalQty(double billItemsTotalQty) {
         this.billItemsTotalQty = billItemsTotalQty;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Institution getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Institution supplier) {
+        this.supplier = supplier;
+    }
+
+    public PaymentMethod getPaymentMethodFilter() {
+        return paymentMethodFilter;
+    }
+
+    public void setPaymentMethodFilter(PaymentMethod paymentMethodFilter) {
+        this.paymentMethodFilter = paymentMethodFilter;
+    }
+
+    public List<PharmacyItemPurchaseDTO> getFilteredRows() {
+        return filteredRows;
+    }
+
+    public void setFilteredRows(List<PharmacyItemPurchaseDTO> filteredRows) {
+        this.filteredRows = filteredRows;
+    }
+
+    public String getGlobalFilter() {
+        return globalFilter;
+    }
+
+    public void setGlobalFilter(String globalFilter) {
+        this.globalFilter = globalFilter;
     }
 
 }

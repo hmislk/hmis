@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+    <h:head>
+        <title>OPD Credit Bill Payment By Voucher</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel rendered="#{!cashRecieveBillController.printPreview}" >
+                    <f:facet name="header" >
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="OPD CREDIT BIll PAYMENT BY VOUCHER" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    id="btnSettle" 
+                                    value="Settle" 
+                                    action="#{cashRecieveBillController.settleBillForApproval}"
+                                    ajax="false"  
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
+                                    class="ui-button-success"
+                                    icon="fa fa-check">
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSettle"/>
+                                <p:commandButton 
+                                    value="New Bill" 
+                                    ajax="false" 
+                                    action="#{cashRecieveBillController.prepareNewBill()}"  
+                                    icon="fa fa-plus"
+                                    class="ui-button-warning">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p:panel>
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fa fa-money-bill-wave" />
+                                    <h:outputText value="Payment" class="mx-4"></h:outputText>
+                                </f:facet>
+
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Select Credit Company" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:selectOneMenu id="creditCompanyMenu"
+                                                         value="#{cashRecieveBillController.creditCompany}"
+                                                         styleClass="w-100"
+                                                         filter="true"
+                                                         filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select Credit Company" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItems value="#{institutionController.creditCompanies}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
+                                            <p:ajax event="change"
+                                                    process="@this"
+                                                    listener="#{cashRecieveBillController.selectInstitutionListener}"
+                                                    update=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('ins',view).clientId} tot"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Payment Method" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:selectOneMenu class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
+                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row my-2">
+
+                                    <div class="col-md-10">
+                                        <div>
+                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Comment" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="row my-2">
+                                    <div class="col-md-4"></div>
+                                </div>
+
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Net Total" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputText id="tot" value="#{cashRecieveBillController.current.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Description"/>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputTextarea value="#{cashRecieveBillController.current.comments}" class="w-100"/>  
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+
+
+                <p:panel rendered="#{cashRecieveBillController.printPreview}" >
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p:commandButton 
+                                value="New Bill" 
+                                ajax="false" 
+                                action="#{cashRecieveBillController.prepareNewBill()}"  
+                                icon="fa fa-plus"
+                                class="ui-button-warning">
+                            </p:commandButton>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="fas fa-print"
+                                class="ui-button-info">
+                                <p:printer target="prints" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+                    <h:panelGroup id="prints">
+                        <bi:five_five_paper_coustom_1_credit_company_payment bill="#{cashRecieveBillController.current}" duplicate="false"/> 
+                    </h:panelGroup>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

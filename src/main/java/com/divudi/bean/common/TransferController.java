@@ -6,8 +6,8 @@
 
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
-import com.divudi.entity.Staff;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Staff;
 import java.io.Serializable;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
@@ -20,10 +20,10 @@ import javax.inject.Named;
 @SessionScoped
 public class TransferController implements Serializable {
 
-    
+
     Patient patient;
     Staff staff;
-    
+
     /**
      * Creates a new instance of TransferController
      */
@@ -47,7 +47,7 @@ public class TransferController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
-    
-    
-    
+
+
+
 }

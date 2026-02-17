@@ -90,7 +90,7 @@
                     <p:dataTable id="dList" value="#{intrimPrintController.currentBill.billItems}" 
                                  var="c" scrollable="true" scrollHeight="500">
                         <p:column headerText="Inward Charge Type" >
-                            <h:outputLabel  value="#{c.inwardChargeType.label}"  />
+                            <h:outputLabel  value="#{c.inwardChargeType.name}"  />
                         </p:column>
                         <p:column headerText="Total">
                             <h:outputLabel value="#{c.grossValue}" >

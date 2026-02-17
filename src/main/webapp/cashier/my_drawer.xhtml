@@ -1,0 +1,516 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="mt-3">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex gap-3">
+                                    <i class="pi pi-folder-open" style="font-size: 30px; color: #487bff; font-weight: 700;" />
+                                    <h:outputText style="font-size: 25px; font-weight: 700;" value="My Current Drawer Details" />
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="#{sessionController.loggedUser.name}" />
+                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="-" />
+                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}" />
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            table {
+                                width: 70%;
+                                border-collapse: collapse;
+                                font-size: 18px;
+                                margin: 20px auto;
+                            }
+                            th, td {
+                                border: 2px solid black;
+                                padding: 10px;
+                                text-align: center;
+                                font-size: 18px;
+                                font-weight: 600;
+                            }
+                            th {
+                                font-weight: 700;
+                                background-color: #f2f2f2;
+                            }
+                            .centered {
+                                text-align: center;
+                                font-size: 18px;
+                                font-weight: bold;
+                            }
+                            .payment-icon {
+                                font-size: 20px;
+                                margin-right: 5px;
+                            }
+                            .positive-value {
+                                color: green;
+                            }
+                            .negative-value {
+                                color: red;
+                            }
+                        </style>
+
+                        <div class="d-flex justify-content-center">
+                            <table border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Payment Method</th>
+                                        <th>In-Hand Value</th>
+<!--                                        <th>Shortage / Excess</th>
+                                        <th>Balance</th>-->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Cash Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.cashPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-money-bill payment-icon"></i>Cash</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.cashInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.cashShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.cashShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.cashBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Card Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.cardPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-credit-card payment-icon"></i>Card</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.cardInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.cardShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.cardShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.cardBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Staff Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.staffPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-users payment-icon"></i>Staff</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.staffInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.staffShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.staffShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.staffBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Multiple Payment Methods Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.multiplePaymentMethodsPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-exchange payment-icon"></i>Multiple Payment Methods</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.multiplePaymentMethodsInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.multiplePaymentMethodsShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.multiplePaymentMethodsShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.multiplePaymentMethodsBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Credit Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.creditPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-tag payment-icon"></i>Credit</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.creditInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.creditShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.creditShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.creditBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Staff Welfare Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.staffWelfarePresent}">
+                                        <tr>
+                                            <td><i class="pi pi-briefcase payment-icon"></i>Staff Welfare</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.staffWelfareInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.staffWelfareShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.staffWelfareShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.staffWelfareBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Voucher Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.voucherPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-ticket payment-icon"></i>Voucher</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.voucherInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.voucherShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.voucherShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.voucherBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- IOU Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.iouPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-file-o payment-icon"></i>IOU</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.iouInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.iouShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.iouShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.iouBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Agent Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.agentPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-user-plus payment-icon"></i>Agent</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.agentInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.agentShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.agentShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.agentBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Cheque Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.chequePresent}">
+                                        <tr>
+                                            <td><i class="pi pi-envelope payment-icon"></i>Cheque</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.chequeInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.chequeShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.chequeShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.chequeBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Slip Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.slipPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-file payment-icon"></i>Slip</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.slipInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.slipShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.slipShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.slipBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- E-wallet Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.ewalletPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-wallet payment-icon"></i>E-wallet</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.ewalletInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.ewalletShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.ewalletShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.ewalletBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Patient Deposit Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.patientDepositPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-inbox payment-icon"></i>Patient Deposit</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.patientDepositInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.patientDepositShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.patientDepositShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.patientDepositBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Patient Points Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.patientPointsPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-star payment-icon"></i>Patient Points</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.patientPointsInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.patientPointsShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.patientPointsShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.patientPointsBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- Online Settlement Payment Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.onlineSettlementPresent}">
+                                        <tr>
+                                            <td><i class="pi pi-globe payment-icon"></i>Online Settlement</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.onlineSettlementInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.onlineSettlementShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.onlineSettlementShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.onlineSettlementBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- None Payment Method Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.nonePresent}">
+                                        <tr>
+                                            <td><i class="pi pi-ban payment-icon"></i>None</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.noneInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.noneShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.noneShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.noneBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+                                    <!-- You Owe Me Payment Method Row -->
+                                    <h:panelGroup rendered="#{financialTransactionController.loggedUserDrawer.youOweMePresent}">
+                                        <tr>
+                                            <td><i class="pi pi-exclamation-triangle payment-icon"></i>You Owe Me</td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.youOweMeInHandValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+<!--                                            <td class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.youOweMeShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.youOweMeShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>
+                                            <td class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.youOweMeBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </td>-->
+                                        </tr>
+                                    </h:panelGroup>
+
+
+                                    <!-- Footer Row with Totals -->
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <th class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.totalInHand}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </th>
+<!--                                            <th class="centered">
+                                                <p:outputLabel 
+                                                    value="#{financialTransactionController.loggedUserDrawer.totalShortageOrExcess}" 
+                                                    styleClass="#{financialTransactionController.loggedUserDrawer.totalShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </th>
+                                            <th class="centered">
+                                                <p:outputLabel value="#{financialTransactionController.loggedUserDrawer.totalBalance}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:outputLabel>
+                                            </th>-->
+                                        </tr>
+                                    </tfoot>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

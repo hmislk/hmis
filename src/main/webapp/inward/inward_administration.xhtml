@@ -28,6 +28,17 @@
                                                 action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
+                                    
+                                    <p:tab title="Surgery Types">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" 
+                                                             value="Surgery Types" 
+                                                             class="w-100" 
+                                                             action="/inward/inward_surgery_type?faces-redirect=true"  >
+                                            </p:commandButton>
+                                           
+                                        </div>
+                                    </p:tab>
 
 
 
@@ -46,6 +57,7 @@
 
                                             <p:commandButton value="Time-based Services Charges" class="w-100" action="inward_timed_item_fee?faces-redirect=true"  ></p:commandButton>
                                             <p:commandButton value="Surgeries" class="w-100" action="/clinical/clinical_procedures?faces-redirect=true"  ></p:commandButton>
+                                            <p:commandButton value="Surgeries upload" class="w-100" action="/clinical/surgeries_upload?faces-redirect=true"  ></p:commandButton>
                                         </div>
                                     </p:tab>
 

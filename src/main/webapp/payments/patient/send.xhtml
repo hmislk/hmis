@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/payments/pay_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"            
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+    <ui:define name="admin">
+
+        <h:panelGroup rendered="#{!patientController.printPreview}" >
+            <h:form  >
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText value="Return Patient Deposit"/>
+                            </div>
+                            <div>
+                                <p:commandButton 
+                                    class="ui-button-success"
+                                    icon="fas fa-check"
+                                    id="btnSettle"
+                                    value="Settle"
+                                    action="#{patientController.settlePatientDepositReturn}"
+                                    ajax="false"
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="fas fa-plus" 
+                                    class="mx-2 ui-button-warning" 
+                                    value="New Bill" 
+                                    ajax="false" 
+                                    action="#{patientController.createNewPatientDepositRefund()}"  >
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet> 
+                    <div class="row" >
+                        <div class="col-6" >
+                            <common:patient_details
+                                id="ccPatientDetails"
+                                editable="true"
+                                controller="#{patientController}"/>
+
+                        </div>
+                        <div class="col-6" >
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputLabel value="Patient Deposit Return Details" />
+                                </f:facet>
+                                <div class="d-grid gap-2">
+                                    <p:selectOneMenu class="w-100" value="#{patientController.bill.paymentMethod}">     
+                                        <f:selectItems value="#{enumController.paymentMethodsForPatientDepositRefund}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}" />
+                                        <p:ajax process="@this" update="#{p:resolveFirstComponentWithId('panelGroup',view).clientId}" event="change"/>
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup class="d-flex gap-2" id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Cash' ? 'none' : 'block' };">
+                                        <p:inputText class="" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
+                                        <p:watermark value="Total" for="txtNetTotal"/>
+                                        <p:commandButton 
+                                            icon="fas fa-paste" 
+                                            class="ui-button-warning"
+                                            update="txtNetTotal"
+                                            action="#{patientController.pasteCurrentPatientRunningBalance()}"  >
+                                        </p:commandButton>
+                                        <p:inputText value="#{patientController.bill.comments}" id="comment"/>
+                                        <p:watermark value="Comment" for="comment"/>
+                                    </h:panelGroup>
+
+                                </div>
+
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+
+
+        <h:panelGroup rendered="#{patientController.printPreview}">
+            <h:form >
+                <p:panel>
+
+                    <f:facet name="header">
+                        <h:outputText value="Return Patient Deposit Bill" class="mt-2"/>
+                        <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
+                            <p:commandButton 
+                                value="Print Bill" 
+                                icon="pi pi-print" 
+                                class="ui-button-info" 
+                                ajax="false">
+                                <p:printer target="billPanel"></p:printer>
+                            </p:commandButton>
+                            <p:commandButton 
+                                icon="fas fa-plus" 
+                                class="mx-1" 
+                                value="New Bill" 
+                                ajax="false" 
+                                action="#{patientController.createNewPatientDepositRefund()}">
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                icon="fas fa-search" 
+                                value="Patient Lookup" 
+                                class="mx-1 ui-button-warning"
+                                action="#{patientController.navigateToSearchPatients}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Profile"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning  w-100"
+                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                >
+                                <f:setPropertyActionListener
+                                    value="#{patientController.bill.patient}"
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+
+
+                    <div class="container-fluid my-2">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-md-6">
+                                <div class="align-items-center my-2" style="max-width: 80%" >
+                                    <div>
+                                        <h:panelGroup id="billPanel" class="bill" layout="block">
+                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" />
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

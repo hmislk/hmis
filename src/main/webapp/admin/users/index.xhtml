@@ -11,34 +11,98 @@
                     <div class="col-md-3">
                         <h:form>
                             <p:accordionPanel>
-                                <p:tab title="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                                <p:tab title="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton  
                                             ajax="false" 
                                             value="Add New User" 
-                                            action="#{webUserController.navigateToAddNewUser}"/>
+                                            icon="fa fa-user-plus"
+                                            action="#{webUserController.navigateToAddNewUser}" >
+                                        </p:commandButton>
+
                                         <p:commandButton 
                                             ajax="false" 
-                                            value="View Users" 
-                                            action="#{webUserController.navigateToListUsers()}" />
+                                            value="View Staff Users" 
+                                            icon="fa fa-users"
+                                            action="#{webUserController.navigateToListUsers()}"  >
+                                        </p:commandButton>
+
                                         <p:commandButton   
                                             ajax="false" 
                                             value="View User Logins" 
-                                            action="#{loginController.navigateToViewLogins()}" />
+                                            icon="fa fa-sign-in-alt"
+                                            action="#{loginController.navigateToViewLogins()}"  >
+                                        </p:commandButton>
+
                                         <p:commandButton 
                                             ajax="false" 
-
                                             value="To Remove Multiple Users" 
-                                            action="#{webUserController.navigateToRemoveMultipleUsers()}"
-                                            />
+                                            icon="fa fa-user-minus"
+                                            action="#{webUserController.navigateToRemoveMultipleUsers()}"  >
+                                        </p:commandButton>
+
                                         <hr/>
+
                                         <p:commandButton 
                                             ajax="false" 
                                             value="User Roles" 
-                                            action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
+                                            icon="fa fa-user-tag"
+                                            action="#{webUserRoleController.navigateToManageWebUserRoles()}" >
+                                        </p:commandButton>
+
+<!--                                    <p:commandButton
+                                            icon="fa fa-user-cog"
+                                            value="Add Privileges to Users by Role"
+                                            class="m-1"
+                                            action="#{webUserRoleController.navigateToManageWebUserRoleUsers()}"
+                                            ajax="false" >
+                                        </p:commandButton>-->
+
                                         <hr/>
 
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Non Staff Users" 
+                                            icon="fa fa-user-circle"
+                                            action="#{webUserController.navigateToManageUsersWithoutStaff()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="View Retired Users"
+                                            icon="fa fa-user-slash"
+                                            action="#{webUserController.navigateToListRetiredUsers()}">
+                                        </p:commandButton>
+
+                                        <hr/>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Send Bulk SMS to Patients"
+                                            icon="fa fa-envelope"
+                                            class="ui-button-warning"
+                                            action="#{smsController.navigateToSendBulkSmsToPatients()}">
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Send SMS for Phone Numbers"
+                                            icon="fa fa-envelope"
+                                            class="ui-button-warning"
+                                            action="#{smsController.navigateToSendBulkSmsToNumbers()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton  
+                                            ajax="false"  
+                                            action="#{smsController.navigateToBillContactNumbers()}" 
+                                            value="Bulk Messaging" 
+                                            icon="fa fa-comments"
+                                            rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" >
+                                        </p:commandButton>    
+
+                                        <hr/>
                                     </div>
+
                                 </p:tab>
                             </p:accordionPanel>
                         </h:form>

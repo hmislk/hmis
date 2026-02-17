@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form >
+
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="Download Bills"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100"
+                                          id="fromDate" 
+                                          value="#{searchController.fromDate}" 
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                            </p:datePicker>
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" 
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                            </p:datePicker>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                             action="#{searchController.listBillsAndItemsWithFees()}"
+                                             icon="fa fa-search"
+                                             class="ui-button-warning"/>
+                            <p:commandButton 
+                                value="Download Excel" 
+                                ajax="false" 
+                                class="mx-2 ui-button-success" 
+                                icon="fa fa-file-excel">
+                                <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton value="Download Template" ajax="false" icon="fas fa-download" class="ui-button-warning mx-2"
+                                             onclick="PrimeFaces.monitorDownload(start, stop);">
+                                <p:fileDownload value="#{searchController.fileForDownload}" />
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.billItems}" 
+                            var="bi" 
+                            class="w-100"
+                            rows="10"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="95%">
+
+                            <p:column headerText="ID" width="35" style="text-align: left;">
+                                <p:outputLabel value="#{bi.id}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" width="50">
+                                <p:outputLabel value="#{bi.bill.billType}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type Atomic" width="100">
+                                <p:outputLabel value="#{bi.bill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Client" 
+                                sortBy="#{bi.bill.patient.person.name}"
+                                filterBy="#{bi.bill.patient.person.name}"
+                                filterMatchMode="contains"
+                                width="100"
+                                style="text-align: left;">
+                                <p:outputLabel value="#{bi.bill.patient.person.name}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Item" width="75">
+                                <p:outputLabel value="#{bi.item.name}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Item Fees" width="75">
+                                <ui:repeat var="fee" value="#{bi.item.itemFees}">
+                                    <p:outputLabel value="#{bi.item.itemFees}" />
+                                    <br />
+                                </ui:repeat>
+                            </p:column>
+
+                            <p:column headerText="Billed at" width="75">
+                                <p:outputLabel value="#{bi.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed by" width="20">
+                                <p:outputLabel value="#{bi.bill.creater.webUserPerson.name}" />
+                            </p:column>
+
+                            <p:column headerText="Net Value" width="20" style="text-align: right;">
+                                <p:outputLabel value="#{bi.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

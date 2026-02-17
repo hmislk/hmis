@@ -12,74 +12,64 @@
 
             <ui:define name="item">
                 <h:form>
-                    <p:panel header="Manage Relationships"  >
-                        <table class="w-100">
-                            <tr>
-                                <td>
-                                    <p:panel id="panelSelect" class="w-100">
-                                        <table class="alignTop" >
-                                            <tr  class="alignTop">
-                                                <td colspan="2"  class="alignTop">
-                                                    <p:selectOneListbox id="lstItems" value="#{relationshipController.current}" style="min-width: 250px">
-                                                        <f:selectItems value="#{relationshipController.items}" var="r" itemLabel="#{r.atobName} - #{r.btoaName} " itemValue="#{r}" ></f:selectItems>
-                                                        <f:ajax event="change" execute="lstItems" render="panelDetails" ></f:ajax>
-                                                    </p:selectOneListbox>
-                                                </td>
-                                            </tr>
-                                            <tr  class="alignTop">
-                                                <td  class="alignTop">
-                                                    <p:commandButton id="btnAdd" value="Add New" action="#{relationshipController.prepareAdd()}"
-                                                                     process="btnAdd" update="lstItems panelDetails" ></p:commandButton>
-                                                </td>
-                                                <td  class="alignTop">
-                                                    <p:commandButton id="btnDelete" value="Delete" action="#{relationshipController.prepareAdd()}"
-                                                                     process="btnDelete" 
-                                                                     update="lstItems panelDetails" ></p:commandButton>
+                    <p:panel header="Manage Relationships" styleClass="p-3" >
+                        <p:panelGrid columns="2" columnClasses="w-50 w-50" styleClass="w-100" layout="grid" style="gap: 2rem;">
+                            <p:panel header="Select Relationship" styleClass="p-2">
+                                <p:selectOneListbox
+                                        id="lstItems"
+                                        value="#{relationshipController.current}"
+                                        style="width:100%">
+                                    <f:selectItems
+                                            value="#{relationshipController.items}"
+                                            var="r"
+                                            itemLabel="#{r.atobName} - #{r.btoaName}"
+                                            itemValue="#{r}" />
+                                    <f:ajax event="change" execute="lstItems" render="panelDetails" />
+                                </p:selectOneListbox>
+                                <div style="margin-top:1rem; display:flex; gap: 1rem;">
+                                    <p:commandButton
+                                            id="btnAdd"
+                                            value="Add New"
+                                            icon="pi pi-plus"
+                                            action="#{relationshipController.prepareAdd()}"
+                                            process="@this"
+                                            update="lstItems panelDetails" />
+                                    <p:commandButton
+                                            id="btnDelete"
+                                            value="Delete"
+                                            icon="pi pi-trash"
+                                            action="#{relationshipController.delete()}"
+                                            process="@this"
+                                            update="lstItems panelDetails"
+                                            style="background-color: #d32f2f; border-color: #d32f2f; color: #fff;"/>
+                                </div>
+                            </p:panel>
+                            <p:panel id="panelDetails" header="Details" styleClass="p-2">
+                                <p:panelGrid columns="2" columnClasses="p-col-fixed p-col" styleClass="w-100">
+                                    <p:outputLabel for="atobName" value="A to B Name:" />
+                                    <p:inputText id="atobName" value="#{relationshipController.current.atobName}"
+                                                 style="width:100%" />
 
-                                                </td>
-                                            </tr>
-                                        </table>
+                                    <p:outputLabel for="btoaName" value="B to A Name:" />
+                                    <p:inputText id="btoaName" value="#{relationshipController.current.btoaName}"
+                                                 style="width:100%" />
 
-
-
-                                    </p:panel>
-
-
-                                </td>
-                                <td>
-
-                                    <p:panel id="panelDetails" class="w-100">
-                                        <table class="w-100">
-                                            <tr>
-                                                
-                                                    <p:panelGrid columns="2" class="w-100">
-                                                        <p:outputLabel value="A to B Name:" for="atobName" />
-                                                        <p:inputText id="atobName" value="#{relationshipController.current.atobName}" title="A to B Name" style="min-width: 250px"/>
-                                                        <p:outputLabel value="B to A Name:" for="btoaName" />
-                                                        <p:inputText id="btoaName" value="#{relationshipController.current.btoaName}" title="B to A Name" style="min-width: 250px"/>
-                                                        <p:outputLabel value="Order No:" for="orderNo" />
-                                                        <p:inputText id="orderNo" value="#{relationshipController.current.orderNo}" title="Order No" style="min-width: 250px" />
-                                                    </p:panelGrid>
-                                                
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p:spacer ></p:spacer>    
-                                                </td>
-                                                <td>
-                                                    <p:commandButton id="btnSave" 
-                                                                     value="Save"
-                                                                    action="#{relationshipController.saveSelected()}"
-                                                                     process="btnSave panelDetails" update="lstItems" ></p:commandButton>
-                                                </td>
-
-                                            </tr>
-                                        </table>
-
-                                    </p:panel>
-                                </td>
-                            </tr>                            
-                        </table>
+                                    <p:outputLabel for="orderNo" value="Order No:" />
+                                    <p:inputText id="orderNo" value="#{relationshipController.current.orderNo}"
+                                                 style="width:100%" />
+                                </p:panelGrid>
+                                <div style="margin-top:1rem; text-align:right;padding-right: 16px">
+                                    <p:commandButton
+                                            id="btnSave"
+                                            value="Save"
+                                            icon="pi pi-save"
+                                            action="#{relationshipController.saveSelected()}"
+                                            process="panelDetails"
+                                            update="lstItems"
+                                            style="width: 45%; background-color: #fbc02d; border-color: #fbc02d; color: #212529;"/>
+                                </div>
+                            </p:panel>
+                        </p:panelGrid>
 
                     </p:panel>
                 </h:form>

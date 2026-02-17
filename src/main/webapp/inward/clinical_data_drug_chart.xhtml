@@ -203,8 +203,8 @@
                                                                  id="txtDx" 
                                                                  value="#{inpatientClinicalDataController.diagnosisComments}">
                                                 </p:inputTextarea>
-                                                <p:watermark value="Select Diagnosis." for="acDx"></p:watermark>
-                                                <p:watermark value="Write Details about the Diagnosis here and click Dx button or Dx &amp; Rx button." for="txtDx"></p:watermark>
+                                                
+                                                
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
@@ -267,8 +267,8 @@
 
 
 
-                                                <p:watermark value="Select an investigation." for="acIx"></p:watermark>
-                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtSx"></p:watermark>
+                                                
+                                                
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
                                                                  rendered="#{inpatientClinicalDataController.encounterInvestigations ne null and inpatientClinicalDataController.encounterInvestigations.size() > 0}"
@@ -440,8 +440,8 @@
                                                                  value="#{inpatientClinicalDataController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
 
-                                                <p:watermark value="Select Procedure." for="acSx"></p:watermark>
-                                                <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
+                                                
+                                                
                                                 <h:panelGroup id="gpSx" >
                                                     <p:dataTable id="tblSx" 
                                                                  rendered="#{inpatientClinicalDataController.encounterProcedures ne null and inpatientClinicalDataController.encounterProcedures.size() > 0}"

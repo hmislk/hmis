@@ -6,40 +6,39 @@
 package com.divudi.ws.common;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.MembershipSchemeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.MembershipSchemeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,6 +53,8 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+
+import com.divudi.core.util.CommonFunctions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.ws.rs.core.Response;
@@ -99,8 +100,6 @@ public class ApiMembership {
     SessionController sessionController;
     @Inject
     InstitutionController institutionController;
-    @Inject
-    CommonController commonController;
     @Inject
     PatientController patientController;
     @Inject
@@ -190,7 +189,7 @@ public class ApiMembership {
             person.setTitle(Title.valueOf(title));
             person.setName(name);
             person.setSex(Sex.valueOf(sex));
-            person.setDob(getCommonController().getConvertDateTimeFormat24(dob));
+            person.setDob(CommonFunctions.getConvertDateTimeFormat24(dob));
             person.setAddress(address);
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
@@ -742,14 +741,6 @@ public class ApiMembership {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public PatientFacade getPatientFacade() {

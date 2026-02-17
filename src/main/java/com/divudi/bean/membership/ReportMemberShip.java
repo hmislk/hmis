@@ -3,16 +3,16 @@ package com.divudi.bean.membership;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PriceMatrixController;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.membership.IpaCreditInstitution;
-import com.divudi.data.membership.IpaMemberShip;
-import com.divudi.data.membership.IpaMemberShipCreditInstitution;
-import com.divudi.data.membership.IpaPaymentMethod;
-import com.divudi.data.membership.OpdMemberShip;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.PriceMatrixFacade;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.membership.IpaCreditInstitution;
+import com.divudi.core.data.membership.IpaMemberShip;
+import com.divudi.core.data.membership.IpaMemberShipCreditInstitution;
+import com.divudi.core.data.membership.IpaPaymentMethod;
+import com.divudi.core.data.membership.OpdMemberShip;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.PriceMatrixFacade;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -28,7 +28,7 @@ import javax.inject.Named;
 @RequestScoped
 public class ReportMemberShip {
 
-    
+
     List<IpaPaymentMethod> ipaPaymentMethods;
     List<IpaCreditInstitution> ipaCreditInstitutions;
     private List<IpaMemberShip> ipaMemberShip;
@@ -47,9 +47,9 @@ public class ReportMemberShip {
     @Inject
     PriceMatrixController priceMatrixController;
 
-    
-    
-    
+
+
+
     public List<OpdMemberShip> getOpdMemberShip() {
         return opdMemberShip;
     }
@@ -66,8 +66,8 @@ public class ReportMemberShip {
         this.priceMatrixController = priceMatrixController;
     }
 
-    
-    
+
+
 
     public void createPaymentMethodInwardPriceAdjustments() {
         ipaPaymentMethods = new ArrayList<>();

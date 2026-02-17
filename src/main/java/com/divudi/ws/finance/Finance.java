@@ -6,18 +6,14 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.AuthenticateController;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-
-import com.divudi.entity.ApiKey;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.java.CommonFunctions;
-import java.io.UnsupportedEncodingException;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.util.ArrayList;
-import org.apache.commons.codec.binary.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,11 +40,8 @@ import org.json.JSONObject;
 @RequestScoped
 public class Finance {
 
-
     @EJB
     private BillFacade billFacade;
-    @Inject
-    AuthenticateController authenticateController;
     @Inject
     ApiKeyController apiKeyController;
 
@@ -405,9 +398,9 @@ public class Finance {
                     if (bi.getRate() != 0.0) {
                         joBi.put("Rate", bi.getRate());
                     }
-                    if (bi.getRefunded() != null) {
-                        joBi.put("Refunded", bi.getRefunded());
-                    }
+
+                    joBi.put("Refunded", bi.isRefunded());
+
                     if (bi.getSearialNo() != 0.0) {
                         joBi.put("SearialNo", bi.getSearialNo());
                     }
@@ -500,20 +493,6 @@ public class Finance {
             array.put(jSONObject);
         }
         return array;
-    }
-
-    private boolean isUserAuthenticated(String authString) {
-        try {
-            byte[] decoded = Base64.decodeBase64(authString);
-            String decodedAuth = new String(decoded, "UTF-8") + "\n";
-
-            String[] authParts = decodedAuth.split("\\s+");
-            String username = authParts[0];
-            String password = authParts[1];
-            return authenticateController.userAuthenticated(username, password);
-        } catch (UnsupportedEncodingException ex) {
-            return false;
-        }
     }
 
     private boolean isValidKey(String key) {

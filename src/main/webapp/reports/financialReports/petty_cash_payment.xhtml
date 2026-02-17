@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Petty Cash Report" />
+                        </f:facet>
+
+                        <h:panelGrid columns="8" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker  
+                                showTime="true" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="30"></p:spacer>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker 
+                                showTime="true" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            
+                            <p:spacer width="30"></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Paid To Department" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                value="#{reportController.toDepartment}"
+                                completeMethod="#{departmentController.completeDept}"
+                                var="dpt"
+                                class="w-100 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{dpt.name}"
+                                itemValue="#{dpt}">
+                            </p:autoComplete>
+
+                            <p:spacer width="30"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Paid To Staff" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                value="#{reportController.toStaff}"
+                                completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                var="ix"
+                                class="w-100 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ix.person.name}"
+                                itemValue="#{ix}">
+                            </p:autoComplete>
+                            
+                            <p:spacer width="30"></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{reportController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="30"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" event="blur"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="30"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}" 
+                                    var="d" 
+                                    itemLabel="#{d.name}" 
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                value="#{reportController.webUser}"
+                                completeMethod="#{webUserController.completeUser}"
+                                var="w"
+                                class="w-100 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.webUserPerson.name}"
+                                itemValue="#{w}">
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs" 
+                                class="ui-button-warning mx-1" 
+                                action="#{reportController.processPettyCashPayment}" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print All" 
+                                icon="fas fa-print" 
+                                class="ui-button-info mx-1"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Download" 
+                                icon="fas fa-file-excel" 
+                                class="ui-button-success mx-1" >
+                                <p:dataExporter 
+                                    fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" 
+                                    type="xlsx" 
+                                    target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable id="dtaPr" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                            <f:facet name="header">
+                                <h:outputLabel value="Petty Cash Payments" /><br/>
+                                <h:outputLabel value="From Date &emsp;"/>
+                                <p:outputLabel value="&emsp; : &emsp;" />
+                                <h:outputLabel value="#{reportController.fromDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="To Date &emsp;"/>
+                                <p:outputLabel value="&emsp;&emsp;&nbsp; : &emsp;" />
+                                <h:outputLabel value="#{reportController.toDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Branch Name &emsp;"/>
+                                <p:outputLabel value=" : &emsp;" />
+                                <h:outputLabel value="#{reportController.institution.name}"  />
+                            </f:facet>
+                            <p:column headerText="S" width="2em">
+                                <h:outputText value="#{rowIndex+1}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                            <p:column headerText="Bill No" width="">
+                                <h:outputText value="#{pc.deptId}" ></h:outputText>
+                                <p:badge value="Cancelled - #{pc.cancelledBill.deptId}" severity="danger" rendered="#{pc.cancelledBill ne null}" />
+                                <p:badge value="Refunded - #{pc.refundedBill.deptId}" severity="warning" rendered="#{pc.refundedBill ne null}" />
+                            </p:column>
+                            <p:column headerText="Bill Date" >
+                                <h:outputText value="#{pc.billDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh:mm a" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Document No" >
+                                <h:outputText value="#{pc.invoiceNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Date" >
+                                <h:outputText value="#{pc.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="For Whome" >
+                                <h:outputText value="#{pc.staff.person.name}" rendered="#{pc.staff ne null}" ></h:outputText>
+                                <h:outputText value="#{pc.person.name}" rendered="#{pc.person ne null}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Paid For" >
+                                <h:outputText value="#{pc.toDepartment.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Purpose" >
+                                <h:outputText value="#{pc.comments}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Status" >
+                                <p:badge 
+                                    value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" 
+                                         severity="#{pc.approveUser != null ? 'success': 'danger'}" />
+<!--                                <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>-->
+                            </p:column>
+                            <p:column headerText="Amount" style="text-align: right"  >
+                                <h:outputText value="#{0-pc.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{0 - reportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+
+
+                        </p:dataTable>
+
+                        <p:spacer height="5"></p:spacer>
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    <h2>Upload Institution Item Fees</h2>
+                </div>
+
+                <div class="card-body" >
+                    <p:panel styleClass="mb-3">
+                        <f:facet name="header">
+                            <h:outputText value="Description" />
+                        </f:facet>
+                        <h:outputText value="This utility creates NEW items and fees from an Excel file. " />
+                        <h:outputText value="It will create Investigations or Services if they don't exist, and add fee records. " />
+                        <h:outputText value="Institutions and Departments are also created from the Excel data if they don't exist. " styleClass="text-warning" />
+                        <br/><br/>
+                        <h:outputText value="Use this for bulk import of new price lists. For adding fees to existing items for a specific Collection Centre, use 'Upload to Add CC Fees by Item Code' instead." styleClass="text-info" />
+                    </p:panel>
+
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadController.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         action="#{dataUploadController.uploadCollectingCentrePriceList()}"
+                                         ajax="false"/>
+                    </h:form>
+
+                    <p:fieldset legend="Excel File Format" styleClass="mt-3">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Content</th>
+                                    <th>Required</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A</td>
+                                    <td>Item Code</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td>Item Name</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>C</td>
+                                    <td>Fee List Type (Category)</td>
+                                    <td>No</td>
+                                </tr>
+                                <tr>
+                                    <td>D</td>
+                                    <td>Item Type ("Investigation" or "Service")</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>E</td>
+                                    <td>Fee Value</td>
+                                    <td>No</td>
+                                </tr>
+                                <tr>
+                                    <td>F</td>
+                                    <td>Institution Name (defaults to "Other" if empty)</td>
+                                    <td>No</td>
+                                </tr>
+                                <tr>
+                                    <td>G</td>
+                                    <td>Department Name (defaults to Institution Name if empty)</td>
+                                    <td>No</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h:outputText value="Note: The first row is treated as a header and will be skipped." styleClass="text-info" />
+                    </p:fieldset>
+                </div>
+            </div>
+        </div>
+
+       
+
+    </ui:define>
+</ui:composition>

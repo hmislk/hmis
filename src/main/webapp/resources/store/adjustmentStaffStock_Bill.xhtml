@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <style>
+            @media print{
+                .adjbill{
+                    position: relative!important;
+                    /*padding-left: 0.5%!important;*/
+                    height:150mm!important;
+                    width:210mm!important;
+                    font-family: monospace!important;
+                    font-size: 12px!important;
+                    margin:1px!important;
+                    padding: 1px!important;
+                    background-size: 150% auto!important;
+                    font-size: 100%;
+                    line-height: 2!important;
+                }
+            }
+
+            @media screen{
+                .adjbill{
+                    position: relative!important;
+                    /*padding-left: 0.5%!important;*/
+                    height:150mm!important;
+                    width:210mm!important;
+                    font-family: monospace!important;
+                    font-size: 12px!important;
+                    margin:1px!important;
+                    padding: 1px!important;
+                    background-size: 150% auto!important;
+                    border: 1px solid!important;
+                    font-size: 100%;
+                    line-height: 2!important;
+                }
+            }
+
+        </style>
+
+        <div class="adjbill" >
+            <div style="margin-left: 5%; margin-right: 5%;">
+
+                <div class="headingBill my-3">
+                    <h:outputLabel value="Staff Stock Adjustment Note" style="text-decoration: underline;"/>                           
+                </div>
+
+                <h:panelGrid columns="4" style="min-width: 100%;">
+
+                    <h:outputLabel value="Adj No "/>
+                    <h:outputLabel value="#{cc.attrs.bill.deptId}"/> 
+
+                    <h:outputLabel value="Adjusted At  "/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    </h:outputLabel >
+
+                    <h:outputLabel value="Adjusted By  "/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}">
+                    </h:outputLabel>
+
+                    <h:outputLabel value="Staff "/>
+                    <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}">
+                    </h:outputLabel>
+                </h:panelGrid>
+
+                <div >
+                    <p:spacer height="15px"/>
+
+                    <p:dataTable 
+                        rowIndexVar="rowIndex" 
+                        styleClass="noBorder normalFont" 
+                        value="#{cc.attrs.bill.billItems}" 
+                        var="bip" style="
+                        text-align: center;">
+
+                        <p:column style="text-align: left!important; width: 6em; padding: 8px;"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Batch No" style="font-weight: bold!important; " />
+                            </f:facet>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}" rendered="#{bip.pharmaceuticalBillItem.itemBatch.batchNo ne null}"/>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.id}" rendered="#{bip.pharmaceuticalBillItem.itemBatch.batchNo eq null}"/>
+                        </p:column>
+                        
+                        <p:column style="text-align: left!important; padding: 8px;"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Item" style="font-weight: bold!important; " />
+                            </f:facet>
+                            <h:outputLabel value="#{bip.item.name}"/>
+                        </p:column>
+
+                        <p:column style="text-align: right!important; width: 8em; padding: 8px;"> 
+                            <f:facet name="header">                           
+                                <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
+                            </f:facet>
+                            <h:outputLabel  value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}" >
+                                <f:convertNumber pattern="#0.0"/>
+                            </h:outputLabel>
+                        </p:column>                  
+
+                        <p:column style="text-align: right!important; width: 8em; padding: 8px;"> 
+                            <f:facet name="header">                           
+                                <h:outputLabel value="After Qty" style="font-weight: bold!important;" />
+                            </f:facet>
+                            <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}" >
+                                <f:convertNumber pattern="#0.0"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                    </p:dataTable>
+                </div>
+
+                <div class="d-flex mt-4">
+                    <h:outputLabel value="Adjustment Comment" style="width: 50mm" ></h:outputLabel>
+                    <h:outputLabel value="#{cc.attrs.bill.comments}" ></h:outputLabel>
+                </div>
+
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>

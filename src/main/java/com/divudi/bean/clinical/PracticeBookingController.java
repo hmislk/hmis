@@ -8,44 +8,43 @@ import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
-import com.divudi.data.inward.PatientEncounterType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.SessionNumberGenerator;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DoctorFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SessionNumberGeneratorFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.SessionNumberGenerator;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DoctorFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,6 +53,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -67,6 +68,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class PracticeBookingController implements Serializable {
+
+    private static final Logger logger = Logger.getLogger(PracticeBookingController.class.getName());
 
     private Speciality speciality;
     private ServiceSession selectedServiceSession;
@@ -92,8 +95,6 @@ public class PracticeBookingController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     private PatientController patientController;
-    @Inject
-    CommonController commonController; 
     @Inject
     private OpdBillController opdBillController;
     ///////////////////
@@ -318,12 +319,100 @@ public class PracticeBookingController implements Serializable {
             return "";
         }
         getPharmacySaleController().setPatient(opdVisit.getPatient());
-        getPharmacySaleController().setOpdEncounterComments(opdVisit.getComments());
+
+        // Debug: Check encounter comments (PHI-safe logging)
+        String encounterComments = opdVisit.getComments();
+        logger.log(Level.FINE, "Encounter comments status: {0}",
+                (encounterComments != null && !encounterComments.trim().isEmpty()) ? "present" : "absent");
+        getPharmacySaleController().setOpdEncounterComments(encounterComments);
+
         getPharmacySaleController().setFromOpdEncounter(true);
+        getPharmacySaleController().setBillSettlingStarted(false);
+
+        // Set the encounter doctor as the referring doctor for both bill and preBill
+        Doctor referringDoctor = null;
+        if (opdVisit.getOpdDoctor() != null && opdVisit.getOpdDoctor() instanceof Doctor) {
+            referringDoctor = (Doctor) opdVisit.getOpdDoctor();
+        } else if (opdVisit.getReferringDoctor() != null && opdVisit.getReferringDoctor() instanceof Doctor) {
+            referringDoctor = (Doctor) opdVisit.getReferringDoctor();
+        }
+
+        // Set referring doctor on preBill (which is displayed on the UI)
+        if (referringDoctor != null && getPharmacySaleController().getPreBill() != null) {
+            getPharmacySaleController().getPreBill().setReferredBy(referringDoctor);
+        }
+
+        // Set bill relationships after ensuring bill is initialized
+        if (getPharmacySaleController().getBill() != null) {
+            // Link the encounter to the pharmacy bill for proper relationships
+            getPharmacySaleController().getBill().setPatientEncounter(opdVisit);
+
+            // Also set referring doctor on the main bill
+            if (referringDoctor != null) {
+                getPharmacySaleController().getBill().setReferredBy(referringDoctor);
+            }
+        }
+
+        // Transfer prescription text from encounter to pharmacy bill comments
+        // First load the encounter data into the controller
+        logger.log(Level.FINE, "Loading encounter data for opdVisit ID: {0}", opdVisit.getId());
+        getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
+
+        // After loading the list, set the encounterPrescreption from the list if available
+        if (getPatientEncounterController().getEncounterPrescreptions() != null &&
+            !getPatientEncounterController().getEncounterPrescreptions().isEmpty()) {
+            // Use the first/latest prescription from the list
+            ClinicalFindingValue firstPrescription = getPatientEncounterController().getEncounterPrescreptions().get(0);
+            getPatientEncounterController().setEncounterPrescreption(firstPrescription);
+            logger.log(Level.FINE, "Set encounterPrescreption from list. Prescription ID: {0}", firstPrescription.getId());
+        } else {
+            logger.log(Level.FINE, "No prescriptions found in list");
+        }
+
+        String prescriptionText = getPrescriptionText();
+        boolean hasPrescriptionText = (prescriptionText != null && !prescriptionText.trim().isEmpty());
+        logger.log(Level.FINE, "Prescription text status: {0}", hasPrescriptionText ? "found" : "not found");
+
+        if (hasPrescriptionText) {
+            getPharmacySaleController().setComment(prescriptionText);
+            logger.log(Level.FINE, "Set prescription text as comment (length: {0} characters)", prescriptionText.length());
+        } else {
+            logger.log(Level.FINE, "No prescription text to set");
+        }
+
         getPatientEncounterController().fillEncounterMedicines(opdVisit);
         for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
         }
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+    }
+
+    /**
+     * Extracts prescription text from the current encounter.
+     * Uses the same approach as the OPD visit page: encounterPrescreption.lobValue
+     *
+     * @return prescription text with HTML formatting preserved, or null if no prescription found
+     */
+    private String getPrescriptionText() {
+        try {
+            logger.log(Level.FINE, "Checking for prescription text...");
+
+            // Access prescription the same way as in opd_visit.xhtml
+            if (getPatientEncounterController().getEncounterPrescreption() != null) {
+                String prescriptionText = getPatientEncounterController().getEncounterPrescreption().getLobValue();
+                // PHI-safe logging: log only length/status, NOT the actual prescription content
+                logger.log(Level.FINE, "Found prescription text: {0}",
+                        (prescriptionText != null ? prescriptionText.length() + " characters" : "null"));
+                return prescriptionText;
+            } else {
+                logger.log(Level.FINE, "encounterPrescreption is null");
+            }
+            return null;
+
+        } catch (Exception e) {
+            // Log error without exposing PHI - don't print stack trace to stderr
+            logger.log(Level.SEVERE, "Error extracting prescription text: {0}", e.getMessage());
+            return null;
+        }
     }
 
     public void opdVisitFromServiceSession() {
@@ -582,7 +671,7 @@ public class PracticeBookingController implements Serializable {
         lst = getServiceSessionFacade().findByJpql(jpql, m);
         return lst;
     }
-    
+
     public void listCompleteAndToCompleteBillSessions() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -590,15 +679,15 @@ public class PracticeBookingController implements Serializable {
 
         listCompletedBillSessions();
         listToCompleteBillSessions();
-        
-        
+
+
     }
 
     List<PatientEncounter> encounters;
 
     public void listPatientEncounters() {
         Date startTime = new Date();
-        
+
         String sql = "Select pe From PatientEncounter pe "
                 + " where pe.retired=false "
                 + " and pe.patientEncounterType=:t "
@@ -611,8 +700,8 @@ public class PracticeBookingController implements Serializable {
         PatientEncounter pe = new PatientEncounter();
 //        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findByJpql(sql, hh, TemporalType.DATE);
-        
-        
+
+
     }
 
     public List<PatientEncounter> getEncounters() {
@@ -698,7 +787,7 @@ public class PracticeBookingController implements Serializable {
         }
         return selectedServiceSession;
     }
-    
+
     public void addToQueue() {
         if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
@@ -717,7 +806,7 @@ public class PracticeBookingController implements Serializable {
         listBillSessions();
         JsfUtil.addSuccessMessage("Added to the queue");
     }
-    
+
     private BillItem addToBilledItem(Bill b) {
         BillItem bi = new BillItem();
         bi.setCreatedAt(new Date());
@@ -962,14 +1051,6 @@ public class PracticeBookingController implements Serializable {
 
     public void setPharmacySaleController(PharmacySaleController pharmacySaleController) {
         this.pharmacySaleController = pharmacySaleController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public OpdBillController getOpdBillController() {

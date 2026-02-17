@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <head>
+    </head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
+                    <h:form id="form">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Upload Report View" />
+                                <p:commandButton    
+                                    value="Back to Report Search" 
+                                    style="float: right;"
+                                    action="/lab/generate_barcode_p?faces-redirect=true" 
+                                    icon="fa-solid fa-arrow-left"
+                                    class="mx-1 ui-button-secondary"
+                                    ajax="false"   >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-info " 
+                                    icon="fas fa-print" 
+                                    ajax="false" 
+                                    rendered="#{patientReportUploadController.image}"
+                                    style="float: right;"
+                                    value="Print">
+                                    <p:printer target="divPrint" />
+                                </p:commandButton>
+                            </f:facet>
+
+                            <div class="d-flex justify-content-center mt-1 w-100">
+                                <h:panelGroup id="divPrint" >
+                                    <!-- Render PDF Files -->
+                                    <h:panelGroup rendered="#{patientReportUploadController.pdf}">
+                                        <p:media 
+                                            cache="false"
+                                            value="#{patientReportUploadController.pdfReportStream}" 
+                                            player="pdf"
+                                            style="width: 85vw; height: 85vh;"/>
+                                    </h:panelGroup>
+
+                                    <!-- Render Image Files -->
+                                    <h:panelGroup id="image" rendered="#{patientReportUploadController.image}">
+                                        <p:graphicImage 
+                                            value="#{patientReportUploadController.imageReportStream}" 
+                                            stream="true"
+                                            cache="false"
+                                            style="max-width:100%; height:auto;" />
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                            </div>
+
+                        </p:panel>
+
+                    </h:form>
+
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

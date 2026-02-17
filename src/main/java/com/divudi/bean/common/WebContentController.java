@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.WebContentType;
-import static com.divudi.data.WebContentType.ShortText;
-import com.divudi.entity.WebContent;
-import com.divudi.entity.WebLanguage;
-import com.divudi.facade.WebContentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.WebContentType;
+import static com.divudi.core.data.WebContentType.ShortText;
+import com.divudi.core.entity.WebContent;
+import com.divudi.core.entity.WebLanguage;
+import com.divudi.core.facade.WebContentFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,38 +50,38 @@ public class WebContentController implements Serializable {
     String page;
 
     public String toHome() {
-        page = "/index";
+        page = "/index?faces-redirect=true";
         return page;
     }
 
     public String toChannel() {
-        page = "/channel";
+        page = "/channel?faces-redirect=true";
         return page;
     }
 
     public String toReports() {
-        page = "/report_search";
+        page = "/report_search?faces-redirect=true";
         return page;
     }
 
     public String toServices() {
-        page = "/services";
+        page = "/services?faces-redirect=true";
         return page;
     }
 
     public String toContact() {
-        page = "/contact";
+        page = "/contact?faces-redirect=true";
         return page;
     }
 
     public String toAbout() {
-        page = "/about";
+        page = "/about?faces-redirect=true";
         return page;
     }
 
     public String toAddNewWebContent() {
         selected = new WebContent();
-        return "/webcontent/web_content";
+        return "/webcontent/web_content?faces-redirect=true";
     }
 
     public String toAddNewShortWebContent() {
@@ -107,8 +107,8 @@ public class WebContentController implements Serializable {
         selected.setType(WebContentType.Image);
         return toEditWebContent();
     }
-    
-    
+
+
 
     public String toEditWebContent() {
         if (selected == null) {
@@ -117,15 +117,15 @@ public class WebContentController implements Serializable {
         }
         switch (selected.getType()) {
             case Image:
-                return "/webcontent/image";
+                return "/webcontent/image?faces-redirect=true";
             case List:
-                return "/webcontent/list";
+                return "/webcontent/list?faces-redirect=true";
             case LongText:
-                return "/webcontent/long";
+                return "/webcontent/long?faces-redirect=true";
             case ShortText:
-                return "/webcontent/short";
+                return "/webcontent/short?faces-redirect=true";
             default:
-                return "/webcontent/web_content";
+                return "/webcontent/web_content?faces-redirect=true";
         }
     }
 
@@ -134,7 +134,7 @@ public class WebContentController implements Serializable {
             JsfUtil.addErrorMessage("Please select");
             return "";
         }
-        return "/webcontent/web_content_long";
+        return "/webcontent/web_content_long?faces-redirect=true";
     }
 
     public String toDeleteWebContent() {
@@ -151,7 +151,7 @@ public class WebContentController implements Serializable {
 
     public String toListWebContent() {
         listItems();
-        return "/webcontent/web_contents";
+        return "/webcontent/web_contents?faces-redirect=true";
     }
 
     public void makeSelectedLanguageAsDisplayLanguage(){
@@ -161,7 +161,7 @@ public class WebContentController implements Serializable {
         }
         setLanguage(selectedlanguage);
     }
-    
+
     public WebContent findSingleWebContent(String word) {
         return findSingleWebContent(word, getLanguage());
     }
@@ -314,7 +314,7 @@ public class WebContentController implements Serializable {
             getFacade().edit(selected);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -349,9 +349,10 @@ public class WebContentController implements Serializable {
     public void setLanguage(WebLanguage language) {
         this.language = language;
     }
-    
+
+    @Deprecated // Now use Data Administration
     public String navigateToManageWeb(){
-        return "/webcontent/index";
+        return "/webcontent/index?faces-redirect=true";
     }
 
     public WebLanguage getSelectedlanguage() {
@@ -361,8 +362,8 @@ public class WebContentController implements Serializable {
     public void setSelectedlanguage(WebLanguage selectedlanguage) {
         this.selectedlanguage = selectedlanguage;
     }
-    
-    
+
+
 
     /**
      *
@@ -407,5 +408,5 @@ public class WebContentController implements Serializable {
         }
     }
 
- 
+
 }

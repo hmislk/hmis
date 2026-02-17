@@ -79,8 +79,7 @@
                                 </p:selectOneMenu>
                                 
                                 <p:inputText value="#{inwardPaymentController.comment}" id="comment"/>
-                                            <p:watermark value="Comment" for="comment"/>
-                                
+                                                                            
                                 <h:panelGroup id="creditCard" style="display: #{inwardPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                     <pa:creditCard paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                 </h:panelGroup>

@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Patient Deposit Management">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{patientDepositController.patientDepositManagementIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+
+                                    <!-- Manage Section -->
+                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton
+                                                icon="pi pi-plus-circle"
+                                                ajax="false"
+                                                value="Accept Patient Deposits"
+                                                title="Accept new patient deposits"
+                                                action="#{patientDepositController.navigateToAddNewPatientDeposit()}"
+                                                class="w-100 m-1 ui-button-success"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                ajax="false"
+                                                value="Search Patient Deposits"
+                                                title="Search for patient deposits"
+                                                action="#{patientDepositSearchController.navigateToPatientDepositSearch()}"
+                                                class="w-100 m-1 ui-button-info"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-undo"
+                                                ajax="false"
+                                                value="Return Patient Deposits"
+                                                title="Process patient deposit returns"
+                                                action="/patient_deposit/pay?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1 ui-button-warning"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                ajax="false"
+                                                value="Search Patient Deposit Returns"
+                                                title="Search for patient deposit returns"
+                                                action="#{patientDepositSearchController.navigateToPatientDepositReturnSearch()}"
+                                                class="w-100 m-1 ui-button-info"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-history"
+                                                ajax="false"
+                                                value="Patient Deposit History"
+                                                title="View patient deposit history"
+                                                action="#{patientDepositHistoryController.navigateToPatientDepositHistory()}"
+                                                class="w-100 m-1 ui-button-secondary"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-arrow-right-arrow-left"
+                                                ajax="false"
+                                                value="Patient Deposit Trancefer"
+                                                title="Transfer patient deposits"
+                                                action="/patient_deposit/report_collecting_center_referece_book?faces-redirect=true"
+                                                class="w-100 m-1 ui-button-warning"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-download"
+                                                ajax="false"
+                                                value="Patient Deposit Recive"
+                                                title="Receive patient deposits"
+                                                action="/patient_deposit/cc_update_credit_limit?faces-redirect=true"
+                                                actionListener="#{institutionController.makeNull()}"
+                                                rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
+                                                class="w-100 m-1 ui-button-success"/>
+
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                ajax="false"
+                                                value="Search Patient Deposit Trancefers"
+                                                title="Search for patient deposit transfers"
+                                                action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
+                                                class="w-100 m-1 ui-button-info"/>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <!-- Reports Section -->
+                                    <p:tab title="Reports" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:commandButton
+                                                icon="pi pi-wallet"
+                                                ajax="false"
+                                                value="Patient Deposit Balances"
+                                                title="View patient deposit balance report"
+                                                action="#{patientDepositBalanceReportController.navigateToPatientDepositBalanceReport()}"
+                                                class="w-100 m-1 ui-button-help"/>
+                                            <p:commandButton
+                                                icon="pi pi-user"
+                                                ajax="false"
+                                                value="Patient Deposit Balance - By Patient"
+                                                title="View patient deposit balance for a specific patient"
+                                                action="#{patientSpecificDepositBalanceReportController.navigateToPatientSpecificDepositBalanceReport()}"
+                                                class="w-100 m-1 ui-button-help"/>
+                                            <p:commandButton
+                                                icon="pi pi-list"
+                                                ajax="false"
+                                                value="Patient Deposit Histories"
+                                                title="View patient deposit history report"
+                                                action="#{patientDepositHistoryReportController.navigateToPatientDepositHistoriesReport()}"
+                                                class="w-100 m-1 ui-button-help"/>
+                                            <p:commandButton
+                                                icon="pi pi-user-edit"
+                                                ajax="false"
+                                                value="Patient Deposit Histories - By Patient"
+                                                title="View patient deposit histories for a specific patient"
+                                                action="#{patientSpecificDepositHistoryReportController.navigateToPatientSpecificDepositHistoriesReport()}"
+                                                class="w-100 m-1 ui-button-help"/>
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

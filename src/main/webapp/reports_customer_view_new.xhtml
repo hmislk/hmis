@@ -10,7 +10,6 @@
     <h:head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
         <meta charset="utf-8" />
-        <title>Ruhunu Hospital Form</title>
         <meta name="generator" content="Bootply" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link href="resources/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
@@ -97,7 +96,7 @@
                                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                                                                         </h:outputText>
-                                                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
@@ -193,7 +192,7 @@
                                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                                                                         </h:outputText>
-                                                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                                                        <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
@@ -397,7 +396,7 @@
                                             <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                                             </h:outputText>
-                                            <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                            <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                             <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
@@ -492,7 +491,7 @@
                                             <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                                             </h:outputText>
-                                            <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                            <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                             <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>

@@ -62,7 +62,7 @@
                                         value="Export"  >
                                         <p:dataExporter 
                                             target="tblBills" 
-                                            type="xls" 
+                                            type="xlsx" 
                                             fileName="Inward Final Bills" >
                                         </p:dataExporter>
                                     </p:commandButton>
@@ -74,6 +74,8 @@
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                     <h:outputLabel value="Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <h:outputLabel value="MRN / PHN No"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                     <h:outputLabel value="Telephone"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <h:outputLabel value="Gross Total"/>
@@ -98,10 +100,10 @@
 
                                     <p:column 
                                         headerText="Bill No" 
-                                        sortBy="#{bb.insId}" 
-                                        filterBy="#{bb.insId}" 
+                                        sortBy="#{bb.deptId}" 
+                                        filterBy="#{bb.deptId}" 
                                         filterMatchMode="contains"  >
-                                        <h:outputLabel value="#{bb.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{bb.deptId}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column 
@@ -192,7 +194,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="inward_reprint_bill_final" 
+                                            action="inward_reprint_bill_final?faces-redirect=true" 
                                             actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" 
                                             >
                                             <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>

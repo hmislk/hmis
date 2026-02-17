@@ -1,0 +1,741 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+
+                <!-- Custom CSS for Column Width Alignment -->
+                <style>
+                    /* Fixed width for numeric columns to ensure vertical alignment */
+                    .value-column {
+                        width: 120px;
+                        min-width: 120px;
+                        max-width: 120px;
+                    }
+
+                    /* Ensure transaction type column takes remaining space */
+                    .type-column {
+                        width: auto;
+                    }
+
+                    /* Hide columns for specific sections */
+                    .hide-column {
+                        display: none;
+                    }
+                </style>
+
+                <h:form id="reportForm">
+
+                    <!-- Filter Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h:outputText value="&#xf0b0;" styleClass="fa me-2" /> <!-- Filter icon -->
+                            <h:outputText value="Report Filters" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <!-- Date Filter -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="fromDate" value="Date" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf073;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:calendar
+                                            id="fromDate"
+                                            value="#{pharmacyDailyStockReportOptimizedController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            styleClass="form-control"
+                                            showOn="button"/>
+                                    </div>
+                                </div>
+
+                                <!-- Institution Filter -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbIns" value="Institution" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf19c;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:selectOneMenu
+                                            id="cmbIns"
+                                            styleClass="form-select"
+                                            value="#{pharmacyDailyStockReportOptimizedController.institution}"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                            <p:ajax process="cmbIns" update="cmbSite cmbDept"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <!-- Site Filter -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbSite" value="Site" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="cmbSite">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <h:outputText value="&#xf3c5;" styleClass="fa text-primary"/>
+                                            </span>
+                                            <p:selectOneMenu
+                                                id="siteMenu"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.site}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                                <p:ajax process="siteMenu" update="cmbDept"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Department Filter -->
+                                <div class="col-md-6 col-lg-3">
+                                    <h:outputLabel for="department" value="Department" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="cmbDept">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <h:outputText value="&#xf0e8;" styleClass="fa text-primary"/>
+                                            </span>
+                                            <!-- Component 1: Without Institution and Site -->
+                                            <p:selectOneMenu
+                                                id="department1"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site eq null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 2: With Site Only -->
+                                            <p:selectOneMenu
+                                                id="department2"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site ne null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.site)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 3: With Institution Only -->
+                                            <p:selectOneMenu
+                                                id="department3"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site eq null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyDailyStockReportOptimizedController.institution)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 4: With Both Institution and Site -->
+                                            <p:selectOneMenu
+                                                id="department4"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site ne null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.institution, pharmacyDailyStockReportOptimizedController.site)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h:outputText value="&#xf0ae;" styleClass="fa me-2" /> <!-- Actions icon -->
+                            <h:outputText value="Actions" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2" id="actionButtons">
+                                <div class="col-auto">
+                                    <p:commandButton
+                                        value="Generate Report"
+                                        ajax="false"
+                                        action="#{pharmacyDailyStockReportOptimizedController.processDailyStockBalanceReportOptimized}"
+                                        styleClass="ui-priority-primary"
+                                        icon="fa fa-refresh">
+                                        <f:ajax render="reportSection exportButtons"/>
+                                    </p:commandButton>
+                                </div>
+
+                                <!-- Export Buttons (shown only when report is available) -->
+                                <h:panelGroup id="exportButtons" layout="block" styleClass="col-auto">
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport != null and pharmacyDailyStockReportOptimizedController.fromDate != null and pharmacyDailyStockReportOptimizedController.department != null}">
+                                        <div class="d-flex gap-2" role="group" aria-label="Export options">
+                                            <p:commandButton
+                                                value="Download Excel"
+                                                ajax="false"
+                                                action="#{pharmacyDailyStockReportOptimizedController.downloadExcel}"
+                                                styleClass="ui-button-success"
+                                                icon="fa fa-file-excel-o"
+                                                title="Download report as Excel file"/>
+
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                action="#{pharmacyDailyStockReportOptimizedController.navigateToPrintPage}"
+                                                styleClass="ui-button-info"
+                                                icon="fa fa-print"
+                                                title="Open print-friendly version"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <div class="col-auto ms-auto">
+                                    <p:commandButton
+                                        value="Clear"
+                                        immediate="true"
+                                        ajax="true"
+                                        actionListener="#{pharmacyDailyStockReportOptimizedController.clearFilters}"
+                                        update="@form"
+                                        styleClass="ui-button-secondary"
+                                        icon="fa fa-eraser"
+                                        title="Clear all filters and reset form"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Report Results Section -->
+                    <h:panelGroup id="reportSection">
+                        <h:panelGroup layout="block"
+                                      rendered="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport != null and pharmacyDailyStockReportOptimizedController.fromDate != null and pharmacyDailyStockReportOptimizedController.department != null}">
+
+                            <!-- Main Report Container Card -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h:outputText value="&#xf1c0;" styleClass="fa me-2" /> <!-- Database icon -->
+                                    <h:outputText value="Daily Stock Value Report Results" styleClass="fw-bold"/>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Report Header Information -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h:panelGroup layout="block" styleClass="alert alert-secondary mb-0">
+                                                <h:outputText value="Date: " styleClass="fw-bold"/>
+                                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h:panelGroup layout="block" styleClass="alert alert-secondary mb-0">
+                                                <h:outputText value="Department: " styleClass="fw-bold"/>
+                                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.department.name}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+
+                                    <!-- Opening Stock Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <h:outputText value="&#xf49e;" styleClass="fas me-2" /> <!-- fa-box-open icon -->
+                                            <h:outputText value="Opening Stock" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="5">Description</th>
+                                                        <th class="text-end">Cost Rate</th>
+                                                        <th class="text-end">Retail Rate</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <h:outputText value="Opening Stock Value"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValueAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sales Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-success text-white">
+                                            <h:outputText value="&#xf788;" styleClass="fas me-2" /> <!-- fa-cash-register icon -->
+                                            <h:outputText value="Sales Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-success">
+                                                    <tr>
+                                                        <th class="type-column">Sale Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column">Discount</th>
+                                                        <th class="text-end value-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.rows}" var="sale">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{sale.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-success text-white fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Sales</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Purchases Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h:outputText value="&#xf07a;" styleClass="fas me-2" /> <!-- fa-shopping-cart icon -->
+                                            <h:outputText value="Purchase Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-warning">
+                                                    <tr>
+                                                        <th class="type-column">Purchase Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column hide-column">Discount</th>
+                                                        <th class="text-end value-column hide-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat id="purchaseBundles" value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.rows}" var="purchase">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{purchase.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{purchase.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{purchase.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-warning text-dark fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Purchases</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText id="lblPurchaseBillsTotalAtRetailRate" value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Transfers Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-info text-white">
+                                            <h:outputText value="&#xf362;" styleClass="fas me-2" /> <!-- fa-exchange-alt icon -->
+                                            <h:outputText value="Transfer Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-info">
+                                                    <tr>
+                                                        <th class="type-column">Transfer Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column hide-column">Discount</th>
+                                                        <th class="text-end value-column hide-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.rows}" var="transfer">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{transfer.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{transfer.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{transfer.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-info text-white fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Transfers</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Adjustments Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-danger text-white">
+                                            <h:outputText value="&#xf044;" styleClass="fas me-2" /> <!-- fa-edit icon -->
+                                            <h:outputText value="Adjustment Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-danger">
+                                                    <tr>
+                                                        <th class="type-column">Adjustment Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column hide-column">Discount</th>
+                                                        <th class="text-end value-column hide-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.rows}" var="adjustment">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{adjustment.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{adjustment.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{adjustment.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-danger text-white fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Adjustments</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Closing Stock Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <h:outputText value="&#xf466;" styleClass="fas me-2" /> <!-- fa-box icon -->
+                                            <h:outputText value="Closing Stock" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="5">Description</th>
+                                                        <th class="text-end">Cost Rate</th>
+                                                        <th class="text-end">Retail Rate</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <h:outputText value="Closing Stock Value"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

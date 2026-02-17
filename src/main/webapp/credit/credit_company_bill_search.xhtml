@@ -7,54 +7,143 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel >
 
                         <f:facet name="header" >
-                            <h:outputLabel value="CREDIT COMPANY PAYMENT BILL SEARCH "/>
-                            <h:panelGrid columns="5" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCreditTable}" />
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                            <h:outputLabel value="Credit Company Payment Bill Search "/>
+                        </f:facet>   
 
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value="Credit Company"/>
-                                <h:outputLabel value="Value"/>
-                                <h:outputLabel value="Bank"/>
-                                <h:outputLabel value="Check No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}"  />   
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bank}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}"/>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:panelGrid columns="8" styleClass="w-100">
 
-                            </h:panelGrid>
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="From Date" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar 
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100"
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                        </f:facet>                         
+                                    <p:spacer width="20"/>
 
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="To Date" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100"/>
 
+                                    <p:spacer width="20"/>
 
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill">
-                            <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="credit_company_bill_reprint" >
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf543;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Bill No" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf81d;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Value" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+
+                                    <p:spacer width="20"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Credit Company" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" class="w-100"/>
+
+                                    <p:spacer width="20"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Bank" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.bank}" class="w-100"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf53d;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Cheque No" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+                                    
+                                    <p:spacer width="20"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0b0;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Bill Type" class="m-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" value="#{searchController.settledBillType}">
+                                        <f:selectItem  itemLabel="All Bills"/>
+                                        <f:selectItem itemValue="IP" itemLabel="Inpatient Bills(IP)"/>
+                                        <f:selectItem itemValue="OP" itemLabel="Outpatient Bills(OP)"/>
+                                        <f:selectItem itemValue="PACKAGE" itemLabel="Package Bills (PACKAGE)"/>
+                                        <f:selectItem itemValue="PHARMACY" itemLabel="Pharmacy Bills (PHARMACY)"/>
+                                        <p:ajax update="@all"/>
+                                    </p:selectOneMenu>
+
+                                    
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+
+                                    <p:commandButton 
+                                        id="btnSearch"
+                                        ajax="false" 
+                                        value="Search" 
+                                        action="#{searchController.createCreditTable}" 
+                                        class="ui-button-warning my-4 w-100" 
+                                        icon="fas fa-search">
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </div>
+                        </div>
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            rows="20"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20, 50, 100" 
+                            value="#{searchController.bills}" 
+                            var="bill">
+
+                            <p:column headerText="No" styleClass="alignTop" style="padding: 10px; width: 3em">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill No" style="padding: 8px;">
+                                <p:commandLink 
+                                    id="billNo" 
+                                    ajax="false" 
+                                    value="#{bill.deptId}" 
+                                    action="#{creditCompanyBillSearch.navigateToBillPreview(bill)}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
-                                </p:commandButton>
+                                </p:commandLink>
                             </p:column>
-                            <p:column>
-                                <h:outputLabel  value="#{bill.insId}" />
-                            </p:column>
-                            <p:column headerText="Credit Company">                               
+
+                            <p:column headerText="Credit Company" style="padding: 8px;">                               
                                 <h:outputLabel value="#{bill.fromInstitution.name}" />
                             </p:column>                          
 
-                            <p:column headerText="Billed at"  >
+                            <p:column headerText="Billed At"  style="padding: 8px;" >
                                 <h:outputLabel value="#{bill.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -66,7 +155,8 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                               
                             </p:column>  
-                            <p:column headerText="Billed by" >                                
+
+                            <p:column headerText="Billed By" style="padding: 8px;">                                
                                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                                    
                                 <br/>
@@ -76,35 +166,48 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                                
                             </p:column>    
-                            <p:column headerText="PaymentScheme"  >                             
-                                <h:outputLabel value="#{bill.paymentScheme.name}" >                                       
-                                </h:outputLabel>                                   
+
+                            <p:column headerText="Payment Scheme" style="padding: 8px;">                             
+                                <h:outputLabel value="#{bill.paymentScheme.name}" ></h:outputLabel>                                   
                             </p:column>
-                            <p:column headerText="Paymentmethod" >                              
-                                <h:outputLabel value="#{bill.paymentMethod}" >                                       
-                                </h:outputLabel>                                
+
+                            <p:column headerText="Payment Method"  style="padding: 8px;">                              
+                                <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>                                
                             </p:column>
-                            <p:column headerText="Net Value" styleClass="averageNumericColumn">                               
+
+                            <p:column headerText="Net Value" style="padding: 8px;" styleClass="averageNumericColumn">                               
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                                    
                             </p:column>
-                            <p:column headerText="Bank" >                              
-                                <h:outputLabel value="#{bill.bank.name}" >                                        
-                                </h:outputLabel>                                   
+
+                            <p:column headerText="Bank"  style="padding: 8px;">                              
+                                <h:outputLabel value="#{bill.bank.name}" ></h:outputLabel>                                   
                             </p:column>
-                            <p:column headerText="Cheque No" >                                
-                                <h:outputLabel value="#{bill.chequeRefNo}" >                                       
-                                </h:outputLabel>                                  
+
+                            <p:column headerText="Cheque No" style="padding: 8px;" >                                
+                                <h:outputLabel value="#{bill.chequeRefNo}" ></h:outputLabel>                                  
                             </p:column>
-                            <p:column headerText="Cheque Date">                               
+
+                            <p:column headerText="Cheque Date" style="padding: 8px;">                               
                                 <h:outputLabel value="#{bill.chequeDate}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>                                   
-                            </p:column>                                                  
-                            <p:column headerText="Comments" >                             
-                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                </h:outputLabel>
+                            </p:column>       
+
+                            <p:column headerText="Comments"  style="padding: 8px;">
+                                <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Action" style="padding: 8px; text-align: center;">
+                                <p:commandButton
+                                    value="View"
+                                    icon="fa fa-eye"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                    ajax="false"
+                                    class="ui-button-info">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
 

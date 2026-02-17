@@ -1,28 +1,25 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.TokenType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.TokenCount;
+import com.divudi.core.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.Staff;
-import com.divudi.entity.Token;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.TokenFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.Token;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.TokenFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -51,7 +48,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
-    // </editor-fold> 
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -73,12 +70,13 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Inject
     OpdPreBillController opdPreBillController;
 
-    // </editor-fold> 
+    // </editor-fold>
     private Token currentToken;
     private Token onGoingToken;
     private Token removeingToken;
     private List<Token> currentTokens;
     private Patient patient;
+    private PaymentMethod paymentMethod;
 
     private Department department;
     private Institution institution;
@@ -88,6 +86,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private Staff staff;
     private Bill bill;
     private boolean patientDetailsEditable;
+    private List<TokenCount> tokenCounts;
 
     private boolean printPreview;
 
@@ -154,10 +153,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         if (currentToken.getTokenType() == null) {
             JsfUtil.addErrorMessage("Wrong Token");
             return "";
-        }
-        if (getPatient().getId() == null) {
-            JsfUtil.addErrorMessage("Please select a patient");
-            return "";
+//        }
+//        if (getPatient().getId() == null) {
+//            JsfUtil.addErrorMessage("Please select a patient");
+//            return "";
         } else if (getPatient().getPerson().getName() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
             return "";
@@ -317,12 +316,10 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
-                + " and t.tokenDate=:date "
                 + " and t.tokenType=:ty"
                 + " and t.completed=:com";
         Map m = new HashMap();
         m.put("dep", sessionController.getDepartment());
-        m.put("date", new Date());
         m.put("ty", TokenType.OPD_TOKEN);
         m.put("com", false);
         if (counter != null) {
@@ -353,6 +350,12 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return "/opd/token/opd_tokens_called?faces-redirect=true"; // Adjust the navigation string as per your page structure
     }
 
+    public String navigateToManageOpdTokensWaiting() {
+        //fillOpdTokensWaiting();
+        fillOpdWaitingTokensCounts();
+        return "/opd/token/opd_tokens_waiting?faces-redirect=true"; // Adjust the navigation string as per your page structure
+    }
+
     public void fillOpdTokensCalled() {
         Map<String, Object> m = new HashMap<>();
         String j = "Select t "
@@ -366,6 +369,58 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        //System.out.println("currentTokens = " + currentTokens);
+    }
+
+    public void fillOpdWaitingTokensCounts() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select new com.divudi.core.data.TokenCount(t.counter, t.staff, count(t)) "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+
+        boolean testing = false;
+        if(testing){
+            Token t=new Token();
+            t.getCounter();
+            t.getStaff();
+
+        }
+
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", false); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
+        m.put("com", false); // Tokens that are not completed
+        j += " group by t.counter, t.staff";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        tokenCounts = (List<TokenCount>) tokenFacade.findLightsByJpql(j, m);
+        //System.out.println("currentTokens = " + currentTokens);
+    }
+
+    public void fillOpdTokensWaiting() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.tokenType=:ty"
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", false); // Tokens that are called
         m.put("prog", false); // Tokens that are not in progress
         m.put("ty", TokenType.OPD_TOKEN); // Chack Token Type that are called
         m.put("com", false); // Tokens that are not completed
@@ -434,7 +489,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     }
 
 //    public void startTokenService() {
-//        
+//
 //    }
 //
 //    public void completeTokenService() {
@@ -450,25 +505,24 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select valid Token");
             return;
         }
-        
+
         if (currentToken.isCalled()) {
             currentToken.setCalled(false);
-        }else{
+        } else {
             currentToken.setCalled(true);
         }
         tokenFacade.edit(currentToken);
     }
 
 //    public void restartTokenService() {
-//        
+//
 //    }
-
     public void reverseCompleteTokenService() {
-        if (currentToken==null) {
+        if (currentToken == null) {
             JsfUtil.addErrorMessage("Token Is Not Valid !");
             return;
         }
-       currentToken.setRestartTokenServices(true);
+        currentToken.setRestartTokenServices(true);
         currentToken.setCompleted(false);
         tokenFacade.edit(currentToken);
     }
@@ -584,6 +638,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
         return doctor;
     }
 
+
+
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
@@ -610,6 +666,32 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public List<TokenCount> getTokenCounts() {
+        return tokenCounts;
+    }
+
+    public void setTokenCounts(List<TokenCount> tokenCounts) {
+        this.tokenCounts = tokenCounts;
+    }
+
+
+
+
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

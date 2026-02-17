@@ -7,29 +7,29 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.report.BookKeepingSummery;
 import com.divudi.bean.report.CommonReport;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Service;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -57,8 +57,6 @@ import org.json.JSONObject;
 @SessionScoped
 public class GoogleChartController implements Serializable {
 
-
-    private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -112,8 +110,8 @@ public class GoogleChartController implements Serializable {
             JSONObject out = new JSONObject();
             JSONArray inarr = new JSONArray();
             String formatedDate;
-            Date fd = commonFunctions.getStartOfDay(nowDate);
-            Date td = commonFunctions.getEndOfDay(nowDate);
+            Date fd = CommonFunctions.getStartOfDay(nowDate);
+            Date td = CommonFunctions.getEndOfDay(nowDate);
             //// // System.out.println("td = " + td);
             //// // System.out.println("fd = " + fd);
 
@@ -169,15 +167,15 @@ public class GoogleChartController implements Serializable {
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
 
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -220,15 +218,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -264,15 +262,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -304,15 +302,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -340,15 +338,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -376,7 +374,7 @@ public class GoogleChartController implements Serializable {
         if (mainJSONArray.length()<2) {
             mainJSONArray = new JSONArray();
         }
-        
+
         return mainJSONArray.toString();
     }
 
@@ -384,8 +382,8 @@ public class GoogleChartController implements Serializable {
         Date current;
         Calendar cal = Calendar.getInstance();
         current = cal.getTime();
-        Date fd = commonFunctions.getStartOfDay(current);
-        Date td = commonFunctions.getEndOfDay(current);
+        Date fd = CommonFunctions.getStartOfDay(current);
+        Date td = CommonFunctions.getEndOfDay(current);
 
         JSONArray mainJSONArray = new JSONArray();
         JSONArray subArray = new JSONArray();
@@ -813,15 +811,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -856,15 +854,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -939,15 +937,15 @@ public class GoogleChartController implements Serializable {
 //        Calendar cal = Calendar.getInstance();
 //        current = cal.getTime();
 //        //// // System.out.println("date = " + current);
-//        Date fd = commonFunctions.getStartOfDay(current);
-//        Date td = commonFunctions.getEndOfDay(current);
+//        Date fd = CommonFunctions.getStartOfDay(current);
+//        Date td = CommonFunctions.getEndOfDay(current);
         Date fd;
         Date td;
         if (fromDate == null || toDate == null) {
             Calendar cal = Calendar.getInstance();
             Date current = cal.getTime();
-            fd = commonFunctions.getStartOfDay(current);
-            td = commonFunctions.getEndOfDay(current);
+            fd = CommonFunctions.getStartOfDay(current);
+            td = CommonFunctions.getEndOfDay(current);
         } else {
             fd = fromDate;
             td = toDate;
@@ -1101,14 +1099,6 @@ public class GoogleChartController implements Serializable {
             this.scan = scan;
         }
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BookKeepingSummery getBookKeepingSummery() {

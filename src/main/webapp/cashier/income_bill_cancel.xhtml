@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
+                        <p:panel  header="Cancellation">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Income Bill Cancellation" />
+                                    </div>
+                                    <div class="d-flex align-items-center" style="width: 50%">
+                                        <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{billSearch.comment}"/>
+                                        <p:spacer width="20%"></p:spacer>
+                                        <p:commandButton 
+                                            value="Cancel" 
+                                            ajax="false" 
+                                            action="#{billSearch.cancelIncomeBill()}"
+                                            class="ui-button-danger mx-1" 
+                                            icon="fas fa-ban" > 
+                                        </p:commandButton> 
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <h:outputLabel value="Payment Method" />
+                            <h:outputLabel value="&emsp;" />
+                            <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}" required="true"  >
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                            </p:selectOneMenu>
+
+                        </p:panel>
+                        <div class="col-lg-12">
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText value="Income Bill Details" ></h:outputText>
+                                </f:facet>
+
+                                <p:panelGrid columns="2" class="w-100">
+                                    <h:outputText value="Bille Date" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+
+                                    <h:outputText value="Bille Time" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+
+                                    <h:outputText value="Billed User" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.creater.webUserPerson.name}" >
+                                    </h:outputText>
+
+                                    <h:outputText value="Comment" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.comments}" >
+                                    </h:outputText>
+
+                                    <h:outputText value="Total" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+
+
+                                </p:panelGrid>
+
+                                <p:dataTable 
+                                    id="tblPayments" 
+                                    value="#{billSearch.billPayments}" var="bp" >
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Comments" >
+                                        <h:outputText value="#{bp.comments}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputText value="#{bp.paidValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                        </div>
+
+                        <p:panelGrid columns="2" style="width: 100%;">
+
+
+                        </p:panelGrid>
+                    </h:panelGroup>
+
+                    <p:commandButton icon="fas fa-print"
+                                     class="ui-badge-info"
+                                     value="Print"
+                                     rendered="#{billSearch.printPreview}">
+                        <p:printer target="profpaycancelbill" />
+                    </p:commandButton>
+
+                    <h:panelGroup id="profpaycancelbill" rendered="#{billSearch.printPreview}" >                       
+                        <prints:five_five_paper_with_headings_for_income_bill_cancellation
+                                            payments="#{billSearch.billPayments}"
+                                            bill="#{billSearch.bill}"/>  
+                    </h:panelGroup>
+
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

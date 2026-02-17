@@ -8,25 +8,23 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
-import com.divudi.data.OptionScope;
-import com.divudi.data.TriggerType;
-import com.divudi.data.TriggerTypeParent;
-import com.divudi.entity.AppEmail;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Notification;
-import com.divudi.facade.NotificationFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.TriggerType;
+import com.divudi.core.data.TriggerTypeParent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.NotificationFacade;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -52,8 +50,6 @@ public class NotificationController implements Serializable {
     UserNotificationController userNotificationController;
     @Inject
     SecurityController securityController;
-    @Inject
-    CommonController commonController;
     @Inject
     ConfigOptionController configOptionController;
     @EJB
@@ -90,7 +86,7 @@ public class NotificationController implements Serializable {
         }
         BillTypeAtomic type = bill.getBillTypeAtomic();
         switch (type) {
-             case INWARD_PHARMACY_REQUEST:
+             case REQUEST_MEDICINE_INWARD:
                  createInwardBHTIssueFromPharmacyRequestNotifications(bill);
                 break;
             case PHARMACY_TRANSFER_REQUEST:
@@ -118,7 +114,36 @@ public class NotificationController implements Serializable {
                 throw new AssertionError();
         }
     }
-    
+
+    public void createNotification(PatientRoom pr, String action) {
+        if (pr == null) {
+            return;
+        }
+        switch (action) {
+            case "Discharge":
+                createInwardRoomDischargeNotifications(pr);
+                break;
+
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    private void createInwardRoomDischargeNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String msg = "You Have a Discharge Notification From " + pr.getRoomFacilityCharge().getName();
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
@@ -160,7 +185,7 @@ public class NotificationController implements Serializable {
             userNotificationController.createUserNotifications(nn);
         }
     }
-    
+
     private void createPharmacyPurcheseOrderApprovelNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.PURCHASE_ORDER_APPROVAL)) {
@@ -235,16 +260,16 @@ public class NotificationController implements Serializable {
         temId = securityController.encrypt(temId);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ignored) {
         }
 
-        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
         ed = securityController.encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ignored) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -314,13 +339,13 @@ public class NotificationController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
         }
 
-        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
         ed = securityController.encrypt(ed);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ignored) {
         }
-        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -418,7 +443,7 @@ public class NotificationController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

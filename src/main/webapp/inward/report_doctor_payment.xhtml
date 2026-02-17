@@ -80,10 +80,7 @@
                             </div>
                         </div>
 
-                        <p:watermark for="fdate" value="From Date" />
-                        <p:watermark for="tdate" value="To Date" />
-                        <p:watermark for="acSpeciality" value="Speciality" />
-                        <p:watermark for="scStaff" value="Staff / Doctor" />
+                        
 
                         <h:panelGrid columns="4" class="my-4" >
                             <p:commandButton ajax="false" value="Fill By Paid Date" icon="fas fa-fill" class="ui-button-warning" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByCreatedDate}"   />
@@ -148,7 +145,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Bill No" />
                                     </f:facet>
-                                    <p:outputLabel value="#{bf.bill.insId}" >
+                                    <p:outputLabel value="#{bf.bill.deptId}" >
                                     </p:outputLabel>
                                 </p:column>
 
@@ -156,7 +153,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Paid For" />
                                     </f:facet>
-                                    <p:outputLabel value="#{bf.paidForBillFee.bill.insId}" >
+                                    <p:outputLabel value="#{bf.paidForBillFee.bill.deptId}" >
                                     </p:outputLabel>
                                 </p:column>
 

@@ -8,15 +8,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Title;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Vocabulary;
-import com.divudi.facade.DoctorFacade;
-import com.divudi.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.Title;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.facade.DoctorFacade;
+import com.divudi.core.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,8 +49,6 @@ public class DoctorController implements Serializable {
     SessionController sessionController;
     @Inject
     SpecialityController specialityController;
-    @Inject
-    CommonController commonController;
     @EJB
     private DoctorFacade ejbFacade;
     @EJB
@@ -103,12 +99,12 @@ public class DoctorController implements Serializable {
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm,30);
         }
         return suggestions;
     }
 
-   
+
 
     public void listDoctors() {
         Date startTime = new Date();
@@ -157,6 +153,37 @@ public class DoctorController implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         selectedItems = getFacade().findByJpql(j, m);
+    }
+
+    public List<Doctor> fillDoctorsIncludingConsultantsWithSpeciality(Speciality speciality) {
+        String j;
+        Map m = new HashMap();
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret";
+        if(speciality != null){
+           j += " and c.speciality=:sp";
+           m.put("sp", speciality);
+        }
+        j += " order by c.person.name";
+
+        m.put("ret", false);
+       List<Doctor> docList = getFacade().findByJpql(j, m);
+
+       return docList;
+    }
+    
+    // used in specialty/doctor wise income report
+    public List<Doctor> fillDoctorsAndConsultants() {
+        String j;
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret"
+                + " order by c.person.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Doctor> docList = getFacade().findByJpql(j, m);
+        return docList;
     }
 
     public void prepareAdd() {
@@ -227,7 +254,7 @@ public class DoctorController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();
@@ -414,7 +441,7 @@ public class DoctorController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             DoctorController controller = (DoctorController) facesContext.getApplication().getELResolver().
@@ -429,9 +456,7 @@ public class DoctorController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -448,13 +473,4 @@ public class DoctorController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

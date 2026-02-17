@@ -1,0 +1,228 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="#{reportController.reportTemplateFileIndexName}">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel header="Collection Center Book Report" class="text-2">
+
+                        <div>
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                        <h:outputLabel value="From Date"  class="mx-3"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker
+                                        showTime="true" 
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{reportController.fromDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </div>
+                                <div class="col-md-2">
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                        <h:outputLabel value="To Date"  class="mx-3"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker 
+                                        showTime="true" 
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{reportController.toDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                        <h:outputLabel value="Collection Center" for="cmbCCname" class="mx-3"/>
+                                        <p:outputLabel  />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu 
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100"
+                                        value="#{reportController.collectingCentre}"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select Collecting Centre"/>
+                                        <f:selectItems var="r" itemLabel="#{r.code} :  #{r.name}" 
+                                                       value="#{collectingCentreController.items}" 
+                                                       itemValue="#{r}" />
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="col-md-2"></div>
+                                <div class="col-md-4"></div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2 my-3">
+                            <div class="col-md-12">
+                                <p:commandButton ajax="false" 
+                                                 value="Process" 
+                                                 style="width: 150px"
+                                                 action="#{reportController.processCollectingCentreBook}" 
+                                                 class=" ui-button-warning mx-2"
+                                                 icon="fas fa-cogs">
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    icon="fa-solid fa-print"
+                                    class="mx-2 ui-button-info"
+                                    style="width: 150px"
+                                    ajax="false" 
+                                    value="Print">
+                                    <p:printer target="tblExport" />
+                                </p:commandButton>
+                                <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                 style="width: 150px"
+                                                 icon="fas fa-file-excel"
+                                                 ajax="false" value="Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="mx-2 ui-button-danger" 
+                                    style="width: 150px"
+                                    icon="fa-solid fa-file-pdf"
+                                    ajax="false" 
+                                    value="PDF">
+                                    <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
+                                </p:commandButton>
+                            </div>
+                            <div  class="col-md-2">
+                                <!--                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                                                     icon="fas fa-file-excel"
+                                                                                     ajax="false" value="Export to Excel">
+                                                                        <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                                                    </p:commandButton>-->
+
+                            </div>
+                        </div>
+
+
+                        <h:panelGrid columns="2" class="my-4" >
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="Collection Center :  "/>
+                            <h:outputLabel value="#{reportController.collectingCentre.name}"  >
+
+                            </h:outputLabel>
+                        </h:panelGrid>
+
+                        <p:spacer height="5"></p:spacer>
+
+                        <p:dataTable id="tblExport" value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i"
+                                     paginator="true"
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                            <p:column headerText="S. No" width="5rem">
+                                <h:outputText value="#{i+1}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Code" width="5rem">
+                                <h:outputText value="#{a.institution.code}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Name" width="5rem">
+                                <h:outputText value="#{a.institution.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Contact Person" width="15rem">
+                                <h:outputText value="#{a.institution.ownerName}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Phone No" width="5rem">
+                                <h:outputText value="#{a.institution.phone}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="E-mail" width="10rem">
+                                <h:outputText value="#{a.institution.email}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Address" width="5rem">
+                                <h:outputText value="#{a.institution.address}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Standard Credit" width="5rem">
+                                <h:outputText value="#{a.institution.standardCreditLimit == 0 ? '0.00' : a.institution.standardCreditLimit}">
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Allowed Credit" width="5rem">
+                                <h:outputText value="#{a.institution.allowedCreditLimit}" >
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Max Credit " width="5rem" >
+                                <h:outputText value="#{a.institution.maxCreditLimit}" >
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Balance" width="5rem">
+                                <h:outputText value="#{a.institution.ballance == 0 ? '0.00' : a.institution.ballance}">
+                                <f:convertNumber pattern="###,###,###.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Book No" width="5rem">
+                                <h:outputText value="#{a.strbookNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Starting Reference Number" width="5rem">
+                                <h:outputText value="#{a.startingReferenceNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ending Reference Number" width="5rem">
+                                <h:outputText value="#{a.endingReferenceNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Creater" width="5rem">
+                                <h:outputText value="#{a.creater.webUserPerson.name} (#{a.creater.name})" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Created Date" width="5rem">
+                                <h:outputText value="#{a.createdAt}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh.mm.ss a" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Editor" width="5rem">
+                                <h:outputText value="#{not empty a.editor ? a.editor.name.concat(' (').concat(a.editor.id).concat(')') : ''}" />
+                            </p:column>
+                            <p:column headerText="Edited Date" width="5rem">
+                                <h:outputText value="#{a.editedAt}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh.mm.ss a" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:spacer height="5"></p:spacer>
+
+
+
+                    </p:panel>
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

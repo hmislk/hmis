@@ -1,0 +1,251 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="BILLS WITH ERRORS"/>                          
+                        </f:facet>
+
+                        <h:panelGrid columns="8" styleClass="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <!-- New Doctor Field with Icon -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="user" class="mx-3" />
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}" 
+                                id="user"
+                                var="u" 
+                                itemLabel="#{u.webUserPerson.name}" 
+                                itemValue="#{u}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                >
+                            </p:autoComplete>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                filter="true"
+                                filterMatchMode="contains"
+                                id="billTypeAtomic" 
+                                class=""  value="#{searchController.billTypeAtomic}" >
+                                <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                <f:selectItems 
+                                    var="billTypeAtomic"
+                                    itemLabel="#{billTypeAtomic}"           
+                                    itemValue="#{billTypeAtomic}" 
+                                    value="#{enumController.billTypesAtomic}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
+                                <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                <f:selectItems 
+                                    var="billType"
+                                    itemLabel="#{billType.label}"           
+                                    itemValue="#{billType}" 
+                                    value="#{enumController.billTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Class Type" for="billClass" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu id="billClass" class="w-100  "  value="#{searchController.billClassType}" >
+                                <f:selectItem itemLabel="All Class Types" ></f:selectItem>
+                                <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-danger" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearchBillsWithErrors"
+                                ajax="false" 
+                                value="List Bills with Errors" 
+                                action="#{searchController.findAllBillsWithErrors}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="Bill With Errors" type="xlsx" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <div style="width: 100%; overflow-x: auto;">
+                            <p:dataTable rowIndexVar="i" id="tblBills" 
+                                         value="#{searchController.bills}" 
+                                         scrollable="true"
+                                         var="bill"
+                                         rows="10"
+                                         paginatorAlwaysVisible="false"
+                                         paginator="true"
+                                         paginatorPosition="top"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,15,50"
+                                         >
+
+
+                                <p:column
+                                    headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
+                                    filterMatchMode="contains" >                                
+                                    <h:outputLabel value="#{bill.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Bill Type" >                                
+                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
+                                </p:column>
+                                <p:column headerText="Date/Time">
+                                    <p:outputLabel value="#{bill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="User">
+                                    <h:outputText value="#{bill.creater.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Error">
+                                    <h:outputText value="#{bill.tmpComments}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="No" exportable="false" styleClass="alignTop">
+                                    <p:commandButton 
+                                        title="View" 
+                                        icon="fa fa-eye" 
+                                        class="m-1 ui-button-info"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                        ajax="false">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        title="Manage" 
+                                        icon="fa fa-tools" 
+                                        class="m-1 ui-button-warning" 
+                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                        ajax="false">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        title="Admin" 
+                                        icon="fa fa-shield-alt" 
+                                        class="m-1 ui-button-danger" 
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                        ajax="false" 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+
+                    </p:panel>
+                </h:form>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,0 +1,86 @@
+{
+    "version": "v2.1.10",
+    "description": "FIXED: Performance indexes for Daily Stock Report - MySQL strict mode compatible",
+    "author": "Claude Code Performance Optimizer",
+    "date": "2025-12-23",
+    "githubIssue": "16200",
+    "branch": "16200-f15-report-requires-print-button",
+    "estimatedDurationMinutes": 3,
+    "requiresDowntime": false,
+    "affectedTables": ["STOCKHISTORY", "BILL", "PAYMENT", "ITEMBATCH"],
+    "affectedModules": ["Pharmacy", "Daily Stock Reports", "Stock Calculation"],
+    "dependencies": ["Fixes issues from v2.1.9 migration"],
+    "preRequisites": [
+        "Database backup of main database (rh) completed and verified",
+        "Ensure connection to main database (rh) is active",
+        "This migration handles both fresh installs and v2.1.9 recovery",
+        "Safe to run even if v2.1.9 partially succeeded"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Verify current database connection",
+            "sql": "SELECT DATABASE() AS current_database, VERSION() AS mysql_version"
+        },
+        {
+            "step": 2,
+            "description": "Check if v2.1.9 indexes already exist (recovery mode)",
+            "sql": "SELECT COUNT(*) as existing_indexes FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND INDEX_NAME LIKE 'idx_stockhistory_%'"
+        },
+        {
+            "step": 3,
+            "description": "Create performance indexes (with IF NOT EXISTS logic)",
+            "sql": "-- Conditional index creation handled in migration.sql"
+        },
+        {
+            "step": 4,
+            "description": "Verify all indexes created successfully",
+            "sql": "SELECT INDEX_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND INDEX_NAME LIKE 'idx_%' GROUP BY INDEX_NAME, TABLE_NAME"
+        },
+        {
+            "step": 5,
+            "description": "Test query performance with new indexes",
+            "sql": "EXPLAIN SELECT COUNT(*) FROM STOCKHISTORY WHERE RETIRED = 0 AND CREATEDAT < NOW() AND DEPARTMENT_ID = 1"
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COUNT(DISTINCT INDEX_NAME) as total_performance_indexes FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND INDEX_NAME LIKE 'idx_%'",
+        "SELECT TABLE_NAME, COUNT(*) as index_count FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND INDEX_NAME LIKE 'idx_%' GROUP BY TABLE_NAME",
+        "SHOW INDEX FROM STOCKHISTORY WHERE Key_name LIKE 'idx_%'",
+        "SELECT COUNT(*) AS stockhistory_records FROM STOCKHISTORY WHERE RETIRED = 0"
+    ],
+    "rollbackNotes": [
+        "Rollback will drop all performance indexes",
+        "Safe rollback - no data loss",
+        "Report performance will revert to original speed",
+        "Can be rolled back immediately after execution"
+    ],
+    "postMigrationVerification": [
+        "Generate Daily Stock Report - should be 40-50% faster",
+        "Verify all 5 performance indexes exist",
+        "Check MySQL EXPLAIN plans show index usage",
+        "Monitor database CPU during report generation",
+        "Test with multiple departments and date ranges",
+        "Confirm no application errors in report generation"
+    ],
+    "technicalNotes": [
+        "Fixed MySQL GROUP BY compatibility issues from v2.1.9",
+        "Uses IF NOT EXISTS logic to handle partial v2.1.9 success",
+        "All verification queries compatible with sql_mode=only_full_group_by",
+        "Handles both fresh installation and recovery scenarios",
+        "Identical index structures to v2.1.9 but with proper SQL syntax",
+        "Safe to execute multiple times - idempotent operations"
+    ],
+    "performanceMetrics": {
+        "expectedStockCalculationImprovement": "70-80% reduction in stock calculation time",
+        "expectedOverallReportImprovement": "40-50% reduction in total report generation time",
+        "targetReportTime": "15-30 seconds (from 30-60 seconds)",
+        "indexMaintenanceOverhead": "Minimal - MySQL auto-maintained"
+    },
+    "errorFixed": {
+        "issue": "v2.1.9 migration failed due to MySQL strict GROUP BY mode",
+        "rootCause": "CARDINALITY column in GROUP BY queries incompatible with sql_mode=only_full_group_by",
+        "symptom": "Migration stopped at verification query with EclipseLink-4002 exception",
+        "resolution": "Fixed all GROUP BY queries, added conditional index creation for recovery"
+    }
+}

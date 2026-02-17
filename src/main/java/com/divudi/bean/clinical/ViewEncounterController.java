@@ -1,7 +1,7 @@
 package com.divudi.bean.clinical;
 
-import com.divudi.entity.PatientEncounter;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import java.io.Serializable;
 import javax.enterprise.context.SessionScoped;
@@ -15,7 +15,7 @@ import javax.enterprise.context.SessionScoped;
 public class ViewEncounterController implements Serializable {
 
     private PatientEncounter encounter;
-    
+
     /**
      * Creates a new instance of ViewEncounterController
      */
@@ -38,6 +38,6 @@ public class ViewEncounterController implements Serializable {
     public void setEncounter(PatientEncounter encounter) {
         this.encounter = encounter;
     }
-    
-    
+
+
 }

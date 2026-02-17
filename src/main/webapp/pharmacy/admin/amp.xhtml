@@ -1,161 +1,407 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/pharmacy/admin/index.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
-
-
-    <ui:define name="subcontent">
-
-        <h:form>
-            <p:growl id="msg"/>
-            <p:focus id="selectFocus" for="lstSelect" />
-            <p:focus id="detailFocus" for="gpDetail" />
-            <p:panel  >
-                <f:facet name="header" >
-                    <h:outputLabel value="Manage AMPs" ></h:outputLabel>
-                </f:facet>
-
-                <div class="row" >
-                    <div class="col-6" >
-                        <p:commandButton
-                            id="btnAdd" 
-                            value="Add" 
-                            action="#{ampController.prepareAdd()}"
-                            class="w-25 ui-button-success"
-                            update="lstSelect gpDetail" 
-                            icon="fa fa-plus"
-                            process="btnAdd"
-                            >
-
-                        </p:commandButton>
-                        <p:commandButton 
-                            id="btnDelete"
-                            icon="fa fa-trash"
-                            onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{ampController.delete()}"  
-                            value="Delete" 
-                            update="lstSelect gpDetail msg" process="btnDelete"
-                            class="m-1 ui-button-danger w-25">
-
-                        </p:commandButton>
-                        <p:selectOneListbox 
-                            id="lstSelect" 
-                            class="w-100"
-                            filter="true"
-                            value="#{ampController.current}" 
-                            >
-                            <f:selectItems 
-                                value="#{ampController.items}" 
-                                var="myItem" 
-                                itemValue="#{myItem}" 
-                                itemLabel="#{myItem.name}" ></f:selectItems>
-                            <p:ajax update="gpDetail" process="lstSelect" >
-                            </p:ajax>
-                        </p:selectOneListbox>
-
-
-                    </div>
-                    <div class="col-6" >
-                        <p:panel header="Amp Details">
-                            <h:panelGrid id="gpDetail" columns="2" class="w-100">
-                                <h:outputText  value="Name" class="w-100"></h:outputText>
-                                <p:inputText autocomplete="off" id="txtName"  value="#{ampController.current.name}" styleClass="longText" class="w-100" />
-
-
-                                <h:outputText  value="Code" class="w-100"></h:outputText>
-                                <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" class="w-100" ></p:inputText>
-
-
-                                <h:outputText  value="Bar Code" class="w-100"></h:outputText>
-                                <p:inputText autocomplete="off"  value="#{ampController.current.barcode}"  class="w-100"></p:inputText>
-
-                                <h:outputText  value="VMP (Product)" class="w-100"></h:outputText>
-                                <p:autoComplete  converter="vmp" 
-                                                 completeMethod="#{vmpController.completeVmp}"
-                                                 var="pta" itemLabel="#{pta.name}" 
-                                                 itemValue="#{pta}" 
-                                                 forceSelection="true" 
-                                                 value="#{ampController.current.vmp}"
-                                                 class="w-100"
-                                                 inputStyleClass="w-100"
-
-                                                 ></p:autoComplete>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg" life="3000"/>
 
 
 
+                    <p:panel header="AMP Management" styleClass="mb-3">
 
+                        <div class="row" >
+                            <div class="col-6" >
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0">Filter:</label>
+                                        <p:commandButton
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{ampController.setFilterToActive()}"
+                                            update="acAmp detailPanel statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{ampController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{ampController.editable}"
+                                            title="Show only active AMPs"/>
 
-                                <h:outputText  value="Manufacturer" class="w-100"></h:outputText>
-                                <p:autoComplete  completeMethod="#{manufacturerController.completeManu}"
-                                                 var="pta" itemLabel="#{pta.name}" itemValue="#{pta}"
-                                                 forceSelection="true"
-                                                 class="w-100"
-                                                 inputStyleClass="w-100"
+                                        <p:commandButton
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{ampController.setFilterToInactive()}"
+                                            update="acAmp detailPanel statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{ampController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{ampController.editable}"
+                                            title="Show only inactive AMPs"/>
 
-                                                 value="#{ampController.current.institution}" ></p:autoComplete>
+                                        <p:commandButton
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{ampController.setFilterToAll()}"
+                                            update="acAmp detailPanel statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{ampController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{ampController.editable}"
+                                            title="Show all AMPs"/>
+                                    </div>
 
-
-                                <h:outputLabel value="Category" class="w-100"/>
-                                <p:autoComplete  value="#{ampController.current.category}" 
-                                                 forceSelection="true" 
-                                                 completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
-                                                 class="w-100"
-                                                 inputStyleClass="w-100"
-                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                    <!--<f:ajax event="itemSelect" render="code" execute="@this"  listener="#{ampController.listnerCategorySelect()}"/>-->
-                                </p:autoComplete>      
-
-                                <h:outputText  value="Department Type" class="w-100"></h:outputText>
-                                <p:selectOneMenu  value="#{ampController.current.departmentType}" class="w-100">
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
-                                </p:selectOneMenu>
-                                
-                                <h:outputText value="No of days to mark as Short Expiary" >
-                                </h:outputText>
-                                <p:inputText 
-                                    autocomplete="off"
-                                    class="w-100"
-                                    value="#{ampController.current.numberOfDaysToMarkAsShortExpiary}"
-                                    ></p:inputText>
-
-
-                                <h:outputText  value="Discount Allowed" class="w-100"></h:outputText>
-                                <p:selectBooleanButton
-                                    value="#{ampController.current.discountAllowed}" 
-                                    onLabel="Yes"
-                                    offLabel="No"
-                                    class="w-100" />
-
-
-
-
-                            </h:panelGrid>
-                            <p:commandButton 
-                                id="btnSave" 
-                                value="Save" 
-                                process="btnSave gpDetail" 
-                                update="lstSelect msg" 
-                                class=" m-1 ui-button-warning w-25"
-                                icon="fas fa-save"
-                                action="#{ampController.save}" 
-                                >
-                            </p:commandButton>
-
-                        </p:panel>
-
-                    </div>
-                </div>
+                                    <p:outputLabel id="filterStatusLabel"
+                                                   value="Currently showing: #{ampController.filterStatusDisplay}"
+                                                   styleClass="text-muted small mt-1"/>
 
 
 
-            </p:panel>
-        </h:form>
+                                </h:panelGroup>
+                                <!-- Modern Search Section -->
+                                <div class="search-section mb-3">
+                                    <h:outputText value="Search &amp; Select AMP" styleClass="mb-2 d-block"/>
+                                    <p:autoComplete
+                                        id="acAmp"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{ampController.selectedAmpDto}"
+                                        completeMethod="#{ampController.completeAmpDto}"
+                                        var="dto"
+                                        itemLabel="#{dto.name}"
+                                        itemValue="#{dto}"
+                                        converter="ampDtoConverter"
+                                        maxResults="20"
+                                        minQueryLength="2"
+                                        forceSelection="true"
+                                        disabled="#{ampController.editable}"
+                                        placeholder="Search by name, code, or barcode (minimum 2 characters)...">
+                                        <p:ajax event="itemSelect"
+                                                process="@this"
+                                                update="detailPanel actionButtons" />
+                                        <p:column headerText="Name" style="padding: 3px;">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h:outputText value="#{dto.name}"/>
+                                                <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                         severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                         style="font-size: 0.65em; margin-left: 8px;"/>
+                                            </div>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
 
-    </ui:define>
 
-</ui:composition>
+                                <h:panelGroup id="actionButtons">
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        value="Add New"
+                                        action="#{ampController.prepareAdd()}"
+                                        styleClass="ui-button-success m-1"
+                                        update="acAmp detailPanel actionButtons statusFilterPanel"
+                                        icon="fas fa-plus"
+                                        process="@this"
+                                        disabled="#{ampController.editable}"
+                                        title="Add a new AMP record"/>
+
+                                    <p:commandButton
+                                        id="btnEdit"
+                                        value="Edit Selected"
+                                        action="#{ampController.edit()}"
+                                        icon="fas fa-edit"
+                                        update="detailPanel acAmp actionButtons statusFilterPanel"
+                                        process="@this"
+                                        styleClass="ui-button-warning m-1"
+                                        disabled="#{ampController.editable or ampController.current.id eq null}"
+                                        title="Edit selected AMP record"/>
+
+                                    <p:commandButton
+                                        id="btnDelete"
+                                        value="Delete Selected"
+                                        action="#{ampController.delete()}"
+                                        icon="fas fa-trash"
+                                        update="form:msg acAmp detailPanel actionButtons statusFilterPanel"
+                                        process="@this"
+                                        styleClass="ui-button-danger m-1"
+                                        disabled="#{ampController.editable or ampController.current.id eq null}"
+                                        title="Delete selected AMP record">
+                                        <p:confirm
+                                            header="Confirm Delete"
+                                            message="Are you sure you want to delete this AMP record?"
+                                            icon="fas fa-exclamation-triangle" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnToggleStatus"
+                                        value="#{ampController.toggleStatusButtonText}"
+                                        action="#{ampController.toggleAmpStatus()}"
+                                        icon="#{ampController.toggleStatusButtonIcon}"
+                                        update="form:msg acAmp detailPanel actionButtons statusFilterPanel filterStatusLabel"
+                                        process="@this"
+                                        styleClass="#{ampController.toggleStatusButtonClass} amp-toggle-status m-1"
+                                        disabled="#{ampController.editable or ampController.current.id eq null}"
+                                        title="Toggle AMP active/inactive status">
+                                        <p:confirm
+                                            header="Confirm Status Change"
+                                            message="Are you sure you want to #{ampController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this AMP: #{ampController.current.name}?"
+                                            icon="fas fa-question-circle" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnAuditEvents"
+                                        value="Audit History"
+                                        action="#{ampController.navigateToAmpAuditEvents()}"
+                                        icon="fas fa-history"
+                                        ajax="false"
+                                        styleClass="ui-button-info m-1"
+                                        disabled="#{ampController.current.id eq null}"
+                                        title="View audit history for this AMP record"/>
+                                </h:panelGroup>
+
+
+                            </div>
+                            <div class="col-6" >
+
+                                <p:panel id="detailPanel" styleClass="h-100">
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <!-- Labels - Left -->
+                                            <div class="d-flex align-items-center">
+                                                <h:outputLabel value="AMP Details"
+                                                               rendered="#{empty ampController.current}"
+                                                               styleClass="fw-bold mb-0"/>
+                                                <h:outputLabel value="Add New AMP"
+                                                               rendered="#{not empty ampController.current and empty ampController.current.id}"
+                                                               styleClass="fw-bold mb-0"/>
+                                                <h:outputLabel value="Edit AMP Details"
+                                                               rendered="#{not empty ampController.current and not empty ampController.current.id}"
+                                                               styleClass="fw-bold mb-0"/>
+                                            </div>
+                                            <!-- Status - Centre -->
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:panelGroup rendered="#{ampController.current ne null and ampController.current.id ne null}"
+                                                              styleClass="badge #{ampController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                                    <h:outputLabel value="#{ampController.current.inactive ? 'Inactive' : 'Active'}"
+                                                                   styleClass="mb-0"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{ampController.editable}"
+                                                              styleClass="badge badge-warning">
+                                                    <h:outputLabel value="#{ampController.current.id ne null ? 'Editing' : 'Adding New'}"
+                                                                   styleClass="mb-0"/>
+                                                </h:panelGroup>
+                                            </div>
+                                            <!-- Buttons - Right -->
+                                            <div class="d-flex align-items-center gap-1">
+                                                <p:commandButton
+                                                    id="btnSave"
+                                                    value="Save"
+                                                    action="#{ampController.save}"
+                                                    update="form:msg acAmp detailPanel actionButtons statusFilterPanel"
+                                                    process="@form"
+                                                    styleClass="ui-button-success"
+                                                    icon="fas fa-save"
+                                                    disabled="#{!ampController.editable}"
+                                                    title="Save AMP record"/>
+                                                <p:commandButton
+                                                    id="btnCancel"
+                                                    value="Cancel"
+                                                    action="#{ampController.cancel()}"
+                                                    update="acAmp detailPanel actionButtons statusFilterPanel"
+                                                    process="@this"
+                                                    styleClass="ui-button-secondary"
+                                                    icon="fas fa-times"
+                                                    disabled="#{!ampController.editable}"
+                                                    title="Cancel changes and clear form"/>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <!-- Clean, simplified form fields -->
+                                    <h:panelGroup layout="block" styleClass="form-section" rendered="#{ampController.current ne null}">
+
+                                        <!-- Essential Information Section -->
+                                        <h:outputText value="Essential Information" styleClass="section-header d-block"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="ampName" value="AMP Name"/>
+                                                <p:inputText id="ampName"
+                                                             value="#{ampController.current.name}"
+                                                             class="form-control"
+                                                             disabled="#{not ampController.editable}"
+                                                             required="true"
+                                                             requiredMessage="AMP name is required"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p:outputLabel for="ampCode" value="Code *">
+                                                    <i class="fas fa-info-circle ms-1 text-muted"
+                                                       title="Auto-generated if blank"></i>
+                                                </p:outputLabel>
+                                                <div class="input-group">
+                                                    <p:inputText id="ampCode"
+                                                                 value="#{ampController.current.code}"
+                                                                 class="form-control"
+                                                                 disabled="#{not ampController.editable}"/>
+                                                    <p:commandButton icon="fas fa-magic"
+                                                                     title="Generate Code"
+                                                                     action="#{ampController.generateCode()}"
+                                                                     update="ampCode"
+                                                                     rendered="#{ampController.editable}"
+                                                                     styleClass="ui-button-secondary ui-button-outlined"
+                                                                     process="@this"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p:outputLabel for="ampBarcode" value="Barcode"/>
+                                                <p:inputText id="ampBarcode"
+                                                             value="#{ampController.current.barcode}"
+                                                             class="form-control"
+                                                             disabled="#{not ampController.editable}"/>
+                                            </div>
+                                        </div>
+
+                                        <!-- VMP Relationship Section -->
+                                        <h:outputText value="Product Information" styleClass="section-header d-block"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="vmpSelect" value="VMP"/>
+                                                <p:autoComplete id="vmpSelect"
+                                                                value="#{ampController.current.vmp}"
+                                                                completeMethod="#{ampController.completeVmpByName}"
+                                                                var="vmp"
+                                                                inputStyleClass="w-100"
+                                                                itemLabel="#{vmp.name}"
+                                                                itemValue="#{vmp}"
+                                                                converter="vmp"
+                                                                disabled="#{not ampController.editable}"
+                                                                class="w-100"
+                                                                required="true"
+                                                                requiredMessage="VMP selection is required">
+                                                    <p:ajax event="itemSelect" update="dosageInfo txtShortExpiary"/>
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:panelGroup id="dosageInfo">
+                                                    <p:outputLabel value="Dosage Form"/>
+                                                    <p:selectOneMenu 
+                                                        id="selDosageForm"
+                                                        value="#{ampController.current.dosageForm}"
+                                                        styleClass="form-control-plaintext"
+                                                        filter="true"
+                                                        required="true"
+                                                        requiredMessage="Dosage Form is required"
+                                                        disabled="#{!ampController.editable}">
+                                                        <f:selectItem itemLabel="-- Select Dosage Form --" itemValue="#{null}"/>
+                                                        <f:selectItems 
+                                                            value="#{dosageFormController.items}"
+                                                            var="df" 
+                                                            itemValue="#{df}" 
+                                                            itemLabel="#{df.name}"/>
+                                                    </p:selectOneMenu>
+
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="ampCat" value="Category"/>
+                                                <p:autoComplete 
+                                                    id="ampCat"
+                                                    value="#{ampController.current.category}"
+                                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+                                                    var="vt"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{vt.name}"
+                                                    forceSelection="true"
+                                                    itemValue="#{vt}"
+                                                    disabled="#{not ampController.editable}"
+                                                    class="w-100"
+                                                    required="true"
+                                                    requiredMessage="Category is required">                                                    
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:panelGroup id="txtShortExpiary">
+                                                    <p:outputLabel value="Days of Short Expiry">
+                                                        <i class="fas fa-info-circle ms-1 text-muted" 
+                                                           title="Default expiry : 30 days."
+                                                           data-bs-toggle="tooltip">
+                                                        </i>
+                                                    </p:outputLabel>
+                                                    <p:inputText
+                                                        value="#{ampController.current.numberOfDaysToMarkAsShortExpiary}"
+                                                        class="form-control"
+                                                        disabled="#{not ampController.editable}"/>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <!-- Business Rules Section -->
+                                        <h:outputText value="Business Rules" styleClass="section-header d-block"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="discountAllowed"
+                                                                             value="#{ampController.current.discountAllowed}"
+                                                                             disabled="#{not ampController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="discountAllowed" value="Allow Discounts" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="refundsAllowed"
+                                                                             value="#{ampController.current.refundsAllowed}"
+                                                                             disabled="#{not ampController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="refundsAllowed" value="Allow Refunds" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="consumptionAllowed"
+                                                                             value="#{ampController.current.consumptionAllowed}"
+                                                                             disabled="#{not ampController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="consumptionAllowed" value="Consumable" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="allowFractions"
+                                                                             value="#{ampController.current.allowFractions}"
+                                                                             disabled="#{not ampController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="allowFractions" value="Allow Fractions" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panel>
+
+                            </div>
+                        </div>
+
+
+
+
+
+
+                    </p:panel>
+
+
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

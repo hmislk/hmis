@@ -1,15 +1,14 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.TriggerType;
-import com.divudi.entity.Department;
-import com.divudi.entity.TriggerSubscription;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.TriggerSubscriptionFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.TriggerType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.TriggerSubscription;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.TriggerSubscriptionFacade;
+import com.divudi.core.facade.WebUserFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -93,7 +92,7 @@ public class TriggerSubscriptionController implements Serializable {
             ts.setOrderNumber(newOrder);
             ts.setDepartment(department);
             ts.setCreatedAt(d);
-            ts.setCreater(sessionController.loggedUser);
+            ts.setCreater(sessionController.getLoggedUser());
             save(ts);
             JsfUtil.addSuccessMessage("Save Success");
             fillDepartmentSubscription();
@@ -247,7 +246,7 @@ public class TriggerSubscriptionController implements Serializable {
             current.setRetired(true);
             Date d = new Date();
             current.setRetiredAt(d);
-            current.setRetirer(sessionController.loggedUser);
+            current.setRetirer(sessionController.getLoggedUser());
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {

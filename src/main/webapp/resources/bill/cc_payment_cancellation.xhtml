@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="billController" />
+        <cc:attribute name="dup" default="false"/>
+    </cc:interface>
+
+    <cc:implementation>
+
+
+        <style>
+            .fiveinchbill {
+                max-width: 5in;
+                padding: 0.5in;
+                margin: 0 auto;
+                font-size: 1.1rem;
+            }
+
+
+            .receipt-header {
+                text-align: center;
+                font-weight: bold;
+                text-decoration: underline;
+                margin-bottom: 20px;
+            }
+
+            .receipt-info, .receipt-details, .receipt-footer {
+                margin-bottom: 15px;
+            }
+
+            .receipt-info div, .receipt-details div {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+
+            .receipt-info div label, .receipt-details div label {
+                flex: 1;
+                font-weight: bold;
+            }
+
+            .receipt-info div span, .receipt-details div span {
+                flex: 2;
+                text-align: right;
+            }
+
+            .receipt-total {
+                font-weight: bold;
+                font-size: 1.2rem;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .receipt-footer {
+                text-align: center;
+                font-style: italic;
+            }
+
+            .signature {
+                padding-top: 0.5in;
+                text-decoration: overline;
+                margin-left: 3.5in;
+            }
+        </style>
+
+        <div class="fiveinchbill">
+
+            <!-- Header Section -->
+            <div class="header">
+                <h:outputLabel value="Collecting Centre Credit Note" rendered="#{cc.attrs.bill.billType eq 'AgentPaymentReceiveBill'}" />
+            </div>
+
+
+
+            <div class="receipt-header">
+                <h:outputLabel value="Collecting Centre Payment Cancellation" style="font-size: 1.2em"/>
+                <h:outputLabel rendered="#{cc.attrs.dup}" value="** Duplicate **" style="font-size: 0.8em"/>
+            </div>
+            
+            <div class="receipt-info">
+                <div>
+                    <label>Receipt No:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </span>
+                </div>
+
+                <div>
+                    <label>Date:</label>
+                    <span>                     
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div> 
+                <div>
+                    <label>Time:</label>
+                    <span>                        
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+
+                <div>
+                    <label>Agency:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
+                    </span>
+                </div>
+                <div>
+                    <label>Code:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" />
+                    </span>
+                </div>
+
+                <div>
+                    <label>Payment Type:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                    </span>
+                </div>
+                <h:panelGroup rendered="#{cc.attrs.bill.bank ne null}">
+                    <div>
+                    <label>Bank:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.bank.name}"  />
+                    </span>
+                </div>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{cc.attrs.bill.chequeRefNo ne null}">
+                    <div >
+                    <label>Cheque No:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
+                    </span>
+                </div>
+                </h:panelGroup>
+                
+
+                <div class="receipt-total">
+                    <label>Total:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 1.2rem;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+
+            </div>   
+
+            <div class="d-flex justify-content-between" style="font-size: 16px;">
+                <div class="d-flex gap-2">
+                    <label>Canceled by : </label>
+                    <label>#{cc.attrs.bill.creater.name}</label>
+                </div>
+                <div>
+                    <h:outputLabel value="#{sessionController.currentDate}" >
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+
+
+        </div>
+    </cc:implementation>
+</html>

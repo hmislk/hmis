@@ -15,56 +15,206 @@
                 <p:panel header="Add Investigation to Package" styleClass="panel-margin">
 
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-5">
                             <p:panel header="Packages">
-                                <p:selectOneListbox id="lstSelect" value="#{packageItemController.currentPackege}" filter="true">
+                                <p:selectOneListbox id="lstSelect" value="#{packageItemController.currentPackege}" scrollHeight="500" filter="true">
                                     <f:selectItems value="#{packageNameController.withoutInativeItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                                    <f:ajax render="gpDetail packageItem" execute="lstSelect" />
+                                    <f:ajax render="gpDetail packageItem dig" execute="lstSelect" />
                                 </p:selectOneListbox>
                             </p:panel>
 
                         </div>
-                        <div class="col-6">
-                            <p:panel header="Available Items" >
+                        <div class="col-7">
+                            <p:panel >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText id="lblName" value="Package Items" class="mt-2" ></h:outputText>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                value="Add New" 
+                                                id="btnToAddNew"
+                                                actionListener="#{packageItemController.prepareToAddNew()}" 
+                                                class="ui-button-success" 
+                                                icon="fas fa-plus-circle" 
+                                                process="btnToAddNew"
+                                                update=":#{p:resolveFirstComponentWithId('digEdit',view).clientId}"
+                                                oncomplete="PF('dlg1').show()">
+                                            </p:commandButton>
 
-                                <p:selectOneListbox id="packageItem" value="#{packageItemController.current}" >
-                                    <f:selectItems value="#{packageItemController.items}" var="myPis" itemLabel="#{myPis.item.name}" itemValue="#{myPis}" />
-                                </p:selectOneListbox>
+
+                                            <p:commandButton 
+                                                value="Edit Item" 
+                                                id="btnEdit"
+                                                disabled="#{packageItemController.current eq null}" 
+                                                actionListener="#{packageItemController.clearValus()}" 
+                                                class="ui-button-info" 
+                                                icon="fas fa-edit" 
+                                                process="btnEdit"
+                                                update=":#{p:resolveFirstComponentWithId('digEdit',view).clientId}"
+                                                oncomplete="PF('dlg1').show()">
+                                            </p:commandButton>
+
+
+                                            <p:commandButton 
+                                                value="Remove" 
+                                                action="#{packageItemController.removeFromPackage()}" 
+                                                class="ui-button-danger" 
+                                                icon="fas fa-trash-alt" 
+                                                ajax="false">
+                                            </p:commandButton>
+
+                                        </div>
+
+                                    </div>
+                                </f:facet>
+
+                                <p:dataTable 
+                                    id="packageItem" 
+                                    selection="#{packageItemController.current}"
+                                    value="#{packageItemController.items}" 
+                                    var="i" 
+                                    rowKey="#{i.id}"
+                                    selectionMode="single"
+                                    >
+                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('digEdit',view).clientId}" event="rowSelect"/>
+                                    <p:column headerText="Item">
+                                        <h:outputText value="#{i.item.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Institution">
+                                        <h:outputText value="#{i.institution.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Department">
+                                        <h:outputText value="#{i.department.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Status" >
+                                        <p:badge 
+                                            value="#{i.item.canRemoveItemfromPackage?'Can Remove Item':'Can not Remove Item'}" 
+                                            severity="#{i.item.canRemoveItemfromPackage?'success':'warning'}"
+                                            >
+                                        </p:badge>
+                                    </p:column>     
+                                </p:dataTable>
                             </p:panel>
+
+
+
                         </div>
                     </div>
 
-                    <div  class="w-50">
-                        <p:commandButton value="Add" action="#{packageItemController.addToPackage()}" class="ui-button-success w-25" icon="fas fa-plus" ajax="false"/>
-                        <p:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" class="ui-button-Danger w-25 mx-1" icon="fas fa-trash"  ajax="false"/>
-                    </div>
 
-                    <p:dataTable value="#{packageItemController.serviceItems}" var="i" 
-                                 rowKey="#{i.id}"
-                                 rows="10"
-                                 paginator="true" paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                 scrollable="true" 
-                                 class="w-100" selectionMode="single" 
-                                 selection="#{packageItemController.currentItem}"
-                                 filteredValue="#{packageItemController.filteredItems}">
-                        <p:column headerText="Department" filterBy="#{i.department.name}" filterMatchMode="contains">
-                            #{i.department.name}
-                        </p:column>
-                        <p:column headerText="Parent Category" filterBy="#{i.category.parentCategory.name}" filterMatchMode="contains">
-                            #{i.category.parentCategory.name}
-                        </p:column>
-                        <p:column headerText="Category" filterBy="#{i.category.name}" filterMatchMode="contains">
-                            #{i.category.name}
-                        </p:column>
-                        <p:column headerText="Item" filterBy="#{i.name}" filterMatchMode="contains">
-                            #{i.name}
-                        </p:column>
-                    </p:dataTable>
+
                 </p:panel>
             </h:form>
+
+            <h:form>
+                <p:dialog 
+                    rendered="true" 
+                    modal="true" 
+                    widgetVar="dlg1" 
+                    id="digEdit" 
+                    minHeight="400" 
+                    width="800" 
+                    showEffect="fade" 
+                    focus="btnEdit" 
+                    closeOnEscape="true">
+
+                    <f:facet name="header">
+                        <p:outputLabel value="Add New Item"  rendered="#{packageItemController.current.id eq null}" ></p:outputLabel>
+                        <p:outputLabel value="Edit #{packageItemController.current.item} Item" rendered="#{packageItemController.current.id ne null}" ></p:outputLabel>
+
+                        <p:commandButton 
+                            id="btnSave"
+                            rendered="#{packageItemController.current.id eq null}" 
+                            value="Save" 
+                            action="#{packageItemController.addToPackage()}" 
+                            class="ui-button-success"
+                            icon="fas fa-plus-circle" 
+                            process="btnSave piDetails"
+                            update="@form"
+                            ajax="false">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            id="btnUpdate"
+                            rendered="#{packageItemController.current.id ne null}" 
+                            value="Update" 
+                            action="#{packageItemController.EditPackageItem()}" 
+                            class="ui-button-info"
+                            icon="fas fa-edit" 
+                            process="btnUpdate piDetails"
+                            update="@form"
+                            ajax="false">
+                        </p:commandButton>
+                    </f:facet>
+
+                    <p:panelGrid id="piDetails" columns="2" class="w-100" layout="tabular">
+                        <h:outputText value="Item" ></h:outputText>
+                        <p:inputText 
+                            rendered="#{packageItemController.current.id ne null}" 
+                            autocomplete="off"
+                            class="w-100"
+                            style="font-size: 16px; font-weight: 600;"
+                            disabled="true"
+                            value="#{packageItemController.current.item.name}">
+                        </p:inputText>
+                        <p:autoComplete
+                            rendered="#{packageItemController.current.id eq null}" 
+                            value="#{packageItemController.current.item}"
+                            completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                            var="addingItem"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            itemLabel="#{addingItem.name}"
+                            itemValue="#{addingItem}"
+                            >
+                            <p:column headerText="Code" >
+                                #{addingItem.code}
+                            </p:column>
+                            <p:column headerText="Item" >
+                                #{addingItem.name}
+                            </p:column>
+                            <p:column headerText="Category" >
+                                #{addingItem.category.name}
+                            </p:column>
+                            <p:column headerText="Parent Category" >
+                                #{addingItem.category.parentCategory.name}
+                            </p:column>
+                            <p:column headerText="Department" >
+                                #{addingItem.department.name}
+                            </p:column>
+                        </p:autoComplete>
+
+
+                        <h:outputText value="Institution" class="mt-2"/>
+
+                        <p:selectOneMenu id="cmbInstitutionCurrent" value="#{packageItemController.current.institution}" class="w-100">
+                            <f:selectItem itemLabel="Please select an Institution"/>
+                            <f:selectItems value="#{institutionController.companies}" var="insc" itemLabel="#{insc.name}" itemValue="#{insc}" />
+                            <p:ajax event="change" process="@this" update="departmentPanel"/>
+                        </p:selectOneMenu>
+
+                        <!-- Wrap the dependent components -->
+                        <h:outputText value="Department" />
+                        <p:outputPanel id="departmentPanel">
+                            <h:outputText value="Select an Institution first" rendered="#{empty packageItemController.current.institution}"/>
+                            <p:selectOneMenu id="cmbDepartmentCurrent" 
+                                             value="#{packageItemController.current.department}" 
+                                             class="w-100"
+                                             rendered="#{not empty packageItemController.current.institution}">
+                                <f:selectItem itemLabel="Please select a Department"/>
+                                <f:selectItems 
+                                    value="#{departmentController.getInstitutionDepartments(packageItemController.current.institution)}" 
+                                    var="depc" 
+                                    itemLabel="#{depc.name}" 
+                                    itemValue="#{depc}" />
+                            </p:selectOneMenu>
+                        </p:outputPanel>
+
+
+                    </p:panelGrid>
+                </p:dialog>
+            </h:form>
+
         </h:panelGroup>
     </ui:define>
 </ui:composition>

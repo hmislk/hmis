@@ -8,22 +8,23 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.GuardianRoom;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,8 +44,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -55,6 +56,13 @@ public class RoomChangeController implements Serializable {
     SessionController sessionController;
     @Inject
     private RoomFacilityChargeController roomFacilityChargeController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
+    @Inject
+    NotificationController notificationController;
+    @Inject
+    private InwardBeanController inwardBean;
+
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -65,7 +73,11 @@ public class RoomChangeController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB
+    private RoomFacilityChargeFacade roomFacilityChargeFacade;
+
     private List<PatientRoom> patientRoom;
+    private PatientRoom currentPatientRoom;
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
@@ -75,6 +87,77 @@ public class RoomChangeController implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date changeAt;
     private double addLinenCharge = 0.0;
+
+    // NEW FIELDS FOR CONSULTANT SELECTION
+    private Consultant newConsultant;
+    private Consultant newPrimeConsultant;
+
+    public Consultant getNewConsultant() {
+        return newConsultant;
+    }
+
+    public void setNewConsultant(Consultant newConsultant) {
+        this.newConsultant = newConsultant;
+    }
+
+    public Consultant getNewPrimeConsultant() {
+        return newPrimeConsultant;
+    }
+
+    public void setNewPrimeConsultant(Consultant newPrimeConsultant) {
+        this.newPrimeConsultant = newPrimeConsultant;
+    }
+
+// Helper method to save consultant information
+    private void saveConsultantInfo(PatientRoom patientRoom) {
+        boolean hasConsultant = false;
+
+        if (newConsultant != null || newPrimeConsultant != null) {
+            StringBuilder consultantInfo = new StringBuilder();
+
+            if (newConsultant != null && newConsultant.getPerson() != null) {
+                consultantInfo.append("Consultant:")
+                        .append(newConsultant.getId())
+                        .append(":")
+                        .append(newConsultant.getPerson().getName())
+                        .append(";");
+                hasConsultant = true;
+            }
+
+            if (newPrimeConsultant != null && newPrimeConsultant.getPerson() != null) {
+                consultantInfo.append("PrimeConsultant:")
+                        .append(newPrimeConsultant.getId())
+                        .append(":")
+                        .append(newPrimeConsultant.getPerson().getName())
+                        .append(";");
+                hasConsultant = true;
+            }
+
+            String currentDesc = patientRoom.getDescription();
+            if (currentDesc == null) {
+                currentDesc = "";
+            }
+
+            if (!currentDesc.isEmpty() && !currentDesc.endsWith("|")) {
+                currentDesc += "|";
+            }
+
+            patientRoom.setDescription(currentDesc + consultantInfo.toString());
+            getPatientRoomFacade().edit(patientRoom);
+
+            // ADD SUCCESS MESSAGE
+            if (hasConsultant) {
+                StringBuilder msg = new StringBuilder("Consultant information saved");
+                if (newConsultant != null) {
+                    msg.append(" - Consultant: ").append(newConsultant.getPerson().getNameWithTitle());
+                }
+                if (newPrimeConsultant != null) {
+                    msg.append(" - Prime Consultant: ").append(newPrimeConsultant.getPerson().getNameWithTitle());
+                }
+                JsfUtil.addSuccessMessage(msg.toString());
+            }
+        }
+    }
 
     public void update(PatientRoom pR) {
         if (pR == null || pR.getRoomFacilityCharge() == null) {
@@ -92,12 +175,63 @@ public class RoomChangeController implements Serializable {
         getPatientRoomFacade().edit(pR);
     }
 
-    public void remove(PatientRoom pR) {
-        if(pR==null){
+    public String navigateToAdmitRoomFromMenu() {
+        setCurrent(null);
+        setCurrentPatientRoom(null);
+        return "/inward/admit_room?faces-redirect=true";
+    }
+
+    public void selectRoomForAdmit() {
+        if (current == null) {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
-        
+        if (current.getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        setCurrentPatientRoom(current.getCurrentPatientRoom());
+    }
+
+    public void admitRoom() {
+        if (currentPatientRoom == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+
+        if (getCurrentPatientRoom().getAdmittedAt() == null) {
+            JsfUtil.addErrorMessage("Please select room admission time first");
+            return;
+        }
+
+        if (getCurrentPatientRoom().getPatientEncounter().getDateOfAdmission().after(getCurrentPatientRoom().getAdmittedAt())) {
+            JsfUtil.addErrorMessage(" Room admission time cannot be before patient admission time");
+            return;
+        }
+
+        inwardBean.admitPatientRoom(getCurrentPatientRoom(), getCurrentPatientRoom().getRoomFacilityCharge(), getCurrentPatientRoom().getAdmittedAt(), getSessionController().getWebUser());
+
+        current.setRoomAdmitted(true);
+        ejbFacade.edit(current);
+
+        JsfUtil.addSuccessMessage("Room admitted successfully");
+
+    }
+
+    public void getCurrentTime() {
+        if (getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        getCurrentPatientRoom().setAdmittedAt(new Date());
+    }
+
+    public void remove(PatientRoom pR) {
+        if (pR == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+
         AdmissionTypeEnum admissionTypeEnum = pR.getPatientEncounter().getAdmissionType().getAdmissionTypeEnum();
 
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
@@ -105,15 +239,14 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");
             return;
         }
-        
+
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
-                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null 
+                && pR.getNextRoom() != null && !pR.getNextRoom().isRetired() && pR.getPreviousRoom() != null
                 && !pR.getPreviousRoom().isRetired()) {
             JsfUtil.addErrorMessage("You have to Remove Last one First");
             return;
         }
-        
-        
+
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) {
             JsfUtil.addErrorMessage("To Delete Patient Room There next Room Should Be Empty");
@@ -144,23 +277,41 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
+        notificationController.createNotification(pR, "Discharge");
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
         if (pR.getDischargedAt() == null) {
             pR.setDischargedAt(new Date());
         }
+        List<PatientRoom> rooms = bhtSummeryController.getPatientRooms();
+        if (rooms != null) {
+            if (rooms.size() > 1) {
+                int currentRoomIndex = rooms.indexOf(patientRoom);
+                if (currentRoomIndex > 0) {
+                    PatientRoom previousRoom = rooms.get(currentRoomIndex - 1);
+
+                    if (pR.getAdmittedAt() != null && previousRoom.getDischargedAt() != null) {
+                        if (pR.getAdmittedAt().before(previousRoom.getDischargedAt())) {
+                            JsfUtil.addErrorMessage("Admitted time must be after the discharge time of the previous room.");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
 
         pR.setDischarged(true);
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
+        notificationController.createNotification(pR, "Discharge");
     }
 
     public void dischargeCancel(PatientRoom pR) {
         pR.setDischarged(false);
         pR.setDischargedBy(null);
         getPatientRoomFacade().edit(pR);
-        
+
     }
 
     public void removeGuardianRoom(PatientRoom pR) {
@@ -192,6 +343,10 @@ public class RoomChangeController implements Serializable {
         patientList = null;
         changeAt = null;
         newRoomFacilityCharge = null;
+        currentPatientRoom = null;
+        // RESET CONSULTANT FIELDS
+        newConsultant = null;
+        newPrimeConsultant = null;
     }
 
     private PatientRoom updatePatientRoom(PatientRoom patientRoom1) {
@@ -212,11 +367,14 @@ public class RoomChangeController implements Serializable {
         return patientRoom1;
     }
 
-    @Inject
-    private InwardBeanController inwardBean;
-
     public void change() {
         if (getCurrent().getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("Can't Change Room Without a Room.");
+            return;
+        }
+
+        if (newRoomFacilityCharge == null) {
+            JsfUtil.addErrorMessage("There is No Room Selected");
             return;
         }
 
@@ -240,11 +398,20 @@ public class RoomChangeController implements Serializable {
         oldPatientRoom.setNextRoom(newPatientRoom);
         getPatientRoomFacade().edit(oldPatientRoom);
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        // Save consultant information
+        saveConsultantInfo(newPatientRoom);
 
-        // recreate();
+        if (newConsultant != null || newPrimeConsultant != null) {
+            JsfUtil.addSuccessMessage("Room changed with consultant details");
+        } else {
+            JsfUtil.addSuccessMessage("Successfully Room Changed");
+        }
+
         newRoomFacilityCharge = null;
         changeAt = null;
+        // Reset consultant fields
+        newConsultant = null;
+        newPrimeConsultant = null;
         createPatientRoom();
     }
 
@@ -257,14 +424,23 @@ public class RoomChangeController implements Serializable {
 
         PatientRoom newPatientRoom = new PatientRoom();
         newPatientRoom = getInwardBean().savePatientRoom(newPatientRoom, getNewRoomFacilityCharge(), current, changeAt, getSessionController().getLoggedUser());
+        if (newPatientRoom == null) {
+            JsfUtil.addErrorMessage("Selected a Room to Add");
+            return;
+        }
         getCurrent().setCurrentPatientRoom(newPatientRoom);
         getEjbFacade().edit(getCurrent());
 
+        // Save consultant information
+        saveConsultantInfo(newPatientRoom);
+
         JsfUtil.addSuccessMessage("Successfully Room Changed");
 
-        // recreate();
         newRoomFacilityCharge = null;
         changeAt = null;
+        // Reset consultant fields
+        newConsultant = null;
+        newPrimeConsultant = null;
         createPatientRoom();
     }
 
@@ -315,9 +491,6 @@ public class RoomChangeController implements Serializable {
         return selectedItems;
     }
 
-    @EJB
-    private RoomFacilityChargeFacade roomFacilityChargeFacade;
-
     public void prepareAdd() {
         current = new Admission();
     }
@@ -331,7 +504,7 @@ public class RoomChangeController implements Serializable {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -376,13 +549,11 @@ public class RoomChangeController implements Serializable {
     }
 
     public Admission getCurrent() {
-       
         return current;
     }
 
     public void setCurrent(Admission current) {
         this.current = current;
-
     }
 
     public void createPatientRoom() {
@@ -532,6 +703,14 @@ public class RoomChangeController implements Serializable {
 
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
+    }
+
+    public PatientRoom getCurrentPatientRoom() {
+        return currentPatientRoom;
+    }
+
+    public void setCurrentPatientRoom(PatientRoom currentPatientRoom) {
+        this.currentPatientRoom = currentPatientRoom;
     }
 
     /**

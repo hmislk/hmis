@@ -46,7 +46,9 @@
                                 </p:column>
 
                                 <p:column headerText="Supplier" 
-                                          sortBy="#{i.institution.name}">
+                                          sortBy="#{i.institution.name}"
+                                          filterBy="#{i.institution.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Supplier"/>
                                     </f:facet>

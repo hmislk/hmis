@@ -29,7 +29,7 @@
 
                 <h:outputLabel value="Adjusted At  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                 </h:outputLabel >
 
                 <h:outputLabel value="Adjusted By  "/>

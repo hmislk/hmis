@@ -21,7 +21,7 @@
                             <p:printer target="panIx" />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <p:dataExporter target="panIx" type="xls" fileName="All Items" />
+                            <p:dataExporter target="panIx" type="xlsx" fileName="All Items" />
                         </p:commandButton>
                     </f:facet>
 
@@ -42,10 +42,11 @@
                                      rowKey="#{sv.id}" selection="#{investigationController.itemsToRemove}" 
                                      rows="10"
                                      paginator="true"
+                                     selectionMode="multiple"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15,50,100,500,1000"
                                      >
-                            <p:column id="colSelect"  selectionMode="multiple" >
+                            <p:column id="colSelect"  selectionBox="true" >
                             </p:column>
 
                             <p:column headerText="Category" 

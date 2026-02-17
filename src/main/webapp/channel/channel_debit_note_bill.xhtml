@@ -11,39 +11,39 @@
     <ui:define name="content">
         <h:form  >
             <h:panelGroup >
-                <p:panel rendered="#{!agentPaymentRecieveBillController.printPreview}" >
+                <p:panel rendered="#{!agentAndCcPaymentController.printPreview}" >
                     <f:facet name="header" >
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Agent Debit Note" />
-                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.channelAgencyDebitNoteSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                            <p:commandButton id="btnSettle" value="Settle" action="#{agentAndCcPaymentController.channelAgencyDebitNoteSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                             </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>
 
-                            <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+                            <p:commandButton value="New Bill" ajax="false" action="#{agentAndCcPaymentController.prepareNewBill()}"  >
                             </p:commandButton>
                         </h:panelGrid>
                     </f:facet>
 
                     <p:panelGrid columns="2" style="min-width: 100%;">
                         <p:outputLabel value="Agency" />
-                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentPaymentRecieveBillController.current.fromInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentAndCcPaymentController.current.fromInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                             <f:ajax  event="itemSelect" execute="creditCom"  />
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
                         <p:outputLabel value="Payment" />
-                        <p:inputText autocomplete="off" value="#{agentPaymentRecieveBillController.amount}"/>                               
+                        <p:inputText autocomplete="off" value="#{agentAndCcPaymentController.amount}"/>                               
                         <p:outputLabel value="Description"/>
-                        <p:inputTextarea value="#{agentPaymentRecieveBillController.comment}"/>                                                         
+                        <p:inputTextarea value="#{agentAndCcPaymentController.comment}"/>                                                         
                     </p:panelGrid>
                 </p:panel>
             </h:panelGroup>
 
 
-            <h:panelGroup rendered="#{agentPaymentRecieveBillController.printPreview}" >     
-                <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+            <h:panelGroup rendered="#{agentAndCcPaymentController.printPreview}" >     
+                <p:commandButton value="New Bill" ajax="false" action="#{agentAndCcPaymentController.prepareNewBill()}"  >
                 </p:commandButton>
-                <bi:agent billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
+                <bi:agent billController="#{agentAndCcPaymentController}"  bill="#{agentAndCcPaymentController.current}" dup="false"/>     
             </h:panelGroup>        
 
         </h:form>

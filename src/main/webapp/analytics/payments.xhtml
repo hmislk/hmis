@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="Payment List "/>                          
+                    </f:facet>
+
+                    <h:form>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            </p:calendar>
+
+
+                            <h:outputLabel value="Institution"/>
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeIns}" 
+                                            var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{searchController.institution}" ></p:autoComplete>
+
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.department}" 
+                                            forceSelection="true"
+                                            completeMethod="#{departmentController.completeDept}" 
+                                            var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                                <p:column>
+                                    <h:outputLabel value="#{dep.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{dep.institution.name}"/>
+                                </p:column>
+                            </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch"
+                                ajax="false"
+                                value="Fill" 
+                                action="#{searchController.listPayments}"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel"
+                                ajax="false"
+                                value="Excel" >
+                                <p:dataExporter fileName="Payments" type="xlsx" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+                        
+                        
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.payments}" 
+                            var="payment" 
+                            class="w-100"
+                            rows="20"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="100%">
+
+                             <p:column 
+                                headerText="Payment ID"
+                                sortBy="#{payment.id}" 
+                                filterBy="#{payment.id}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.id}" />
+                            </p:column>
+                            
+                            
+                            <p:column 
+                                headerText="Bill ID"
+                                sortBy="#{payment.bill.id}" 
+                                filterBy="#{payment.bill.id}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.bill.id}" />
+                            </p:column>
+                            
+                            <p:column 
+                                headerText="Bill No"
+                                sortBy="#{payment.bill.deptId}" 
+                                filterBy="#{payment.bill.deptId}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.bill.deptId}" />
+                            </p:column>
+                            
+                            <p:column 
+                                headerText="Payment Creator"
+                                sortBy="#{payment.creater.webUserPerson.nameWithTitle}" 
+                                filterBy="#{payment.creater.webUserPerson.nameWithTitle}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.creater.webUserPerson.nameWithTitle}" />
+                            </p:column>
+                            
+                             <p:column 
+                                headerText="CUrrent Holder"
+                                sortBy="#{payment.currentHolder.webUserPerson.nameWithTitle}" 
+                                filterBy="#{payment.currentHolder.webUserPerson.nameWithTitle}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.currentHolder.webUserPerson.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Date"
+                                sortBy="#{payment.createdAt}" 
+                                filterBy="#{payment.createdAt}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Payment Method" 
+                                sortBy="#{payment.paymentMethod.label}" 
+                                filterBy="#{payment.paymentMethod.label}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.paymentMethod.label}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Bill Type Atomic" 
+                                sortBy="#{payment.bill.billTypeAtomic.label}" 
+                                filterBy="#{payment.bill.billTypeAtomic.label}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.bill.billTypeAtomic.label}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Institution" 
+                                sortBy="#{payment.institution.name}" 
+                                filterBy="#{payment.institution.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.institution.name}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Department" 
+                                sortBy="#{payment.department.name}" 
+                                filterBy="#{payment.department.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.department.name}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Value" 
+                                sortBy="#{payment.paidValue}" 
+                                filterBy="#{payment.paidValue}" 
+                                filterMatchMode="gte" 
+                                class="text-end">
+                                <p:outputLabel value="#{payment.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+
+                            <p:column headerText="Actions" >
+                                <p:commandButton 
+                                    value="Bill" 
+                                    icon="fa fa-shield-alt" 
+                                    class="m-1 ui-button-danger" 
+                                    style="width: 10em;"
+                                    action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                    ajax="false" 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:setPropertyActionListener value="#{payment.bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Payment" 
+                                    ajax="false"
+                                    class="m-1 ui-button-warning"
+                                    style="width: 10em;"
+                                    icon="fa fa-pencil"
+                                    action="#{billSearch.navigateToEditPayment()}">
+                                    <f:setPropertyActionListener 
+                                        value="#{payment}" 
+                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </p:column>
+
+
+
+
+                        </p:dataTable>
+
+
+                    </h:form>
+
+
+
+
+                </p:panel>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

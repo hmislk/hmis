@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:poll ></p:poll>
+                </h:form>
+                
+                <div class="container-fluid" >
+                    <div class="card" >
+                        <div class="card-header" >
+                            <h2>Import Bill</h2>
+                        </div>
+                        <div class="card-body" >
+                            <h:form enctype="multipart/form-data">
+                                <p:fileUpload value="#{pharmacyBillSearch.file}"
+                                              mode="simple"
+                                              label="Choose File"/>
+                                <p:commandButton value="Upload"
+                                                 action="#{pharmacyBillSearch.importBill}"
+                                                 icon="fa fa-upload"
+                                                 ajax="false"/>
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

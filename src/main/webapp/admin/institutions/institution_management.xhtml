@@ -10,169 +10,357 @@
 
     <ui:define name="admin">
 
-        <h:panelGroup  >
-            <h:form>
-                <p:growl id="msg"/>
-                <p:focus id="selectFocus" for="lstSelect" />
+        <h:panelGroup>
+            <h:form id="form">
+                <p:growl id="msg" life="3000"/>
+                <p:focus id="selectFocus" for="acInst" />
                 <p:focus id="detailFocus" for="gpDetail" />
 
-                <p:panel header="Manage Institutions">
-                    <div class="row">
-                        <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-5">
+                        <p:panel header="Institution Management" class="mb-3 w-100">
 
-                            <p:commandButton 
-                                id="btnAdd" 
-                                value="Add New" 
-                                action="#{institutionController.prepareAdd()}"
-                                class="ui-button-success"
-                                update="lstSelect gpDetail" 
-                                icon="fa fa-plus"
-                                process="btnAdd">
-                            </p:commandButton>
+                            <!-- Status Filter Section -->
+                            <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <label class="form-label mb-0">Filter:</label>
+                                    <p:commandButton
+                                        id="btnFilterActive"
+                                        value="Active"
+                                        action="#{institutionController.setFilterToActive()}"
+                                        update="acInst instDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{institutionController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                        icon="fas fa-check-circle"
+                                        disabled="#{institutionController.editable}"
+                                        title="Show only active Institutions"/>
 
-                            <p:commandButton 
-                                id="btnDelete" 
-                                icon="fa fa-trash"
-                                onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                         return false;" 
-                                action="#{institutionController.delete()}"  
-                                value="Delete"
-                                update="lstSelect gpDetail msg" process="btnDelete"
-                                class=" m-1 ui-button-danger w-25"
-                                >
-                            </p:commandButton>
+                                    <p:commandButton
+                                        id="btnFilterInactive"
+                                        value="Inactive"
+                                        action="#{institutionController.setFilterToInactive()}"
+                                        update="acInst instDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{institutionController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                        icon="fas fa-times-circle"
+                                        disabled="#{institutionController.editable}"
+                                        title="Show only inactive Institutions"/>
 
-                            <p:selectOneListbox  id="lstSelect"
-                                                 value="#{institutionController.current}" 
-                                                 style="w-100"
-                                                 filter="true">
-                                <f:selectItems  value="#{institutionController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                <p:ajax update="gpDetail" process="lstSelect" >
-                                </p:ajax>
-                            </p:selectOneListbox>
+                                    <p:commandButton
+                                        id="btnFilterAll"
+                                        value="All"
+                                        action="#{institutionController.setFilterToAll()}"
+                                        update="acInst instDetails statusFilterPanel actionButtons"
+                                        process="@this"
+                                        styleClass="m-1 #{institutionController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                        icon="fas fa-list"
+                                        disabled="#{institutionController.editable}"
+                                        title="Show all Institutions"/>
+                                </div>
 
+                                <p:outputLabel id="filterStatusLabel"
+                                               value="Currently showing: #{institutionController.filterStatusDisplay}"
+                                               styleClass="text-muted small mt-1"/>
+                            </h:panelGroup>
 
-                        </div>
+                            <h:panelGroup id="actionButtons">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            value="Add New"
+                                            icon="fa fa-plus"
+                                            action="#{institutionController.prepareAdd()}"
+                                            class="m-1 ui-button-success"
+                                            update="acInst gpDetail actionButtons statusFilterPanel instDetails"
+                                            process="@this"
+                                            disabled="#{institutionController.editable}">
+                                            <f:setPropertyActionListener target="#{institutionController.selectedInstitutionDto}" value="#{null}" />
+                                        </p:commandButton>
 
-                        <div class="col-md-7">
-                            <p:panel class="w-100 form-control m-1" id="gpDetail" header="Details of the Institution">
+                                        <p:commandButton
+                                            id="btnEdit"
+                                            value="Edit"
+                                            icon="fas fa-edit"
+                                            action="#{institutionController.edit()}"
+                                            class="m-1 ui-button-info"
+                                            update="instDetails acInst actionButtons statusFilterPanel"
+                                            process="@this"
+                                            disabled="#{institutionController.editable or institutionController.selectedInstitutionDto eq null}">
+                                        </p:commandButton>
 
-                                <p:tabView  class="w-100 form-control m-1">
-                                    <p:tab title="Basic Details" class="w-100 form-control m-1" >
+                                        <p:commandButton
+                                            id="btnDelete"
+                                            action="#{institutionController.delete()}"
+                                            value="Delete"
+                                            icon="fas fa-trash"
+                                            class="m-1 ui-button-danger"
+                                            update="form:msg acInst gpDetail actionButtons statusFilterPanel instDetails"
+                                            process="@this"
+                                            disabled="#{institutionController.editable or institutionController.selectedInstitutionDto eq null}">
+                                            <p:confirm
+                                                header="Confirm Delete"
+                                                message="Are you sure you want to delete this Institution record?"
+                                                icon="fas fa-exclamation-triangle" />
+                                        </p:commandButton>
 
-                                        <h:panelGrid id="gpDetailText" columns="2" class="w-100">
-                                            <h:outputText id="lblName" value="Name"  class="m-1"></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         id="txtName" value="#{institutionController.current.name}"></p:inputText>
-                                            <h:outputText id="lblPName" value="Printing Name"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         id="txtPName" value="#{institutionController.current.chequePrintingName}"></p:inputText>
-                                            <h:outputText value="Institution Code"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         value="#{institutionController.current.institutionCode}"></p:inputText>
-                                            <h:outputText id="lblCode" value="Code"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         id="txtCode" value="#{institutionController.current.code}"></p:inputText>
-                                            <h:outputText id="lblSCode" value="Short Code" ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         id="txtSCode" value="#{institutionController.current.institutionCode}" >
-                                            </p:inputText>
-                                            <h:outputText  value="Description" ></h:outputText>
-                                            <p:inputTextarea class="w-100 form-control m-1" value="#{institutionController.current.descreption}"  ></p:inputTextarea>
-                                            <h:outputText id="lblDept" value="Type"></h:outputText>
+                                        <p:commandButton
+                                            id="btnToggleStatus"
+                                            value="#{institutionController.toggleStatusButtonText}"
+                                            action="#{institutionController.toggleInstitutionStatus()}"
+                                            icon="#{institutionController.toggleStatusButtonIcon}"
+                                            update="form:msg acInst gpDetail actionButtons statusFilterPanel instDetails filterStatusLabel"
+                                            process="@this"
+                                            styleClass="#{institutionController.toggleStatusButtonClass} m-1"
+                                            disabled="#{institutionController.editable or institutionController.selectedInstitutionDto eq null}"
+                                            title="Toggle Institution active/inactive status">
+                                            <p:confirm
+                                                header="Confirm Status Change"
+                                                message="Are you sure you want to #{not empty institutionController.selectedInstitutionDto ? (institutionController.selectedInstitutionDto.inactive ? 'ACTIVATE' : 'DEACTIVATE') : 'CHANGE STATUS'} this Institution: #{not empty institutionController.selectedInstitutionDto ? institutionController.selectedInstitutionDto.name : ''}?"
+                                                icon="fas fa-question-circle" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnViewAuditEvents"
+                                            value="History"
+                                            icon="fas fa-history"
+                                            action="#{institutionController.navigateToInstitutionAuditEvents()}"
+                                            class="m-1 ui-button-secondary"
+                                            process="@this"
+                                            ajax="false"
+                                            disabled="#{institutionController.selectedInstitutionDto eq null}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <p:autoComplete
+                                        class="w-100 m-1"
+                                        inputStyleClass="w-100"
+                                        id="acInst"
+                                        widgetVar="acInst"
+                                        value="#{institutionController.selectedInstitutionDto}"
+                                        completeMethod="#{institutionController.completeInstitutionDto}"
+                                        var="dto"
+                                        itemLabel="#{dto.name}"
+                                        itemValue="#{dto}"
+                                        converter="institutionDtoConverter"
+                                        forceSelection="true"
+                                        disabled="#{institutionController.editable}"
+                                        placeholder="Type to search Institutions..."
+                                        cache="false"
+                                        minQueryLength="2">
+                                        <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons instDetails" />
+                                        <p:ajax event="change" process="@this" update="gpDetail actionButtons instDetails" />
+                                        <p:column headerText="Name">
+                                            <h:outputText value="#{dto.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{dto.code}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+                            </div>
+
+                        </p:panel>
+                    </div>
+
+                    <div class="col-md-7">
+                        <p:panel id="instDetails">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa fa-university" /> Institution Details
+                                    </span>
+                                    <h:panelGroup rendered="#{institutionController.current ne null and institutionController.current.id ne null}"
+                                                  styleClass="badge #{institutionController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                        #{institutionController.current.inactive ? 'Inactive' : 'Active'}
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{institutionController.editable and institutionController.current ne null}"
+                                                  styleClass="badge badge-warning">
+                                        #{institutionController.current.id ne null ? 'Editing' : 'Adding New'}
+                                    </h:panelGroup>
+                                </div>
+                            </f:facet>
+
+                            <p:panelGrid
+                                id="gpDetail"
+                                columns="1"
+                                class="w-100"
+                                rendered="#{institutionController.current ne null}">
+
+                                <p:tabView class="w-100">
+                                    <p:tab title="Basic Details" class="w-100">
+                                        <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Name" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtName"
+                                                         value="#{institutionController.current.name}"
+                                                         class="w-100"
+                                                         placeholder="Enter Institution name"
+                                                         disabled="#{!institutionController.editable}" />
+
+                                            <h:outputText value="Printing Name" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtPName"
+                                                         value="#{institutionController.current.chequePrintingName}"
+                                                         class="w-100"
+                                                         disabled="#{!institutionController.editable}" />
+
+                                            <h:outputText value="Bill Prefix" />
+                                            <p:inputText autocomplete="off"
+                                                         value="#{institutionController.current.institutionCode}"
+                                                         class="w-100"
+                                                         disabled="#{!institutionController.editable}" />
+
+                                            <h:outputText value="Code" />
+                                            <p:inputText autocomplete="off"
+                                                         id="txtCode"
+                                                         value="#{institutionController.current.code}"
+                                                         class="w-100"
+                                                         disabled="#{!institutionController.editable}" />
+
+                                            <h:outputText value="Type" />
                                             <p:selectOneMenu
-                                                class="w-100 form-control m-1"
-                                                id="cmbDept"
+                                                class="w-100"
+                                                id="cmbType"
                                                 value="#{institutionController.current.institutionType}"
                                                 filter="true"
-                                                filterMatchMode="contains">
+                                                filterMatchMode="contains"
+                                                disabled="#{!institutionController.editable}">
                                                 <f:selectItem itemLabel="Select Institution Type"/>
-                                                <f:selectItems value="#{institutionController.institutionTypes}" var="it" itemValue="#{it}" itemLabel="#{it.label}"/>                                       
-                                            </p:selectOneMenu>                                 
-                                            <h:outputText value="Phone" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.phone}"  ></p:inputText>
-                                            <h:outputText value="Fax" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.fax}"  ></p:inputText>
-                                            <h:outputText value="Email" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.email}"  ></p:inputText>
-                                            <h:outputText value="Address" ></h:outputText>
-                                            <p:inputTextarea class="w-100 form-control m-1" value="#{institutionController.current.address}"  ></p:inputTextarea>
-                                            <h:outputText value="Web" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.web}"  ></p:inputText>
-                                        </h:panelGrid>
+                                                <f:selectItems value="#{(institutionController.institutionTypes.stream().filter(it->it ne 'OnlineBookingAgent')).toList()}" var="it" itemValue="#{it}" itemLabel="#{it.label}"/>
+                                            </p:selectOneMenu>
 
+                                            <h:outputText value="Parent" />
+                                            <p:autoComplete value="#{institutionController.current.parentInstitution}"
+                                                            completeMethod="#{institutionController.completeIns}"
+                                                            var="r"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            itemLabel="#{r.name}"
+                                                            itemValue="#{r}"
+                                                            forceSelection="true"
+                                                            disabled="#{!institutionController.editable}">
+                                            </p:autoComplete>
+
+                                            <h:outputText value="Route" />
+                                            <p:autoComplete
+                                                completeMethod="#{routeController.completeRoute}"
+                                                class="w-100" placeholder="Route"
+                                                inputStyleClass="w-100"
+                                                var="r" itemLabel="#{r.name}" itemValue="#{r}"
+                                                forceSelection="true"
+                                                value="#{institutionController.current.route}"
+                                                disabled="#{!institutionController.editable}" />
+
+                                            <h:outputText value="Description" />
+                                            <p:inputTextarea class="w-100"
+                                                             value="#{institutionController.current.descreption}"
+                                                             disabled="#{!institutionController.editable}" />
+                                        </p:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Contact Details">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Phone" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{institutionController.current.phone}"
+                                                         disabled="#{!institutionController.editable}" />
+                                            <h:outputText value="Fax" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{institutionController.current.fax}"
+                                                         disabled="#{!institutionController.editable}" />
+                                            <h:outputText value="Email" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{institutionController.current.email}"
+                                                         disabled="#{!institutionController.editable}" />
+                                            <h:outputText value="Address" />
+                                            <p:inputTextarea class="w-100"
+                                                             value="#{institutionController.current.address}"
+                                                             disabled="#{!institutionController.editable}" />
+                                            <h:outputText value="Web" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{institutionController.current.web}"
+                                                         disabled="#{!institutionController.editable}" />
+                                        </p:panelGrid>
                                     </p:tab>
 
                                     <p:tab title="Advanced">
-                                        <h:panelGrid columns="2" class="w-100 form-control m-1" >
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                            <h:outputText value="Point of Issue No." />
+                                            <p:inputText class="w-100"
+                                                         value="#{institutionController.current.pointOfIssueNo}"
+                                                         disabled="#{!institutionController.editable}" />
 
-                                            <h:outputText  value="Point of Issue No." ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" value="#{institutionController.current.pointOfIssueNo}" ></p:inputText>
-
-                                            <h:outputText value="Bank" ></h:outputText>
-                                            <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
+                                            <h:outputText value="Bank" />
+                                            <p:autoComplete completeMethod="#{institutionController.completeBankBranch}"
                                                             var="dept" id="branch"
-                                                            class="w-100 form-control m-1" placeholder="Branch"
+                                                            class="w-100" placeholder="Branch"
                                                             inputStyleClass="w-100"
                                                             itemLabel="#{dept.name}"
                                                             itemValue="#{dept}"
-                                                            forceSelection="true" 
-                                                            value="#{institutionController.current.bankBranch}"/>
-                                            <h:outputText  value="Account No." ></h:outputText>
-                                            <p:inputText  autocomplete="off" class="w-100 form-control m-1" value="#{institutionController.current.accountNo}"  ></p:inputText>
+                                                            forceSelection="true"
+                                                            value="#{institutionController.current.bankBranch}"
+                                                            disabled="#{!institutionController.editable}"/>
 
-                                            <h:outputText value="Credit Limit" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.allowedCredit}"  ></p:inputText>
+                                            <h:outputText value="Account No." />
+                                            <p:inputText autocomplete="off" class="w-100"
+                                                         value="#{institutionController.current.accountNo}"
+                                                         disabled="#{!institutionController.editable}" />
 
-                                            <h:outputText value="Owner Email" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.ownerEmail}"  ></p:inputText>
+                                            <h:outputText value="Credit Limit" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{institutionController.current.allowedCreditLimit}"
+                                                         disabled="#{!institutionController.editable}" />
 
-                                            <h:outputText  value="Route" ></h:outputText>
-                                            <p:autoComplete 
-                                                completeMethod="#{routeController.completeRoute}" 
-                                                class="w-100 form-control m-1" placeholder="Route"
-                                                inputStyleClass="w-100"
-                                                var="r" itemLabel="#{r.name}" itemValue="#{r}" forceSelection="true" value="#{institutionController.current.route}" ></p:autoComplete>
-
-
-                                            <h:outputText  value="Email Sending Account" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtEmUn" value="#{institutionController.current.emailSendingUsername}"></p:inputText>
-
-                                            <h:outputText  value="Email Sending Password" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtEmPs" value="#{institutionController.current.emailSendingPassword}"></p:inputText>
-
-                                            <h:outputText  value="SMS Sending Username" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtSmsUn" value="#{institutionController.current.smsSendingUsername}"></p:inputText>
-
-                                            <h:outputText  value="SMS Sending Password" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtSmsPs" value="#{institutionController.current.smsSendingPassword}"></p:inputText>
-
-                                            <h:outputText  value="SMS Alias" ></h:outputText>
-                                            <p:inputText class="w-100 form-control m-1" autocomplete="off" id="txtSmsAlias" value="#{institutionController.current.smsSendingAlias}"></p:inputText>
-
-                                        </h:panelGrid>
-
+                                            <h:outputText value="Owner Email" />
+                                            <p:inputText class="w-100" autocomplete="off"
+                                                         value="#{institutionController.current.ownerEmail}"
+                                                         disabled="#{!institutionController.editable}" />
+                                        </p:panelGrid>
                                     </p:tab>
-
                                 </p:tabView>
 
-                                <p:commandButton 
-                                    id="btnSave" 
-                                    value="Save" 
-                                    action="#{institutionController.saveSelected()}" 
-                                    process="btnSave gpDetail" 
-                                    update="lstSelect msg" 
-                                    class=" m-1 ui-button-warning w-25"
-                                    icon="fas fa-save">
-                                </p:commandButton>
-                                <p:defaultCommand target="btnSave"/>
-                            </p:panel>
-                        </div>
+                                <h:panelGroup layout="block" class="text-end">
+                                    <div>
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Save"
+                                            icon="fas fa-save"
+                                            action="#{institutionController.saveInstitution()}"
+                                            class="m-1 ui-button-warning w-25"
+                                            process="btnSave gpDetail"
+                                            update="acInst gpDetail form:msg actionButtons instDetails statusFilterPanel"
+                                            disabled="#{!institutionController.editable}"
+                                            oncomplete="try { if (PF('acInst')) { PF('acInst').cache = {}; } } catch(e) {}">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            immediate="true"
+                                            id="btnCancel"
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            action="#{institutionController.cancel()}"
+                                            class="m-1 ui-button-secondary w-25"
+                                            process="btnCancel"
+                                            update="acInst actionButtons instDetails statusFilterPanel"
+                                            disabled="#{!institutionController.editable}">
+                                        </p:commandButton>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                        </p:panel>
                     </div>
-                </p:panel>
+                </div>
 
+                <!-- Confirmation Dialog -->
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                </p:confirmDialog>
             </h:form>
-
         </h:panelGroup>
 
     </ui:define>

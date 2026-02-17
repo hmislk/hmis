@@ -14,7 +14,7 @@
             <p:panel header="Reprint"  rendered="#{!billController.printPreview}">
                 <f:facet name="header" >
                     <h:outputLabel value="Paymetnt For Pharmacy Bill" ></h:outputLabel>
-                    <hr></hr>
+                    <hr/>
                     <p:commandButton value="Back To Search" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}"  >
                     </p:commandButton>
                 </f:facet>
@@ -76,8 +76,7 @@
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <p:inputText value="#{billController.comment}" id="comment"/>
-                                <p:watermark value="Comment" for="comment"/>
-
+                                
                                 <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                     <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
                                 </h:panelGroup>

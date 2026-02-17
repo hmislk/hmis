@@ -1,16 +1,16 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Relation;
+import com.divudi.core.entity.Relation;
 
-
-import com.divudi.facade.RelationFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.common.util.JsfUtil.PersistAction;
-
-
+import com.divudi.core.facade.RelationFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.JsfUtil.PersistAction;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,25 +22,45 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 
-@Named("relationController")
+@Named
 @SessionScoped
 public class RelationController implements Serializable {
 
     @EJB
     private RelationFacade ejbFacade;
+    @Inject
+    SessionController sessionController;
+
     private List<Relation> items = null;
-    private Relation selected;
+    private Relation current;
 
     public RelationController() {
     }
 
-    public Relation getSelected() {
-        return selected;
+    public void prepareAdd() {
+        current = new Relation();
+        fillItems();
     }
 
-    public void setSelected(Relation selected) {
-        this.selected = selected;
+    public void fillItems() {
+        String j;
+        j = "select s "
+                + " from Relation s "
+                + " where s.retired=:ret "
+                + " order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findByJpql(j, m);
+    }
+
+    public Relation getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(Relation current) {
+        this.current = current;
     }
 
     protected void setEmbeddableKeys() {
@@ -54,14 +74,14 @@ public class RelationController implements Serializable {
     }
 
     public Relation prepareCreate() {
-        selected = new Relation();
+        current = new Relation();
         initializeEmbeddableKey();
-        return selected;
+        return current;
     }
 
     public void create() {
         persist(PersistAction.CREATE, "Saved");
-        if (!JsfUtil.isValidationFailed()) {
+        if (JsfUtil.isValidationPassed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -72,8 +92,8 @@ public class RelationController implements Serializable {
 
     public void destroy() {
         persist(PersistAction.DELETE, "Deleted");
-        if (!JsfUtil.isValidationFailed()) {
-            selected = null; // Remove selection
+        if (JsfUtil.isValidationPassed()) {
+            current = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
@@ -86,14 +106,66 @@ public class RelationController implements Serializable {
         return items;
     }
 
+    public Relation fetchRelationByName(String relationName) {
+        String j = "select r from Relation r where r.name=:relationName";
+        Map m = new HashMap();
+        m.put("relationName", relationName);
+        Relation relation = getFacade().findFirstByJpql(j, m);
+        if (relation == null) {
+            relation = new Relation();
+            relation.setName(relationName);
+            relation.setCreatedAt(new Date());
+            relation.setCreater(sessionController.getLoggedUser());
+            getFacade().create(relation);
+        }
+        relation.setRetired(false);
+        getFacade().edit(relation);
+        return relation;
+    }
+
+    public void delete() {
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+        recreateModel();
+        fillItems();
+        current = null;
+        getCurrent();
+    }
+
+    private void recreateModel() {
+        items = null;
+    }
+
+    public void saveSelected() {
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            current.setCreatedAt(new Date());
+            current.setCreater(sessionController.getLoggedUser());
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        fillItems();
+    }
+
+
     private void persist(PersistAction persistAction, String successMessage) {
-        if (selected != null) {
+        if (current != null) {
             setEmbeddableKeys();
             try {
                 if (persistAction != PersistAction.DELETE) {
-                    getFacade().edit(selected);
+                    getFacade().edit(current);
                 } else {
-                    getFacade().remove(selected);
+                    getFacade().remove(current);
                 }
                 JsfUtil.addSuccessMessage(successMessage);
             } catch (EJBException ex) {
