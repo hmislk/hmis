@@ -953,9 +953,14 @@ public class PdfController {
                     .setTextAlignment(TextAlignment.CENTER)
                     .setPadding(4));
 
-            // Date & Time
-            table.addCell(new Cell().add(new Paragraph(
-                    row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A")));
+            // Date & Time - try payment.bill first, fallback to row.bill for bill-based rows
+            String dateTimeStr = "N/A";
+            if (row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getCreatedAt() != null) {
+                dateTimeStr = row.getPayment().getBill().getCreatedAt().toString();
+            } else if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
+                dateTimeStr = row.getBill().getCreatedAt().toString();
+            }
+            table.addCell(new Cell().add(new Paragraph(dateTimeStr)));
 
 
             // Bill No - using insId instead of deptId as per the template
@@ -997,7 +1002,7 @@ public class PdfController {
 
         // Net Total footer
         table.addFooterCell(new Cell()
-                .add(new Paragraph(String.format("#,##0.00", addingBundle.getTotal())))
+                .add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())))
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                 .setBold()
@@ -1131,9 +1136,14 @@ public class PdfController {
                     .setTextAlignment(TextAlignment.CENTER)
                     .setPadding(4));
 
-            // Date & Time
-            table.addCell(new Cell().add(new Paragraph(
-                    row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A")));
+            // Date & Time - try payment.bill first, fallback to row.bill for bill-based rows
+            String dateTimeStr = "N/A";
+            if (row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getCreatedAt() != null) {
+                dateTimeStr = row.getPayment().getBill().getCreatedAt().toString();
+            } else if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
+                dateTimeStr = row.getBill().getCreatedAt().toString();
+            }
+            table.addCell(new Cell().add(new Paragraph(dateTimeStr)));
 
             // Bill No
             table.addCell(new Cell()
@@ -1157,86 +1167,86 @@ public class PdfController {
 
             // Net Total
             table.addCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", row.getBill().getNetTotal())))
+                    .add(new Paragraph(String.format("%,.2f", row.getBill().getNetTotal())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setPadding(4));
 
             // Add dynamic payment columns
             if (addingBundle.isHasCashTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getCashValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getCashValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasCardTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getCardValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getCardValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasCreditTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getCreditValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getCreditValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasStaffWelfareTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getStaffWelfareValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getStaffWelfareValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasVoucherTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getVoucherValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getVoucherValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasIouTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getIouValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getIouValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasAgentTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getAgentValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getAgentValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasChequeTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getChequeValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getChequeValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasSlipTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getSlipValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getSlipValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasEWalletTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getEwalletValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getEwalletValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasPatientDepositTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getPatientDepositValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getPatientDepositValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasPatientPointsTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getPatientPointsValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getPatientPointsValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
             if (addingBundle.isHasOnCallTransaction()) {
                 table.addCell(new Cell()
-                        .add(new Paragraph(String.format("#,##0.00", row.getOnlineSettlementValue())))
+                        .add(new Paragraph(String.format("%,.2f", row.getOnlineSettlementValue())))
                         .setTextAlignment(TextAlignment.RIGHT)
                         .setPadding(4));
             }
@@ -1250,7 +1260,7 @@ public class PdfController {
 
         // Net Total footer
         table.addFooterCell(new Cell()
-                .add(new Paragraph(String.format("#,##0.00", addingBundle.getTotal())))
+                .add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())))
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                 .setPadding(4));
@@ -1258,91 +1268,91 @@ public class PdfController {
         // Add footer totals for payment columns
         if (addingBundle.isHasCashTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getCashValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getCashValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasCardTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getCardValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getCardValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasCreditTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getCreditValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getCreditValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasStaffWelfareTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getStaffWelfareValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getStaffWelfareValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasVoucherTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getVoucherValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getVoucherValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasIouTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getIouValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getIouValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasAgentTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getAgentValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getAgentValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasChequeTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getChequeValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getChequeValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasSlipTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getSlipValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getSlipValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasEWalletTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getEwalletValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getEwalletValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasPatientDepositTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getPatientDepositValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getPatientDepositValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasPatientPointsTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getPatientPointsValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getPatientPointsValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
         }
         if (addingBundle.isHasOnCallTransaction()) {
             table.addFooterCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getOnlineSettlementValue())))
+                    .add(new Paragraph(String.format("%,.2f", addingBundle.getOnlineSettlementValue())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .setPadding(4));
