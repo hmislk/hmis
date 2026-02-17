@@ -3082,6 +3082,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
     }
+    
+    public String navigateToGrnSummaryReport(){
+        return "/reports/inventoryReports/grn_summary_report?faces-redirect=true";
+    }
 
     public String navigateToSlowFastNoneMovement() {
 
