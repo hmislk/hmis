@@ -93,6 +93,7 @@
                                 ajax="false"
                                 value="Settle Selected Bills"
                                 title="Select bills below then click to settle them together"
+                                rendered="#{webUserController.hasPrivilege('AcceptPaymentForOpdBatchBills')}"
                                 action="#{creditCompanyDueController.settleSelectedOpdDueBills}" >
                             </p:commandButton>
 
@@ -142,7 +143,10 @@
                                     </f:facet>
                                     <!-- Select checkbox -->
                                     <p:column style="width:60px; text-align:center;">
-                                        <p:selectBooleanCheckbox value="#{creditCompanyDueController.paymentSelectionMap[p.id]}"/>
+                                        <p:selectBooleanCheckbox
+                                            id="selectChk_#{p.id}"
+                                            value="#{creditCompanyDueController.paymentSelectionMap[p.id]}"
+                                            title="Select bill #{p.bill.deptId} for settlement"/>
                                     </p:column>
                                     <!-- Batch Bill No: plain text + view button -->
                                     <p:column>

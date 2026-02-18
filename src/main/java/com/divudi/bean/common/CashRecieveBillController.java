@@ -1752,6 +1752,10 @@ public class CashRecieveBillController implements Serializable {
                 getCurrent().setFromInstitution(bill.getCreditCompany());
             }
         }
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No outstanding balances found for the selected bills.");
+            return null;
+        }
         calTotal();
         return "credit_company_bill_opd_combined?faces-redirect=true";
     }
