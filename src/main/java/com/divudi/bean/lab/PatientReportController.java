@@ -79,6 +79,7 @@ import javax.inject.Named;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.AuditService;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
 import javax.faces.context.FacesContext;
@@ -127,6 +128,8 @@ public class PatientReportController implements Serializable {
     ClinicalFindingValueFacade clinicalFindingValueFacade;
     @EJB
     private UploadFacade uploadFacade;
+    @EJB
+    AuditService auditService;
 
 //Controllers
     @Inject
@@ -187,6 +190,9 @@ public class PatientReportController implements Serializable {
     private boolean showBackground = false;
     private ClinicalFindingValue clinicalFindingValue;
     private String comment;
+    
+    Map<String, Object> updateInvestigation;
+    Map<String, Object> initialInvestigation;
 
     public StreamedContent getReportAsPdf() {
         StreamedContent pdfSc = null;
@@ -199,6 +205,13 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToViewPatientReport(PatientReport patientReport) {
+        // set initialInvestigation for audit event approval
+        
+        if (patientReport != null && (patientReport.getApproved() == null || !patientReport.getApproved() )) {
+            initialInvestigation = new HashMap<>(20);
+            patientInvestigationToAuditMap(initialInvestigation,patientReport);
+        }
+        
         if (null == patientReport.getReportType()) {
             setCurrentPatientReport(patientReport);
             return "/lab/patient_report?faces-redirect=true";
@@ -211,7 +224,8 @@ public class PatientReportController implements Serializable {
                     return "/lab/patient_report?faces-redirect=true";
                 case UPLOAD:
                     Upload u = loadUpload(patientReport);
-
+                    // without this correct patientReport is not updated
+                    setCurrentPatientReport(patientReport);
                     if (u != null) {
                         patientReportUploadController.setReportUpload(u);
                     } else {
@@ -2085,11 +2099,19 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setPrinted(Boolean.FALSE);
         currentPatientReport.setPrintingAt(null);
         currentPatientReport.setPrintingUser(null);
+        
+        updateInvestigation = new HashMap<>(20);
+        patientInvestigationToAuditMap(updateInvestigation, currentPatientReport);
 
         getFacade().edit(currentPatientReport);
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
+        
+        auditService.logAudit(initialInvestigation, updateInvestigation, sessionController.getLoggedUser(), "PatientInvestigation", "ApprovePatientReport", currentPtIx.getId());
 
+        initialInvestigation = null;
+        updateInvestigation = null;
+        
         if (CommonFunctions.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
             AppEmail e;
             e = new AppEmail();
@@ -2393,6 +2415,10 @@ public class PatientReportController implements Serializable {
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
         JsfUtil.addSuccessMessage("Approval Reversed");
+        
+        // cancel approval set the initial state for approvalAudit
+        initialInvestigation = new HashMap<>(20);
+        patientInvestigationToAuditMap(initialInvestigation, currentPatientReport);
 
         try {
             if (CommonFunctions.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
@@ -3029,6 +3055,9 @@ public class PatientReportController implements Serializable {
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
         System.out.println("currentPtIx = " + currentPtIx);
+        
+        initialInvestigation = new HashMap<>(20);
+        patientInvestigationToAuditMap(initialInvestigation, currentPatientReport);
 
         patientReportUploadController.setReportUpload(null);
         patientReportUploadController.setPatientInvestigation(pi);
@@ -3064,6 +3093,8 @@ public class PatientReportController implements Serializable {
         PatientReport newlyCreatedReport = null;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             newlyCreatedReport = createNewMicrobiologyReport(pi, ix);
+        } else if (ix.getReportType() == InvestigationReportType.HtmlTemplate) {
+            newlyCreatedReport = createNewPatientTemplateReport(pi, ix);
         } else {
             newlyCreatedReport = createNewPatientReport(pi, ix);
         }
@@ -3081,7 +3112,19 @@ public class PatientReportController implements Serializable {
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
         fillReportFormats(currentPatientReport);
+        
+        initialInvestigation = new HashMap<>(20);
+        patientInvestigationToAuditMap(initialInvestigation, currentPatientReport);
 
+        return "/lab/patient_report?faces-redirect=true";
+    }
+    
+    public String navigateToPatientReportPage() {
+        if (currentPatientReport != null) {
+            initialInvestigation = new HashMap<>(20);
+            patientInvestigationToAuditMap(initialInvestigation, currentPatientReport);
+        }
+        
         return "/lab/patient_report?faces-redirect=true";
     }
 
@@ -3118,7 +3161,7 @@ public class PatientReportController implements Serializable {
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
-        }
+        }        
         Investigation ix = null;
         System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {
@@ -3164,12 +3207,15 @@ public class PatientReportController implements Serializable {
                 && currentPatientSampleComponant.getPatientSample() != null) {
             sampleId = currentPatientSampleComponant.getPatientSample().getIdStr();
         }
-
+        
         createNewPatientReport(pi, currentReportInvestigation, sampleId);
         if (currentReportInvestigation != null) {
             getCommonReportItemController().setCategory(currentReportInvestigation.getReportFormat());
         }
-
+        
+        initialInvestigation = new HashMap<>(20);
+        patientInvestigationToAuditMap(initialInvestigation,currentPatientReport);
+        
         return "/lab/patient_report?faces-redirect=true";
     }
 
@@ -3353,6 +3399,22 @@ public class PatientReportController implements Serializable {
         this.groupName = groupName;
 
     }
+    
+    public Map<String, Object> getUpdateInvestigation() {
+        return updateInvestigation;
+    }
+
+    public void setUpdateInvestigation(Map<String, Object> updateInvestigation) {
+        this.updateInvestigation = updateInvestigation;
+    }
+
+    public Map<String, Object> getInitialInvestigation() {
+        return initialInvestigation;
+    }
+
+    public void setInitialInvestigation(Map<String, Object> initialInvestigation) {
+        this.initialInvestigation = initialInvestigation;
+    }
 
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
@@ -3420,6 +3482,50 @@ public class PatientReportController implements Serializable {
 
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
+    }
+    
+    // Admission edit: prepare data to log audit event
+    public void patientInvestigationToAuditMap(Map<String, Object> m, PatientReport pr) {
+        if (pr == null || m == null) {
+            return;
+        } else if (pr.getPatientInvestigation() == null) {
+            return;
+        }
+        
+        PatientInvestigation pi = pr.getPatientInvestigation();
+
+        m.put("investigationID", pi.getId());
+        m.put("Report-ApproveStatus", pr.getApproved());
+        m.put("Report-ApprovedAt", pr.getApproveAt());
+        if (pr.getApproveUser() != null) {
+            m.put("Report-ApproveUser", pr.getApproveUser().getId());
+        } 
+        m.put("CollectedAt", pi.getSampleCollectedAt());
+        m.put("DataEntered", pr.getDataEntered());
+        
+        if (pi.getInvestigation() != null) {
+            m.put("Investigation", pi.getInvestigation().getName());
+        }
+        if (pi.getPatient() != null) {
+            m.put("patient_ID", pi.getPatient().getId());
+            if (pi.getPatient().getPerson() != null) {
+              m.put("patient_name", pi.getPatient().getPerson().getName());           
+            }
+        }
+                
+        m.put("ReportId", pr.getId());
+        
+        if (pr.getPatientReportItemValues() != null && !pr.getPatientReportItemValues().isEmpty()) {
+            Map<String, Object> Items = new HashMap<>();
+            
+            for (PatientReportItemValue prv : pr.getPatientReportItemValues()) {
+                InvestigationItemType itemType = prv.getInvestigationItem().getIxItemType();
+                if (itemType == InvestigationItemType.DynamicLabel || itemType == InvestigationItemType.Value || itemType == InvestigationItemType.Flag || itemType == InvestigationItemType.WorningFlag || itemType == InvestigationItemType.Calculation) {
+                    Items.put(prv.getInvestigationItem().getName(), prv.getValue());
+                }    
+            }
+            m.put("Result", Items);
+        }
     }
 
 }
