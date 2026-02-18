@@ -91,7 +91,7 @@
                                             title="View Refund Bills"
                                             rendered="#{not empty bill.referenceBill.returnPreBills}"
                                             > 
-                                          
+                                            
                                             <p:badge rendered="#{not empty bill.referenceBill.returnPreBills}" value="Refunded" severity="warning"></p:badge>
                                             <f:setPropertyActionListener value="#{bill.deptId}" target="#{searchController.searchKeyword.refBillNo}"/> 
                                         </p:commandLink>

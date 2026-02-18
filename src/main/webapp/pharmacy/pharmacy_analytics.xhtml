@@ -270,7 +270,12 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show ROL and ROQ Management')}" class="w-100 ui-button-warning" value="ROL and ROQ Management" action="#{pharmacyController.navigateToReorderManagement()}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Reorder Analysis')}" class="w-100 ui-button-warning" value="Reorder Analysis" action="#{pharmacyController.navigateToReorderAnalysis}" ajax="false"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Report Stock By Date')}" class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovement}"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Report Stock By Date')}" 
+                                                class="w-100 ui-button-success" 
+                                                ajax="false" 
+                                                value="Movement Report Stock By Date" 
+                                                action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovement}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Report Stock By Date - By Batch')}" class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date - By Batch" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovementItemBach}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy All Report')}" class="w-100 ui-button-warning" ajax="false" value="Pharmacy All Report" action="#{pharmacySaleReportController.navigatePharmacyReportSummaryAll}"/>
                                         </div>

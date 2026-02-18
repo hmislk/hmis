@@ -3,7 +3,7 @@
 ## Repository Information
 - **GitHub Repository**: https://github.com/hmislk/hmis (not buddhika75/hmis)
 - **Issues URL**: https://github.com/hmislk/hmis/issues
-- **Project tmp Folder**: `/tmp/` directory contains project-specific temporary files
+- **Project tmp Folder**: `tmp/` directory **inside the project root** (i.e., `<project-root>/tmp/`) for project-specific temporary files. Do NOT use the system `/tmp/` directory.
 
 ## Essential Rules (Always Apply)
 
@@ -17,10 +17,11 @@
 5. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach
 6. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
 7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
+8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
 
 ### Git & Documentation
-8. **Include issue closing keywords** (`Closes #N`) in commit messages
-9. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+9. **Include issue closing keywords** (`Closes #N`) in commit messages
+10. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
 
 ## Situational Guidelines (Reference When Needed)
 
@@ -44,6 +45,7 @@
 ### When Creating User Documentation
 - [Wiki Publishing Workflow](developer_docs/github/wiki-publishing.md) - Sibling folder approach
 - [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
+- **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
 - **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
 
 ### When Committing Code

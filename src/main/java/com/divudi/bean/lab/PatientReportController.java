@@ -2693,7 +2693,7 @@ public class PatientReportController implements Serializable {
         }
 
         return reportItems.stream().anyMatch(item -> item.getInvestigationItem() != null
-                && item.getInvestigationItem().getIxItemType() == InvestigationItemType.WorningFlag);
+                && item.getInvestigationItem().getIxItemType() == InvestigationItemType.WarningFlag);
     }
 
     public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix) {

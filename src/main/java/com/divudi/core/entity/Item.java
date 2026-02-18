@@ -130,7 +130,10 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties
+    // Retired: permanent soft-delete. Once retired, the item is excluded from
+    // all queries and is no longer available anywhere in the system. This is
+    // irreversible from a UI perspective (set only by the delete action).
+    // JPQL convention: always filter "a.retired=false" in every query.
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -170,6 +173,11 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     boolean marginNotAllowed;
     private boolean printSessionNumber;
     private boolean allowFractions = false;
+    // Inactive: temporary, user-togglable status. An inactive item is still
+    // present in the system but hidden from day-to-day use. Users can
+    // reactivate it at any time via the toggle button. The Active/Inactive/All
+    // filter in management pages operates on this field, NOT on 'retired'.
+    // Do NOT conflate with 'retired' which is a permanent removal.
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;

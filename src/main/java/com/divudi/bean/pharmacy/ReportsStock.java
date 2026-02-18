@@ -27,6 +27,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -86,6 +87,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private ReportViewType reportViewType;
     private List<ReportViewType> reportViewTypes;
     private Category category;
+    private DosageForm dosageForm;
     private DepartmentType departmentType;
     private List<DepartmentType> selectedDepartmentTypes;
     List<Stock> stocks;
@@ -222,10 +224,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department != null) {
                 sql.append(" and s.department=:d");
                 m.put("d", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 sql.append(" and s.department.site=:site");
                 m.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 sql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
             }
@@ -260,26 +264,31 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             Map<String, Object> m = new HashMap<>();
             StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
             jpql.append("s.id, ");
-            jpql.append("COALESCE(s.itemBatch.item.category.name, ''), ");
-            jpql.append("COALESCE(s.itemBatch.item.name, ''), ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
             jpql.append("s.itemBatch.item.departmentType, ");
-            jpql.append("COALESCE(s.itemBatch.item.code, ''), ");
-            jpql.append("COALESCE(amp.vmp.name, ''), ");
+            jpql.append("s.itemBatch.item.code, ");
             jpql.append("s.itemBatch.dateOfExpire, ");
-            jpql.append("COALESCE(s.itemBatch.batchNo, ''), ");
-            jpql.append("COALESCE(s.stock, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.purcahseRate, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.costRate, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.retailsaleRate, 0.0)) ");
-            jpql.append("from Stock s join TREAT(s.itemBatch.item as Amp) amp where s.stock > 0");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where s.stock > 0");
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
                 m.put("d", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 jpql.append(" and s.department.site=:site");
                 m.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 jpql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
             }
@@ -287,6 +296,16 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
                 m.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
             }
 
             stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
@@ -336,10 +355,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department != null) {
                 jpql.append(" AND s.department = :dept");
                 parameters.put("dept", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 jpql.append(" AND s.department.site = :site");
                 parameters.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 jpql.append(" AND s.department.institution = :ins");
                 parameters.put("ins", institution);
             }
@@ -762,10 +783,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department != null) {
                 sql.append(" and s.department=:d");
                 m.put("d", department);
-            } else if (site != null) {
+            }
+            if (site != null) {
                 sql.append(" and s.department.site=:site");
                 m.put("site", site);
-            } else if (institution != null) {
+            }
+            if (institution != null) {
                 sql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
             }
@@ -1116,8 +1139,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     List<Item> items;
     private Item item;
-    
-    
 
     public List<Item> getItems() {
         return items;
@@ -1641,9 +1662,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
      */
     @Override
     public Department getDepartment() {
-        if (department == null) {
-            department = sessionController.getDepartment();
-        }
         return department;
     }
 
@@ -1673,10 +1691,10 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
-            DepartmentType.Pharmacy,
-            DepartmentType.Store,
-            DepartmentType.Lab,
-            DepartmentType.Kitchen
+                DepartmentType.Pharmacy,
+                DepartmentType.Store,
+                DepartmentType.Lab,
+                DepartmentType.Kitchen
         );
     }
 
@@ -1774,6 +1792,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public DosageForm getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(DosageForm dosageForm) {
+        this.dosageForm = dosageForm;
     }
 
     @Override

@@ -2,6 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -11,11 +12,24 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 <!--        <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
-            <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server" timeZone="Asia/Colombo"  />  
+            <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server" timeZone="Asia/Colombo"  />
             <p:outputLabel rendered="false" value="#{sessionController.loggedPreference.id}" ></p:outputLabel>
             <p:spacer width="10" height="1" rendered="true" ></p:spacer>
             <p:outputLabel rendered="false" value="#{sessionController.userPreference.id}" ></p:outputLabel>
         </div>-->
+
+        <h:panelGroup rendered="#{applicationController.databaseMigrationPending}">
+            <div style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999;
+                        background-color: #dc3545; color: #fff; text-align: center;
+                        padding: 10px 15px; font-size: 14px; font-weight: bold;"
+                 class="nonPrintBlock">
+                Database Migration Pending — Missing fields or tables detected.
+                <h:outputLink value="#{request.contextPath}/faces/mf.xhtml"
+                              style="color: #ffc107; text-decoration: underline; margin-left: 10px;">
+                    Go to Migration Page
+                </h:outputLink>
+            </div>
+        </h:panelGroup>
 
     </cc:implementation>
 </html>

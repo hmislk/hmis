@@ -17,7 +17,9 @@ import com.divudi.bean.lab.LaboratoryDoctorDashboardController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Icon;
+import com.divudi.core.data.IconGroup;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.UserIconGroup;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
 import static com.divudi.core.data.LoginPage.COURIER_LANDING_PAGE;
@@ -68,6 +70,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -188,6 +191,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private List<Institution> loggableInstitutions;
     private List<Institution> loggableCollectingCentres;
     private List<UserIcon> userIcons;
+    private List<UserIconGroup> groupedUserIcons;
 
     // Recently logged departments for quick access
     private List<Department> recentDepartments;
@@ -1301,6 +1305,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     // Load recently used departments
                     //recentDepartments = fillRecentDepartmentsForUser(u);
                     userIcons = userIconController.fillUserIcons(u, department);
+                    groupedUserIcons = buildGroupedUserIcons(userIcons);
 
                     // Load user-specific UI settings (column visibility, preferences, etc.)
                     // Performance-optimized: loads only current user's settings, cached in session
@@ -1670,8 +1675,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("DEBUG: Loading user icons...");
         long userIconsStartTime = System.currentTimeMillis();
         userIcons = userIconController.fillUserIcons(loggedUser, department);
+        groupedUserIcons = buildGroupedUserIcons(userIcons);
         System.out.println("DEBUG: User icons loading took " + (System.currentTimeMillis() - userIconsStartTime) + "ms");
-        
+
         System.out.println("DEBUG: Loading dashboards...");
         long dashboardsStartTime = System.currentTimeMillis();
         dashboards = webUserController.listWebUserDashboards(loggedUser);
@@ -1874,6 +1880,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         getFacede().edit(loggedUser);
 
         userIcons = userIconController.fillUserIcons(loggedUser, department);
+        groupedUserIcons = buildGroupedUserIcons(userIcons);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
@@ -1989,7 +1996,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
-                + " and wd.department.inactive=false "
+                + " and (wd.department.inactive=false or wd.department.inactive is null) "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
@@ -2007,7 +2014,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
-                + " and wd.department.inactive=false "
+                + " and (wd.department.inactive=false or wd.department.inactive is null) "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
@@ -2109,6 +2116,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         loggableInstitutions = null;
         loggableCollectingCentres = null;
         userIcons = null;
+        groupedUserIcons = null;
         setLogged(false);
         setActivated(false);
         pharmacySaleController.clearForNewBill();
@@ -2673,6 +2681,36 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setUserIcons(List<UserIcon> userIcons) {
         this.userIcons = userIcons;
+    }
+
+    public List<UserIconGroup> getGroupedUserIcons() {
+        return groupedUserIcons;
+    }
+
+    public void setGroupedUserIcons(List<UserIconGroup> groupedUserIcons) {
+        this.groupedUserIcons = groupedUserIcons;
+    }
+
+    private List<UserIconGroup> buildGroupedUserIcons(List<UserIcon> icons) {
+        if (icons == null || icons.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Map<IconGroup, List<UserIcon>> map = new LinkedHashMap<>();
+        for (IconGroup g : IconGroup.values()) {
+            map.put(g, new ArrayList<>());
+        }
+        for (UserIcon ui : icons) {
+            if (ui.getIcon() != null && ui.getIcon().getIconGroup() != null) {
+                map.get(ui.getIcon().getIconGroup()).add(ui);
+            }
+        }
+        List<UserIconGroup> groups = new ArrayList<>();
+        for (Map.Entry<IconGroup, List<UserIcon>> entry : map.entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                groups.add(new UserIconGroup(entry.getKey(), entry.getKey().getLabel(), entry.getValue()));
+            }
+        }
+        return groups;
     }
 
 //
