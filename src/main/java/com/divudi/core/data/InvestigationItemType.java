@@ -25,8 +25,6 @@ public enum InvestigationItemType {
     ReportImage,
     WarningFlag,
     @Deprecated
-    WorningFlag,
-    @Deprecated
     List,
     @Deprecated
     Speciality,
