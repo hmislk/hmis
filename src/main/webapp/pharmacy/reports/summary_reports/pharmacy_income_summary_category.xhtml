@@ -20,7 +20,7 @@
                         .col-label1,
                         .col-label2,
                         .col-label3 {
-                            width: 15%;
+                            width: 14%;
                         }
 
                         .col-input1,
@@ -28,16 +28,22 @@
                         .col-input3 {
                             width: 18%;
                         }
+                        
+                        .col-space1
+                        .col-space2
+                        .col-space3 {
+                            width: 2%; 
+                        }
                     </style>
                     <h:panelGroup layout="block">
-                        <h:panelGrid columns="6" 
+                        <h:panelGrid columns="8" 
                                      class="w-100 ui-fluid custom-grid"
-                                    columnClasses="col-label1,col-input1,
-                                                    col-label2,col-input2,
-                                                    col-label3,col-input3">
+                                    columnClasses="col-label1,col-input1,col-space1,
+                                                    col-label2,col-input2,col-space2,
+                                                    col-label3,col-input3,col-space3">
                            <h:panelGroup 
                                 layout="block" 
-                                styleClass="form-group ms-3"
+                                styleClass="form-group"
                                 style="display: flex; 
                                        flex-wrap: wrap; 
                                        align-items: center;
@@ -58,9 +64,10 @@
                                    value="#{pharmacySummaryReportController.fromDate}"
                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
+                           <p:spacer/>
                            <h:panelGroup 
                                 layout="block" 
-                                styleClass="form-group ms-5"
+                                styleClass="form-group"
                                 style="display: flex; 
                                        flex-wrap: wrap; 
                                        align-items: center;
@@ -83,12 +90,13 @@
                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                            />
                            
+                           <p:spacer/>
                            <p:spacer width="50"/>
                            <p:spacer width="50"/>
 
                            <h:panelGroup 
                                 layout="block" 
-                                styleClass="form-group ms-3"
+                                styleClass="form-group"
                                 style="display: flex; 
                                        flex-wrap: wrap; 
                                        align-items: center;
@@ -113,9 +121,11 @@
                                <p:ajax process="cmbIns" update="cmbDept"/>
                            </p:selectOneMenu>
 
+                           <p:spacer/>
+                           
                            <h:panelGroup 
                                 layout="block" 
-                                styleClass="form-group ms-5"
+                                styleClass="form-group"
                                 style="display: flex; 
                                        flex-wrap: wrap; 
                                        align-items: center;
@@ -140,9 +150,11 @@
                                <p:ajax process="siteMenu" update="cmbDept"/>
                            </p:selectOneMenu>
 
+                           <p:spacer/>
+                           
                            <h:panelGroup 
                                 layout="block" 
-                                styleClass="form-group ms-5"
+                                styleClass="form-group"
                                 style="display: flex; 
                                        flex-wrap: wrap; 
                                        align-items: center;
