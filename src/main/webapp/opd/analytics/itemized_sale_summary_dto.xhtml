@@ -152,7 +152,7 @@
                                              rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,20"
-                                             rowKey="#{row.itemId}_#{row.staffName}">
+                                             rowKey="#{row.rowIndex}">
                                     <f:facet name="header" >
                                         <h:outputText value="Itemized Sales Summary (DTO - Optimized)" ></h:outputText>
                                     </f:facet>

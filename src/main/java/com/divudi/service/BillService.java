@@ -2690,7 +2690,66 @@ public class BillService {
         jpql += " group by bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name"
                 + " order by bi.item.category.name, bi.item.name";
 
-        return (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Step 2: Separate standard JPQL for staff names — EclipseLink-compatible (no WITH clause)
+        // Inner join on bf.staff guarantees only BillFees with an assigned doctor/technician are returned
+        String staffJpql = "select bi2.item.id, stf.person.name"
+                + " from BillFee bf"
+                + " join bf.billItem bi2"
+                + " join bi2.bill b2"
+                + " join bf.staff stf"
+                + " where b2.retired = false"
+                + " and b2.billTypeAtomic in :bts"
+                + " and b2.createdAt between :fd and :td"
+                + " and bf.retired = false";
+
+        Map<String, Object> staffParams = new HashMap<>();
+        staffParams.put("bts", billTypeAtomics);
+        staffParams.put("fd", fromDate);
+        staffParams.put("td", toDate);
+
+        if (institution != null) {
+            staffJpql += " and b2.department.institution=:ins";
+            staffParams.put("ins", institution);
+        }
+        if (department != null) {
+            staffJpql += " and b2.department=:dep";
+            staffParams.put("dep", department);
+        }
+        if (site != null) {
+            staffJpql += " and b2.department.site=:site";
+            staffParams.put("site", site);
+        }
+        if (category != null) {
+            staffJpql += " and bi2.item.category=:cat";
+            staffParams.put("cat", category);
+        }
+        if (item != null) {
+            staffJpql += " and bi2.item=:itm";
+            staffParams.put("itm", item);
+        }
+
+        staffJpql += " group by bi2.item.id, stf.id, stf.person.name";
+
+        List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
+
+        // Step 3: Build itemId → first staff name found, then set on each DTO
+        Map<Long, String> staffByItem = new HashMap<>();
+        for (Object[] row : staffRows) {
+            Long rowItemId = (Long) row[0];
+            String name = row[1] != null ? (String) row[1] : "";
+            staffByItem.putIfAbsent(rowItemId, name);
+        }
+
+        // Step 4: Set staffName and assign a stable rowIndex (avoids null/EL coercion issues in PrimeFaces rowKey)
+        for (int i = 0; i < dtos.size(); i++) {
+            OpdSaleSummaryDTO dto = dtos.get(i);
+            dto.setStaffName(staffByItem.getOrDefault(dto.getItemId(), ""));
+            dto.setRowIndex(i);
+        }
+
+        return dtos;
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,

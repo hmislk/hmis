@@ -180,8 +180,9 @@
                                     <thead>
                                         <tr>
                                             <th style="width: 8mm; font-weight: 700;">No</th>
-                                            <th style="width: 55mm; font-weight: 700;">Category</th>
-                                            <th style="width: 75mm; font-weight: 700;">Item / Service</th>
+                                            <th style="width: 45mm; font-weight: 700;">Category</th>
+                                            <th style="width: 55mm; font-weight: 700;">Item / Service</th>
+                                            <th style="width: 40mm; font-weight: 700;">Doctor / Technician</th>
                                             <th style="width: 18mm; font-weight: 700; text-align:right;">Count</th>
                                             <th style="width: 25mm; font-weight: 700; text-align:right;">Hospital Fee</th>
                                             <th style="width: 25mm; font-weight: 700; text-align:right;">Prof. Fee</th>
@@ -202,6 +203,10 @@
 
                                                 <td>
                                                     <h:outputText value="#{row.itemName}"/>
+                                                </td>
+
+                                                <td>
+                                                    <h:outputText value="#{row.staffName}"/>
                                                 </td>
 
                                                 <td style="text-align:right;">
@@ -245,7 +250,7 @@
 
                                     <tfoot>
                                         <tr>
-                                            <td colspan="8" style="text-align:right; font-weight:700;">Total</td>
+                                            <td colspan="9" style="text-align:right; font-weight:700;">Total</td>
                                             <td style="text-align:right; font-weight:700;">
                                                 <h:outputText value="#{searchController.opdSaleSummaryTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>

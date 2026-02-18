@@ -17,6 +17,12 @@ public class OpdSaleSummaryDTO implements Serializable {
     private Long categoryId;
     private Long itemId;
 
+    // Doctor/staff assigned to this item
+    private String staffName;
+
+    // Stable unique key for PrimeFaces rowKey — set by BillService after list is built
+    private int rowIndex;
+
     public OpdSaleSummaryDTO() {
     }
 
@@ -132,5 +138,21 @@ public class OpdSaleSummaryDTO implements Serializable {
 
     public void setItemId(Long itemId) {
         this.itemId = itemId;
+    }
+
+    public String getStaffName() {
+        return staffName;
+    }
+
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
+    }
+
+    public int getRowIndex() {
+        return rowIndex;
+    }
+
+    public void setRowIndex(int rowIndex) {
+        this.rowIndex = rowIndex;
     }
 }
