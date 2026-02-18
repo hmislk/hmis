@@ -152,7 +152,7 @@
                                              rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,20"
-                                             rowKey="#{row.itemId}">
+                                             rowKey="#{row.itemId}_#{row.staffName}">
                                     <f:facet name="header" >
                                         <h:outputText value="Itemized Sales Summary (DTO - Optimized)" ></h:outputText>
                                     </f:facet>
@@ -187,6 +187,12 @@
                                             action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
                                             <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
                                         </p:commandLink>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Doctor / Technician" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.staffName}" />
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
