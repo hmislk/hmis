@@ -136,7 +136,7 @@
                                                 styleClass="ui-button-outlined ui-button-sm"
                                                 ajax="true"
                                                 process="@form"
-                                                update="lst"
+                                                update=":dueForm:lst"
                                                 action="#{creditCompanyDueController.selectAllPaymentsForInstitution(i.institution)}"
                                                 title="Select all bills for #{i.institution.name}"/>
                                         </div>
