@@ -5811,7 +5811,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 return null;
             }
             OpdBatchBillCancellationController controller = (OpdBatchBillCancellationController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
+                    getValue(facesContext.getELContext(), null, "opdBatchBillCancellationController");
             return controller.getBillFacade().find(getKey(value));
         }
 
