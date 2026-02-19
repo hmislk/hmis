@@ -26,6 +26,7 @@
                     onfocus="this.select();"
                     value="#{cc.attrs.paymentMethodData.slip.totalValue}"
                     id="txtVal"
+                    title="Amount"
                     styleClass="form-control w-100"
                     disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
@@ -42,6 +43,7 @@
                 <p:selectOneMenu
                     id="bank"
                     value="#{cc.attrs.paymentMethodData.slip.institution}"
+                    title="Bank"
                     styleClass="w-100"
                     style="width:100%;"
                     required="true"
@@ -61,6 +63,7 @@
                 <p:calendar
                     id="date"
                     value="#{cc.attrs.paymentMethodData.slip.date}"
+                    title="Date"
                     placeholder="Select date"
                     pattern="#{sessionController.applicationPreference.longDateFormat}"
                     showButtonPanel="true"
@@ -77,6 +80,7 @@
                 <p:inputText
                     id="refNo"
                     value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
+                    title="Reference No"
                     placeholder="Reference No"
                     styleClass="form-control w-100"
                     required="true"
@@ -93,9 +97,10 @@
                 <p:inputText
                     id="comment"
                     value="#{cc.attrs.paymentMethodData.slip.comment}"
+                    title="Comment"
                     placeholder="Enter any comments"
                     styleClass="form-control w-100"
-                    required="true"
+                    required="false"
                     requiredMessage="Comment is required">
                     <p:ajax process="@this"/>
                 </p:inputText>
