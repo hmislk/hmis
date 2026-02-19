@@ -613,6 +613,73 @@ public class BillService {
         return billItemFacade.findByJpql(jpql, params);
     }
 
+    public List<BillItem> fetchPatientRelatedBillItems(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and (bi.referenceBill IS NULL OR bi.referenceBill.billTypeAtomic != :miscType) "
+                + " order by bi.id";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findByJpql(jpql, params);
+    }
+
+    public List<BillItem> fetchMiscellaneousBillItems(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic = :miscType "
+                + " order by bi.id";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findByJpql(jpql, params);
+    }
+
+    public Long countPatientRelatedBillItems(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT COUNT(bi) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and (bi.referenceBill IS NULL OR bi.referenceBill.billTypeAtomic != :miscType) ";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findLongByJpql(jpql, params);
+    }
+
+    public Double calculatePatientRelatedBillItemsTotal(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT COALESCE(SUM(bi.netValue), 0) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and (bi.referenceBill IS NULL OR bi.referenceBill.billTypeAtomic != :miscType) ";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findDoubleByJpql(jpql, params);
+    }
+
+    public Double calculateMiscellaneousBillItemsTotal(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT COALESCE(SUM(bi.netValue), 0) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic = :miscType ";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findDoubleByJpql(jpql, params);
+    }
+
     /**
      * Fetches bill type atomics for OPD finance operations, now including all
      * pharmacy credit bills as part of the credit consolidation initiative
@@ -2099,7 +2166,8 @@ public class BillService {
                 + " coalesce(bi.netValue,0.0), "        // Net value from BillItem
                 + " b.createdAt, "                       // Bill date
                 + " b.paymentMethod, "                   // Payment method
-                + " b.billTypeAtomic ) "                 // Bill type atomic
+                + " b.billTypeAtomic, "                  // Bill type atomic
+                + " b.cancelled ) "                      // Whether bill is cancelled
                 + " from Bill b "
                 + " JOIN b.billItems bi "                // Join to BillItem (inner join)
                 + " LEFT JOIN bi.item i "                // Join to Item for item name
@@ -2571,7 +2639,7 @@ public class BillService {
 
         List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
 
-        // Updated to use new constructor with IDs for navigation support
+        // Step 1: Main aggregation query per item (no staff join to avoid fan-out / EclipseLink WITH clause incompatibility)
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
                 + " bi.item.category.id," // Category ID for navigation
                 + " coalesce(bi.item.category.name, 'No Category')," // Category name for display
@@ -2622,7 +2690,62 @@ public class BillService {
         jpql += " group by bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name"
                 + " order by bi.item.category.name, bi.item.name";
 
-        return (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Step 2: Separate query for staff (doctor/technician) names per item — standard JPQL, EclipseLink-compatible
+        // Uses inner join on bf.staff so only BillFees with a doctor/technician assigned are returned
+        String staffJpql = "select bi2.item.id, stf.person.name"
+                + " from BillFee bf"
+                + " join bf.billItem bi2"
+                + " join bi2.bill b2"
+                + " join bf.staff stf"
+                + " where b2.retired = false"
+                + " and b2.billTypeAtomic in :bts"
+                + " and b2.createdAt between :fd and :td"
+                + " and bf.retired = false";
+
+        Map<String, Object> staffParams = new HashMap<>();
+        staffParams.put("bts", billTypeAtomics);
+        staffParams.put("fd", fromDate);
+        staffParams.put("td", toDate);
+
+        if (institution != null) {
+            staffJpql += " and b2.department.institution=:ins";
+            staffParams.put("ins", institution);
+        }
+        if (department != null) {
+            staffJpql += " and b2.department=:dep";
+            staffParams.put("dep", department);
+        }
+        if (site != null) {
+            staffJpql += " and b2.department.site=:site";
+            staffParams.put("site", site);
+        }
+        if (category != null) {
+            staffJpql += " and bi2.item.category=:cat";
+            staffParams.put("cat", category);
+        }
+        if (item != null) {
+            staffJpql += " and bi2.item=:itm";
+            staffParams.put("itm", item);
+        }
+
+        staffJpql += " group by bi2.item.id, stf.id, stf.person.name";
+
+        List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
+
+        // Step 3: Build itemId → first staff name found, then set on each DTO
+        Map<Long, String> staffByItem = new HashMap<>();
+        for (Object[] row : staffRows) {
+            Long rowItemId = (Long) row[0];
+            String staffName = row[1] != null ? (String) row[1] : "";
+            staffByItem.putIfAbsent(rowItemId, staffName);
+        }
+        for (OpdSaleSummaryDTO dto : dtos) {
+            dto.setStaffName(staffByItem.getOrDefault(dto.getItemId(), ""));
+        }
+
+        return dtos;
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,

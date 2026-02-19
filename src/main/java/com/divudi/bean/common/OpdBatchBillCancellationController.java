@@ -3013,6 +3013,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         }
         billService.saveBill(individualCancelltionBill);
 
+        originalBill.setBillItems(billService.fetchBillItems(originalBill));
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(individualCancelltionBill);
         billService.saveBill(originalBill);
@@ -3157,6 +3158,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         }
         billService.saveBill(individualCancelltionBill);
 
+        originalBill.setBillItems(billService.fetchBillItems(originalBill));
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(individualCancelltionBill);
         billService.saveBill(originalBill);
@@ -3373,7 +3375,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             newBillFee.setStaff(originalBillFee.getStaff());
             newBillFee.setReferenceBillFee(originalBillFee);
             newBillFee.setBill(cancellationBill);
-            newBillFee.setBillItem(originalBillItem);
+            newBillFee.setBillItem(cancellationBillItem);
             newBillFee.setFeeValue(0 - originalBillFee.getFeeValue());
             newBillFee.setFeeGrossValue(0 - originalBillFee.getFeeGrossValue());
             newBillFee.setFeeDiscount(0 - originalBillFee.getFeeDiscount());
@@ -5809,7 +5811,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 return null;
             }
             OpdBatchBillCancellationController controller = (OpdBatchBillCancellationController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
+                    getValue(facesContext.getELContext(), null, "opdBatchBillCancellationController");
             return controller.getBillFacade().find(getKey(value));
         }
 

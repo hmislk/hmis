@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -111,6 +112,8 @@ public class InwardBeanController implements Serializable {
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
@@ -1938,17 +1941,29 @@ public class InwardBeanController implements Serializable {
         Long temp = 0l;
         String sql;
 
+        boolean institutionBasedBht = configOptionApplicationController
+                .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
+        Institution currentInstitution = getSessionController().getInstitution();
+
         if (admissionType != null) {
             if (admissionType.isGenerateSeparateAdmissionNumber()) {
                 sql = "SELECT count(a.id) FROM Admission a ";
                 sql += " where a.admissionType=:adType ";
                 hm.put("adType", admissionType);
+                if (institutionBasedBht && currentInstitution != null) {
+                    sql += " and a.institution=:ins ";
+                    hm.put("ins", currentInstitution);
+                }
                 temp += admissionType.getAdditionToCount();
                 temp += admissionFacade.countByJpql(sql, hm);
             } else {
                 sql = "SELECT count(a.id) FROM Admission a ";
                 sql += " where a.admissionType.admissionTypeEnum=:adType ";
                 hm.put("adType", admissionType.getAdmissionTypeEnum());
+                if (institutionBasedBht && currentInstitution != null) {
+                    sql += " and a.institution=:ins ";
+                    hm.put("ins", currentInstitution);
+                }
                 temp += admissionType.getAdditionToCount();
                 temp += admissionFacade.countByJpql(sql, hm);
             }
@@ -1956,6 +1971,10 @@ public class InwardBeanController implements Serializable {
             sql = "SELECT count(a.id) FROM Admission a ";
             sql += " where a.admissionType.admissionTypeEnum=:adType ";
             hm.put("adType", admissionType);
+            if (institutionBasedBht && currentInstitution != null) {
+                sql += " and a.institution=:ins ";
+                hm.put("ins", currentInstitution);
+            }
             temp += admissionFacade.countByJpql(sql);
         }
 
@@ -1972,6 +1991,13 @@ public class InwardBeanController implements Serializable {
         }
 
         bhtText += "/" + Long.toString(temp);
+
+        if (institutionBasedBht && currentInstitution != null
+                && currentInstitution.getInstitutionCode() != null
+                && !currentInstitution.getInstitutionCode().trim().isEmpty()) {
+            bhtText = currentInstitution.getInstitutionCode().trim() + "/" + bhtText;
+        }
+
         return bhtText;
     }
 

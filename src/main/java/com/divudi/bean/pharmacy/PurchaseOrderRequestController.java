@@ -748,7 +748,7 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i IN "
-                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false) "
+                + "(SELECT id.item FROM ItemsDistributors id WHERE id.institution = :supplier AND id.retired = false AND id.item.retired = false AND id.item.inactive = false) "
                 + "AND i IN "
                 + "(SELECT s.itemBatch.item FROM Stock s JOIN Reorder r ON r.item = s.itemBatch.item AND r.department = s.department "
                 + "WHERE s.department = :department AND s.stock < r.rol GROUP BY s.itemBatch.item) "
@@ -795,6 +795,7 @@ public class PurchaseOrderRequestController implements Serializable {
                 + " from ItemsDistributors c"
                 + " where c.retired=false "
                 + " and c.item.retired=false "
+                + " and c.item.inactive=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());

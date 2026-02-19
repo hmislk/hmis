@@ -168,13 +168,23 @@
                                             ajax="false" >
                                         </p:commandButton>
 
-                                        <p:commandButton 
-                                            immediate="true"  
-                                            disabled="#{webUserController.selected == null}" 
-                                            icon="fa fa-icons" 
-                                            value="Manage User Icons" 
-                                            class="m-1" 
-                                            action="#{webUserController.navigateToManageUserIcons()}" 
+                                        <p:commandButton
+                                            immediate="true"
+                                            disabled="#{webUserController.selected == null}"
+                                            icon="fa fa-icons"
+                                            value="Manage User Icons"
+                                            class="m-1"
+                                            action="#{webUserController.navigateToManageUserIcons()}"
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            immediate="true"
+                                            disabled="#{webUserController.selected == null}"
+                                            icon="fa fa-th"
+                                            value="Manage User Icons (Bulk)"
+                                            class="m-1"
+                                            action="#{webUserController.navigateToManageUserIconsTree()}"
                                             ajax="false" >
                                         </p:commandButton>
 

@@ -534,6 +534,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
+    public String navigateToManageAllergies() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        fillCurrentPatientAllergies(current.getPatient());
+        return "/inward/inward_manage_allergies?faces-redirect=true";
+    }
+
     public String navigateToSendMailToCompany(EncounterCreditCompany ecc) {
         if (ecc == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
