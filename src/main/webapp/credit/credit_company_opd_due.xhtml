@@ -93,6 +93,7 @@
                                 ajax="false"
                                 value="Settle Selected Bills"
                                 title="Select bills below then click to settle them together"
+                                rendered="#{webUserController.hasPrivilege('AcceptPaymentForOpdBatchBills')}"
                                 action="#{creditCompanyDueController.settleSelectedOpdDueBills}" >
                             </p:commandButton>
 
@@ -115,7 +116,6 @@
                                     <p:row>
                                         <p:column headerText="Select" style="width:60px"/>
                                         <p:column headerText="Bill No"/>
-                                        <p:column headerText="Batch Bill No"/>
                                         <p:column headerText="Policy No"/>
                                         <p:column headerText="Ref No"/>
                                         <p:column headerText="Client Name"/>
@@ -136,41 +136,29 @@
                                                 styleClass="ui-button-outlined ui-button-sm"
                                                 ajax="true"
                                                 process="@form"
-                                                update="lst"
+                                                update=":dueForm:lst"
                                                 action="#{creditCompanyDueController.selectAllPaymentsForInstitution(i.institution)}"
                                                 title="Select all bills for #{i.institution.name}"/>
                                         </div>
                                     </f:facet>
                                     <!-- Select checkbox -->
                                     <p:column style="width:60px; text-align:center;">
-                                        <p:selectBooleanCheckbox value="#{creditCompanyDueController.paymentSelectionMap[p.id]}"/>
+                                        <p:selectBooleanCheckbox
+                                            id="selectChk_#{p.id}"
+                                            value="#{creditCompanyDueController.paymentSelectionMap[p.id]}"
+                                            title="Select bill #{p.bill.deptId} for settlement"/>
                                     </p:column>
-                                    <!-- Individual Bill No: plain text + view button -->
+                                    <!-- Batch Bill No: plain text + view button -->
                                     <p:column>
                                         <p:commandButton
                                             icon="pi pi-eye"
-                                            title="View Individual Bill #{p.bill.deptId}"
+                                            title="View Bill #{p.bill.deptId}"
                                             ajax="false"
                                             styleClass="ui-button-outlined ui-button-sm"
                                             action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
                                             <f:setPropertyActionListener value="#{p.bill}" target="#{billSearch.bill}" />
                                         </p:commandButton>
                                         <h:outputText value=" #{p.bill.deptId}" style="user-select:all; cursor:text;"/>
-                                    </p:column>
-                                    <!-- Batch Bill No: plain text + view button (from referenceBill) -->
-                                    <p:column>
-                                        <h:panelGroup rendered="#{p.bill.referenceBill != null}">
-                                            <p:commandButton
-                                                icon="pi pi-eye"
-                                                title="View Batch Bill #{p.bill.referenceBill.deptId}"
-                                                ajax="false"
-                                                styleClass="ui-button-outlined ui-button-sm"
-                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-                                                <f:setPropertyActionListener value="#{p.bill.referenceBill}" target="#{billSearch.bill}" />
-                                            </p:commandButton>
-                                            <h:outputText value=" #{p.bill.referenceBill.deptId}" style="user-select:all; cursor:text;"/>
-                                        </h:panelGroup>
-                                        <h:outputText value="—" rendered="#{p.bill.referenceBill == null}" style="color:#aaa;"/>
                                     </p:column>
                                     <p:column>
                                         <h:outputLabel value="#{not empty p.policyNo ? p.policyNo : 'N/A'}" />
@@ -208,7 +196,7 @@
                                     </p:column>
                                     <p:columnGroup type="footer">
                                         <p:row>
-                                            <p:column footerText="Total" colspan="7" />
+                                            <p:column footerText="Total" colspan="6" />
                                             <p:column style="text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">

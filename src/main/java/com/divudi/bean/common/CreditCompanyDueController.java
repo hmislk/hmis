@@ -3476,6 +3476,7 @@ public class CreditCompanyDueController implements Serializable {
             return null;
         }
         List<Bill> selectedBills = new ArrayList<>();
+        Set<Long> selectedBillIds = new HashSet<>();
         Institution firstCompany = null;
         for (InstitutionBills ib : items) {
             if (ib.getPayments() == null) {
@@ -3483,7 +3484,11 @@ public class CreditCompanyDueController implements Serializable {
             }
             for (Payment p : ib.getPayments()) {
                 if (Boolean.TRUE.equals(getPaymentSelectionMap().get(p.getId()))) {
-                    if (p.getBill() == null) {
+                    Bill bill = p.getBill();
+                    if (bill == null) {
+                        continue;
+                    }
+                    if (bill.getId() != null && !selectedBillIds.add(bill.getId())) {
                         continue;
                     }
                     if (firstCompany == null) {
@@ -3492,7 +3497,7 @@ public class CreditCompanyDueController implements Serializable {
                         JsfUtil.addErrorMessage("Please select bills from one company only.");
                         return null;
                     }
-                    selectedBills.add(p.getBill());
+                    selectedBills.add(bill);
                 }
             }
         }
