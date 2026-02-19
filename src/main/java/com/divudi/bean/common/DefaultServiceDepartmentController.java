@@ -200,6 +200,7 @@ public class DefaultServiceDepartmentController implements Serializable {
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
         }
         items = getDefaultServiceDepartments(orderingDepartment, serviceDepartment, category, item);
         current = null;
