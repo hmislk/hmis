@@ -17,14 +17,14 @@
                                 <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                             <p:calendar
+                            <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
                                 value="#{inwardReportController.fromYearStartDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
-                            
+
                             <p:spacer width="40"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -40,36 +40,36 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
-                                    <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
-                                </h:panelGroup>
-                                <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
-                                    <f:selectItem itemLabel="Select Name" itemValue="" />
-                                </p:selectOneMenu>
-
-                                <p:spacer width="40"/>
-
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
-                                    <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
-                                </h:panelGroup>
-                                <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
-                                    <f:selectItem itemLabel="All" itemValue="" />
-
-                                </p:selectOneMenu>
-
-
-
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
-                                    <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
-                                </h:panelGroup>
-                                <p:selectOneMenu id="chartType" styleClass="w-100">
-                                    <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
-                                    <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
-                                    <f:selectItem itemLabel="Line Chart" itemValue="line"/>
-                                </p:selectOneMenu>
+                            <!--                            <h:panelGroup layout="block" styleClass="form-group">
+                                                            <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
+                                                            <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
+                                                        </h:panelGroup>
+                                                        <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
+                                                            <f:selectItem itemLabel="Select Name" itemValue="" />
+                                                        </p:selectOneMenu>
+                            
+                                                        <p:spacer width="40"/>
+                            
+                                                        <h:panelGroup layout="block" styleClass="form-group">
+                                                            <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
+                                                            <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
+                                                        </h:panelGroup>
+                                                        <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
+                                                            <f:selectItem itemLabel="All" itemValue="" />
+                            
+                                                        </p:selectOneMenu>
+                            
+                            
+                            
+                                                        <h:panelGroup layout="block" styleClass="form-group">
+                                                            <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
+                                                            <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
+                                                        </h:panelGroup>
+                                                        <p:selectOneMenu id="chartType" styleClass="w-100">
+                                                            <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
+                                                            <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
+                                                            <f:selectItem itemLabel="Line Chart" itemValue="line"/>
+                                                        </p:selectOneMenu>-->
 
                         </h:panelGrid>
 
@@ -79,6 +79,7 @@
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
+                                action="#{inwardReportController.processSurgeryCountSurgeryWiseReport()}"
                                 value="Process" />
 
                             <p:commandButton 
@@ -103,145 +104,106 @@
 
 
                         <p:dataTable id="tb"
-                                     value="#"
-                                     var="var"
+                                     value="#{inwardReportController.surgeryCountSurgeryWiseList}"
+                                     var="row"
                                      rowIndexVar="n"
                                      paginator="true"
                                      paginatorPosition="bottom"
-                                     rows="10"
-                                     rendered="true"
+                                     rows="25"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                     rowsPerPageTemplate="10,25,50,100,500,1000"
+                                     rowStyleClass="#{row.grandTotal ? 'ui-state-highlight' : ''}"
                                      styleClass="table-sm">
-                            <p:columnGroup  type="header">
-                                <p:row>
-                                    <p:column rowspan="2">
-                                        <f:facet name="header">
-                                            <h:outputText value="Surgery Name"/>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column rowspan="2">
-                                        <f:facet name="header">
-                                            <h:outputText value="Surgery Category"/>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="13" style="text-align:center;" >
-                                        <f:facet name="header">
-                                            <h:outputText value="2025" />
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
 
+                            <p:columnGroup type="header">
                                 <p:row>
-                                    <p:column><f:facet name="header"><h:outputText value="Jan"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Feb"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Mar"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Apr"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="May"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Jun"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Jul"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Aug"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Sep"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Oct"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Nov"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Dec"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Total"/></f:facet></p:column>
+                                    <p:column rowspan="2" headerText="#" style="width:40px; text-align:center;"/>
+                                    <p:column rowspan="2" headerText="Surgery Name"/>
+                                    <p:column rowspan="2" headerText="Surgery Category"/>
+                                    <p:column colspan="12" headerText="Monthly Count" style="text-align:center;"/>
+                                    <p:column rowspan="2" headerText="Total" style="text-align:center;"/>
+                                </p:row>
+                                <p:row>
+                                    <p:column headerText="Jan" style="text-align:center;"/>
+                                    <p:column headerText="Feb" style="text-align:center;"/>
+                                    <p:column headerText="Mar" style="text-align:center;"/>
+                                    <p:column headerText="Apr" style="text-align:center;"/>
+                                    <p:column headerText="May" style="text-align:center;"/>
+                                    <p:column headerText="Jun" style="text-align:center;"/>
+                                    <p:column headerText="Jul" style="text-align:center;"/>
+                                    <p:column headerText="Aug" style="text-align:center;"/>
+                                    <p:column headerText="Sep" style="text-align:center;"/>
+                                    <p:column headerText="Oct" style="text-align:center;"/>
+                                    <p:column headerText="Nov" style="text-align:center;"/>
+                                    <p:column headerText="Dec" style="text-align:center;"/>
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
+                            <p:column style="text-align:center; width:40px;">
+                                <h:outputText value="#{n + 1}" rendered="#{!row.grandTotal}" />
+                            </p:column>
 
+                            <p:column>
+                                <h:outputText value="#{row.surgeryName}"
+                                              style="#{row.grandTotal ? 'font-weight:bold;' : ''}" />
+                            </p:column>
 
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column colspan="2" >
-                                        <f:facet name="footer">
-                                            <h:outputText value="Total:" />
-                                        </f:facet> 
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
+                            <p:column>
+                                <h:outputText value="#{row.surgeryCategory}" />
+                            </p:column>
 
-                                </p:row>
-                            </p:columnGroup>
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.january}" rendered="#{row.january != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.february}" rendered="#{row.february != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.march}" rendered="#{row.march != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.april}" rendered="#{row.april != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.may}" rendered="#{row.may != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.june}" rendered="#{row.june != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.july}" rendered="#{row.july != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.august}" rendered="#{row.august != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.september}" rendered="#{row.september != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.october}" rendered="#{row.october != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.november}" rendered="#{row.november != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center;">
+                                <h:outputText value="#{row.december}" rendered="#{row.december != 0}" />
+                            </p:column>
+
+                            <p:column style="text-align:center; font-weight:bold;">
+                                <h:outputText value="#{row.yearTotal}" />
+                            </p:column>
 
                         </p:dataTable>
 
