@@ -27,7 +27,7 @@ jobs:
               echo "❌ Merging from $SOURCE to $TARGET is not allowed. If this is a hot-fix, please check if branch name ends with '-hotfix'."
               exit 1
             fi
-          elif [[ "$TARGET" == "hims-qa1" || "$TARGET" == "hims-qa2" || "$TARGET" == "hims-qa3"]]; then
+          elif [[ "$TARGET" == "hims-qa1" || "$TARGET" == "hims-qa2" || "$TARGET" == "hims-qa3" ]]; then
             if [[ "$SOURCE" != "development" ]]; then
               echo "❌ Only development can merge to $TARGET (qa restriction)."
               exit 1
