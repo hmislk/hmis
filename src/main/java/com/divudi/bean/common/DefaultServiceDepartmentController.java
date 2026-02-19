@@ -190,6 +190,20 @@ public class DefaultServiceDepartmentController implements Serializable {
             JsfUtil.addSuccessMessage("Updated Successfully.");
         }
     }
+    
+    public void delete() {
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetiredBy(sessionController.getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+        items = getDefaultServiceDepartments(orderingDepartment, serviceDepartment, category, item);
+        current = null;
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
