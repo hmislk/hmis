@@ -303,16 +303,13 @@ public class PaymentController implements Serializable {
                 if (p.getBill().getCreatedAt() != null) {
                     p.setPaymentDate(p.getBill().getCreatedAt());
                     getFacade().edit(p);
-                    System.out.println("payment date added from Bill Created at");
                 } else {
                     p.setPaymentDate(new Date());
                     getFacade().edit(p);
-                    System.out.println("New Date added as there is no Bill Created date for " + p.getBill());
                 }
             } else {
                 p.setPaymentDate(new Date());
                 getFacade().edit(p);
-                System.out.println("New Date added as there is no Bill for Payment " + p);
             }
         }
     }

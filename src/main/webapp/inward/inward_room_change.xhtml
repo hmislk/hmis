@@ -22,7 +22,7 @@
 
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                 <p:commandButton 
-                                    value="Back to WorkBench" 
+                                    value="Nursing WorkBench" 
                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                     ajax="false"
                                     class="ui-button-operating-theatre"
@@ -61,8 +61,11 @@
                             <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                         </p:column>
                         <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                            <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
-                            <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                            <div class="d-flex justify-content-center">
+                                <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                    #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                </span>
+                            </div>
                         </p:column>
                     </p:autoComplete>   
 
@@ -72,6 +75,26 @@
                         ajax="false" 
                         class="mx-3"  >
                     </p:commandButton>
+
+                    <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
 
                 </h:panelGrid>
 
@@ -86,7 +109,7 @@
                                 <p:outputLabel value="Admitted Patient Room" class="m-2"/>
                             </div>
                             <div>
-                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2" style="float: right">
                                         <p:commandButton
                                             ajax="false"
@@ -121,7 +144,7 @@
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton 
-                                        value="Back to WorkBench" 
+                                        value="Nursing WorkBench" 
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                         ajax="false"
                                         class="ui-button-operating-theatre"
@@ -227,7 +250,61 @@
                                             </h:panelGrid>                                    
                                         </p:tab>
 
+                                        <p:tab title="Consultant Details">
+                                            <h:panelGrid columns="4" cellpadding="5" styleClass="mt-3">
 
+                                                <!-- Current Referring Consultant (Read-only display) -->
+                                                <h:outputLabel value="Current Consultant"/>
+                                                <h:panelGroup styleClass="my-2 mx-5" style="width: 250px; padding: 6px;">
+                                                    <h:outputText 
+                                                        value="#{roomChangeController.current.referringConsultant != null ? roomChangeController.current.referringConsultant.person.nameWithTitle : 'Not Set'}" 
+                                                        styleClass="form-control-static" />
+                                                </h:panelGroup>
+
+                                                <!-- New Consultant for Room Change -->
+                                                <h:outputLabel value="New Consultant"/>
+                                                <p:autoComplete 
+                                                    forceSelection="true" 
+                                                    value="#{roomChangeController.newConsultant}" 
+                                                    id="newConsultant"
+                                                    required="false" 
+                                                    completeMethod="#{consultantController.completeConsultant}" 
+                                                    var="mysp"
+                                                    itemLabel="#{mysp.person.nameWithTitle}" 
+                                                    itemValue="#{mysp}"
+                                                    styleClass="form-control"
+                                                    class="my-2 mx-5"
+                                                    style="width: 250px"
+                                                    placeholder="Select New Consultant"
+                                                    maxResults="15">
+                                                </p:autoComplete>
+
+                                                <!-- Prime Consultant for Room Change -->
+                                                <h:outputLabel value="Prime Consultant"/>
+                                                <p:autoComplete 
+                                                    forceSelection="true" 
+                                                    value="#{roomChangeController.newPrimeConsultant}" 
+                                                    id="newPrimeConsultant"
+                                                    required="false" 
+                                                    completeMethod="#{consultantController.completeConsultant}" 
+                                                    var="mysp"
+                                                    itemLabel="#{mysp.person.nameWithTitle}" 
+                                                    itemValue="#{mysp}"
+                                                    styleClass="form-control"
+                                                    class="my-2 mx-5"
+                                                    style="width: 250px"
+                                                    placeholder="Select Prime Consultant"
+                                                    maxResults="15">
+                                                </p:autoComplete>
+
+                                            </h:panelGrid>
+
+                                            <!-- note -->
+                                            <p:message for="newConsultant" />
+                                            <p:message for="newPrimeConsultant" />
+                                            <p:outputLabel value="Note: Consultant selections are optional and will be recorded with the room change." 
+                                                           style="font-style: italic; color: #666; font-size: 0.9em;"/>
+                                        </p:tab>
                                         <p:tab title="Room Details">
                                             <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >
                                                 <p:column headerText="Admitted At" width="200px;">                                          

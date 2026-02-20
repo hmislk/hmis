@@ -296,8 +296,44 @@
 
                             <p:spacer width="20"/>
 
-                            <!-- REMOVED: Show Only Pending checkbox - replaced with improved Document Status dropdown -->
-                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-capsules ml-5"/>
+                                <p:outputLabel value="Dosage Form" for="phmDf" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDf"
+                                value="#{pharmacyReportController.dosageForm}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Dosage Forms"/>
+                                <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                            </h:panelGroup>
+
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -333,10 +369,6 @@
                                     <h:outputText value="#{user.person.name}"/>
                                 </p:column>
                             </p:autoComplete>
-
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center my-2">
@@ -384,30 +416,42 @@
                                 </f:facet>
                                 <h:outputLabel value="#{bi.billItem.item.code}"/>
                             </p:column>
+                            <p:column headerText="Dosage Form">
+                                <h:outputLabel value="#{bi.billItem.item.dosageForm != null ? bi.billItem.item.dosageForm.name : ''}"/>
+                            </p:column>
                             <p:column headerText="Stock"
                                       sortBy="#{bi.billItem.pharmaceuticalBillItem.qty}"
-                                      >
+                                      styleClass="text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock"/>
                                 </f:facet>
-                                <h:panelGroup rendered="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack)}">
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                    <!-- For pending and accepted items, show remaining/received quantity from maps -->
+                                    <h:outputText value="#{pharmacyReportController.billItemRemainingQuantities[bi.billItem.id]}">
                                         <f:convertNumber pattern="#,##0.##" />
                                     </h:outputText>
-                                    <h:outputText value=" (" />
-                                    <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty)}">
-                                        <f:convertNumber pattern="#,##0.##" />
-                                    </h:outputText>
-                                    <h:outputText value=" pack x " />
-                                    <h:outputText value="#{bi.billItem.billItemFinanceDetails.unitsPerPack}">
-                                        <f:convertNumber pattern="#,##0.##" />
-                                    </h:outputText>
-                                    <h:outputText value=")" />
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{bi.billItem.item.class ne 'class com.divudi.core.entity.pharmacy.Ampp'}">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.qty)}">
-                                        <f:convertNumber pattern="#,##0.##" />
-                                    </h:outputText>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                    <!-- For other report types, show total issued quantity -->
+                                    <h:panelGroup rendered="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                        <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack)}">
+                                            <f:convertNumber pattern="#,##0.##" />
+                                        </h:outputText>
+                                        <h:outputText value=" (" />
+                                        <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty)}">
+                                            <f:convertNumber pattern="#,##0.##" />
+                                        </h:outputText>
+                                        <h:outputText value=" pack x " />
+                                        <h:outputText value="#{bi.billItem.billItemFinanceDetails.unitsPerPack}">
+                                            <f:convertNumber pattern="#,##0.##" />
+                                        </h:outputText>
+                                        <h:outputText value=")" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bi.billItem.item.class ne 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                        <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.qty)}">
+                                            <f:convertNumber pattern="#,##0.##" />
+                                        </h:outputText>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </p:column>
                             <p:column headerText="Expiry"
@@ -447,31 +491,73 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Retail Sale Value"
-                                      styleClass="averageNumericColumn">
+                                      styleClass="averageNumericColumn text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Retail Sale Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.retailRateInUnit * bi.billItem.pharmaceuticalBillItem.qty)}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                    <!-- For pending and accepted items, show remaining/received retail value from maps -->
+                                    <h:outputLabel value="#{pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id]}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                    <!-- For other report types, show total issued retail value -->
+                                    <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtRetailRate)}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Purchase Value"
-                                      styleClass="averageNumericColumn">
+                                      styleClass="averageNumericColumn text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Purchase Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.purchaseRate * bi.billItem.pharmaceuticalBillItem.qty)}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                    <!-- For pending and accepted items, show remaining/received purchase value from maps -->
+                                    <h:outputLabel value="#{pharmacyReportController.billItemRemainingPurchaseValues[bi.billItem.id]}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                    <!-- For other report types, show total issued purchase value -->
+                                    <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtPurchaseRate)}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Cost Value"
-                                      styleClass="averageNumericColumn">
+                                      styleClass="averageNumericColumn text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Cost Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty)}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                    <!-- For pending and accepted items, show remaining/received cost value from maps -->
+                                    <h:outputLabel value="#{pharmacyReportController.billItemRemainingCostValues[bi.billItem.id]}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                    <!-- For other report types, show total issued cost value -->
+                                    <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtCostRate)}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                              <p:column>
                                 <f:facet name="header">

@@ -865,7 +865,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundles(boolean forHandover) {
-        System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         boolean selectAll = !forHandover;
 
@@ -903,7 +902,6 @@ public class ReportTemplateRowBundle implements Serializable {
 
                     System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
 
-                    System.out.println("total Before= " + total);
 
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
 
@@ -913,7 +911,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
-        System.out.println("calculateTotalsByChildBundlesForHandover");
         resetTotalsAndFlags();
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
@@ -960,7 +957,6 @@ public class ReportTemplateRowBundle implements Serializable {
                     System.out.println("total After= " + total);
 
                     System.out.println("childBundle.totalOut() = " + childBundle.getTotalOut());
-                    System.out.println("totalOut Before= " + totalOut);
                     addValueAndUpdateFlag("totalOut", safeDouble(childBundle.getTotalOut()));
 
                 }
@@ -1815,6 +1811,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
+                // Debugging bill details
 
                 // Debugging bill details
                 System.out.println("row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
@@ -1832,13 +1829,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 row.setStaffTotal(row.getBill().getTotalStaffFee());
                 row.setCcTotal(row.getBill().getTotalCenterFee());
                 // Debugging after setting
+                // Debugging after setting
 
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
                 System.out.println("row.getTotal() = " + row.getTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -1862,13 +1859,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 row.setStaffTotal(row.getBillItem().getStaffFee());
                 row.setCcTotal(row.getBillItem().getCollectingCentreFee());
                 // Debugging after setting
+                // Debugging after setting
 
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
                 System.out.println("row.getTotal() = " + row.getTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -3140,6 +3137,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void seteWalletHandoverValue(double eWalletHandoverValue) {
         this.eWalletHandoverValue = eWalletHandoverValue;
+    }
+
+    public double getEWalletValue() {
+        return eWalletValue;
+    }
+    
+     public void setEWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
     }
 
 }

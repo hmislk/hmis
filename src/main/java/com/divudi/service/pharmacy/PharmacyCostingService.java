@@ -273,7 +273,6 @@ public class PharmacyCostingService {
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
         if (bill == null) {
-            System.out.println("DEBUG: Bill is null, returning");
             return;
         }
 
@@ -385,8 +384,6 @@ public class PharmacyCostingService {
             f.setTotalExpense(totalExpense);
             f.setTotalTax(totalTax);
             
-            System.out.println("DEBUG: Item: " + bi.getItem().getName() + 
-                             ", TotalExpense: " + totalExpense);
 
             BigDecimal quantity = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -456,7 +453,6 @@ public class PharmacyCostingService {
         // After distribution, update bill-level totals by aggregating from distributed line items
         aggregateBillTotalsFromDistributedItems(bill, billItems);
         
-        System.out.println("=== DEBUG: distributeProportionalBillValuesToItems() END ===");
     }
     
     
@@ -744,6 +740,7 @@ public class PharmacyCostingService {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
             }
         }
+        // Set legacy totals on Bill
 
         // Set legacy totals on Bill
         System.out.println("DEBUG: SERVICE - netTotal from line items: " + netTotal);
@@ -757,7 +754,6 @@ public class PharmacyCostingService {
                 if (expense.isRetired()) {
                     continue;
                 }
-                System.out.println("DEBUG: SERVICE - Adding expense: " + expense.getItem().getName() + ", value: " + expense.getNetValue());
                 currentBillExpensesTotal += expense.getNetValue();
             }
         }
@@ -773,7 +769,6 @@ public class PharmacyCostingService {
         
         System.out.println("DEBUG: SERVICE - Bill.netTotal set to: " + bill.getNetTotal());
         System.out.println("DEBUG: SERVICE - Bill.total set to: " + bill.getTotal());
-        System.out.println("DEBUG: SERVICE - Bill.saleValue set to: " + bill.getSaleValue());
 
         // Ensure BillFinanceDetails is present
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
@@ -949,6 +944,7 @@ public class PharmacyCostingService {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
             }
         }
+        // Set legacy totals on Bill
 
         // Set legacy totals on Bill
         System.out.println("DEBUG: SERVICE - netTotal from line items: " + netTotal);
@@ -962,7 +958,6 @@ public class PharmacyCostingService {
                 if (expense.isRetired()) {
                     continue;
                 }
-                System.out.println("DEBUG: SERVICE - Adding expense: " + expense.getItem().getName() + ", value: " + expense.getNetValue());
                 currentBillExpensesTotal += expense.getNetValue();
             }
         }
@@ -978,7 +973,6 @@ public class PharmacyCostingService {
         
         System.out.println("DEBUG: SERVICE - Bill.netTotal set to: " + bill.getNetTotal());
         System.out.println("DEBUG: SERVICE - Bill.total set to: " + bill.getTotal());
-        System.out.println("DEBUG: SERVICE - Bill.saleValue set to: " + bill.getSaleValue());
 
         // Ensure BillFinanceDetails is present
         BillFinanceDetails bfd = bill.getBillFinanceDetails();

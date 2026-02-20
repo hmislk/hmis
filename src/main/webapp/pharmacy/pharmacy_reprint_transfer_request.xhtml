@@ -125,29 +125,20 @@
 
 
                         <p:panel >
-                            <!--                            <p:commandButton 
-                                                            value="New Bill" 
-                                                            icon="fas fa-plus"
-                                                            class="ui-button-warning"
-                                                            ajax="false" 
-                                                            action="#{pharmacyBillSearch.makeNull()}" >
-                                                        </p:commandButton>-->
                             <h:panelGroup id="gpBillPreview">
-
                                 <h:panelGroup 
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Request Receipt is A4',true)}">
-                                    <pharmacy:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{pharmacyBillSearch.bill.referenceBill}" reprint="true" />
+                                    <pharmacy:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{pharmacyBillSearch.bill}" reprint="true" />
                                 </h:panelGroup>
                                 <h:panelGroup 
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Request Receipt is Custom 1',true)}">
-                                    <pharmacy:pharmacy_transfer_request_receipt_custom_1 id="pharmacy_transfer_request_receipt_1" bill="#{pharmacyBillSearch.bill.referenceBill}" reprint="true"/>
+                                    <pharmacy:pharmacy_transfer_request_receipt_custom_1 id="pharmacy_transfer_request_receipt_1" bill="#{pharmacyBillSearch.bill}" reprint="true"/>
                                 </h:panelGroup>
 
                                 <h:panelGroup 
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Request Receipt is Custom 2',true)}">
-                                    <pharmacy:pharmacy_transfer_request_receipt_custom_2 id="pharmacy_transfer_request_receipt_2" bill="#{pharmacyBillSearch.bill.referenceBill}" reprint="true"/>
+                                    <pharmacy:pharmacy_transfer_request_receipt_custom_2 id="pharmacy_transfer_request_receipt_2" bill="#{pharmacyBillSearch.bill}" reprint="true"/>
                                 </h:panelGroup>
-
                             </h:panelGroup>
                         </p:panel>
 

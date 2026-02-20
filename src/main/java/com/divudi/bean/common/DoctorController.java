@@ -99,7 +99,7 @@ public class DoctorController implements Serializable {
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm,30);
         }
         return suggestions;
     }
@@ -172,6 +172,19 @@ public class DoctorController implements Serializable {
 
        return docList;
     }
+    
+    // used in specialty/doctor wise income report
+    public List<Doctor> fillDoctorsAndConsultants() {
+        String j;
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret"
+                + " order by c.person.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Doctor> docList = getFacade().findByJpql(j, m);
+        return docList;
+    }
 
     public void prepareAdd() {
         current = new Doctor();
@@ -241,7 +254,7 @@ public class DoctorController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();

@@ -12,15 +12,28 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form >
-                    <p:panel 
+                    <p:panel
                         rendered="#{!pharmacyPreSettleController.billPreview}"
                         class="w-100 m-1">
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel> 
-                            <p:commandButton 
+                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel>
+
+                            <!-- Config Button (Admin Only) -->
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                <p:commandButton
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_pre_settle')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-5">
+                                </p:commandButton>
+                            </h:panelGroup>
+
+                            <p:commandButton
                                 icon="fa fa-undo"
                                 style="float: right;"
-                                ajax="false" 
+                                ajax="false"
                                 value="Back To Search"
                                 action="pharmacy_search_pre_bill"/>
                         </f:facet>

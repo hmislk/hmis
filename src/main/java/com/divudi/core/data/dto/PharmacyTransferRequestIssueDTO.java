@@ -109,8 +109,6 @@ public class PharmacyTransferRequestIssueDTO implements Serializable {
     // Simple constructor without cancellation details and toStaff
     public PharmacyTransferRequestIssueDTO(Long billId, Object deptId, Date createdAt,
             Object creatorName, Object netTotal) {
-        System.out.println("=== Basic Issue DTO Constructor called with: billId=" + billId + 
-            ", deptId=" + deptId + ", creatorName=" + creatorName + " ===");
         
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";

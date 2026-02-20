@@ -31,6 +31,7 @@ public enum TestHistoryType {
     SAMPLE_REJECTED,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
+    BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED,
     SAMPLE_PUT_TO_ANALYZER,
     RESULT_RECEIVED_FROM_ANALYZER,
     REPORT_CREATED,
@@ -42,9 +43,24 @@ public enum TestHistoryType {
     REPORT_APPROVED_CANCEL,
     REPORT_VIEWED,
     REPORT_PRINTED,
+    REPORT_EXPORT_AS_PDF,
+    REPORT_REMOVE,
+    REPORT_ISSUE_PATIENT,
+    REPORT_ISSUE_STAFF,
     SENT_SMS_MANUAL,
     SENT_SMS_AUTO,
     SENT_EMAIL;
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Extra Need to Add Enum">
+    
+//    1. Bill Request (Cancel/Refund)
+//    2. Request Cancel   
+//    3. Request Approvel
+//    4. Request Reject
+//    5. Request Approvel Cancel
+    
+    // </editor-fold>
 
     public String getLabel() {
         switch (this) {
@@ -92,6 +108,8 @@ public enum TestHistoryType {
                 return "Sample Put to Analyzer";
             case RESULT_RECEIVED_FROM_ANALYZER:
                 return "Result Received from Analyzer";
+            case BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED:
+                return "Sample Process and Report Created";
             case REPORT_CREATED:
                 return "Report Created";
             case DATA_ENTERED:
@@ -101,15 +119,23 @@ public enum TestHistoryType {
             case REMOVED_UPLOADED_REPORT:
                 return "Uploaded Report Removed";
             case REPORT_CALCULATED:
-                return "Report Corrected";
+                return "Flags Generate";
             case REPORT_APPROVED:
                 return "Report Approved";
             case REPORT_APPROVED_CANCEL:
                 return "Report Approval Canceled";
+            case REPORT_REMOVE:
+                return "Delete Report";
             case REPORT_VIEWED:
                 return "Report Viewed";
             case REPORT_PRINTED:
                 return "Report Printed";
+            case REPORT_EXPORT_AS_PDF:
+                return "Report Export as PDF";
+            case REPORT_ISSUE_PATIENT:
+                return "Report Issue to Patient";
+            case REPORT_ISSUE_STAFF:
+                return "Report Issue to Staff";    
             case SENT_SMS_MANUAL:
                 return "SMS Sent (Manual)";
             case SENT_SMS_AUTO:

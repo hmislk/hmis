@@ -5,10 +5,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.*;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.entity.*;
 import com.divudi.core.util.BigDecimalUtil;
 import com.divudi.core.util.CommonFunctions;
@@ -28,6 +32,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
@@ -47,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -100,6 +106,8 @@ public class TransferRequestController implements Serializable {
     private SearchController searchController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -142,6 +150,37 @@ public class TransferRequestController implements Serializable {
             }
         }
         return false;
+    }
+    
+    @Inject
+    ItemController itemController;
+    
+    public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
+        // If no department type is set, show all available items for this department
+        if (getBill().getDepartmentType() == null) {
+            return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+        } else {
+            // If department type is set, filter items by that department type only
+            List<Item> allItems = itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+            return filterItemsByDepartmentType(allItems, getBill().getDepartmentType());
+        }
+    }
+
+    private List<Item> filterItemsByDepartmentType(List<Item> items, DepartmentType departmentType) {
+        if (items == null || departmentType == null) {
+            return items;
+        }
+
+        return items.stream()
+                .filter(item -> {
+                    DepartmentType itemDeptType = item.getDepartmentType();
+                    // Treat items without department type as Pharmacy
+                    if (itemDeptType == null) {
+                        itemDeptType = DepartmentType.Pharmacy;
+                    }
+                    return itemDeptType.equals(departmentType);
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
@@ -230,6 +269,23 @@ public class TransferRequestController implements Serializable {
 
     public void addItem() {
         if (errorCheck()) {
+            currentBillItem = null;
+            return;
+        }
+
+        // Auto-set department type on first item addition
+        if (getBill().getDepartmentType() == null) {
+            DepartmentType itemDeptType = getCurrentBillItem().getItem().getDepartmentType();
+            if (itemDeptType != null) {
+                getBill().setDepartmentType(itemDeptType);
+            } else {
+                // Default to Pharmacy type for items without department type
+                getBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item department type matches bill department type
+        if (!validateItemDepartmentType(getCurrentBillItem().getItem())) {
             currentBillItem = null;
             return;
         }
@@ -464,20 +520,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             getBill().getBillItems().add(b);
         }
@@ -516,6 +564,7 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
         getTransferRequestBillPre().setFromInstitution(getSessionController().getInstitution());
+        getTransferRequestBillPre().setDepartmentType(getBill().getDepartmentType());
         if (getToDepartment().equals(getTransferRequestBillPre().getFromDepartment())) {
             JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
@@ -585,20 +634,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             if (b.getId() == null || !getTransferRequestBillPre().getBillItems().contains(b)) {
                 getTransferRequestBillPre().getBillItems().add(b);
@@ -629,6 +670,8 @@ public class TransferRequestController implements Serializable {
         calculateBillTotalsFromItemsForTransferRequests(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
+        // Set the bill to the loaded bill so getBill() returns the existing bill with its department type
+        bill = transferRequestBillPre;
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
     
@@ -683,15 +726,8 @@ public class TransferRequestController implements Serializable {
         saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
-
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
-
-//        getTransferRequestBillPre().setApproveAt(new Date());
-//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
-//        getTransferRequestBillPre().setCompleted(true);
-//        getTransferRequestBillPre().setCompletedAt(new Date());
-//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
@@ -745,6 +781,7 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setFromDepartment(sessionController.getDepartment());
         getTransferRequestBillPre().setToDepartment(toDepartment);
         getTransferRequestBillPre().setToInstitution(toDepartment.getInstitution());
+
         return "/pharmacy/pharmacy_transfer_request";
     }
 
@@ -939,6 +976,31 @@ public class TransferRequestController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    /**
+     * Handles changes to the toDepartment selection.
+     * Validates that the current department type selection is still valid
+     * for the intersection of logged department and toDepartment.
+     * Resets department type to null if it's no longer valid.
+     */
+    public void handleToDepartmentChange() {
+        // Guard against null toDepartment
+        if (toDepartment == null) {
+            return;
+        }
+
+        // Reset department type if it's no longer valid for the intersection
+        if (bill != null && bill.getDepartmentType() != null) {
+            List<DepartmentType> validTypes = getAvailableDepartmentTypesForTransfer();
+
+            if (!validTypes.contains(bill.getDepartmentType())) {
+                // Current selection is no longer valid
+                bill.setDepartmentType(null);
+                JsfUtil.addErrorMessage("Department type reset. The previously selected department type is not supported by " +
+                    toDepartment.getName() + ". Please select a valid department type.");
+            }
+        }
     }
 
     private void updateFinancials(BillItemFinanceDetails fd) {
@@ -1340,6 +1402,44 @@ public class TransferRequestController implements Serializable {
         bfd.setLineNetTotal(lineNetTotalSum);
     }
 
+
+    private boolean validateItemDepartmentType(Item item) {
+        if (getBill().getDepartmentType() == null) return true;
+
+        DepartmentType itemDeptType = item.getDepartmentType();
+        DepartmentType billDeptType = getBill().getDepartmentType();
+
+        // For items without department type, treat as Pharmacy
+        if (itemDeptType == null) {
+            itemDeptType = DepartmentType.Pharmacy;
+        }
+
+        // Check if item type matches bill type
+        if (!itemDeptType.equals(billDeptType)) {
+            JsfUtil.addErrorMessage("Cannot add items from different department types. " +
+                "Transfer is set for " + billDeptType.getLabel() +
+                " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isDepartmentTypeLocked() {
+        return billItems != null && !billItems.isEmpty();
+    }
+
+    public void changeDepartmentType() {
+        // Reset items if department type is changed manually
+        if (billItems != null && !billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot change department type when items are already added");
+            return;
+        }
+
+        // Clear existing items and reset
+        billItems = new ArrayList<>();
+    }
+
     private BigDecimal determineTransferRate(Item item) {
         boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
@@ -1360,6 +1460,8 @@ public class TransferRequestController implements Serializable {
                     + " where b.retired=false "
                     + " and b.billTypeAtomic=:bt "
                     + " and b.fromDepartment=:fd "
+                    + " and b.toDepartment.retired=false "
+                    + " and b.toDepartment.inactive=false "
                     + " order by b.id desc";
             Map<String, Object> m = new HashMap<>();
             m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
@@ -1377,6 +1479,161 @@ public class TransferRequestController implements Serializable {
         return processTransferRequest();
     }
 
+    /**
+     * Get available department types for the current target department for display purposes
+     * @return List of department type names that are enabled for pharmacy transactions
+     */
+    /**
+     * Gets the intersection of department types supported by BOTH:
+     * 1. The logged user's department (from session)
+     * 2. The toDepartment (requesting department)
+     *
+     * This ensures users can only select department types that are valid
+     * for BOTH departments involved in the transfer.
+     *
+     * @return List of DepartmentType objects representing the intersection
+     */
+    public List<DepartmentType> getAvailableDepartmentTypesForTransfer() {
+        List<DepartmentType> intersection = new ArrayList<>();
+
+        if (toDepartment == null || sessionController.getDepartment() == null) {
+            return intersection;
+        }
+
+        // Get logged department's supported types
+        List<DepartmentType> loggedDeptTypes =
+            sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+
+        // Get toDepartment's supported types
+        List<DepartmentType> toDeptTypes =
+            getAvailableDepartmentTypesForToDepartment();
+
+        // Calculate intersection
+        for (DepartmentType dt : loggedDeptTypes) {
+            if (toDeptTypes.contains(dt)) {
+                intersection.add(dt);
+            }
+        }
+
+        return intersection;
+    }
+
+    /**
+     * Gets the department types supported by the toDepartment.
+     * Similar to SessionController logic but for the target department.
+     *
+     * @return List of DepartmentType objects supported by toDepartment
+     */
+    private List<DepartmentType> getAvailableDepartmentTypesForToDepartment() {
+        List<DepartmentType> types = new ArrayList<>();
+
+        if (toDepartment == null) {
+            return types;
+        }
+
+        // Check each department type
+        for (DepartmentType depType : DepartmentType.values()) {
+            if (isDepartmentTypeAllowedForToDepartment(depType)) {
+                types.add(depType);
+            }
+        }
+
+        return types;
+    }
+
+    /**
+     * Checks if a specific department type is allowed for toDepartment.
+     * Mirrors the logic in SessionController for consistency.
+     *
+     * @param departmentType The department type to check
+     * @return true if allowed, false otherwise
+     */
+    private boolean isDepartmentTypeAllowedForToDepartment(DepartmentType departmentType) {
+        if (toDepartment == null || departmentType == null) {
+            return false;
+        }
+
+        String configKey = "Allow " + departmentType.getLabel() +
+                           " Items In Pharmacy Transactions for " +
+                           toDepartment.getName();
+
+        // Default values (matching SessionController logic)
+        // Pharmacy and Store default to true, others default to false
+        boolean defaultValue = (departmentType == DepartmentType.Pharmacy ||
+                               departmentType == DepartmentType.Store);
+
+        return configOptionApplicationController.getBooleanValueByKey(configKey, defaultValue);
+    }
+
+    /**
+     * Get available department types for the current target department for display purposes.
+     * Now returns the intersection of logged department and toDepartment supported types.
+     *
+     * @return List of department type names that are enabled for pharmacy transactions
+     */
+    public List<String> getAvailableDepartmentTypesForDisplay() {
+        List<String> displayTypes = new ArrayList<>();
+
+        if (toDepartment == null) {
+            return displayTypes;
+        }
+
+        // Get intersection of both departments' supported types
+        List<DepartmentType> intersection = getAvailableDepartmentTypesForTransfer();
+
+        // Convert to display strings
+        for (DepartmentType dt : intersection) {
+            displayTypes.add(dt.getLabel());
+        }
+
+        return displayTypes;
+    }
+
+    /**
+     * Gets all department types supported by the logged department.
+     * Used for UI display to show what the logged dept supports.
+     *
+     * @return List of department type labels for display
+     */
+    public List<String> getLoggedDepartmentSupportedTypesForDisplay() {
+        List<String> displayTypes = new ArrayList<>();
+
+        if (sessionController.getDepartment() == null) {
+            return displayTypes;
+        }
+
+        List<DepartmentType> loggedTypes =
+            sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+
+        for (DepartmentType dt : loggedTypes) {
+            displayTypes.add(dt.getLabel());
+        }
+
+        return displayTypes;
+    }
+
+    /**
+     * Gets all department types supported by the toDepartment.
+     * Used for UI display to show what the toDepartment supports.
+     *
+     * @return List of department type labels for display
+     */
+    public List<String> getToDepartmentSupportedTypesForDisplay() {
+        List<String> displayTypes = new ArrayList<>();
+
+        if (toDepartment == null) {
+            return displayTypes;
+        }
+
+        List<DepartmentType> toTypes = getAvailableDepartmentTypesForToDepartment();
+
+        for (DepartmentType dt : toTypes) {
+            displayTypes.add(dt.getLabel());
+        }
+
+        return displayTypes;
+    }
+
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
@@ -1388,6 +1645,300 @@ public class TransferRequestController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        // Register pharmacy_transfer_request.xhtml
+        PageMetadata requestMetadata = new PageMetadata();
+        requestMetadata.setPagePath("pharmacy/pharmacy_transfer_request");
+        requestMetadata.setPageName("Pharmacy Transfer Request");
+        requestMetadata.setDescription("Create and manage pharmacy transfer requests between departments");
+        requestMetadata.setControllerClass("TransferRequestController");
+
+        // Configuration Options
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Stock Request - Show Rate and Value",
+            "Controls visibility of rate and value fields in transfer request forms",
+            "Lines 169, 179, 251, 258, 292-294 (XHTML): Rate/value input fields and display",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is A4",
+            "Uses A4 paper format for transfer request receipts",
+            "Line 347 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 1",
+            "Uses Custom Format 1 for transfer request receipts",
+            "Line 351 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 2",
+            "Uses Custom Format 2 for transfer request receipts",
+            "Line 356 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number",
+            "Lines 421, 531 (Controller): Bill number generation logic",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-Year-Number",
+            "Lines 423, 533 (Controller): Bill number generation logic",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number",
+            "Lines 430, 548 (Controller): Bill number generation logic",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+            "Custom suffix to append to pharmacy transfer request bill numbers (used by BillNumberGenerator methods)",
+            "Lines 436, 440, 443 (Controller): Bill number generation method calls",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations",
+            "Line 1328 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations",
+            "Line 1329 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations",
+            "Line 1330 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        // Department Type Configuration Options - Used by ItemController.getAvailableDepartmentTypesForPharmacyTransactions()
+        // These are APPLICATION-scoped with department names embedded in keys
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Pharmacy Items In Pharmacy Transactions for [Department Name]",
+            "Allows pharmacy items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Lab Items In Pharmacy Transactions for [Department Name]",
+            "Allows lab items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Store Items In Pharmacy Transactions for [Department Name]",
+            "Allows store items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Etu Items In Pharmacy Transactions for [Department Name]",
+            "Allows ETU (Emergency Treatment Unit) items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Theatre Items In Pharmacy Transactions for [Department Name]",
+            "Allows theatre/operating room items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        requestMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        requestMetadata.addPrivilege(new PrivilegeInfo(
+            "StockRequestViewRates",
+            "View rate and value information in stock requests",
+            "Lines 169, 179, 251, 258, 292-294 (XHTML): Rate and value fields visibility"
+        ));
+
+        requestMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 319 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(requestMetadata);
+
+        // Register pharmacy_transfer_request_approval.xhtml
+        PageMetadata approvalMetadata = new PageMetadata();
+        approvalMetadata.setPagePath("pharmacy/pharmacy_transfer_request_approval");
+        approvalMetadata.setPageName("Pharmacy Transfer Request Approval");
+        approvalMetadata.setDescription("Approve transfer requests from other departments");
+        approvalMetadata.setControllerClass("TransferRequestController");
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is A4",
+            "Uses A4 paper format for transfer request receipts",
+            "Line 174 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 1",
+            "Uses Custom Format 1 for transfer request receipts",
+            "Line 178 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 2",
+            "Uses Custom Format 2 for transfer request receipts",
+            "Line 183 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        // Note: Bill Number Suffix already registered in pharmacy_transfer_request metadata
+        // approvalMetadata.addConfigOption(new ConfigOptionInfo(
+        //     "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+        //     "Custom suffix to append to pharmacy transfer request bill numbers (inherited from pre-bill)",
+        //     "Lines 328-329 (Controller): Bill number copied from pre-bill",
+        //     OptionScope.APPLICATION
+        // ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations when editing transfer rates",
+            "Line 1335 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations when editing transfer rates",
+            "Line 1336 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations when editing transfer rates",
+            "Line 1337 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        approvalMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 150 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(approvalMetadata);
+
+        // Register pharmacy_transfer_request_list_to_finalize.xhtml
+        PageMetadata finalizeListMetadata = new PageMetadata();
+        finalizeListMetadata.setPagePath("pharmacy/pharmacy_transfer_request_list_to_finalize");
+        finalizeListMetadata.setPageName("Pharmacy Transfer Requests to Finalize");
+        finalizeListMetadata.setDescription("List of saved transfer requests that need to be finalized");
+        finalizeListMetadata.setControllerClass("SearchController");
+
+        finalizeListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(finalizeListMetadata);
+
+        // Register pharmacy_transfer_request_list_to_approve.xhtml
+        PageMetadata approveListMetadata = new PageMetadata();
+        approveListMetadata.setPagePath("pharmacy/pharmacy_transfer_request_list_to_approve");
+        approveListMetadata.setPageName("Pharmacy Transfer Requests to Approve");
+        approveListMetadata.setDescription("List of finalized transfer requests awaiting approval");
+        approveListMetadata.setControllerClass("SearchController");
+
+        approveListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(approveListMetadata);
+
+        // Register pharmacy_transfer_request_list.xhtml
+        PageMetadata requestListMetadata = new PageMetadata();
+        requestListMetadata.setPagePath("pharmacy/pharmacy_transfer_request_list");
+        requestListMetadata.setPageName("Pharmacy Transfer Request List");
+        requestListMetadata.setDescription("List of approved transfer requests ready for issue");
+        requestListMetadata.setControllerClass("SearchController");
+
+        requestListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(requestListMetadata);
     }
 
 }

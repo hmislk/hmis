@@ -53,8 +53,11 @@
                                         <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
                                     <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
-                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                        <div class="d-flex justify-content-center">
+                                            <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                                #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                            </span>
+                                        </div>
                                     </p:column>
                                 </p:autoComplete> 
 
@@ -64,6 +67,26 @@
                                     value="Select"
                                     action="#{bhtEditController.navigateToEditAdmissionDetails()}">
                                 </p:commandButton>
+
+                                <style>
+                                    .discharged-badge {
+                                        background-color: #f44336;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+
+                                    .not-discharged-badge {
+                                        background-color: #2196F3;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+                                </style>
 
                             </p:panel>
                         </h:panelGroup>
@@ -320,6 +343,7 @@
                                     <div>
                                         <p:textEditor 
                                             style="zoom: 1.4;"
+                                            
                                             value="#{bhtEditController.emailBoday}"
                                             secure="false" 
                                             height="500"
@@ -410,7 +434,7 @@
                                     <h:outputLabel value=" - " class="mx-4"></h:outputLabel>
                                     <h:outputLabel value="Email Body for Inward BHT Confermation to Company" style=" font-weight: 600;"></h:outputLabel>
                                 </div>
-                                
+
                                 <div class="bg-light border rounded" style="min-height: 300px; overflow-y: auto;">
                                     <style>
                                         pre {

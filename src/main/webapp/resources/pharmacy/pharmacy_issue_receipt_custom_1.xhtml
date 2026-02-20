@@ -80,8 +80,8 @@
                             <th style="width: 100px; text-align: right; padding-right: 4px; border: 1px solid black;">Code</th>
                             <th style="width: 80px; text-align: right; padding-right: 4px; border: 1px solid black;">QTY</th>
                             <th style="width: 100px; text-align: right; padding-right: 4px; border: 1px solid black;">Expiry</th>
-                            <th style="width: 120px; text-align: right; padding-right: 4px; border: 1px solid black;">Re. Rate</th>
-                            <th style="width: 120px; text-align: right; padding-right: 4px; border: 1px solid black;">Re. Value</th>
+                            <th style="width: 120px; text-align: right; padding-right: 4px; border: 1px solid black;">Cost Rate</th>
+                            <th style="width: 120px; text-align: right; padding-right: 4px; border: 1px solid black;">Cost Value</th>
                         </tr>
                     </thead>
 
@@ -108,12 +108,12 @@
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right; padding-right: 4px; border: 1px solid black; vertical-align: middle;">
-                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.costRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right; padding-right: 4px; border: 1px solid black; vertical-align: middle;">
-                                    <h:outputLabel value="#{bip.billItemFinanceDetails.valueAtRetailRate}">
+                                    <h:outputLabel value="#{bip.billItemFinanceDetails.valueAtCostRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -126,7 +126,7 @@
                                 <h:outputText value="Total"/>
                             </td> 
                             <td style="text-align: right; padding-right: 4px; border: 1px solid black; vertical-align: middle;">
-                                <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                                <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalCostValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

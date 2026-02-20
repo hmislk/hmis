@@ -11,8 +11,20 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="ALL BILL LIST"/>                          
+                            <h:outputLabel value="ALL BILL LIST - LEGACY METHOD"/>
                         </f:facet>
+
+                        <!-- Navigation Toggle Buttons -->
+                        <p:panel styleClass="mb-3 text-center">
+                            <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
+                            <p:commandButton value="Legacy Method"
+                                             styleClass="ui-button-success"
+                                             disabled="true"/>
+                            <p:commandButton value="Optimized Method"
+                                             styleClass="ui-button-secondary ml-2"
+                                             action="#{searchController.navigateToOptimizedBillListReport()}"
+                                             immediate="true"/>
+                        </p:panel>
 
                         <h:panelGrid columns="8" styleClass="w-100" >
                             <h:panelGroup layout="block" styleClass="form-group">

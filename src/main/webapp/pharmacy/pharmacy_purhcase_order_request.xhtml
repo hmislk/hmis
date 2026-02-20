@@ -185,13 +185,15 @@
                                 </p:dataTable> 
 
                                 <div >
-                                    <ph:history/>
+                                    <ph:history id="itemHistory"/>
                                 </div>
 
 
                             </div>
                             <div class="col-3">
                                 <p:panel header="Purchase Order" id="po">
+
+
                                     <p:outputLabel value="Supplier"
                                                    class="form-label"
                                                    for="acSupplier"></p:outputLabel>
@@ -200,10 +202,8 @@
                                         converter="deal" 
                                         value="#{purchaseOrderRequestController.currentBill.toInstitution}"  
                                         forceSelection="true"
-                                        required="true"
                                         class="w-100"
                                         inputStyleClass="w-100"
-                                        requiredMessage="Supplier is Required"
                                         completeMethod="#{dealerController.completeActiveDealor}"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         <f:ajax
@@ -255,6 +255,22 @@
                                         value="#{purchaseOrderRequestController.currentBill.comments}" 
                                         class="form-control w-100" ></p:inputTextarea>
 
+                                    <p:outputLabel value="Department Type"
+                                                   class="form-label"
+                                                   for="selDepartmentType"></p:outputLabel>
+                                    <p:selectOneMenu
+                                        id="selDepartmentType"
+                                        value="#{purchaseOrderRequestController.currentBill.departmentType}"
+                                        class="w-100"
+                                        disabled="#{not empty purchaseOrderRequestController.billItems and purchaseOrderRequestController.billItems.size() > 0}">
+                                        <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                        <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                       var="dt"
+                                                       itemLabel="#{dt.label}"
+                                                       itemValue="#{dt}"/>
+                                        <p:ajax process="@this" update="po exDItem exItem" event="change"/>
+                                    </p:selectOneMenu>
+
                                     <p:outputLabel 
                                         value="Total Value"
                                         class="form-label w-100"></p:outputLabel>
@@ -265,7 +281,6 @@
                                         value="#{purchaseOrderRequestController.currentBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
-
                                     <p:commandButton 
                                         id="btnSave"
                                         ajax="false" 
@@ -335,18 +350,18 @@
                                         </p:column>
                                         <f:selectItems value="#{purchaseOrderRequestController.dealorItems}" var="di" itemLabel="#{di.name}" itemValue="#{di}" ></f:selectItems>
                                     </p:selectOneMenu>
-                                    <p:commandButton 
-                                        class="m-1 ui-button-success" 
-                                        value="Add" 
-                                        action="#{purchaseOrderRequestController.addItem}" 
-                                        process="exDItem @this" 
-                                        update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                                    <p:commandButton
+                                        class="m-1 ui-button-success"
+                                        value="Add"
+                                        action="#{purchaseOrderRequestController.addItem}"
+                                        process="exDItem @this"
+                                        update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot po pageMessages" />
                                     <hr/>
                                     <p:outputLabel 
                                         for="exItem" 
                                         class="form-label w-100"
                                         value="Select Any Item and Add" ></p:outputLabel>
-                                    <p:autoComplete 
+                                    <p:autoComplete
                                         id="exItem"
                                         value="#{purchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
@@ -355,7 +370,7 @@
                                         scrollHeight="600"
                                         minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                         inputStyleClass="w-100"
-                                        completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                        completeMethod="#{purchaseOrderRequestController.completeItemForSelectedDepartmentType}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                             <h:outputLabel value="#{vt.id}"></h:outputLabel>
                                         </p:column>
@@ -371,12 +386,12 @@
                                             </p:outputLabel>                            
                                         </p:column>
                                     </p:autoComplete>
-                                    <p:commandButton 
-                                        class="mx-1 ui-button-success"  
-                                        value="Add" 
-                                        action="#{purchaseOrderRequestController.addItem}" 
-                                        process="exItem @this" 
-                                        update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot pageMessages" />
+                                    <p:commandButton
+                                        class="mx-1 ui-button-success"
+                                        value="Add"
+                                        action="#{purchaseOrderRequestController.addItem}"
+                                        process="exItem @this"
+                                        update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot po pageMessages" />
 
                                 </p:panel>
                             </div>

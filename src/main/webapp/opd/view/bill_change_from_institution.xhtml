@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="Change From Institution" class="mt-2"></p:outputLabel>
+                                <p:commandButton
+                                    value="Back to Bill Admin"
+                                    action="#{billSearch.navigateToAdminBill()}"
+                                    ajax="false"
+                                    icon="pi pi-arrow-left"
+                                    styleClass="ui-button-secondary"></p:commandButton>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <p:panel header="Bill Summary">
+                                    <p:panelGrid
+                                        columns="4"
+                                        styleClass="w-100"
+                                        columnClasses="w-15,w-35,w-15,w-35"
+                                        layout="tabular">
+
+                                        <h:outputLabel value="Bill Number:" />
+                                        <h:outputText value="#{billSearch.bill.deptId}" />
+                                        <h:outputLabel value="Bill Type:" />
+                                        <h:outputText value="#{billSearch.bill.billTypeAtomic}" />
+
+                                        <h:outputLabel value="Net Total:" />
+                                        <h:outputText value="#{billSearch.bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <h:outputLabel value="Created At:" />
+                                        <h:outputText value="#{billSearch.bill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Patient:" />
+                                        <h:outputText value="#{billSearch.bill.patient.person.name}" rendered="#{billSearch.bill.patient ne null}"/>
+                                        <h:outputLabel value="Created By:" />
+                                        <h:outputText value="#{billSearch.bill.creater.webUserPerson.name}" />
+
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Current From Institution Details" styleClass="mt-3">
+                                    <p:panelGrid
+                                        columns="2"
+                                        styleClass="w-100"
+                                        columnClasses="w-25,w-75"
+                                        layout="tabular">
+
+                                        <h:outputLabel value="Current From Institution:" />
+                                        <h:outputText value="#{billSearch.bill.fromInstitution.name}" rendered="#{billSearch.bill.fromInstitution ne null}"/>
+                                        <h:outputText value="(Not Set)" rendered="#{billSearch.bill.fromInstitution eq null}" styleClass="text-muted"/>
+
+                                        <h:outputLabel value="Current From Department:" />
+                                        <h:outputText value="#{billSearch.bill.fromDepartment.name}" rendered="#{billSearch.bill.fromDepartment ne null}"/>
+                                        <h:outputText value="(Not Set)" rendered="#{billSearch.bill.fromDepartment eq null}" styleClass="text-muted"/>
+
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Change From Institution" styleClass="mt-3">
+                                    <div class="ui-fluid">
+                                        <div class="p-field mb-3">
+                                            <h:outputLabel for="newFromInstitution" value="Select New From Institution:" />
+                                            <p:autoComplete
+                                                id="newFromInstitution"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                forceSelection="true"
+                                                completeMethod="#{institutionController.completeIns}"
+                                                var="ins"
+                                                itemLabel="#{ins.name}"
+                                                itemValue="#{ins}"
+                                                value="#{billSearch.newFromInstitution}">
+                                                <p:ajax event="itemSelect"/>
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <div class="p-field mb-3">
+                                            <h:outputLabel for="newFromDepartment" value="Select New From Department (Optional):" />
+                                            <p:autoComplete
+                                                id="newFromDepartment"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                forceSelection="true"
+                                                completeMethod="#{departmentController.completeDept}"
+                                                var="dept"
+                                                itemLabel="#{dept.name}"
+                                                itemValue="#{dept}"
+                                                value="#{billSearch.newFromDepartment}"/>
+                                        </div>
+
+                                        <div class="p-field mb-3">
+                                            <h:outputLabel for="changeReason" value="Reason for Change:" />
+                                            <p:inputTextarea
+                                                id="changeReason"
+                                                value="#{billSearch.changeFromInstitutionReason}"
+                                                rows="3"
+                                                class="w-100"
+                                                placeholder="Please provide a reason for this change..."
+                                                required="true"
+                                                requiredMessage="Reason is required"/>
+                                        </div>
+
+                                        <div class="p-field text-center mt-4">
+                                            <p:commandButton
+                                                value="Confirm Change"
+                                                icon="pi pi-check"
+                                                styleClass="ui-button-success m-1"
+                                                action="#{billSearch.changeFromInstitution()}"
+                                                ajax="false"
+                                                style="width: 200px;">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Cancel"
+                                                action="#{billSearch.navigateToAdminBill()}"
+                                                ajax="false"
+                                                icon="pi pi-times"
+                                                styleClass="ui-button-secondary m-1"
+                                                style="width: 200px;"
+                                                immediate="true"></p:commandButton>
+                                        </div>
+                                    </div>
+                                </p:panel>
+
+                            </div>
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

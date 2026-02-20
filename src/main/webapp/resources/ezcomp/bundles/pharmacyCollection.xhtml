@@ -29,9 +29,14 @@
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
             <table class="table w-100">
                 <thead>
-                    <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark">
-                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                    <tr class="text-light bg-success">
+                        <th class="text-light bg-success" colspan="3">
+                            <h:outputText value="#{cc.attrs.bundle.name}" />
+                        </th>
+                        <th class="text-end text-light bg-success">
+                            <h:outputText value="#{cc.attrs.bundle.cashierGrandTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </th>
                     </tr>
                 </thead>
@@ -40,18 +45,6 @@
             <p:dataTable
                 emptyMessage="No #{cc.attrs.bundle.name}"
                 var="row" value="#{cc.attrs.bundle.reportTemplateRows}" styleClass="w-100" rowStyleClass="#{row.department ne null ? 'table-primary' : 'table-light'}">
-                <f:facet name="header">
-                    <h:panelGroup styleClass="d-flex justify-content-between w-100">
-                        <h:outputText value="Pharmacy Collection" />
-                        <h:panelGroup>
-                            <h:outputText value="Total: " />
-                            <h:outputText value="#{cc.attrs.bundle.cashierGrandTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </h:panelGroup>
-                    </h:panelGroup>
-                </f:facet>
-
                 <p:column headerText="Department">
                     <h:outputText value="#{row.department.name}" />
                 </p:column>
@@ -232,6 +225,7 @@
                     </f:facet>
                 </p:column>
 
+                <!--
                 <p:column headerText="Collection Total" styleClass="text-end">
                     <h:outputText id="lblPharmacyCollectionCollectionTotal" value="#{row.cashierCollectionTotal}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -242,7 +236,9 @@
                         </h:outputText>
                     </f:facet>
                 </p:column>
+                -->
 
+                <!--
                 <p:column headerText="Total NOT included in Collection Total" styleClass="text-end">
                     <h:outputText value="#{row.cashierExcludedTotal}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -253,12 +249,15 @@
                         </h:outputText>
                     </f:facet>
                 </p:column>
+                -->
             </p:dataTable>
 
             <h:panelGrid columns="1" styleClass="mt-2 w-100">
                 <h:outputText value="Note: Credit bills are NOT listed in this section. See 'Pharmacy Collection Bills - Credit' section below for credit transactions." styleClass="text-info font-weight-bold" />
+                <!--
                 <h:outputText value="Collection Total includes: #{searchController.formatPaymentMethodLabels(cc.attrs.bundle.cashierCollectionPaymentMethods)}" />
                 <h:outputText value="Total NOT included in Collection Total: #{searchController.formatPaymentMethodLabels(cc.attrs.bundle.cashierExcludedPaymentMethods)}" />
+                -->
             </h:panelGrid>
 
 

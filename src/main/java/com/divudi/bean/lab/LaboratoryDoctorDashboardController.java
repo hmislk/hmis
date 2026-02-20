@@ -148,7 +148,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     }
 
     public void searchPatientInvestigations() {
-        System.out.println("this = " + sessionController.getLoggedUser().getStaff());
         items = new ArrayList();
         
         if (sampleId == null) {
@@ -258,7 +257,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         params.put("ret", false);
 
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("items = " + items);
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {

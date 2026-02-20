@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "v2.1.0",
   "description": "Add consumption_allowed field to Item table with backfill and constraints",
   "author": "Claude Code",
   "date": "2025-11-09",

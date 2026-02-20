@@ -25,11 +25,20 @@
                                 <h:outputLabel value="GRN Return" ></h:outputLabel>
                             </div>
                             <div class="text-end col-9" >
-                                <p:commandButton 
-                                    value="List GRNs To Create a new Return" 
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('Admin')}"
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_grn_return_form')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-5">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="List GRNs To Create a new Return"
                                     action="#{grnReturnWorkflowController.navigateToCreateGrnReturn}"
                                     ajax="false"
-                                    icon="fas fa-plus-circle" 
+                                    icon="fas fa-plus-circle"
                                     class="ui-button-info ui-button-outlined mx-1"
                                     rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}"
                                     title="Create a new GRN Return Request">
@@ -296,21 +305,32 @@
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Finalize" 
+                                            <p:commandButton
+                                                value="Finalize"
                                                 action="#{grnReturnWorkflowController.finalizeRequest}"
                                                 ajax="false"
-                                                icon="pi pi-check" 
+                                                icon="pi pi-check"
+                                                onclick="return confirm('Are you sure you want to finalize this GRN return? Once finalized, it will require approval to complete.')"
                                                 class="ui-button-warning mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Approve" 
+                                            <p:commandButton
+                                                value="Approve"
                                                 action="#{grnReturnWorkflowController.approve}"
                                                 ajax="false"
-                                                icon="fas fa-check-circle" 
+                                                icon="fas fa-check-circle"
+                                                onclick="return confirm('Are you sure you want to approve this GRN return? This will complete the return process.')"
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveGrnReturn')}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Cancel"
+                                                action="#{grnReturnWorkflowController.cancelCurrentReturn}"
+                                                ajax="false"
+                                                icon="fas fa-times"
+                                                onclick="return confirm('Are you sure you want to cancel this GRN return? All unsaved changes will be lost.')"
+                                                class="ui-button-danger mx-1"
+                                                rendered="#{grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null}">
                                             </p:commandButton>
                                         </div>
                                     </div>

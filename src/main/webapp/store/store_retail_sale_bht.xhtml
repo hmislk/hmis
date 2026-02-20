@@ -33,14 +33,14 @@
                                     widgetVar="aPt2"  
                                     id="acPt2" 
                                     forceSelection="true" 
-                                                value="#{storeSaleBhtController.patientEncounter}" 
-                                                completeMethod="#{admissionController.completePatient}"
-                                                var="apt2" 
-                                                itemLabel="#{apt2.bhtNo}"
-                                                itemValue="#{apt2}" 
-                                                size="30"  
-                                                style="width: 400px; 
-                                                margin-left: 10px">
+                                    value="#{storeSaleBhtController.patientEncounter}" 
+                                    completeMethod="#{admissionController.completePatient}"
+                                    var="apt2" 
+                                    itemLabel="#{apt2.bhtNo}"
+                                    itemValue="#{apt2}" 
+                                    size="30"  
+                                    style="width: 400px;
+                                    margin-left: 10px">
 
                                     <p:column headerText="PHN" style="padding: 6px; width: 8em;">
                                         <h:outputLabel value="#{apt2.patient.phn}"/>
@@ -55,8 +55,11 @@
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
                                     <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
-                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
+                                        <div class="d-flex justify-content-center">
+                                            <span class="#{apt2.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                                #{apt2.discharged ? 'Discharged' : 'Not Discharged'}
+                                            </span>
+                                        </div>
                                     </p:column>
                                     <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                                 </p:autoComplete>  
@@ -67,6 +70,26 @@
                                     icon="fa fa-search" 
                                     class="ui-button-warning">                             
                                 </p:commandButton>
+
+                                <style>
+                                    .discharged-badge {
+                                        background-color: #f44336;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+
+                                    .not-discharged-badge {
+                                        background-color: #2196F3;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+                                </style>
 
                             </p:panel>
 

@@ -5,7 +5,12 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -41,6 +46,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -83,6 +89,8 @@ public class TransferIssueForRequestsController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private VmpController vmpController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     private Bill requestedBill;
     // Bill id used when navigating from DTO tables
@@ -1307,6 +1315,181 @@ public class TransferIssueForRequestsController implements Serializable {
         bItem.setItem(referenceItem.getItem());
         bItem.setReferanceBillItem(referenceItem);
         getBillItems().add(bItem);
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        // Register pharmacy_transfer_issue.xhtml
+        PageMetadata issueMetadata = new PageMetadata();
+        issueMetadata.setPagePath("pharmacy/pharmacy_transfer_issue");
+        issueMetadata.setPageName("Pharmacy Transfer Issue");
+        issueMetadata.setDescription("Issue pharmacy items for approved transfer requests");
+        issueMetadata.setControllerClass("TransferIssueForRequestsController");
+
+        // Configuration Options
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Stock Transaction - Show Rate and Value",
+            "Controls visibility of rate and value information in stock transactions",
+            "Lines 119, 133, 279, 288 (XHTML): Rate and value columns in tables",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue - Show Rate and Value",
+            "Controls visibility of rate and value fields specific to transfer issues",
+            "Lines 123, 178-179 (XHTML): Rate and value input fields",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmaceutical Item Name Column width",
+            "Sets the column width for item names in pharmaceutical tables",
+            "Line 257 (XHTML): Item name column width",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmaceutical Batch Column width",
+            "Sets the column width for batch number in pharmaceutical tables",
+            "Line 261 (XHTML): Batch column width",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmaceutical Item Expiary Column width",
+            "Sets the column width for expiry date in pharmaceutical tables",
+            "Line 265 (XHTML): Expiry date column width",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmaceutical Item Quentity Column width",
+            "Sets the column width for quantity in pharmaceutical tables",
+            "Lines 271, 278, 287 (XHTML): Quantity column width",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue A4 Paper",
+            "Uses A4 paper format for transfer issue receipts",
+            "Line 404 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue A4 Paper Detailed",
+            "Uses detailed A4 paper format for transfer issue receipts",
+            "Line 410 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue Bill is Letter Paper Custom 1",
+            "Uses custom letter paper format for transfer issue receipts",
+            "Line 416 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue POS Paper",
+            "Uses POS paper format for transfer issue receipts",
+            "Line 422 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue Bill is PosHeaderPaper",
+            "Uses POS header paper format for transfer issue receipts",
+            "Line 427 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Issue Bill is Template",
+            "Uses template format for transfer issue receipts",
+            "Line 433 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations",
+            "Line 842 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations",
+            "Line 843 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        issueMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations",
+            "Line 844 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        issueMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        issueMetadata.addPrivilege(new PrivilegeInfo(
+            "StockTransactionViewRates",
+            "View rate and value information in stock transactions",
+            "Lines 119, 133, 279, 288 (XHTML): Rate and value columns visibility"
+        ));
+
+        issueMetadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyTransferViewRates",
+            "View rate and value information in pharmacy transfers",
+            "Lines 123, 178-179 (XHTML): Transfer rate and value visibility"
+        ));
+
+        issueMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 392 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(issueMetadata);
+
+        // Register pharmacy_transfer_issued_list.xhtml
+        PageMetadata issuedListMetadata = new PageMetadata();
+        issuedListMetadata.setPagePath("pharmacy/pharmacy_transfer_issued_list");
+        issuedListMetadata.setPageName("Pharmacy Transfer Issued List");
+        issuedListMetadata.setDescription("List of issued pharmacy transfers awaiting receipt");
+        issuedListMetadata.setControllerClass("SearchController");
+
+        issuedListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        issuedListMetadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyTransferViewRates",
+            "View transfer values in the issued list",
+            "Line 128 (XHTML): Transfer value column visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(issuedListMetadata);
     }
 
 }

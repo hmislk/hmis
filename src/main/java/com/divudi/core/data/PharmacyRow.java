@@ -7,6 +7,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -1660,6 +1661,66 @@ public class PharmacyRow implements Serializable {
         this.tax = totalItemStockValueAtPurchaseRate != null ? totalItemStockValueAtPurchaseRate : 0.0;
         this.actualTotal = totalItemStockValueAtSaleRate != null ? totalItemStockValueAtSaleRate : 0.0;
         this.staffTotal = totalItemStockValueAtCostRate != null ? totalItemStockValueAtCostRate : 0.0;
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Item-wise) with Dosage Form.
+     * Same as the item-wise constructor above but includes dosageFormName.
+     */
+    public PharmacyRow(
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName, String dosageFormName,
+            Double itemStock,
+            Double itemStockValueAtPurchaseRate,
+            Double itemStockValueAtSaleRate,
+            Double itemStockValueAtCostRate,
+            Double institutionItemStock,
+            Double institutionItemStockValueAtPurchaseRate,
+            Double institutionItemStockValueAtSaleRate,
+            Double institutionItemStockValueAtCostRate,
+            Double totalItemStock,
+            Double totalItemStockValueAtPurchaseRate,
+            Double totalItemStockValueAtSaleRate,
+            Double totalItemStockValueAtCostRate) {
+
+        this(itemId, itemName, itemCode, categoryName, measurementUnitName,
+                itemStock, itemStockValueAtPurchaseRate, itemStockValueAtSaleRate, itemStockValueAtCostRate,
+                institutionItemStock, institutionItemStockValueAtPurchaseRate, institutionItemStockValueAtSaleRate, institutionItemStockValueAtCostRate,
+                totalItemStock, totalItemStockValueAtPurchaseRate, totalItemStockValueAtSaleRate, totalItemStockValueAtCostRate);
+
+        DosageForm df = new DosageForm();
+        df.setName(dosageFormName);
+        this.item.setDosageForm(df);
+    }
+
+    /**
+     * DTO Constructor for Closing Stock Report (Batch-wise) with Dosage Form.
+     * Same as the batch-wise constructor above but includes dosageFormName.
+     */
+    public PharmacyRow(
+            Long stockHistoryId,
+            Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName, String dosageFormName,
+            Long batchId, String batchNo, Date dateOfExpire,
+            Double stockQty, Double purchaseRate, Double retailRate, Double costRate,
+            Double stockPurchaseValue, Double stockSaleValue, Double stockCostValue,
+            Double instituionBatchQty,
+            Double institutionBatchStockValueAtPurchaseRate,
+            Double institutionBatchStockValueAtSaleRate,
+            Double institutionBatchStockValueAtCostRate,
+            Double totalBatchQty,
+            Double totalBatchStockValueAtPurchaseRate,
+            Double totalBatchStockValueAtSaleRate,
+            Double totalBatchStockValueAtCostRate) {
+
+        this(stockHistoryId, itemId, itemName, itemCode, categoryName, measurementUnitName,
+                batchId, batchNo, dateOfExpire,
+                stockQty, purchaseRate, retailRate, costRate,
+                stockPurchaseValue, stockSaleValue, stockCostValue,
+                instituionBatchQty, institutionBatchStockValueAtPurchaseRate, institutionBatchStockValueAtSaleRate, institutionBatchStockValueAtCostRate,
+                totalBatchQty, totalBatchStockValueAtPurchaseRate, totalBatchStockValueAtSaleRate, totalBatchStockValueAtCostRate);
+
+        DosageForm df = new DosageForm();
+        df.setName(dosageFormName);
+        this.item.setDosageForm(df);
     }
 
     public BillLight getBillLight() {

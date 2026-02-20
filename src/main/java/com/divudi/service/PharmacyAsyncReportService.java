@@ -135,7 +135,6 @@ public class PharmacyAsyncReportService {
                     hr.getSite(),
                     hr.getDepartment(),
                     types);
-            System.out.println("DTOs fetched: " + rows.size());
 
             XSSFWorkbook wb = new XSSFWorkbook();
             XSSFSheet sheet = wb.createSheet("Item Movement Summary");

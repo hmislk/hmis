@@ -9,6 +9,7 @@ import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SearchController;
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
@@ -35,6 +36,11 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Payment;
 import com.divudi.service.PaymentService;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -51,6 +57,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.annotation.PostConstruct;
 
 /**
  * Controller for GRN Return Workflow - handles Create, Finalize, and Approve
@@ -97,6 +104,10 @@ public class GrnReturnWorkflowController implements Serializable {
     PharmacyController pharmacyController;
     @Inject
     private SearchController searchController;
+    @Inject
+    UserSettingsController userSettingsController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 
     // Main properties
     private Bill currentBill;
@@ -126,6 +137,149 @@ public class GrnReturnWorkflowController implements Serializable {
     @Inject
     PharmacyCalculation pharmacyBillBean;
 
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     * 🚨 CRITICAL: Use ONLY the core ConfigOptionInfo class from com.divudi.core.data.admin
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_grn_return_form");
+        metadata.setPageName("Pharmacy GRN Return Form");
+        metadata.setDescription("GRN return workflow processing for creating, finalizing, and approving returns");
+        metadata.setControllerClass("GrnReturnWorkflowController");
+
+        // 🔧 CONFIGURATION OPTIONS - Return Workflow Configurations
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return by Quantity and Free Quantity",
+            "Controls display of quantity and free quantity columns and workflow",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return by Total Quantity",
+            "Controls total quantity return workflow and column display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return - Changing Return Rate is allowed",
+            "Enables editing of return rates vs fixed display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return Based On Line Cost Rate",
+            "Uses line cost rate for return calculations",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return Based On Total Cost Rate",
+            "Uses total cost rate for return calculations",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Negative Stock in Returns",
+            "Controls whether returns that would cause negative stock are allowed",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 BILL NUMBER GENERATION CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for GRN Return",
+            "Custom suffix to append to GRN Return bill numbers",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 CRITICAL: Bill Number Generation Strategies for PHARMACY_GRN_RETURN
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_GRN_RETURN",
+            "Custom suffix to append to pharmacy GRN return bill numbers (used by BillNumberGenerator methods)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count",
+            "Department bill generation with prefix + department code + institution code + year + count",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number",
+            "Institution + Department + Year + Yearly Number generation strategy",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Department ID is Prefix Ins Year Count",
+            "Department bill generation with prefix + institution code + year + count",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count",
+            "Institution bill generation with prefix + institution code + year + count",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PRINT FORMAT CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "GRN Return Receipt Paper is Custom 1",
+            "Uses custom format 1 for GRN return receipt printing",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "GRN Return Receipt Paper is Custom 2",
+            "Uses custom format 2 for GRN return receipt printing",
+            OptionScope.DEPARTMENT
+        ));
+
+        // 🔧 PRIVILEGES
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration",
+            "Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "CreateGrnReturn",
+            "Permission to create GRN return requests",
+            "Main workflow access and navigation buttons"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "FinalizeGrnReturn",
+            "Permission to finalize GRN return requests",
+            "Finalize button and workflow access"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ApproveGrnReturn",
+            "Permission to approve GRN return requests",
+            "Approve button and final approval workflow"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to change receipt printing paper types and formats",
+            "Settings button in print preview"
+        ));
+
+        // 🔧 REGISTER THE METADATA (REQUIRED!)
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     // Navigation methods
     public String navigateToCreateGrnReturn() {
         activeIndex = 0;
@@ -144,9 +298,26 @@ public class GrnReturnWorkflowController implements Serializable {
             return "";
         }
 
-        // Check for existing unapproved GRN returns
+        // Check for existing unapproved GRN returns with detailed error message
+        Bill pendingReturn = getPendingGrnReturn();
+        if (pendingReturn != null) {
+            String status = "";
+            if (!pendingReturn.isChecked()) {
+                status = "unchecked/unapproved";
+            } else if (!pendingReturn.isCompleted()) {
+                status = "checked but not completed";
+            }
+
+            String errorMessage = String.format("Cannot create new return. GRN Return %s is %s. Please finalize it first.",
+                    pendingReturn.getDeptId() != null ? pendingReturn.getDeptId() : "N/A",
+                    status);
+            JsfUtil.addErrorMessage(errorMessage);
+            return "";
+        }
+
+        // Double-check just before creating to handle concurrent access
         if (hasUnapprovedGrnReturns()) {
-            JsfUtil.addErrorMessage("Cannot create new return. Please approve pending GRN returns first.");
+            JsfUtil.addErrorMessage("Cannot create new return. Another user may have started a return process. Please refresh and try again.");
             return "";
         }
 
@@ -220,6 +391,73 @@ public class GrnReturnWorkflowController implements Serializable {
             JsfUtil.addErrorMessage("Error loading GRN Return: " + e.getMessage());
             return "";
         }
+    }
+
+    public String cancelCurrentReturn() {
+        // Validate bill exists and is persisted
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: No valid GRN Return found.");
+            return "";
+        }
+
+        // Validate bill is in a cancellable state
+        if (currentBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return is already cancelled.");
+            return "";
+        }
+
+        if (currentBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return has already been refunded.");
+            return "";
+        }
+
+        if (currentBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return has been reactivated and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return is retired and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return is completed and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return payment is completed and cannot be cancelled.");
+            return "";
+        }
+
+        try {
+            // Mark the bill as cancelled in the database
+            currentBill.setCancelled(true);
+
+            // Set cancellation metadata if bill has been saved to database
+            if (currentBill.getCreatedAt() != null) {
+                currentBill.setEditedAt(new Date());
+                currentBill.setEditor(sessionController.getLoggedUser());
+            }
+
+            // Save the cancelled bill to database
+            billFacade.edit(currentBill);
+
+            JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error cancelling GRN Return: " + e.getMessage());
+            return "";
+        }
+
+        // Reset UI state
+        resetBillValues();
+        makeListNull();
+        if (searchController != null) {
+            searchController.makeListNull();
+        }
+
+        return "/pharmacy/returns_and_cancellations_index?faces-redirect=true";
     }
 
     // Core workflow methods
@@ -332,6 +570,8 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCompleted(true);
             currentBill.setCompletedBy(sessionController.getLoggedUser());
             currentBill.setCompletedAt(new Date());
+            currentBill.setApproveAt(new Date());
+            currentBill.setApproveUser(sessionController.getLoggedUser());
 
             // Save the bill with completed status
             try {
@@ -485,6 +725,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Get configuration options for bill numbering strategies
             boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
+            boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
             boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
             boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
 
@@ -493,6 +734,9 @@ public class GrnReturnWorkflowController implements Serializable {
             // Independent department ID generation
             if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
                 billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setDeptId(billId);
+            } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
                 currentBill.setDeptId(billId);
             } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
                 billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
@@ -517,6 +761,7 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         if (finalize) {
+            currentBill.setChecked(true);
             currentBill.setCheckedBy(sessionController.getLoggedUser());
             currentBill.setCheckeAt(new Date());
         }
@@ -716,10 +961,7 @@ public class GrnReturnWorkflowController implements Serializable {
             }
 
             // Additional validation for payment method data completeness
-            if (currentBill.getNetTotal() <= 0) {
-                JsfUtil.addErrorMessage("Invalid bill total for payment creation");
-                return false;
-            }
+            // Note: Zero-value bills are allowed with any payment method for audit trail purposes
 
             return true;
         } catch (Exception e) {
@@ -2412,10 +2654,9 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "WHERE b.billType = :bt "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill = :refBill "
-                + "AND b.checkedBy IS NOT NULL "
-                + "AND (b.completed = false OR b.completed IS NULL) "
                 + "AND b.cancelled = false "
-                + "AND b.retired = false";
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false)";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
@@ -2424,6 +2665,29 @@ public class GrnReturnWorkflowController implements Serializable {
 
         Long count = billFacade.findLongByJpql(jpql, params);
         return count != null && count > 0;
+    }
+
+    private Bill getPendingGrnReturn() {
+        if (selectedGrn == null) {
+            return null;
+        }
+
+        String jpql = "SELECT b FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill = :refBill "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false) "
+                + "ORDER BY b.createdAt ASC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("refBill", selectedGrn);
+
+        List<Bill> pendingReturns = billFacade.findByJpql(jpql, params);
+        return (pendingReturns != null && !pendingReturns.isEmpty()) ? pendingReturns.get(0) : null;
     }
 
     public void displayItemDetails(BillItem bi) {
@@ -2481,14 +2745,24 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "AND b.department = :dept "
-                + "ORDER BY b.createdAt DESC";
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        // Add additional search criteria from searchController
+        jpql += buildSearchCriteria();
+
+        jpql += "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
         params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", searchController.getFromDate());
+        params.put("toDate", searchController.getToDate());
 
-        grnReturnsToFinalize = billFacade.findByJpql(jpql, params);
+        // Add search keyword parameters
+        addSearchParameters(params);
+
+        grnReturnsToFinalize = billFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP, searchController.getMaxResult());
         if (grnReturnsToFinalize == null) {
             grnReturnsToFinalize = new ArrayList<>();
         }

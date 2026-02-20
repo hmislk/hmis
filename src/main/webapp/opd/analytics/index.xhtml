@@ -29,12 +29,26 @@
                                                 style="text-align: left" 
                                                 value="OPD Income Report"
                                                 action="#{opdReportController.navigateToOpdIncomeReportDto()}"/>
-                                             <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                style="text-align: left" 
+                                             <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                style="text-align: left"
                                                 value="OPD Income Daily Summary"
                                                 action="#{opdReportController.navigateToOpdIncomeDailySummary()}"/>
+                                            <p:commandButton
+                                                id="btnNavigateToHospitalFeeAndDoctorFeeReportByBills"
+                                                class="w-100"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="Hospital Fee &amp; Doctor Fee Report"
+                                                action="#{opdReportController.navigateToHospitalDoctorFeeReport()}"/>
+                                            <p:commandButton
+                                                id="btnNavigateToBillItemReport"
+                                                class="w-100"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="Hospital Fee &amp; Doctor Fee Report (By Items)"
+                                                action="#{opdReportController.navigateToBillItemReport()}"/>
                                         </div>
                                     </p:tab>
 
@@ -78,7 +92,7 @@
                                                 class="w-100 ui-button-success"
                                                 ajax="false"
                                                 icon="fa fa-rocket"
-                                                value="Itemized Sales Summary (Fast - Recommended)"
+                                                value="Itemized Sales Summary"
                                                 action="#{searchController.navigateToOptimizedItemizedSaleSummary}"
                                                 title="High-performance DTO-based report - Uses database aggregation for faster loading"/>
 
@@ -86,6 +100,7 @@
                                             <p:commandButton
                                                 class="w-100 ui-button-warning"
                                                 ajax="false"
+                                                rendered="false"
                                                 icon="fa fa-exclamation-triangle"
                                                 value="Itemized Sales Summary (Deprecated)"
                                                 action="#{searchController.navigateToItemizedSaleSummary}"

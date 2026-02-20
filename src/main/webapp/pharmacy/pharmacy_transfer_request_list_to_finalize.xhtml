@@ -7,6 +7,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
+
+
         <h:form>
             <p:panel>
                 <f:facet name="header">
@@ -40,6 +42,12 @@
                             </p:column>
                             <p:column headerText="To Department" >
                                 <h:outputLabel value="#{b.toDepartment.name}"/>
+                            </p:column>
+                            <p:column headerText="Department Type">
+                                <h:outputText value="#{b.departmentType.label}"
+                                              rendered="#{b.departmentType != null}"/>
+                                <h:outputText value="-"
+                                              rendered="#{b.departmentType == null}"/>
                             </p:column>
                             <p:column headerText="Requested At" >
                                 <h:outputLabel value="#{b.createdAt}">

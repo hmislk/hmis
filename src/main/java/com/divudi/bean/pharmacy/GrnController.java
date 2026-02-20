@@ -128,6 +128,24 @@ public class GrnController implements Serializable {
     List<BillItem> billExpenses;
 
     public void closeSelectedPurchaseOrder() {
+        // Check for billId parameter (from DTO-based page)
+        String billIdParam = JsfUtil.getRequestParameter("billId");
+        if (billIdParam != null && !billIdParam.isEmpty()) {
+            try {
+                Long billId = Long.parseLong(billIdParam);
+                Bill bill = getBillFacade().find(billId);
+                if (bill != null) {
+                    setCloseBill(bill);
+                } else {
+                    JsfUtil.addErrorMessage("Purchase Order not found");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Bill ID");
+                return;
+            }
+        }
+
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -139,6 +157,24 @@ public class GrnController implements Serializable {
     }
 
     public void openSelectedPurchaseOrder() {
+        // Check for billId parameter (from DTO-based page)
+        String billIdParam = JsfUtil.getRequestParameter("billId");
+        if (billIdParam != null && !billIdParam.isEmpty()) {
+            try {
+                Long billId = Long.parseLong(billIdParam);
+                Bill bill = getBillFacade().find(billId);
+                if (bill != null) {
+                    setCloseBill(bill);
+                } else {
+                    JsfUtil.addErrorMessage("Purchase Order not found");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Bill ID");
+                return;
+            }
+        }
+
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -155,20 +191,38 @@ public class GrnController implements Serializable {
     }
 
     public String navigateToResive() {
+        // Check for billId parameter (from DTO-based page)
+        String billIdParam = JsfUtil.getRequestParameter("billId");
+        if (billIdParam != null && !billIdParam.isEmpty()) {
+            try {
+                Long billId = Long.parseLong(billIdParam);
+                Bill bill = getBillFacade().find(billId);
+                if (bill != null) {
+                    setApproveBill(bill);
+                } else {
+                    JsfUtil.addErrorMessage("Purchase Order not found");
+                    return "";
+                }
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Bill ID");
+                return "";
+            }
+        }
+
         // Check if there are existing unapproved GRNs for this purchase order
         if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
             for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null && 
+                if (existingGrn != null &&
                     existingGrn.getBillTypeAtomic() != null &&
                     existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE") &&
-                    !existingGrn.isRetired() && 
+                    !existingGrn.isRetired() &&
                     !existingGrn.isCancelled()) {
                     JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
                     return "";
                 }
             }
         }
-        
+
         clear();
         createGrn();
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -299,6 +353,24 @@ public class GrnController implements Serializable {
     }
 
     public String navigateToReceiveWholesale() {
+        // Check for billId parameter (from DTO-based page)
+        String billIdParam = JsfUtil.getRequestParameter("billId");
+        if (billIdParam != null && !billIdParam.isEmpty()) {
+            try {
+                Long billId = Long.parseLong(billIdParam);
+                Bill bill = getBillFacade().find(billId);
+                if (bill != null) {
+                    setApproveBill(bill);
+                } else {
+                    JsfUtil.addErrorMessage("Purchase Order not found");
+                    return "";
+                }
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Bill ID");
+                return "";
+            }
+        }
+
         grnBill = null;
         dealor = null;
         pos = null;

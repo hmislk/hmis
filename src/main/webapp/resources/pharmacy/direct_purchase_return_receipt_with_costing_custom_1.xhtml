@@ -19,7 +19,7 @@
         <div style="width: 212mm; padding-left: 0px">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
@@ -38,31 +38,31 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email :&nbsp;" rendered="#{not empty cc.attrs.bill.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{not empty cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="Email :&nbsp;" rendered="#{not empty cc.attrs.bill.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}" rendered="#{not empty cc.attrs.bill.institution.email}"/>
                 </div>
             </div>
 
             <div class="headingBill">
                 <h:outputLabel value="Direct Purchase Return Note"   />
                 <br/>
-                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.Cancelled eq true}" style="font-size: 18px;"/>
             </div>
 
             <table class="table table-borderless mt-2" style="line-height: 10px;">
                 <tr>
                     <!-- Left column -->
-                    <td>Dir. Purchase Return No</td>
+                    <td>Dir. Pur. Return No</td>
                     <td>:</td>
                     <td><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
-                    <td>Dir. Purchase No</td>
+                    <td>Dir. Pur. No</td>
                     <td>:</td>
                     <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" /> </td>
                 </tr>
 
                 <tr>
-                    <td>Dir. Purchase Return Date</td>
+                    <td>Dir. Pur. Return Date</td>
                     <td>:</td>
                     <td>
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}">
@@ -70,7 +70,7 @@
                         </h:outputLabel>    
                     </td>
 
-                    <td>Dir. Purchase Date</td>
+                    <td>Dir. Pur. Date</td>
                     <td>:</td>
                     <td>
                         <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">

@@ -6,6 +6,7 @@ import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
+import com.divudi.core.data.dto.OpdRevenueDashboardDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -306,7 +307,14 @@ public class IncomeRow implements Serializable {
 
         // Set direct properties on the IncomeRow
         if (dto.getTotalCostValue() != null) {
+            System.out.println("=== PRECISION LOSS DETECTED IN REPORT GENERATION ===");
+            System.out.println("Original BigDecimal from BFD: " + dto.getTotalCostValue());
+            System.out.println("Original BigDecimal scale: " + dto.getTotalCostValue().scale());
+            System.out.println("Original BigDecimal toString: " + dto.getTotalCostValue().toString());
+
             this.totalCostValue = dto.getTotalCostValue().doubleValue();
+
+            System.out.println("Converted to double: " + this.totalCostValue);
         }
 
         this.bill = bill;
@@ -335,6 +343,21 @@ public class IncomeRow implements Serializable {
         bill.setMargin(dto.getMargin() != null ? dto.getMargin() : 0.0);
         bill.setServiceCharge(dto.getServiceCharge() != null ? dto.getServiceCharge() : 0.0);
         bill.setPaymentScheme(dto.getPaymentScheme());
+
+        this.bill = bill;
+    }
+    
+    public IncomeRow(OpdRevenueDashboardDTO dto) {
+        this();
+
+        Bill bill = new Bill();
+        bill.setId(dto.getBillId());
+        bill.setDeptId(dto.getDeptId());
+        bill.setBillTypeAtomic(dto.getBillTypeAtomic());
+        bill.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
+        bill.setDepartment(dto.getDepartment());
+        bill.setToDepartment(dto.getToDepartment() != null ? dto.getToDepartment() : null);
+        bill.setInstitution(dto.getInstitution() != null ? dto.getInstitution() : null);
 
         this.bill = bill;
     }
@@ -369,7 +392,6 @@ public class IncomeRow implements Serializable {
         bill.setPaymentScheme(dto.getPaymentScheme());
 
         this.bill = bill;
-        System.out.println("  - Created Bill with id: " + bill.getId() + ", paymentMethod: " + bill.getPaymentMethod());
     }
 
     public IncomeRow(PharmacyIncomeBillItemDTO dto) {

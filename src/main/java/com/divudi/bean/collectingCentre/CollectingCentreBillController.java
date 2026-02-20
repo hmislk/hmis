@@ -138,6 +138,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      * Controllers
      */
     @Inject
+    WebUserController webUserController;
+    @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     ItemController itemController;
@@ -998,7 +1000,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
             }
         } catch (Exception error) {
-            System.out.println("Error = " + error);
         }
 
     }
@@ -2470,6 +2471,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        // Allow editing for new patients (id is null), or if user has the privilege for existing patients
+        if (patientDetailsEditable && patient != null && patient.getId() != null && !webUserController.hasPrivilege("OpdEditPatientDetails")) {
+            JsfUtil.addErrorMessage("You don't have permission to edit patient details");
+            this.patientDetailsEditable = false;
+            return;
+        }
         this.patientDetailsEditable = patientDetailsEditable;
     }
 
@@ -2555,7 +2562,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        paymentMethod = PaymentMethod.Agent;
     }
 
     public String getExternalDoctor() {

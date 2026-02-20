@@ -20,7 +20,9 @@
                         class="ui-button-success"
                         icon="fas fa-check"
                         ajax="false"
-                        style="float: right;">
+                        style="float: right;"
+                        onclick="if (!confirm('Are you sure you want to settle this GRN?'))
+                                    return false;">
                     </p:commandButton>
                 </f:facet>
                 <h:panelGroup >

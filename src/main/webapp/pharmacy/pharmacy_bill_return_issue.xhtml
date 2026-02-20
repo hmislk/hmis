@@ -15,6 +15,8 @@
 
             <ui:define name="content">
                 <h:form>
+
+
                     <h:panelGroup rendered="#{!issueReturnController.printPreview}">
                         <!-- Page Header -->
                         <p:panel styleClass="mb-3">
@@ -23,6 +25,20 @@
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-undo text-warning me-2"></i>
                                         <h:outputText value="Pharmacy Issue Return" styleClass="fw-bold"/>
+
+                                        <!-- Config Button (Admin Only) -->
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                            <p:commandButton
+                                                value="Config"
+                                                icon="fa fa-cog"
+                                                title="Page Configuration Management"
+                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_return_issue')}"
+                                                ajax="false"
+                                                styleClass="ui-button-secondary mx-1">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+
                                     </div>
 
                                     <!-- Center - Navigation Buttons -->
@@ -80,6 +96,7 @@
                                             icon="fas fa-check-circle"
                                             styleClass="ui-button-success"
                                             value="Finalize"
+                                            onclick="return confirm('Are you sure you want to finalize this disposal issue? This action cannot be undone.');"
                                             title="Finalize return bill"
                                             action="#{issueReturnController.finalizeDisposalIssueReturnBill()}"
                                             rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.originalBill.fullReturned}"
@@ -89,7 +106,8 @@
                                             icon="fas fa-money-bill"
                                             styleClass="ui-button-warning"
                                             value="Approve Return"
-                                            title="Authorize and process the return"
+                                            onclick="return confirm('Are you sure you want to approve this disposal issue? This action cannot be undone.');"
+                                            title="Approve and process the return"
                                             action="#{issueReturnController.settleDisposalIssueReturnBill}"
                                             rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
@@ -121,122 +139,122 @@
                             <!-- Returning Items - 8 Columns -->
                             <div class="col-lg-8">
                                 <p:panel header="Returning Items" styleClass="shadow-sm h-100">
-                            <f:facet name="header">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-list text-primary me-2"></i>
-                                        <h:outputText value="Returning Items" styleClass="fw-bold"/>
-                                    </div>
-                                    <div>
-                                        <p:commandButton
-                                            icon="fas fa-trash"
-                                            value="Delete Selected"
-                                            styleClass="ui-button-danger"
-                                            title="Delete selected items from return"
-                                            action="#{issueReturnController.deleteSelectedItems()}"
-                                            disabled="#{issueReturnController.originalBill.fullReturned}"
-                                            ajax="false">
-                                            <p:confirm header="Confirmation"
-                                                       message="Are you sure you want to delete the selected items?"
-                                                       icon="pi pi-exclamation-triangle"/>
-                                        </p:commandButton>
-                                    </div>
-                                </div>
-                            </f:facet>
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-list text-primary me-2"></i>
+                                                <h:outputText value="Returning Items" styleClass="fw-bold"/>
+                                            </div>
+                                            <div>
+                                                <p:commandButton
+                                                    icon="fas fa-trash"
+                                                    value="Delete Selected"
+                                                    styleClass="ui-button-danger"
+                                                    title="Delete selected items from return"
+                                                    action="#{issueReturnController.deleteSelectedItems()}"
+                                                    disabled="#{issueReturnController.originalBill.fullReturned}"
+                                                    ajax="false">
+                                                    <p:confirm header="Confirmation"
+                                                               message="Are you sure you want to delete the selected items?"
+                                                               icon="pi pi-exclamation-triangle"/>
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </f:facet>
 
-                            <p:dataTable
-                                var="rbi"
-                                value="#{issueReturnController.returnBillItems}"
-                                styleClass="table-striped"
-                                scrollable="true"
-                                rows="15"
-                                id="itemList"
-                                selectionMode="multiple"
-                                selection="#{issueReturnController.selectedBillItems}"
-                                rowKey="#{rbi.id}"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rowsPerPageTemplate="10,15,25,50">
+                                    <p:dataTable
+                                        var="rbi"
+                                        value="#{issueReturnController.returnBillItems}"
+                                        styleClass="table-striped"
+                                        scrollable="true"
+                                        rows="15"
+                                        id="itemList"
+                                        selectionMode="multiple"
+                                        selection="#{issueReturnController.selectedBillItems}"
+                                        rowKey="#{rbi.id}"
+                                        paginator="true"
+                                        paginatorPosition="bottom"
+                                        rowsPerPageTemplate="10,15,25,50">
 
-                                <p:column selectionBox="true" width="3em" styleClass="text-center" />
+                                        <p:column selectionBox="true" width="3em" styleClass="text-center" />
 
-                                <p:column headerText="Item Name" sortBy="#{rbi.item.name}">
-                                    <h:outputText value="#{rbi.item.name}"/>
-                                </p:column>
+                                        <p:column headerText="Item Name" sortBy="#{rbi.item.name}">
+                                            <h:outputText value="#{rbi.item.name}"/>
+                                        </p:column>
 
-                                <p:column headerText="Batch No" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}">
-                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}"/>   
-                                </p:column>
+                                        <p:column headerText="Batch No" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}">
+                                            <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}"/>   
+                                        </p:column>
 
-                                <p:column headerText="Expiry Date" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
-                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                    </h:outputText>
-                                </p:column>
+                                        <p:column headerText="Expiry Date" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                            <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                <p:column headerText="Current Stock" styleClass="text-center" width="6em">
-                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                        <p:column headerText="Current Stock" styleClass="text-center" width="6em">
+                                            <h:outputText value="#{rbi.pharmaceuticalBillItem.stock.stock}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                <p:column headerText="Issued Qty" styleClass="text-end">
-                                    <h:outputText value="#{rbi.referanceBillItem.qty}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                        <p:column headerText="Issued Qty" styleClass="text-end">
+                                            <h:outputText value="#{rbi.referanceBillItem.qty}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                <p:column headerText="Previously Returned Qty" styleClass="text-end">
-                                    <h:outputText value="#{rbi.referanceBillItem.billItemFinanceDetails.returnQuantity}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                        <p:column headerText="Previously Returned Qty" styleClass="text-end">
+                                            <h:outputText value="#{rbi.referanceBillItem.billItemFinanceDetails.returnQuantity}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                <p:column headerText="Unit Rate" styleClass="text-end">
-                                    <h:outputText value="#{rbi.netRate}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                        <p:column headerText="Unit Rate" styleClass="text-end">
+                                            <h:outputText value="#{rbi.netRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                <p:column headerText="Return Qty" styleClass="text-center" width="8em">
-                                    <p:inputText
-                                        id="txtReturnQty"
-                                        value="#{rbi.qty}"
-                                        styleClass="text-end w-100"
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        disabled="#{issueReturnController.originalBill.fullReturned}"
-                                        title="Enter quantity to return (max: #{rbi.remainingQty})">
-                                        <p:ajax
-                                            id="ajexReturnQty"
-                                            event="blur"
-                                            update="txtReturnQty lblReturnValue :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
-                                            listener="#{issueReturnController.calculateBillItemTotals(rbi)}"/>
-                                    </p:inputText>
-                                </p:column>
+                                        <p:column headerText="Return Qty" styleClass="text-center" width="8em">
+                                            <p:inputText
+                                                id="txtReturnQty"
+                                                value="#{rbi.qty}"
+                                                styleClass="text-end w-100"
+                                                autocomplete="off"
+                                                onfocus="this.select()"
+                                                disabled="#{issueReturnController.originalBill.fullReturned}"
+                                                title="Enter quantity to return (max: #{rbi.remainingQty})">
+                                                <p:ajax
+                                                    id="ajexReturnQty"
+                                                    event="blur"
+                                                    update="txtReturnQty lblReturnValue :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                                    listener="#{issueReturnController.calculateBillItemTotals(rbi)}"/>
+                                            </p:inputText>
+                                        </p:column>
 
-                                <p:column headerText="Return Value" styleClass="text-end">
-                                    <h:outputText id="lblReturnValue" value="#{rbi.netValue}" styleClass="fw-bold">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                                        <p:column headerText="Return Value" styleClass="text-end">
+                                            <h:outputText id="lblReturnValue" value="#{rbi.netValue}" styleClass="fw-bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
-                                <p:column headerText="Action" styleClass="text-center" width="6em" exportable="false">
-                                    <p:commandButton
-                                        icon="fas fa-trash"
-                                        styleClass="ui-button-danger"
-                                        title="Delete this item"
-                                        action="#{issueReturnController.deleteItem(rbi)}"
-                                        disabled="#{issueReturnController.originalBill.fullReturned}"
-                                        update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
-                                        process="@this">
-                                        <p:confirm header="Confirmation"
-                                                   message="Are you sure you want to delete this item?"
-                                                   icon="pi pi-exclamation-triangle"/>
-                                    </p:commandButton>
-                                </p:column>
+                                        <p:column headerText="Action" styleClass="text-center" width="6em" exportable="false">
+                                            <p:commandButton
+                                                icon="fas fa-trash"
+                                                styleClass="ui-button-danger"
+                                                title="Delete this item"
+                                                action="#{issueReturnController.deleteItem(rbi)}"
+                                                disabled="#{issueReturnController.originalBill.fullReturned}"
+                                                update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
+                                                process="@this">
+                                                <p:confirm header="Confirmation"
+                                                           message="Are you sure you want to delete this item?"
+                                                           icon="pi pi-exclamation-triangle"/>
+                                            </p:commandButton>
+                                        </p:column>
 
-                                </p:dataTable>
+                                    </p:dataTable>
                                 </p:panel>
                             </div>
 

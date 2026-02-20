@@ -111,7 +111,7 @@
 
                     <p:commandButton 
                         value="Cancelled" 
-                        action="pharmacy_reprint_bill_pre" 
+                        action="pharmacy_reprint_bill_pre?faces-redirect=true" 
                         styleClass="ui-button-danger btn-sm"
                         icon="fa fa-times-circle"
                         rendered="#{bill.cancelled}"
@@ -121,7 +121,7 @@
 
                     <p:commandButton 
                         value="Refunded" 
-                        action="pharmacy_reprint_bill_pre" 
+                        action="pharmacy_reprint_bill_pre?faces-redirect=true" 
                         styleClass="ui-button-warning btn-sm"
                         icon="fa fa-undo"
                         rendered="#{bill.refunded}"

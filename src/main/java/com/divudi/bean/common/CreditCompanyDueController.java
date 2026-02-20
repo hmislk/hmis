@@ -22,6 +22,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 
 import java.io.OutputStream;
@@ -65,6 +66,8 @@ public class CreditCompanyDueController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private CashRecieveBillController cashRecieveBillController;
     @EJB
     private CreditBean creditBean;
     @EJB
@@ -119,6 +122,7 @@ public class CreditCompanyDueController implements Serializable {
     private int rowCounter = 0;
 
     private List<Bill> bills = new ArrayList<>();
+    private Map<Long, Boolean> paymentSelectionMap = new HashMap<>();
 
     Map<Institution, Double> instituteGopMap = new HashMap<>();
     Map<Institution, Double> institutPaidByCompanyMap = new HashMap<>();
@@ -332,6 +336,7 @@ public class CreditCompanyDueController implements Serializable {
         site = null;
         department = null;
         institution = null;
+        creditCompany = null;
     }
 
     public void createAgeTable() {
@@ -359,6 +364,15 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through the OPD credit due age methods,
+     * which handle both OPD and Pharmacy credit bills.
+     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+     * the unified OPD Credit Settle bill type.
+     * Please use the OPD Due Age functionality instead.
+     */
+    @Deprecated
     public void createAgeTablePharmacy() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1329,9 +1343,17 @@ public class CreditCompanyDueController implements Serializable {
                 default:
                     btas = billService.fetchBillTypeAtomicsForOpdFinance();
             }
+            
+            List<Institution> setIns = new ArrayList<>();
+            
+            if(creditCompany == null){
+                setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
+            }else{
+                setIns.add(creditCompany);
+            }
 
-            List<Institution> setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
             items = new ArrayList<>();
+            paymentSelectionMap = new HashMap<>();
             for (Institution ins : setIns) {
                 List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
                 InstitutionBills newIns = new InstitutionBills();
@@ -1358,6 +1380,15 @@ public class CreditCompanyDueController implements Serializable {
         }, CreditReport.OPD_CREDIT_DUE, sessionController.getLoggedUser());
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through the OPD credit due methods,
+     * which handle both OPD and Pharmacy credit bills.
+     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+     * the unified OPD Credit Settle bill type.
+     * Please use the OPD Due Search functionality instead.
+     */
+    @Deprecated
     public void createPharmacyCreditDue() {
         List<BillType> billTypes = Arrays.asList(BillType.PharmacyWholeSale, BillType.PharmacySale);
 
@@ -3409,6 +3440,72 @@ public class CreditCompanyDueController implements Serializable {
 //    }
     public void setItems(List<InstitutionBills> items) {
         this.items = items;
+    }
+
+    public Map<Long, Boolean> getPaymentSelectionMap() {
+        if (paymentSelectionMap == null) {
+            paymentSelectionMap = new HashMap<>();
+        }
+        return paymentSelectionMap;
+    }
+
+    public void setPaymentSelectionMap(Map<Long, Boolean> paymentSelectionMap) {
+        this.paymentSelectionMap = paymentSelectionMap;
+    }
+
+    public void selectAllPaymentsForInstitution(Institution institution) {
+        if (items == null || institution == null) {
+            return;
+        }
+        for (InstitutionBills ib : items) {
+            if (ib.getInstitution() != null && institution.getId().equals(ib.getInstitution().getId())) {
+                if (ib.getPayments() != null) {
+                    for (Payment p : ib.getPayments()) {
+                        if (p.getId() != null) {
+                            getPaymentSelectionMap().put(p.getId(), Boolean.TRUE);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public String settleSelectedOpdDueBills() {
+        if (items == null) {
+            JsfUtil.addErrorMessage("No data loaded. Please run the due report first.");
+            return null;
+        }
+        List<Bill> selectedBills = new ArrayList<>();
+        Set<Long> selectedBillIds = new HashSet<>();
+        Institution firstCompany = null;
+        for (InstitutionBills ib : items) {
+            if (ib.getPayments() == null) {
+                continue;
+            }
+            for (Payment p : ib.getPayments()) {
+                if (Boolean.TRUE.equals(getPaymentSelectionMap().get(p.getId()))) {
+                    Bill bill = p.getBill();
+                    if (bill == null) {
+                        continue;
+                    }
+                    if (bill.getId() != null && !selectedBillIds.add(bill.getId())) {
+                        continue;
+                    }
+                    if (firstCompany == null) {
+                        firstCompany = ib.getInstitution();
+                    } else if (!firstCompany.getId().equals(ib.getInstitution().getId())) {
+                        JsfUtil.addErrorMessage("Please select bills from one company only.");
+                        return null;
+                    }
+                    selectedBills.add(bill);
+                }
+            }
+        }
+        if (selectedBills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select at least one bill to settle.");
+            return null;
+        }
+        return cashRecieveBillController.navigateWithPreloadedBills(selectedBills);
     }
 
     public InstitutionFacade getInstitutionFacade() {

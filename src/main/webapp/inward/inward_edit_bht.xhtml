@@ -9,6 +9,7 @@
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
                 xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
                 >
 
@@ -16,10 +17,8 @@
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
             <h:form>
-
                 <h:panelGroup  class="row" rendered="#{bhtEditController.current.bhtNo eq null}"> 
                     <div class="col-12">
-                        <h:panelGroup>
                             <p:panel >
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
@@ -30,7 +29,7 @@
                                         <div>
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                                 <p:commandButton 
-                                                    value="Back to WorkBench" 
+                                                    value="Nursing WorkBench" 
                                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                                     ajax="false"
                                                     class="ui-button-operating-theatre"
@@ -43,7 +42,6 @@
                                 </f:facet>
 
                                 <h:outputLabel value="Type Patient Name or BHT : "/>
-
                                 <p:autoComplete 
                                     widgetVar="aPt" 
                                     id="acPt" 
@@ -69,8 +67,11 @@
                                         <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
                                     <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
-                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                        <div class="d-flex justify-content-center">
+                                            <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                                #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                            </span>
+                                        </div>
                                     </p:column>
                                 </p:autoComplete> 
 
@@ -81,12 +82,29 @@
                                     action="#{bhtEditController.navigateToEditAdmissionDetails()}">
                                 </p:commandButton>
 
+                                <style>
+                                    .discharged-badge {
+                                        background-color: #f44336;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+
+                                    .not-discharged-badge {
+                                        background-color: #2196F3;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+                                </style>
+
                             </p:panel>
-                        </h:panelGroup>
                     </div>
-
                 </h:panelGroup>
-
 
                 <h:panelGroup  rendered="#{bhtEditController.current.bhtNo ne null}"> 
                     <p:panel>
@@ -105,7 +123,7 @@
                                         class="ui-button-success">
                                     </p:commandButton>
 
-                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
 
                                         <p:commandButton 
                                             ajax="false" 
@@ -136,7 +154,7 @@
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton 
-                                            value="Back to WorkBench" 
+                                            value="Nursing WorkBench" 
                                             ajax="false"
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                             class="ui-button-operating-theatre"
@@ -149,7 +167,28 @@
 
                         <div class="row">
                             <div class="col-6">
-                                <common:patient_details_for_addmission controller="#{bhtEditController}" editable="true"></common:patient_details_for_addmission>
+                                <common:patient_details searchable="false" controller="#{bhtEditController}" class="w-100"/>
+
+                                <div class="d-flex gap-2 my-2">
+                                    <p:commandButton
+                                        value="Edit Patient Details"
+                                        ajax="false"
+                                        action="#{patientController.navigateToOpdPatientEdit()}"
+                                        icon="fa fa-edit"
+                                        class="ui-button-warning"
+                                        rendered="#{bhtEditController.patient ne null and bhtEditController.patient.id ne null}">
+                                        <f:setPropertyActionListener
+                                            value="#{bhtEditController.patient}"
+                                            target="#{patientController.current}" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Manage Patient Allergies"
+                                        ajax="false"
+                                        action="#{bhtEditController.navigateToManageAllergies()}"
+                                        icon="fa-solid fa-allergies"
+                                        rendered="#{bhtEditController.patient ne null}">
+                                    </p:commandButton>
+                                </div>
 
                                 <p:panel class="my-2">
                                     <f:facet name="header">

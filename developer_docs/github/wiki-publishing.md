@@ -2,100 +2,92 @@
 
 ## Overview
 
-This project maintains user documentation in the GitHub Wiki at https://github.com/hmislk/hmis/wiki. User documentation must be published to the wiki **immediately** after creation, not waiting for PR merge.
+This project maintains user documentation in the GitHub Wiki at https://github.com/hmislk/hmis/wiki. The wiki is managed as a **separate git repository** in a sibling directory alongside the main project.
 
 ## Critical Rules
 
-**🚨 IMMEDIATE PUBLICATION**: When creating user documentation, ALWAYS publish to GitHub Wiki immediately after creating the markdown file - don't wait for PR merge.
+**🚨 NO WIKI FILES IN MAIN PROJECT**: Do NOT create wiki markdown files inside the main project repository (e.g., no `wiki-docs/` folder). This causes git submodule issues. All wiki content lives exclusively in the sibling `../hmis.wiki` directory.
 
-**📁 DIRECTORY**: Create documentation in `wiki-docs/` directory (e.g., `wiki-docs/Pharmacy/Feature-Name.md`)
+**🚨 IMMEDIATE PUBLICATION**: When creating user documentation, ALWAYS publish to GitHub Wiki immediately - don't wait for PR merge.
 
 **📝 GUIDELINES**: Follow the [Wiki Writing Guidelines](wiki-writing-guidelines.md)
 
-## Publishing Workflow
+## Directory Structure
 
-### Step 1: Create Wiki Documentation
+```
+D:\Dev\hmis\
+├── hmis\              ← Main project repository (NO wiki files here)
+│   ├── src\
+│   ├── developer_docs\
+│   ├── CLAUDE.md
+│   └── ...
+└── hmis.wiki\         ← Wiki repository (sibling directory)
+    ├── Home.md
+    ├── Pharmacy\
+    │   ├── Pharmacy-Retail-Sale.md
+    │   └── ...
+    ├── Developer\
+    │   ├── Claude-Code-Skills-Guide.md
+    │   └── ...
+    ├── Lab\
+    ├── OPD\
+    └── ...
+```
 
-1. Create markdown files in `wiki-docs/` directory
-   ```
-   wiki-docs/
-   ├── Pharmacy/
-   │   ├── Feature-Name.md
-   │   └── Other-Features.md
-   ├── Lab/
-   │   └── Lab-Features.md
-   └── General/
-       └── User-Guide.md
-   ```
+## Setup (One-Time)
 
-2. Follow [Wiki Writing Guidelines](wiki-writing-guidelines.md)
-3. Write for end users (pharmacy staff, nurses, doctors, administrators)
-
-### Step 2: Commit to Feature Branch
-
-1. Add to git:
-   ```bash
-   git add wiki-docs/
-   ```
-
-2. Commit to current feature branch with proper message:
-   ```bash
-   git commit -m "Add [Feature Name] user documentation"
-   ```
-
-3. Push feature branch to GitHub:
-   ```bash
-   git push
-   ```
-
-### Step 3: Publish to GitHub Wiki (IMMEDIATE)
-
-**Do this IMMEDIATELY after Step 2 - don't wait for PR merge**
-
-#### Full Process
+Clone the wiki repository as a sibling directory to the main project:
 
 ```bash
-# Navigate to project root
-cd /home/buddhika/development/rh
+# From the parent directory (e.g., D:\Dev\hmis\)
+cd ..
+git clone https://github.com/hmislk/hmis.wiki.git
+cd hmis
+```
 
-# Clone wiki repository (if not exists)
-git clone https://github.com/hmislk/hmis.wiki.git hmis.wiki
+## Publishing Workflow
 
-# Copy documentation to wiki
-cp -r wiki-docs/Pharmacy/* hmis.wiki/Pharmacy/
-# OR for specific file:
-# cp wiki-docs/Pharmacy/Your-Feature.md hmis.wiki/Pharmacy/
+### Step 1: Ensure Wiki Repo is Up to Date
 
-# Navigate to wiki repository
-cd hmis.wiki
+```bash
+cd ../hmis.wiki
+git pull origin master
+```
 
-# Commit and push to wiki
+### Step 2: Create or Edit Documentation
+
+Create or edit markdown files **directly in the sibling `../hmis.wiki` directory**:
+
+```bash
+# Example: Create a new pharmacy feature page
+# Edit directly in ../hmis.wiki/Pharmacy/Feature-Name.md
+```
+
+Organize files by module:
+- `Pharmacy/` - Pharmacy module documentation
+- `Lab/` - Laboratory module documentation
+- `OPD/` - Outpatient department documentation
+- `Developer/` - Developer-facing documentation
+- `Administration/` - Admin and configuration guides
+- Root level - General pages (Home.md, etc.)
+
+### Step 3: Write Content
+
+Follow the [Wiki Writing Guidelines](wiki-writing-guidelines.md):
+- Write for end users (pharmacy staff, nurses, doctors, administrators)
+- Use step-by-step instructions with numbered steps
+- Bold all UI elements (**Pharmacy** > **Reports**)
+- No code snippets or technical implementation details
+
+### Step 4: Commit and Push
+
+```bash
+cd ../hmis.wiki
 git add .
 git commit -m "Add [Feature Name] user documentation
 
-[Brief description]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
 Co-Authored-By: Claude <noreply@anthropic.com>"
-
 git push origin master
-
-# Return to main repository
-cd ..
-```
-
-#### Quick Command Template
-
-When publishing specific file documentation:
-
-```bash
-cd hmis.wiki
-cp ../wiki-docs/Pharmacy/[Your-File].md Pharmacy/
-git add Pharmacy/[Your-File].md
-git commit -m "Add [Feature] documentation"
-git push origin master
-cd ..
 ```
 
 ## Verification
@@ -104,7 +96,7 @@ After publishing, verify your documentation is live:
 
 - Wiki URL: `https://github.com/hmislk/hmis/wiki/[Page-Name]`
 - File name becomes page name (dashes become spaces)
-- Example: `Stock-Ledger-Report.md` → https://github.com/hmislk/hmis/wiki/Stock-Ledger-Report
+- Example: `Stock-Ledger-Report.md` -> https://github.com/hmislk/hmis/wiki/Stock-Ledger-Report
 
 ## Best Practices
 
@@ -128,23 +120,28 @@ See [Wiki Writing Guidelines](wiki-writing-guidelines.md) for detailed content g
 
 ### Common Issues
 
-#### Wiki Clone Fails
-- **Cause**: Authentication or network issue
-- **Solution**: Verify GitHub credentials and internet connection
+#### Wiki Repo Not Found
+- **Cause**: Sibling directory not cloned yet
+- **Solution**: Clone from the parent directory:
+  ```bash
+  cd ..
+  git clone https://github.com/hmislk/hmis.wiki.git
+  cd hmis
+  ```
 
 #### Push Rejected
 - **Cause**: Wiki repository out of sync
 - **Solution**: Pull latest changes first:
   ```bash
-  cd hmis.wiki
+  cd ../hmis.wiki
   git pull origin master
   # Then retry your changes
   ```
 
-#### File Not Appearing
+#### File Not Appearing on Wiki
 - **Cause**: Incorrect directory or file format
 - **Solution**:
-  - Verify file is in correct wiki subdirectory
+  - Verify file is in the `../hmis.wiki` directory (not in the main project)
   - Ensure file has `.md` extension
   - Check markdown formatting is valid
 
@@ -155,9 +152,9 @@ See [Wiki Writing Guidelines](wiki-writing-guidelines.md) for detailed content g
 ## Integration with Development
 
 ### Workflow Timeline
-1. **During feature development**: Create documentation in `wiki-docs/`
+1. **During feature development**: Create documentation directly in `../hmis.wiki/`
 2. **Before committing code**: Review and finalize documentation
-3. **After committing to feature branch**: Publish to wiki immediately
+3. **After creating the wiki page**: Commit and push to wiki immediately
 4. **During PR review**: Documentation already available for testing
 5. **After PR merge**: Documentation already published (no additional steps)
 
@@ -171,7 +168,8 @@ See [Wiki Writing Guidelines](wiki-writing-guidelines.md) for detailed content g
 
 ## Quick Reference
 
-**Create Documentation**: `wiki-docs/Pharmacy/YourFeature.md`
-**Publish to Wiki**: See [Step 3 above](#step-3-publish-to-github-wiki-immediate)
+**Wiki Repo Location**: `../hmis.wiki` (sibling directory)
+**Create Documentation**: Edit files directly in `../hmis.wiki/Module/Feature-Name.md`
+**Publish**: `cd ../hmis.wiki && git add . && git commit -m "message" && git push origin master`
 **View Published**: https://github.com/hmislk/hmis/wiki
 **Content Guidelines**: [Wiki Writing Guidelines](wiki-writing-guidelines.md)

@@ -23,9 +23,11 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import org.primefaces.event.SelectEvent;
 import com.divudi.core.data.dto.StockDTO;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,6 +157,16 @@ public class PharmacyAdjustmentController implements Serializable {
     // Staff selection properties
     private com.divudi.core.entity.Staff selectedStaff;
     private List<Stock> staffStocks;
+
+    // New batch creation properties
+    private Item newBatchItem;
+    private String newBatchNo;
+    private Date newBatchExpiry;
+    private Double newBatchPurchaseRate;
+    private Double newBatchRetailRate;
+    private Double newBatchCostRate;
+    private Double newBatchWholesaleRate;
+    private Department newBatchDepartment;
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -1113,7 +1125,8 @@ public class PharmacyAdjustmentController implements Serializable {
             throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
         }
 
-        ph.setPurchaseRate(ib.getCostRate() != null ? ib.getCostRate() : 0.0);
+        Double purRate = ib.getPurcahseRate();
+        ph.setPurchaseRate(purRate != null ? purRate : 0.0);
         ph.setBeforeAdjustmentValue(oldCostRate);
         ph.setAfterAdjustmentValue(newCostRate);
         ph.setStock(stockEntity);
@@ -1329,7 +1342,7 @@ public class PharmacyAdjustmentController implements Serializable {
             // Save entities
             getBillItemFacade().create(tbi);
             getDeptAdjustmentPreBill().getBillItems().add(tbi);
-            
+
             BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
             if (bfd == null) {
                 bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
@@ -1942,6 +1955,9 @@ public class PharmacyAdjustmentController implements Serializable {
             any = true;
             Stock s = stockFacade.find(dto.getStockId());
             if (s == null) {
+                continue;
+            }
+            if (s.getItemBatch() == null) {
                 continue;
             }
             stock = s;
@@ -2589,6 +2605,215 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setStaffStocks(List<Stock> staffStocks) {
         this.staffStocks = staffStocks;
+    }
+
+    // ==================== New Batch Creation Methods ====================
+    public void prepareForNewBatchCreation() {
+        newBatchItem = null;
+        newBatchNo = null;
+        newBatchExpiry = null;
+        newBatchPurchaseRate = null;
+        newBatchRetailRate = null;
+        newBatchCostRate = null;
+        newBatchWholesaleRate = null;
+        newBatchDepartment = sessionController.getDepartment();
+    }
+
+    public void onNewBatchItemSelect(SelectEvent event) {
+        if (newBatchItem == null) {
+            return;
+        }
+
+        Department dept = sessionController.getDepartment();
+        newBatchPurchaseRate = pharmacyBean.getLastPurchaseRate(newBatchItem, dept, true);
+        newBatchRetailRate = pharmacyBean.getLastRetailRate(newBatchItem, dept, true);
+    }
+
+    private boolean validateNewBatch() {
+        if (newBatchItem == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return false;
+        }
+        if (newBatchNo == null || newBatchNo.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a batch number");
+            return false;
+        }
+        if (newBatchExpiry == null) {
+            JsfUtil.addErrorMessage("Please select an expiry date");
+            return false;
+        }
+        if (newBatchPurchaseRate == null || newBatchPurchaseRate <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid purchase rate");
+            return false;
+        }
+        if (newBatchRetailRate == null || newBatchRetailRate <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid retail rate");
+            return false;
+        }
+        if (newBatchDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return false;
+        }
+
+        // Warning for past expiry date
+        if (newBatchExpiry.before(new Date())) {
+            JsfUtil.addWarningMessage("Warning: Expiry date is in the past");
+        }
+
+        // Warning if retail rate is less than purchase rate
+        if (newBatchRetailRate < newBatchPurchaseRate) {
+            JsfUtil.addWarningMessage("Warning: Retail rate is less than purchase rate");
+        }
+
+        // Check for duplicate batch
+        if (checkDuplicateBatch()) {
+            JsfUtil.addErrorMessage("A batch with the same item, batch number, and expiry date already exists");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean checkDuplicateBatch() {
+        Item itemToCheck = newBatchItem;
+        if (itemToCheck instanceof Ampp) {
+            itemToCheck = ((Ampp) itemToCheck).getAmp();
+        }
+
+        String jpql = "SELECT ib FROM ItemBatch ib WHERE ib.item = :item "
+                + "AND ib.batchNo = :batchNo AND ib.dateOfExpire = :doe AND ib.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("item", itemToCheck);
+        params.put("batchNo", newBatchNo.trim());
+        params.put("doe", newBatchExpiry);
+
+        ItemBatch existing = itemBatchFacade.findFirstByJpql(jpql, params);
+        return existing != null;
+    }
+
+    public String createNewBatch() {
+        if (!validateNewBatch()) {
+            return null;
+        }
+
+        saveNewBatch();
+        JsfUtil.addSuccessMessage("Batch created successfully");
+        return "/pharmacy/adjustments/pharmacy_adjustment_index?faces-redirect=true";
+    }
+
+    public void createNewBatchAndContinue() {
+        if (!validateNewBatch()) {
+            return;
+        }
+
+        saveNewBatch();
+        JsfUtil.addSuccessMessage("Batch created successfully. Ready for next entry.");
+
+        // Reset form but keep the item selected for convenience
+        Item previousItem = newBatchItem;
+        Department previousDept = newBatchDepartment;
+        prepareForNewBatchCreation();
+        newBatchItem = previousItem;
+        newBatchDepartment = previousDept;
+        onNewBatchItemSelect(null); // Re-populate rates
+    }
+
+    private void saveNewBatch() {
+        Item itemToSave = newBatchItem;
+        // Convert AMPP to AMP for storage (following existing pattern)
+        if (itemToSave instanceof Ampp) {
+            itemToSave = ((Ampp) itemToSave).getAmp();
+        }
+
+        // Create ItemBatch
+        ItemBatch ib = new ItemBatch();
+        ib.setItem(itemToSave);
+        ib.setBatchNo(newBatchNo.trim());
+        ib.setDateOfExpire(newBatchExpiry);
+        ib.setPurcahseRate(newBatchPurchaseRate);  // Note: intentional typo - do NOT change
+        ib.setRetailsaleRate(newBatchRetailRate);
+
+        if (newBatchCostRate != null && newBatchCostRate > 0) {
+            ib.setCostRate(newBatchCostRate);
+        }
+
+        if (newBatchWholesaleRate != null && newBatchWholesaleRate > 0) {
+            ib.setWholesaleRate(newBatchWholesaleRate);
+        }
+
+        itemBatchFacade.create(ib);
+
+        // Create Stock with 0 quantity for the department
+        Stock s = new Stock();
+        s.setItemBatch(ib);
+        s.setDepartment(newBatchDepartment);
+        s.setStock(0.0);
+        stockFacade.create(s);
+    }
+
+    // Getters and Setters for new batch creation properties
+    public Item getNewBatchItem() {
+        return newBatchItem;
+    }
+
+    public void setNewBatchItem(Item newBatchItem) {
+        this.newBatchItem = newBatchItem;
+    }
+
+    public String getNewBatchNo() {
+        return newBatchNo;
+    }
+
+    public void setNewBatchNo(String newBatchNo) {
+        this.newBatchNo = newBatchNo;
+    }
+
+    public Date getNewBatchExpiry() {
+        return newBatchExpiry;
+    }
+
+    public void setNewBatchExpiry(Date newBatchExpiry) {
+        this.newBatchExpiry = newBatchExpiry;
+    }
+
+    public Double getNewBatchPurchaseRate() {
+        return newBatchPurchaseRate;
+    }
+
+    public void setNewBatchPurchaseRate(Double newBatchPurchaseRate) {
+        this.newBatchPurchaseRate = newBatchPurchaseRate;
+    }
+
+    public Double getNewBatchRetailRate() {
+        return newBatchRetailRate;
+    }
+
+    public void setNewBatchRetailRate(Double newBatchRetailRate) {
+        this.newBatchRetailRate = newBatchRetailRate;
+    }
+
+    public Double getNewBatchCostRate() {
+        return newBatchCostRate;
+    }
+
+    public void setNewBatchCostRate(Double newBatchCostRate) {
+        this.newBatchCostRate = newBatchCostRate;
+    }
+
+    public Double getNewBatchWholesaleRate() {
+        return newBatchWholesaleRate;
+    }
+
+    public void setNewBatchWholesaleRate(Double newBatchWholesaleRate) {
+        this.newBatchWholesaleRate = newBatchWholesaleRate;
+    }
+
+    public Department getNewBatchDepartment() {
+        return newBatchDepartment;
+    }
+
+    public void setNewBatchDepartment(Department newBatchDepartment) {
+        this.newBatchDepartment = newBatchDepartment;
     }
 
 }

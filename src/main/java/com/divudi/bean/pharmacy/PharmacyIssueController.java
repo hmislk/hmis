@@ -9,6 +9,11 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.store.StoreIssueController;
@@ -23,6 +28,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
@@ -64,6 +70,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.TemporalType;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -98,6 +105,183 @@ public class PharmacyIssueController implements Serializable {
      * Creates a new instance of PharmacySaleController
      */
     public PharmacyIssueController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_issue");
+        metadata.setPageName("Pharmacy Disposal Issue");
+        metadata.setDescription("Direct issue of pharmacy items (medicines/devices) as disposal to departments");
+        metadata.setControllerClass("PharmacyIssueController");
+
+        // Configuration Options - Rate and Value Display
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Consumption - Show Rate and Value",
+            "Controls visibility of purchase rate, retail rate, cost rate, and their corresponding values in autocomplete dropdown, input fields, bill items table, and totals section",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Print Formats
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy DIsposal Issue Receipt is A4 Paper",
+            "Uses A4 paper format for disposal issue receipts (default format)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy DIsposal Issue Receipt is Custom 1",
+            "Uses Custom format 1 for disposal issue receipts",
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy DIsposal Issue Receipt is Custom 2",
+            "Uses Custom format 2 for disposal issue receipts",
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        // Configuration Options - Search Settings
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Search Items by Item Code",
+            "Enables searching for items by their code in autocomplete fields",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Search Items by Generic Name",
+            "Enables searching for items by their generic name in autocomplete fields",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Restrict Consumption to Stock Availability",
+            "Restricts item selection to only items with available stock",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Bill Number Generation Strategies
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: Prefix-DeptCode-InstCode-Year-Number (e.g., PDI-PHARM-001-2024-0001)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers in format: Prefix-InstCode-DeptCode-Year-Number (e.g., PDI-001-PHARM-2024-0001)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: Prefix-InstCode-Year-Number (e.g., PDI-001-2024-0001) - institution-wide counter",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department",
+            "Generates separate bill number sequences based on the logged-in user's department",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department",
+            "Generates separate bill number sequences based on the department receiving the issue",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination",
+            "Generates separate bill number sequences based on the combination of logged and issuing departments",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Business Logic
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add quantity from multiple batches in pharmacy disposal issue",
+            "Allows adding quantities from multiple batches of the same item to a single bill line",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disposal is by Purchase Rate",
+            "Uses purchase rate for calculating disposal issue values (default rate type)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disposal is by Cost Rate",
+            "Uses cost rate for calculating disposal issue values",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disposal is by Retail Rate",
+            "Uses retail rate for calculating disposal issue values",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add the Institution Code to the Bill Number Generator",
+            "Includes institution code in the generated bill numbers",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE",
+            "Custom suffix to append to pharmacy disposal issue bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management - displays the Config button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ConsumptionViewRates",
+            "Permission to view purchase rates, retail rates, cost rates, and their corresponding values throughout the disposal issue interface"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to access printer configuration settings dialog for changing disposal issue receipt paper formats"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     @Inject
@@ -136,6 +320,8 @@ public class PharmacyIssueController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private StockController stockController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     @EJB
     private CashTransactionBean cashTransactionBean;
@@ -177,24 +363,6 @@ public class PharmacyIssueController implements Serializable {
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
 
-    public static class ConfigOptionInfo {
-
-        private final String key;
-        private final String defaultValue;
-
-        public ConfigOptionInfo(String key, String defaultValue) {
-            this.key = key;
-            this.defaultValue = defaultValue;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getDefaultValue() {
-            return defaultValue;
-        }
-    }
 
     public void makeNull() {
         selectedAlternative = null;
@@ -394,6 +562,7 @@ public class PharmacyIssueController implements Serializable {
         List<Item> items;
         String sql;
         sql = "select i from Item i where i.retired=false "
+                + " and i.inactive=false "
                 + " and (i.name) like :n and type(i)=:t "
                 + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
@@ -416,9 +585,9 @@ public class PharmacyIssueController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.retired=false and i.itemBatch.item.inactive=false and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.retired=false and i.itemBatch.item.inactive=false and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);
@@ -471,6 +640,8 @@ public class PharmacyIssueController implements Serializable {
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
             .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ")
             .append("AND (");
 
         sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
@@ -503,6 +674,11 @@ public class PharmacyIssueController implements Serializable {
         parameters.put("department", getSessionController().getLoggedUser().getDepartment());
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry.toUpperCase() + "%");
+
+        // Add department type filter if set
+        if (getPreBill().getDepartmentType() != null) {
+            parameters.put("departmentType", getPreBill().getDepartmentType());
+        }
 
         // Check if consumption restriction is enabled
         boolean restrictConsumption = configOptionApplicationController.getBooleanValueByKey(
@@ -540,7 +716,14 @@ public class PharmacyIssueController implements Serializable {
 
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
-            .append("AND s.department = :department ");
+            .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ");
+
+        // Add department type filter if set
+        if (getPreBill().getDepartmentType() != null) {
+            sql.append("AND s.itemBatch.item.departmentType = :departmentType ");
+        }
 
         // Add consumption allowed filter if enabled (null-safe for legacy data)
         if (restrictConsumption) {
@@ -779,6 +962,19 @@ public class PharmacyIssueController implements Serializable {
                 return;
             }
         }
+
+        // Validate department type consistency
+        if (getPreBill().getDepartmentType() != null && !getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                        return;
+                    }
+                }
+            }
+        }
+
         if (checkAllBillItem()) {
             return;
         }
@@ -855,6 +1051,43 @@ public class PharmacyIssueController implements Serializable {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
             JsfUtil.addErrorMessage("Please Enter Item");
             return 0.0;
+        }
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return 0.0;
+        }
+
+        // Auto-set department type if not already set
+        if (getPreBill().getDepartmentType() == null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            if (selectedItem.getDepartmentType() != null) {
+                getPreBill().setDepartmentType(selectedItem.getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getPreBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item's department type matches bill's department type
+        if (getPreBill().getDepartmentType() != null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return 0.0;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
+                return 0.0;
+            }
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
@@ -938,6 +1171,44 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Item");
             return;
         }
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return;
+        }
+
+        // Auto-set department type if not already set
+        if (getPreBill().getDepartmentType() == null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            if (selectedItem.getDepartmentType() != null) {
+                getPreBill().setDepartmentType(selectedItem.getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getPreBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item's department type matches bill's department type
+        if (getPreBill().getDepartmentType() != null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
+                return;
+            }
+        }
+
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
             JsfUtil.addErrorMessage("Please enter a quentity");
@@ -1183,6 +1454,11 @@ public class PharmacyIssueController implements Serializable {
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
 
+        // Clear department type if all items are removed
+        if (getPreBill().getBillItems().isEmpty()) {
+            getPreBill().setDepartmentType(null);
+        }
+
         calTotal();
     }
 
@@ -1413,6 +1689,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private void clearBill() {
+        if (preBill != null) {
+            preBill.setDepartmentType(null);
+        }
         preBill = null;
         newPatient = null;
         searchedPatient = null;
@@ -1696,9 +1975,9 @@ public class PharmacyIssueController implements Serializable {
 
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Purchase Rate", "true"));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Cost Rate", "false"));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Retail Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
         return list;
     }
 
@@ -2115,6 +2394,8 @@ public class PharmacyIssueController implements Serializable {
                     + " where b.retired=false "
                     + " and b.billTypeAtomic=:bt "
                     + " and b.fromDepartment=:fd "
+                    + " and b.toDepartment.retired=false "
+                    + " and b.toDepartment.inactive=false "
                     + " order by b.id desc";
             Map<String, Object> m = new HashMap<>();
             m.put("bt", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
@@ -2133,6 +2414,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void changeDepartment() {
+        if (preBill != null) {
+            preBill.setDepartmentType(null);
+        }
         preBill = null;
         setToDepartment(null);
     }
@@ -2149,6 +2433,7 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setFromInstitution(sessionController.getInstitution());
         getPreBill().setFromDepartment(sessionController.getDepartment());
         getPreBill().setToDepartment(toDepartment);
+        getPreBill().setDepartmentType(null);
         return "";
     }
 }

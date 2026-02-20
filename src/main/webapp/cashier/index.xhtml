@@ -11,7 +11,9 @@
                 <div class="row" >
                     <div class="col-2" >
                         <h:form>
-                            <p:accordionPanel 
+
+
+                            <p:accordionPanel
                                 class="m-1 w-100"
                                 widgetVar="basic"
                                 id="accordion"
@@ -148,29 +150,37 @@
                                 </p:tab>
 
                                 <p:tab title="Float Management">
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary" 
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-primary"
                                         value="Float Transfer"
-                                        icon="pi pi-directions"  
-                                        ajax="false" 
+                                        icon="pi pi-directions"
+                                        ajax="false"
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
 
                                     <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                        <p:commandButton 
-                                            class="my-1 w-100 ui-button-warning"  
+                                        <p:commandButton
+                                            class="my-1 w-100 ui-button-warning"
                                             value="Float Transfers for me to Receive"
-                                            icon="pi pi-inbox" 
-                                            ajax="false" 
+                                            icon="pi pi-inbox"
+                                            ajax="false"
                                             action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                                         </p:commandButton>
                                     </p:badge>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-success"  
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Float Outs"
+                                        icon="pi pi-sign-out"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyFundTransferBillsOut()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
                                         value="Transfer Bill Payment Method"
-                                        icon="pi pi-refresh" 
-                                        ajax="false" 
+                                        icon="pi pi-refresh"
+                                        ajax="false"
                                         action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
                                     </p:commandButton>
                                 </p:tab>
@@ -357,7 +367,29 @@
                                         </p:commandButton>
                                     </p>
                                 </p:tab>
+
+                                <p:tab title="Admin" rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <!-- Config Button for Admin Users -->
+                                    <div class="mb-2">
+                                        <h:panelGroup >
+                                            <p:commandButton
+                                                value="Config"
+                                                icon="fa fa-cog"
+                                                title="Cashier Dashboard Configuration Management"
+                                                action="#{pageAdminController.navigateToPageAdmin('cashier/index')}"
+                                                ajax="false"
+                                                styleClass="ui-button-secondary w-100">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </div>
+                                </p:tab>
+
                             </p:accordionPanel>
+
+
+
+
+
                         </h:form>
                     </div>
                     <div class="col-10 b-1"  >

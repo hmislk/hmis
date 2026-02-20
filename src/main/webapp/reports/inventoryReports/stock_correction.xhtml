@@ -282,6 +282,11 @@
                                 <h:outputText value="#{(item.afterAdjustment  - item.beforeAdjustment) * item.quantity}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalStockCorrectionVariance}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

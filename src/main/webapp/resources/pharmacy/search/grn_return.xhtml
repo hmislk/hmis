@@ -43,24 +43,18 @@
                 </h:commandLink>
             </p:column>      
             <p:column headerText="GRN No" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" value="#{bill.referenceBill.deptId}">
+                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column> 
             <p:column headerText="Delaor Name" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" value="#{bill.toInstitution.name}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                    <h:outputLabel value="#{bill.toInstitution.name}" ></h:outputLabel>
             </p:column>
             <p:column headerText="Billed At"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -76,11 +70,8 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Billed By" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled By " />
@@ -95,27 +86,18 @@
                 </h:panelGroup>
             </p:column>          
             <p:column headerText="Payment Method">
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
             </p:column>                               
             <p:column headerText="Net Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
             </p:column>
 
             <p:column headerText="Sale Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
             </p:column>
 
             <p:column headerText="Comments" >
@@ -127,14 +109,14 @@
 
             <p:column headerText="Actions" >
                 <!--TODO: Need to use a backend method to navigate in a seperate issue-->
-                <p:commandButton 
+<!--                <p:commandButton 
                     title="View" 
                     icon="fa fa-eye" 
                     class="m-1 ui-button-info"
                     action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" 
                     ajax="false">
                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                </p:commandButton>
+                </p:commandButton>-->
 
                 <p:commandButton 
                     title="Admin" 

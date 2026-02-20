@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -96,7 +97,6 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -105,12 +105,15 @@ public class InwardBeanController implements Serializable {
     private AdmissionFacade admissionFacade;
     @EJB
     private PatientEncounterFacade encounterFacade;
+
     @Inject
     BillBeanController billBean;
     @Inject
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
@@ -417,7 +420,7 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+    public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
 
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
@@ -425,12 +428,21 @@ public class InwardBeanController implements Serializable {
                 + " WHERE bt.retired=false"
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp  "
-                + " and (bt.bill.billType=:btp2) "
                 + " and bt.bill.patientEncounter IN :pe";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //  hm.put("btp", BillType.InwardBill);
-        hm.put("btp2", BillType.InwardProfessional);
+
+        if (isEstimatedBill) {
+            sql += " and bt.bill.billType in :bt";
+            List<BillType> bts = List.of(BillType.InwardProfessional, BillType.InwardProfessionalEstimates);
+            hm.put("bt", bts);
+
+        } else if (!isEstimatedBill) {
+            sql += " and bt.bill.billType = :bt";
+            hm.put("bt", BillType.InwardProfessional);
+        }
+
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
@@ -1725,6 +1737,74 @@ public class InwardBeanController implements Serializable {
         return patientRoom;
     }
 
+    public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {
+//     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+        if (patientRoom == null) {
+            return null;
+        }
+
+        if (newRoomFacilityCharge == null) {
+            return null;
+        }
+
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
+            patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        }
+
+        if (newRoomFacilityCharge.getMaintananceCharge() != null) {
+            patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
+        }
+        if (newRoomFacilityCharge.getMoCharge() != null) {
+            patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        }
+        if (newRoomFacilityCharge.getNursingCharge() != null) {
+            patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
+        }
+        if (newRoomFacilityCharge.getRoomCharge() != null) {
+            patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
+        }
+        if (newRoomFacilityCharge.getLinenCharge() != null) {
+            patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
+        }
+        patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
+        patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
+
+        patientRoom.setAdmitted(true);
+        patientRoom.setAdmittedAt(admittedAt);
+        patientRoom.setAddmittedBy(webUser);
+        patientRoom.setRoomFacilityCharge(newRoomFacilityCharge);
+
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
+
+        return patientRoom;
+    }
+
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientEncounter patientEncounter, WebUser webUser) {
+        if (patientRoom == null) {
+            return null;
+        }
+
+        if (patientEncounter == null) {
+            return null;
+        }
+
+        patientRoom.setCreatedAt(new Date());
+        patientRoom.setCreater(webUser);
+        patientRoom.setAdmitted(false);
+        patientRoom.setPatientEncounter(patientEncounter);
+
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
+        return patientRoom;
+    }
+
     public PatientRoom savePatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
 
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
@@ -1861,17 +1941,29 @@ public class InwardBeanController implements Serializable {
         Long temp = 0l;
         String sql;
 
+        boolean institutionBasedBht = configOptionApplicationController
+                .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
+        Institution currentInstitution = getSessionController().getInstitution();
+
         if (admissionType != null) {
             if (admissionType.isGenerateSeparateAdmissionNumber()) {
                 sql = "SELECT count(a.id) FROM Admission a ";
                 sql += " where a.admissionType=:adType ";
                 hm.put("adType", admissionType);
+                if (institutionBasedBht && currentInstitution != null) {
+                    sql += " and a.institution=:ins ";
+                    hm.put("ins", currentInstitution);
+                }
                 temp += admissionType.getAdditionToCount();
                 temp += admissionFacade.countByJpql(sql, hm);
             } else {
                 sql = "SELECT count(a.id) FROM Admission a ";
                 sql += " where a.admissionType.admissionTypeEnum=:adType ";
                 hm.put("adType", admissionType.getAdmissionTypeEnum());
+                if (institutionBasedBht && currentInstitution != null) {
+                    sql += " and a.institution=:ins ";
+                    hm.put("ins", currentInstitution);
+                }
                 temp += admissionType.getAdditionToCount();
                 temp += admissionFacade.countByJpql(sql, hm);
             }
@@ -1879,6 +1971,10 @@ public class InwardBeanController implements Serializable {
             sql = "SELECT count(a.id) FROM Admission a ";
             sql += " where a.admissionType.admissionTypeEnum=:adType ";
             hm.put("adType", admissionType);
+            if (institutionBasedBht && currentInstitution != null) {
+                sql += " and a.institution=:ins ";
+                hm.put("ins", currentInstitution);
+            }
             temp += admissionFacade.countByJpql(sql);
         }
 
@@ -1895,6 +1991,13 @@ public class InwardBeanController implements Serializable {
         }
 
         bhtText += "/" + Long.toString(temp);
+
+        if (institutionBasedBht && currentInstitution != null
+                && currentInstitution.getInstitutionCode() != null
+                && !currentInstitution.getInstitutionCode().trim().isEmpty()) {
+            bhtText = currentInstitution.getInstitutionCode().trim() + "/" + bhtText;
+        }
+
         return bhtText;
     }
 
@@ -1943,7 +2046,7 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()) {
             return;
         }
-        if (patientEncounter == null || patientEncounter.getAdmissionType() == null){
+        if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
             return;
         }
 

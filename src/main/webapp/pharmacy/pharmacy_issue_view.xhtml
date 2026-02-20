@@ -41,35 +41,35 @@
                 <h:panelGroup
                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper', true)}"
                     styleClass="noBorder">
-                    <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>
+                    <ph:transferIssue duplicate="true" bill="#{pharmacyBillSearch.bill}"/>
                 </h:panelGroup>
 
                 <h:panelGroup
                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper Detailed', false)}"
                     styleClass="noBorder">
-                    <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}"/>
+                    <ph:transferIssue_detailed duplicate="true" bill="#{pharmacyBillSearch.bill}"/>
                 </h:panelGroup>
 
                 <h:panelGroup
                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Letter Paper Custom 1', false)}"
                     styleClass="noBorder">
-                    <ph:transferIssue_custom_1_letter bill="#{pharmacyBillSearch.bill}"/>
+                    <ph:transferIssue_custom_1_letter reprint="true" bill="#{pharmacyBillSearch.bill}"/>
                 </h:panelGroup>
 
                 <h:panelGroup
                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue POS Paper', false)}">
-                    <ph:Pharmacy_department_Issue_pos_bill bill="#{pharmacyBillSearch.bill}"/>
+                    <ph:Pharmacy_department_Issue_pos_bill duplicate="true" bill="#{pharmacyBillSearch.bill}"/>
                 </h:panelGroup>
 
                 <h:panelGroup id="gpBillPreviewPosHeader"
                               rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper', false)}">
-                    <ph:saleBill_Header_Transfer bill="#{pharmacyBillSearch.bill}"/>
+                    <ph:saleBill_Header_Transfer duplicate="true" bill="#{pharmacyBillSearch.bill}"/>
                 </h:panelGroup>
 
                 <h:panelGroup
                     id="gpBillTemplate"
                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template', false)}">
-                    <ph:pharmacy_transfer_issue_receipt bill="#{pharmacyBillSearch.bill}"/>
+                    <ph:pharmacy_transfer_issue_receipt duplicate="true" bill="#{pharmacyBillSearch.bill}"/>
                 </h:panelGroup>
 
             </h:panelGroup>

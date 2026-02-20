@@ -116,6 +116,21 @@
                         </td>
                     </tr>
 
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Batch Bill" style="text-align: center!important;
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}"  style="text-align: center!important;
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >

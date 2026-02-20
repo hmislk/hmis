@@ -253,8 +253,10 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Department department, Double total) {
-        this.total = total;
+        this.total = (total != null) ? total : 0.0;
+        this.rowValue = this.total; // Fallback for compatibility
         this.department = department;
+        this.id = UUID.randomUUID(); // Consistency with other constructors
     }
 
     public ReportTemplateRow(Department department, Date date,
@@ -1206,7 +1208,16 @@ public class ReportTemplateRow implements Serializable {
     }
 
     public ReportTemplateRow(Bill bill) {
-        this.bill = bill;
+        if (bill == null) {
+            this.bill = null;
+            return;
+        }
+        try {
+            this.bill = bill;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public Payment getPayment() {

@@ -8,6 +8,7 @@ package com.divudi.core.data;
 
 public enum ReportType {
     GENARATE("Genarate"),
+    INTERFACE("Interface"),
     UPLOAD("Upload"),
     OTHER("Other");
 

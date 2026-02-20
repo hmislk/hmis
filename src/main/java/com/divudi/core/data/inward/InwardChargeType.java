@@ -22,6 +22,7 @@ public enum InwardChargeType {
     MedicalCareICU("Medical Care"),//Goes With Room
     MedicalServices("Medical Services"),
     Medicine("Medicine"),//For BHT ISSUE
+    MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies"),//For Surgery Bill Medicines
     MOCharges("MO Charges"),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges"),//GOES WITH PATIENT ROOM
     DoctorAndNurses("Assisting Charge"),//Set Doctor && Nurse Fees
@@ -47,6 +48,14 @@ public enum InwardChargeType {
     VAT("VAT (18%)"),
     AccessoryCharges("Endoscopy Charges"),
     EyeLence("Opthalmic Technician & Lense Fee"),
+    @Deprecated
+    RoomChargesVAT("RoomChargesVAT"),
+    @Deprecated
+    ProfessionalChargeVAT("ProfessionalChargeVAT"),
+    @Deprecated
+    LensFee("Lense Fee"),
+    @Deprecated
+    PackageFee("PackageFee"),
     HospitalSupportService("Hospital Support Service Charges"),
     ExtraMedicine("Extra Medicine Charges"),
     DialysisTreatment("Dialysis Treatment Charges"),
@@ -56,6 +65,8 @@ public enum InwardChargeType {
     Investigations("Investigations"),
     @Deprecated
     MedicalCare("MedicalCare"),
+    @Deprecated
+    MedicalCareWard("MedicalCareWard"),
     BabyCare("BabyCare Charges"),
     LabourCharges("Labour Charges"),
     @Deprecated

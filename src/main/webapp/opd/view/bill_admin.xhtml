@@ -56,7 +56,10 @@
                                                 <h:outputLabel value="Bill Number:" />
                                                 <h:outputText value="#{billSearch.viewingBill.deptId}" />
                                                 <h:outputLabel value="Bill Type:" />
-                                                <h:outputText value="#{billSearch.viewingBill.billTypeAtomic}" />
+
+                                                <p:selectOneMenu class="w-100" style="width: 150px"  filterMatchMode="contains" filter="true" id="group" value="#{billSearch.viewingBill.billTypeAtomic}">
+                                                    <f:selectItems class="w-50" value="#{enumController.billTypesAtomic}"/>
+                                                </p:selectOneMenu>
 
                                                 <h:outputLabel value="Total:" />
                                                 <h:outputText value="#{billSearch.viewingBill.total}">
@@ -456,6 +459,27 @@
 
                                         </p:dataTable>
 
+                                    </p:tab>
+
+                                    <p:tab title="Functions" >
+                                        <p:panel header="Administrative Functions">
+                                            <div class="p-grid">
+                                                <div class="p-col-12 p-md-6 p-lg-4 mb-3">
+                                                    <p:commandButton
+                                                        value="Change From Institution"
+                                                        icon="pi pi-building"
+                                                        styleClass="ui-button-warning"
+                                                        action="#{billSearch.navigateToChangeFromInstitution()}"
+                                                        ajax="false"
+                                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                                        style="width: 100%;">
+                                                        <f:setPropertyActionListener
+                                                            value="#{billSearch.viewingBill}"
+                                                            target="#{billSearch.bill}" />
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </p:panel>
                                     </p:tab>
 
                                 </p:tabView>

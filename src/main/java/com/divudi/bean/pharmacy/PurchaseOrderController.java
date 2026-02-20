@@ -11,6 +11,7 @@ import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
@@ -217,14 +218,14 @@ public class PurchaseOrderController implements Serializable {
             configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL, "POA");
         }
 
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
 
         // Handle Department ID generation
         String deptId;
-        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.PHARMACY_ORDER_APPROVAL
             );
@@ -259,8 +260,7 @@ public class PurchaseOrderController implements Serializable {
         //        Approve Date and Time 
         getAprovedBill().setApproveAt(new Date());
         getAprovedBill().setApproveUser(getSessionController().getLoggedUser());
-        
-        
+
         billFacade.edit(getAprovedBill());
         notificationController.createNotification(getAprovedBill());
 
@@ -500,9 +500,7 @@ public class PurchaseOrderController implements Serializable {
 
         getAprovedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAprovedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
 
-        
         getAprovedBill().setCreater(getSessionController().getLoggedUser());
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
@@ -658,7 +656,10 @@ public class PurchaseOrderController implements Serializable {
             aprovedBill = new BilledBill();
             aprovedBill.setBillType(BillType.PharmacyOrderApprove);
             aprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
-            aprovedBill.setConsignment(getRequestedBill() != null && getRequestedBill().isConsignment());
+            if (getRequestedBill() != null) {
+                aprovedBill.setConsignment(getRequestedBill().isConsignment());
+                aprovedBill.setDepartmentType(getRequestedBill().getDepartmentType());
+            }
         }
         return aprovedBill;
     }

@@ -24,6 +24,15 @@
                                         <p class="text-muted mb-0">Manage database schema migrations and version control</p>
                                     </div>
                                     <div>
+                                        <p:commandButton value="Re-Execute All"
+                                                         action="#{databaseMigrationController.reExecuteAllMigrations()}"
+                                                         update="migrationForm"
+                                                         rendered="#{not databaseMigrationController.migrationInProgress}"
+                                                         class="ui-button-danger me-2"
+                                                         icon="pi pi-replay"
+                                                         onclick="return confirm('⚠️ WARNING: This will re-execute ALL migrations regardless of their current status. This is a powerful operation that should only be used in development or when you are absolutely sure. Continue?');"
+                                                         title="Re-execute all migrations (including successful ones)" />
+
                                         <p:commandButton value="Refresh"
                                                          action="#{databaseMigrationController.refreshMigrationLists()}"
                                                          update="migrationForm"
@@ -136,19 +145,85 @@
                                                     #{migration.requiresDowntime ? 'Yes' : 'No'}
                                                 </span>
                                             </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton value="Execute"
+                                                                 action="#{databaseMigrationController.executeSingleMigration(migration.version)}"
+                                                                 update="migrationForm"
+                                                                 class="ui-button-success ui-button-sm"
+                                                                 icon="pi pi-play"
+                                                                 onclick="return confirm('Are you sure you want to execute migration #{migration.version}? This action cannot be undone easily.');" />
+                                            </p:column>
                                         </p:dataTable>
 
                                         <div class="mt-3">
-                                            <p:commandButton value="Execute All Pending Migrations"
-                                                             action="#{databaseMigrationController.executeAllPendingMigrations()}"
-                                                             update="migrationForm"
-                                                             class="ui-button-warning"
-                                                             icon="pi pi-play"
-                                                             onclick="return confirm('Are you sure you want to execute all pending migrations? This action cannot be undone easily.')">
-                                                <p:confirm header="Confirm Migration Execution"
-                                                           message="This will execute all pending migrations. Continue?"
-                                                           icon="pi pi-exclamation-triangle" />
-                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnExecuteAll"
+                                                value="Execute All Pending Migrations"
+                                                action="#{databaseMigrationController.executeAllPendingMigrations()}"
+                                                update="migrationForm"
+                                                class="ui-button-warning"
+                                                icon="pi pi-play"
+                                                onclick="return confirm('Are you sure you want to execute all pending migrations? This action cannot be undone easily.');" />
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Failed Migrations Section -->
+                        <h:panelGroup layout="block" styleClass="row mb-4" rendered="#{not empty databaseMigrationController.failedMigrations and not databaseMigrationController.migrationInProgress}">
+                            <div class="col-12">
+                                <div class="card border-danger">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fa fa-times-circle me-2"></i>
+                                            Failed Migrations
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-3">
+                                            There are <strong>#{databaseMigrationController.failedMigrations.size()}</strong>
+                                            failed migrations that can be re-executed after fixing the underlying issues.
+                                        </p>
+
+                                        <p:dataTable value="#{databaseMigrationController.failedMigrations}"
+                                                     var="failedMigration"
+                                                     styleClass="table table-striped">
+                                            <p:column headerText="Version">
+                                                <h:outputText value="#{failedMigration.version}" />
+                                            </p:column>
+                                            <p:column headerText="Description">
+                                                <h:outputText value="#{failedMigration.description}" />
+                                            </p:column>
+                                            <p:column headerText="Failed At">
+                                                <h:outputText value="#{failedMigration.executedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Error">
+                                                <h:outputText value="#{failedMigration.errorMessage}"
+                                                              style="color: #dc3545; font-family: monospace; max-width: 300px; word-break: break-all;" />
+                                            </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton value="Re-Execute"
+                                                                 action="#{databaseMigrationController.reExecuteMigration(failedMigration.version)}"
+                                                                 update="migrationForm"
+                                                                 class="ui-button-danger ui-button-sm"
+                                                                 icon="pi pi-replay"
+                                                                 onclick="return confirm('Are you sure you want to re-execute migration #{failedMigration.version}? Make sure the underlying issues are fixed.');" />
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <div class="mt-3">
+                                            <p:commandButton
+                                                id="btnExecuteFailed"
+                                                value="Re-Execute All Failed Migrations"
+                                                action="#{databaseMigrationController.executeAllFailedMigrations()}"
+                                                update="migrationForm"
+                                                class="ui-button-danger"
+                                                icon="pi pi-replay"
+                                                onclick="return confirm('Are you sure you want to re-execute all failed migrations? Make sure the underlying issues are fixed.');" />
                                         </div>
                                     </div>
                                 </div>
@@ -184,12 +259,33 @@
                                                 </span>
                                             </p:column>
                                             <p:column headerText="Actions">
-                                                <p:commandButton value="View Details"
-                                                                 action="#{databaseMigrationController.setSelectedMigration(migration)}"
-                                                                 update="migrationDetailsDialog"
-                                                                 oncomplete="PF('migrationDetailsDialog').show()"
-                                                                 class="ui-button-secondary ui-button-sm"
-                                                                 icon="pi pi-eye" />
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton value="Execute"
+                                                                     action="#{databaseMigrationController.executeSingleMigration(migration.version)}"
+                                                                     update="migrationForm"
+                                                                     rendered="#{not databaseMigrationController.isMigrationExecuted(migration.version) and not databaseMigrationController.migrationInProgress}"
+                                                                     class="ui-button-success ui-button-sm"
+                                                                     icon="pi pi-play"
+                                                                     onclick="return confirm('Are you sure you want to execute migration #{migration.version}?');"
+                                                                     title="Execute this migration"/>
+
+                                                    <p:commandButton value="Re-Execute"
+                                                                     action="#{databaseMigrationController.reExecuteMigration(migration.version)}"
+                                                                     update="migrationForm"
+                                                                     rendered="#{databaseMigrationController.isMigrationExecuted(migration.version) and not databaseMigrationController.migrationInProgress}"
+                                                                     class="ui-button-info ui-button-sm"
+                                                                     icon="pi pi-replay"
+                                                                     onclick="return confirm('Are you sure you want to re-execute migration #{migration.version}? This will re-run an already executed migration.');"
+                                                                     title="Re-execute this already executed migration"/>
+
+                                                    <p:commandButton value="Details"
+                                                                     action="#{databaseMigrationController.setSelectedMigration(migration)}"
+                                                                     update=":migrationDetailsDialog"
+                                                                     oncomplete="PF('migrationDetailsDialog').show()"
+                                                                     class="ui-button-secondary ui-button-sm"
+                                                                     icon="pi pi-eye"
+                                                                     title="View migration details"/>
+                                                </div>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
@@ -225,13 +321,25 @@
                                                 <h:outputText value="#{execution.executedBy.name}" />
                                             </p:column>
                                             <p:column headerText="Actions">
-                                                <p:commandButton value="Rollback"
-                                                                 action="#{databaseMigrationController.rollbackMigration(execution.version)}"
-                                                                 update="migrationForm"
-                                                                 rendered="#{execution.successful}"
-                                                                 class="ui-button-danger ui-button-sm"
-                                                                 icon="pi pi-undo"
-                                                                 onclick="return confirm('Are you sure you want to rollback this migration?')" />
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton value="Re-Execute"
+                                                                     action="#{databaseMigrationController.reExecuteMigration(execution.version)}"
+                                                                     update="migrationForm"
+                                                                     rendered="#{not databaseMigrationController.migrationInProgress}"
+                                                                     class="#{execution.status.name() eq 'FAILED' ? 'ui-button-danger' : 'ui-button-info'} ui-button-sm"
+                                                                     icon="pi pi-replay"
+                                                                     onclick="return confirm('Are you sure you want to re-execute migration #{execution.version}? #{execution.status.name() eq 'FAILED' ? 'Make sure the issues are fixed.' : 'This will re-run a successful migration.'}');"
+                                                                     title="Re-execute this migration regardless of current status"/>
+
+                                                    <p:commandButton value="Rollback"
+                                                                     action="#{databaseMigrationController.rollbackMigration(execution.version)}"
+                                                                     update="migrationForm"
+                                                                     rendered="#{execution.successful and not databaseMigrationController.migrationInProgress}"
+                                                                     class="ui-button-warning ui-button-sm"
+                                                                     icon="pi pi-undo"
+                                                                     onclick="return confirm('Are you sure you want to rollback this migration?');"
+                                                                     title="Rollback this successful migration"/>
+                                                </div>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
@@ -252,59 +360,6 @@
                         </div>
                     </div>
 
-                    <!-- Migration Details Dialog -->
-                    <p:dialog header="Migration Details"
-                              widgetVar="migrationDetailsDialog"
-                              id="migrationDetailsDialog"
-                              modal="true"
-                              width="800"
-                              height="600"
-                              resizable="true">
-                        <h:panelGroup rendered="#{not empty databaseMigrationController.selectedMigration}">
-                            <h:panelGrid columns="2" class="w-100" columnClasses="col-4,col-8">
-                                <h:outputLabel value="Version:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.version}" />
-
-                                <h:outputLabel value="Description:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.description}" />
-
-                                <h:outputLabel value="Author:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.author}" />
-
-                                <h:outputLabel value="Estimated Duration:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.estimatedDurationMinutes} minutes" />
-
-                                <h:outputLabel value="Requires Downtime:" class="fw-bold" />
-                                <span class="badge #{databaseMigrationController.selectedMigration.requiresDowntime ? 'bg-warning' : 'bg-success'}">
-                                    #{databaseMigrationController.selectedMigration.requiresDowntime ? 'Yes' : 'No'}
-                                </span>
-
-                                <h:outputLabel value="Affected Tables:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.affectedTablesDisplay}" />
-
-                                <h:outputLabel value="Affected Modules:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.affectedModulesDisplay}" />
-                            </h:panelGrid>
-
-                            <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasPreRequisites()}">
-                                <h6 class="fw-bold">Prerequisites:</h6>
-                                <ul>
-                                    <ui:repeat value="#{databaseMigrationController.selectedMigration.preRequisites}" var="prereq">
-                                        <li>#{prereq}</li>
-                                    </ui:repeat>
-                                </ul>
-                            </h:panelGroup>
-
-                            <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasMigrationSteps()}">
-                                <h6 class="fw-bold">Migration Steps:</h6>
-                                <ol>
-                                    <ui:repeat value="#{databaseMigrationController.selectedMigration.migrationSteps}" var="step">
-                                        <li><strong>#{step.description}</strong></li>
-                                    </ui:repeat>
-                                </ol>
-                            </h:panelGroup>
-                        </h:panelGroup>
-                    </p:dialog>
 
                     <!-- Progress Polling for Active Migrations -->
                     <p:poll interval="2"
@@ -312,6 +367,60 @@
                             rendered="#{databaseMigrationController.migrationInProgress}"
                             autoStart="true" />
                 </h:form>
+
+                <!-- Migration Details Dialog (Outside form for proper component resolution) -->
+                <p:dialog header="Migration Details"
+                          widgetVar="migrationDetailsDialog"
+                          id="migrationDetailsDialog"
+                          modal="true"
+                          width="800"
+                          height="600"
+                          resizable="true">
+                    <h:panelGroup rendered="#{not empty databaseMigrationController.selectedMigration}">
+                        <h:panelGrid columns="2" class="w-100" columnClasses="col-4,col-8">
+                            <h:outputLabel value="Version:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.version}" />
+
+                            <h:outputLabel value="Description:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.description}" />
+
+                            <h:outputLabel value="Author:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.author}" />
+
+                            <h:outputLabel value="Estimated Duration:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.estimatedDurationMinutes} minutes" />
+
+                            <h:outputLabel value="Requires Downtime:" class="fw-bold" />
+                            <span class="badge #{databaseMigrationController.selectedMigration.requiresDowntime ? 'bg-warning' : 'bg-success'}">
+                                #{databaseMigrationController.selectedMigration.requiresDowntime ? 'Yes' : 'No'}
+                            </span>
+
+                            <h:outputLabel value="Affected Tables:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.affectedTablesDisplay}" />
+
+                            <h:outputLabel value="Affected Modules:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.affectedModulesDisplay}" />
+                        </h:panelGrid>
+
+                        <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasPreRequisites()}">
+                            <h6 class="fw-bold">Prerequisites:</h6>
+                            <ul>
+                                <ui:repeat value="#{databaseMigrationController.selectedMigration.preRequisites}" var="prereq">
+                                    <li>#{prereq}</li>
+                                </ui:repeat>
+                            </ul>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasMigrationSteps()}">
+                            <h6 class="fw-bold">Migration Steps:</h6>
+                            <ol>
+                                <ui:repeat value="#{databaseMigrationController.selectedMigration.migrationSteps}" var="step">
+                                    <li><strong>#{step.description}</strong></li>
+                                </ui:repeat>
+                            </ol>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>

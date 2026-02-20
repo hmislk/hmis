@@ -935,4 +935,126 @@ public class Prescription implements Serializable {
         this.requiresNurseAdministration = requiresNurseAdministration;
     }
 
+    /**
+     * Creates a clone of this prescription entity with all attributes copied except id and billItem.
+     * The cloned prescription will have a null id, making it ready for persistence as a new entity.
+     *
+     * @return A new Prescription instance with copied attributes (excluding id and billItem)
+     */
+    public Prescription cloneForNewEntity() {
+        Prescription cloned = new Prescription();
+
+        // Note: id is intentionally NOT copied (remains null for new entity)
+        // Note: billItem is intentionally NOT copied (as specified in requirements)
+
+        // Basic entity relationships
+        cloned.setInstitution(this.institution);
+        cloned.setDepartment(this.department);
+        cloned.setWebUser(this.webUser);
+        cloned.setItem(this.item);
+        cloned.setPatient(this.patient);
+        cloned.setEncounter(this.encounter);
+        cloned.setCategory(this.category);
+
+        // Dosage information
+        cloned.setDoseUnit(this.doseUnit);
+        cloned.setDose(this.dose);
+        cloned.setFrequencyUnit(this.frequencyUnit);
+        cloned.setOrderNo(this.orderNo);
+        cloned.setDurationUnit(this.durationUnit);
+        cloned.setDuration(this.duration);
+
+        // Prescription period
+        cloned.setPrescribedFrom(this.prescribedFrom);
+        cloned.setPrescribedTo(this.prescribedTo);
+
+        // Issue information
+        cloned.setIssueUnit(this.issueUnit);
+        cloned.setIssue(this.issue);
+
+        // Parent relationship
+        cloned.setParent(this.parent);
+        // Note: children collection is NOT copied as it should be empty for new entity
+
+        cloned.setIndoor(this.indoor);
+        cloned.setComment(this.comment);
+
+        // Audit trail fields - these will typically be set by the system when saving
+        // We copy them but they may be overwritten during persistence
+        cloned.setCreater(this.creater);
+        cloned.setCreatedAt(this.createdAt);
+        cloned.setRetired(this.retired);
+        cloned.setRetirer(this.retirer);
+        cloned.setRetiredAt(this.retiredAt);
+        cloned.setRetireComments(this.retireComments);
+        cloned.setEditer(this.editer);
+        cloned.setEditedAt(this.editedAt);
+
+        // Prescription lifecycle management
+        cloned.setPrescribedAt(this.prescribedAt);
+        cloned.setPrescribedBy(this.prescribedBy);
+        cloned.setPrescribingDepartment(this.prescribingDepartment);
+
+        cloned.setVerifiedAt(this.verifiedAt);
+        cloned.setVerifiedBy(this.verifiedBy);
+        cloned.setVerifyingDepartment(this.verifyingDepartment);
+
+        cloned.setDispensedAt(this.dispensedAt);
+        cloned.setDispensedBy(this.dispensedBy);
+        cloned.setDispensingDepartment(this.dispensingDepartment);
+        cloned.setDispensedQuantity(this.dispensedQuantity);
+        cloned.setDispensingNotes(this.dispensingNotes);
+
+        cloned.setAdministrationStartedAt(this.administrationStartedAt);
+        cloned.setAdministrationStartedBy(this.administrationStartedBy);
+        cloned.setAdministrationStartedDepartment(this.administrationStartedDepartment);
+        cloned.setAdministrationStoppedAt(this.administrationStoppedAt);
+        cloned.setAdministrationStoppedBy(this.administrationStoppedBy);
+        cloned.setAdministrationStoppedDepartment(this.administrationStoppedDepartment);
+        cloned.setAdministrationStopReason(this.administrationStopReason);
+
+        cloned.setOmittedAt(this.omittedAt);
+        cloned.setOmittedBy(this.omittedBy);
+        cloned.setOmittingDepartment(this.omittingDepartment);
+        cloned.setOmissionReason(this.omissionReason);
+
+        cloned.setLastReviewedAt(this.lastReviewedAt);
+        cloned.setLastReviewedBy(this.lastReviewedBy);
+        cloned.setReviewingDepartment(this.reviewingDepartment);
+
+        // Additional clinical fields
+        cloned.setRoute(this.route);
+        cloned.setPriority(this.priority);
+        cloned.setPrn(this.prn);
+        cloned.setPrnIndication(this.prnIndication);
+        cloned.setTotalDoses(this.totalDoses);
+        cloned.setDosesGiven(this.dosesGiven);
+        cloned.setDosesRemaining(this.dosesRemaining);
+
+        // Safety and monitoring
+        cloned.setAllergies(this.allergies);
+        cloned.setContraindications(this.contraindications);
+        cloned.setInteractions(this.interactions);
+        cloned.setSideEffectsToMonitor(this.sideEffectsToMonitor);
+
+        // Discharge planning
+        cloned.setDischargeDate(this.dischargeDate);
+        cloned.setContinueOnDischarge(this.continueOnDischarge);
+        cloned.setDischargeInstructions(this.dischargeInstructions);
+        cloned.setDischargeReviewedBy(this.dischargeReviewedBy);
+
+        // Clinical decision support
+        cloned.setClinicalIndication(this.clinicalIndication);
+        cloned.setTherapeuticGoal(this.therapeuticGoal);
+        cloned.setMonitoringPlan(this.monitoringPlan);
+
+        // Workflow status
+        cloned.setPrescriptionStatus(this.prescriptionStatus);
+        cloned.setWorkflowStage(this.workflowStage);
+        cloned.setRequiresPharmacistReview(this.requiresPharmacistReview);
+        cloned.setRequiresNurseAdministration(this.requiresNurseAdministration);
+
+        return cloned;
+    }
+
 }

@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg"/>
+                    <p:focus id="selectFocus" for="acAmpp" />
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p:panel header="Store AMPP Management" class="mb-3 w-100">
+
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0">Filter:</label>
+                                        <p:commandButton
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{storeAmppController.setFilterToActive()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{storeAmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{storeAmppController.editable}"
+                                            title="Show only active Store AMPPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{storeAmppController.setFilterToInactive()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{storeAmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{storeAmppController.editable}"
+                                            title="Show only inactive Store AMPPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{storeAmppController.setFilterToAll()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{storeAmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{storeAmppController.editable}"
+                                            title="Show all Store AMPPs"/>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="row" >
+                                    <div class="col-12"  >
+                                        <p:autoComplete
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            id="acAmpp"
+                                            value="#{storeAmppController.selectedAmppDto}"
+                                            completeMethod="#{storeAmppController.completeAmppDto}"
+                                            var="dto"
+                                            itemLabel="#{dto.name}"
+                                            itemValue="#{dto}"
+                                            converter="storeAmppDtoConverter"
+                                            forceSelection="true"
+                                            disabled="#{storeAmppController.editable}"
+                                            placeholder="Type to search Store AMPPs..."
+                                            minQueryLength="2">
+                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:amppDetails" />
+                                            <p:column headerText="Name" style="padding: 3px;">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputText value="#{dto.name}" />
+                                                    <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                             severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                             style="font-size: 0.65em; margin-left: 8px;"/>
+                                                </div>
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                <h:outputText value="#{dto.code}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:outputLabel id="filterStatusLabel"
+                                                       value="Currently showing: #{storeAmppController.filterStatusDisplay}"
+                                                       styleClass="text-muted small mt-1"/>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup id="actionButtons" layout="block">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add New"
+                                                icon="fa fa-plus"
+                                                action="#{storeAmppController.prepareAdd()}"
+                                                class="m-1 ui-button-success"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="btnAdd"
+                                                disabled="#{storeAmppController.editable}">
+                                                <f:setPropertyActionListener target="#{storeAmppController.selectedAmppDto}" value="#{null}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnEdit"
+                                                value="Edit"
+                                                icon="fas fa-edit"
+                                                action="#{storeAmppController.edit()}"
+                                                class="m-1 ui-button-info"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="btnEdit"
+                                                disabled="#{storeAmppController.editable or storeAmppController.selectedAmppDto eq null}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnDelete"
+                                                action="#{storeAmppController.delete()}"
+                                                value="Delete"
+                                                icon="fas fa-trash"
+                                                class="m-1 ui-button-danger"
+                                                update=":form:acAmpp :form:gpDetail :form:msg :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="btnDelete"
+                                                disabled="#{storeAmppController.editable or storeAmppController.selectedAmppDto eq null}">
+                                                <p:confirm
+                                                    header="Confirm Delete"
+                                                    message="Are you sure you want to delete this Store AMPP? This action cannot be undone."
+                                                    icon="fas fa-exclamation-triangle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnToggleStatus"
+                                                value="#{storeAmppController.toggleStatusButtonText}"
+                                                action="#{storeAmppController.toggleAmppStatus()}"
+                                                icon="#{storeAmppController.toggleStatusButtonIcon}"
+                                                update=":form:msg :form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="@this"
+                                                styleClass="#{storeAmppController.toggleStatusButtonClass} m-1"
+                                                disabled="#{storeAmppController.editable or storeAmppController.selectedAmppDto eq null}"
+                                                title="Toggle Store AMPP active/inactive status">
+                                                <p:confirm
+                                                    header="Confirm Status Change"
+                                                    message="Are you sure you want to #{storeAmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Store AMPP: #{storeAmppController.current.name}?"
+                                                    icon="fas fa-question-circle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewAuditEvents"
+                                                value="History"
+                                                icon="fas fa-history"
+                                                action="#{storeAmppController.navigateToAmppAuditEvents()}"
+                                                class="m-1 ui-button-secondary"
+                                                process="btnViewAuditEvents"
+                                                ajax="false"
+                                                disabled="#{storeAmppController.selectedAmppDto eq null}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                            </p:panel>
+
+                        </div>
+
+                        <div class="col-md-7">
+                            <p:panel id="amppDetails">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fa fa-rocket" /> Store AMPP Details
+                                        </span>
+                                        <h:panelGroup rendered="#{storeAmppController.current ne null and storeAmppController.current.id ne null}"
+                                                      styleClass="badge #{storeAmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{storeAmppController.current.inactive ? 'Inactive' : 'Active'}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{storeAmppController.editable}"
+                                                      styleClass="badge badge-warning">
+                                            #{storeAmppController.current.id ne null ? 'Editing' : 'Adding New'}
+                                        </h:panelGroup>
+                                    </div>
+                                </f:facet>
+
+                                <p:panelGrid
+                                    id="gpDetail"
+                                    columns="1"
+                                    class="w-100">
+                                    <p:panelGrid
+                                        id="gpDetailText"
+                                        columns="2"
+                                        columnClasses="w-25 , w-75"
+                                        class="w-100">
+
+                                        <h:outputText value="Pack Name" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtName"
+                                            value="#{storeAmppController.current.name}"
+                                            required="true"
+                                            requiredMessage="Pack Name is required"
+                                            placeholder="Enter Store AMPP pack name"
+                                            class="w-100"
+                                            maxlength="255"
+                                            disabled="#{!storeAmppController.editable}" />
+
+                                        <h:outputText value="Select AMP" />
+                                        <p:autoComplete
+                                            id="acAmp"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            value="#{storeAmppController.current.amp}"
+                                            forceSelection="true"
+                                            required="true"
+                                            requiredMessage="AMP selection is required"
+                                            completeMethod="#{storeAmpController.completeAmp}"
+                                            var="pta"
+                                            itemLabel="#{pta.name}"
+                                            itemValue="#{pta}"
+                                            scrollHeight="300"
+                                            placeholder="Search and select Store AMP"
+                                            disabled="#{!storeAmppController.editable}" />
+
+                                        <h:outputText value="Pack Size" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtSize"
+                                            onfocus="this.select()"
+                                            value="#{storeAmppController.current.dblValue}"
+                                            class="w-100"
+                                            required="true"
+                                            requiredMessage="Pack Size is required"
+                                            placeholder="Enter pack size (numeric)"
+                                            disabled="#{!storeAmppController.editable}" />
+
+                                        <h:outputText value="Pack Unit" />
+                                        <p:selectOneMenu
+                                            id="selPackUnit"
+                                            value="#{storeAmppController.packUnit}"
+                                            class="w-100"
+                                            filter="true"
+                                            required="true"
+                                            requiredMessage="Pack Unit is required"
+                                            filterMatchMode="contains"
+                                            disabled="#{!storeAmppController.editable}">
+                                            <f:selectItem
+                                                itemLabel="-- Select Pack Unit --"
+                                                itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{measurementUnitController.items}"
+                                                var="s"
+                                                itemLabel="#{s.name}"
+                                                itemValue="#{s}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputText value="Description" />
+                                        <h:inputTextarea
+                                            id="txtDescription"
+                                            value="#{storeAmppController.current.comments}"
+                                            required="false"
+                                            class="form-control"
+                                            rows="3"
+                                            placeholder="Enter description or comments"
+                                            maxlength="1000"
+                                            disabled="#{!storeAmppController.editable}" />
+
+                                        <h:outputText value="Allow Fractions" />
+                                        <p:selectBooleanButton
+                                            id="chkAllowFractions"
+                                            value="#{storeAmppController.current.allowFractions}"
+                                            onLabel="Yes"
+                                            offLabel="No"
+                                            styleClass="w-100"
+                                            disabled="#{!storeAmppController.editable}" />
+
+                                    </p:panelGrid>
+
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton
+                                                id="btnSave"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                action="#{storeAmppController.saveSelected}"
+                                                class="m-1 ui-button-warning w-25"
+                                                process="btnSave gpDetail"
+                                                update=":form:acAmpp :form:gpDetail :form:msg :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                disabled="#{!storeAmppController.editable}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                immediate="true"
+                                                id="btnCancel"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                action="#{storeAmppController.cancel()}"
+                                                class="m-1 ui-button-secondary w-25"
+                                                process="btnCancel"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                disabled="#{!storeAmppController.editable}">
+                                                <f:setPropertyActionListener target="#{storeAmppController.selectedAmppDto}" value="#{null}" />
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

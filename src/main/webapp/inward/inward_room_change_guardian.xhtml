@@ -22,7 +22,7 @@
                         <div>
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                 <p:commandButton 
-                                    value="Back to WorkBench" 
+                                    value="Nursing WorkBench" 
                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                     ajax="false"
                                     class="ui-button-operating-theatre"
@@ -62,8 +62,11 @@
                             <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                         </p:column>
                         <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                            <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
-                            <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                            <div class="d-flex justify-content-center">
+                                <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                    #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                </span>
+                            </div>
                         </p:column>
                     </p:autoComplete> 
 
@@ -72,6 +75,27 @@
                         class="mx-3" 
                         ajax="false">
                     </p:commandButton>
+
+                    <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
+
                 </h:panelGrid>
 
             </p:panel>
@@ -84,7 +108,7 @@
                             <p:outputLabel value="Guardian Room Change" class="m-2"/>
                         </div>
                         <div>
-                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         ajax="false"
@@ -121,7 +145,7 @@
 
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                 <p:commandButton 
-                                    value="Back to WorkBench" 
+                                    value="Nursing WorkBench" 
                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                     ajax="false"
                                     class="ui-button-operating-theatre"

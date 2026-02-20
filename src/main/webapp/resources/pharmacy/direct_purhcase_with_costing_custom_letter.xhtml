@@ -22,7 +22,7 @@
         <!--        <div class="a4bill">-->
         <div  style="width: 210mm; ">
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
@@ -40,45 +40,71 @@
                     <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>                                           
                 </div>
                 <div >
-                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{!empty cc.attrs.bill.department.email}"/>                                              
+                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}" rendered="#{!empty cc.attrs.bill.institution.email}"/>                                              
                 </div>
             </div>
 
             <div class="headingBill">
                 <h:outputLabel value="DIRECT PURCHASE BILL"   />
                 <br />
-                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.cancelled eq true or cc.attrs.bill.cancelled eq true}" />
             </div>
+            
+            <div>
+                <table class="table table-borderless mt-2" style="margin-left: 20px;">
+                    
 
-            <div style="margin-left: 3%; margin-right: 3%; margin-top: 6px;">
-                <h:panelGrid columns="4" style="font-size: 16px; font-family: sans; min-width: 100%!important;">    
-                    <h:outputLabel value="Purchase Date" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
-                        <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
-                    </h:outputLabel>
+                    <tr style="line-height: 10px">
+                        <td>Purchase Date</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy" />
+                            </h:outputLabel>
+                        </td>
 
-                    <h:outputLabel value="Direct Purchase No" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive"/>
+                        <td>Direct Purchase No</td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+                    </tr>
 
-                    <h:outputLabel value="Invoice Date" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceDate}" class="billDetailsFiveFive">
-                        <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
-                    </h:outputLabel>
+                    <tr style="line-height: 10px">
+                        <td>Invoice Date</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.invoiceDate}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy" />
+                            </h:outputLabel>
+                        </td>
+                        
+                        <td>Invoice No</td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" /></td>
+                    </tr>
 
-                    <h:outputLabel value="Invoice No" class="billDetailsFiveFive"/>  
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="billDetailsFiveFive"/> 
+                    <tr style="line-height: 10px">
+                        <td>Payment Method</td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
 
-                    <h:outputLabel value="Supplier" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="Consignment" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" class="billDetailsFiveFive"/>
+                        <td>Consignment</td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" /></td>
+                    </tr>
+                    
+                    <tr style="line-height: 10px">
+                        <!-- Left column -->
+                        <td>Supplier</td>
+                        <td>:</td>
+                        <td colspan="4">
+                            <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
+                        </td>
+                    </tr>
+                    
+                </table>
 
-                    <h:outputLabel value="Payment Method" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive"/>
-
-                </h:panelGrid>
             </div>
 
             <div>

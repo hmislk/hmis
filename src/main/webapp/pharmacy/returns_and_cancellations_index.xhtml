@@ -6,15 +6,15 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
-        <h:form>
-            <div class="row">
-                <div class="col-12">
-                    <p:messages id="messages" showDetail="true" closable="true" />
-                </div>
+        <div class="row">
+            <div class="col-12">
+                <p:messages id="messages" showDetail="true" closable="true" />
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-2">
+        <div class="row">
+            <div class="col-2">
+                <h:form>
                     <p:accordionPanel activeIndex="#{grnReturnWorkflowController.activeIndexForReturnsAndCancellations}" >
                         <p:ajax event="tabChange" process="@this"/>
                         <p:tab title="GRN Returns" >
@@ -99,7 +99,7 @@
                                     class="ui-button-info w-100"
                                     icon="fas fa-check-circle"
                                     rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}" />
-                                 <p:commandButton
+                                <p:commandButton
                                     value="Completed Returns"
                                     action="#{disposalReturnWorkflowController.navigateToCompletedDisposalReturns()}"
                                     ajax="false"
@@ -109,6 +109,23 @@
                                     title="View Completed Disposal Returns">
                                 </p:commandButton>
                             </p:panelGrid>
+                        </p:tab>
+                        <p:tab
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Return without tracing Purchase Details is Enabled', true)}"
+                            title="Return items without tracing purchase details" >
+                            <p:commandButton
+                                id="Return_without_Receipt"
+                                ajax="false"
+                                rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}"
+                                action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                                styleClass="w-100 ui-button-primary"  value="Return without Receipt" >
+                            </p:commandButton>
+                            <h:panelGroup >
+                                <h:outputLabel
+                                    rendered="#{not webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}"
+                                    value="You have no Privilege. Discuss with the System Admin"           >
+                                </h:outputLabel>
+                            </h:panelGroup>
                         </p:tab>
                         <p:tab title="Other Functions" >
                             <p:panelGrid columns="1">
@@ -129,20 +146,24 @@
                                     actionListener="#{pharmacyPurchaseController.makeNull()}" />
                             </p:panelGrid>
                         </p:tab>
+
+
+
+
                     </p:accordionPanel>
-                </div>
-                <div class="col-10">
-                    <ui:insert name="subcontent">
-                    </ui:insert>
-                </div>
+                </h:form>
             </div>
+            <div class="col-10">
+                <ui:insert name="subcontent">
+                </ui:insert>
+            </div>
+        </div>
 
-           
 
 
 
 
-        </h:form>
+
     </ui:define>
 
 </ui:composition>

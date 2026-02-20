@@ -20,9 +20,8 @@
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
                         </div>
-                        <div>
-                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
-                                <div class="d-flex gap-2">
+                        <div> <div class="d-flex gap-2">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <p:commandButton 
                                         value="Back to Search Admission" 
                                         action="#{admissionController.navigateToSearchAdmissions()}"
@@ -30,18 +29,17 @@
                                         class="ui-button-warning"
                                         icon="fa fa-arrow-left">
                                     </p:commandButton>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                <p:commandButton 
-                                    value="Back to WorkBench" 
-                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                                    ajax="false"
-                                    class="ui-button-operating-theatre"
-                                    icon="fa fa-arrow-left">
-                                </p:commandButton>
-                            </h:panelGroup>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton 
+                                        value="Nursing WorkBench" 
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
                         </div>
                     </div>
 
@@ -59,14 +57,38 @@
                     <div class="col-3" >
                         <p:panel header="Admission &amp; Billing"  class="m-1">
                             <div class="d-grid gap-3">
-                                <p:commandButton 
-                                    value="Edit Admission" 
+                                <p:commandButton
+                                    value="Edit Patient Details"
                                     ajax="false"
-                                    action="#{admissionController.navigateToEditAdmission}" 
+                                    action="#{patientController.navigateToOpdPatientEdit()}"
+                                    icon="fa fa-edit"
+                                    class="w-100 ui-button-warning">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current.patient}"
+                                        target="#{patientController.current}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Edit Admission"
+                                    ajax="false"
+                                    action="#{admissionController.navigateToEditAdmission}"
                                     icon="fa fa-edit"
                                     class="w-100 ">
-
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{bhtEditController.current}" >
+                                    </f:setPropertyActionListener>
                                 </p:commandButton>
+                                <p:commandButton
+                                    value="Manage Allergies"
+                                    ajax="false"
+                                    action="#{bhtEditController.navigateToManageAllergies()}"
+                                    icon="fa-solid fa-allergies"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{bhtEditController.current}"/>
+                                </p:commandButton>
+
                                 <p:commandButton 
                                     disabled="#{admissionController.current.discharged eq true}"
                                     value="Room Change" 
@@ -515,19 +537,19 @@
                                         value="#{null}" 
                                         target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
+                                <p:commandButton 
+                                    value="Lab Result Summary"
+                                    action="#{encounterLaboratoryChartViewController.navigateToProcessInvestigations(admissionController.current)}"
+                                    ajax="false"
+                                    icon="pi pi-chart-line"
+                                    class="ui-button-success mx-1 mb-2">
+                                </p:commandButton>
                             </div>
                         </p:panel>
+
                     </div>
                 </div>
             </p:panel>
-
-
-
-
-
-
-
-
         </h:form>
     </ui:define>
 </ui:composition>

@@ -2,8 +2,10 @@ package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
@@ -21,7 +23,9 @@ public class BillLight {
     private String institutionName;
     private String departmentName;
     private String userName;
+    private Title patientTitle;
     private String patientName;
+    private String patientNameWithTitle;
     private String patientAge;
     private String patientPhone;
     private Double grossValue;
@@ -45,6 +49,7 @@ public class BillLight {
     private BigDecimal totalRetailSaleValue;
     private PaymentMethod paymentMethod;
     private PatientEncounter patientEncounter;
+    private PaymentScheme paymentScheme;
     private String billItemNames;
 
     public BillLight() {
@@ -136,6 +141,18 @@ public class BillLight {
         this.ccTotal = ccTotal;
         this.hospitalTotal = hospitalTotal;
     }
+    
+    //Collecting Centre Payment
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, Title patientTitle, String patientName, Double ccTotal, Double hospitalTotal) {
+        this.id = id;
+        this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
+        this.billDate = billDate;
+        this.patientTitle = patientTitle;
+        this.patientName = patientName;
+        this.ccTotal = ccTotal;
+        this.hospitalTotal = hospitalTotal;
+    }
 
     //Use 9B Report
     public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double netValue) {
@@ -161,6 +178,26 @@ public class BillLight {
         this.totalRetailSaleValue = totalRetailSaleValue;
         this.paymentMethod = paymentMethod;
         this.patientEncounter = patientEncounter;
+    }
+
+    // Constructor for Pharmacy Sales with PaymentScheme (for proper discount scheme grouping)
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
+                     Double discount, Double margin, Double serviceCharge,
+                     BigDecimal totalCostValue, BigDecimal totalPurchaseValue, BigDecimal totalRetailSaleValue,
+                     PaymentMethod paymentMethod, PatientEncounter patientEncounter, PaymentScheme paymentScheme) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.total = total;
+        this.netTotal = netTotal;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.totalCostValue = totalCostValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.paymentMethod = paymentMethod;
+        this.patientEncounter = patientEncounter;
+        this.paymentScheme = paymentScheme;
     }
 
     public Long getId() {
@@ -439,6 +476,38 @@ public class BillLight {
 
     public void setPatientAge(String patientAge) {
         this.patientAge = patientAge;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public Title getPatientTitle() {
+        return patientTitle;
+    }
+
+    public void setPatientTitle(Title patientTitle) {
+        this.patientTitle = patientTitle;
+    }
+
+    public String getPatientNameWithTitle() {
+        String temT;
+        Title t = getPatientTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        patientNameWithTitle = temT + " " + getPatientName();
+        return patientNameWithTitle;
+    }
+
+    public void setPatientNameWithTitle(String patientNameWithTitle) {
+        this.patientNameWithTitle = patientNameWithTitle;
     }
 
 }

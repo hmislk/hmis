@@ -142,7 +142,7 @@
                         <h:panelGroup id="gpBillPreview">
 
                             <h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Paper',true)}">
-                                <pharmacy:saleBill bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill>
+                                <pharmacy:saleBill_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_Cancel>
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewPosPaperCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Paper Custom 1',false)}">
@@ -150,7 +150,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is FiveFive Paper',true)}">
-                                <pharmacy:saleBill_five_five bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_five_five>
+                                <pharmacy:saleBill_five_five_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_five_five_Cancel>
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Cancel Bill Paper is POS Header Paper',true)}">

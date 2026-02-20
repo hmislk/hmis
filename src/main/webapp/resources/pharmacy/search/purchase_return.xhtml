@@ -60,7 +60,7 @@
                 </f:facet>
                 <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                    <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column> 
             <p:column headerText="Delaor Name" >
