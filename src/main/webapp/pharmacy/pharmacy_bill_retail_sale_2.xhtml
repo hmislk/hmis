@@ -81,10 +81,16 @@
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" disabled="true" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-                                <i class="fas fa-shopping-cart rounded-circle shadow-lg m-1"
-                                   onclick="PF('findAMP').show()"
-                                   style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle; float: right;">
-                                </i>
+                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
+                                    <i class="fas fa-shopping-cart rounded-circle shadow-lg m-1"
+                                       onclick="PF('findAMP').show()"
+                                       role="button"
+                                       tabindex="0"
+                                       title="Find AMP / Open item search"
+                                       aria-label="Find AMP / Open item search"
+                                       style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle; float: right;">
+                                    </i>
+                                </ui:fragment>
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"
