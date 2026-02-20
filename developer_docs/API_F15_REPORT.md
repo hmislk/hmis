@@ -435,8 +435,25 @@ curl -s -X POST "$BASE_URL/api/pharmacy_adjustments/purchase_rate" \
   }'
 ```
 
-For bill-level data corrections (wrong `BillItemFinanceDetails` values), these require
-developer action — a future correction API will be added once specific root causes are identified.
+For bill-level data corrections, use the bill correction endpoint after explicit human approval:
+
+```bash
+# Set BASE_URL and FINANCE_KEY from user input before running
+curl -s -X PATCH "$BASE_URL/api/bill_data_correction" \
+  -H "Finance: $FINANCE_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"targetType\": \"BILL_FINANCE_DETAILS\",
+    \"targetId\": <billFinanceDetailsId>,
+    \"fields\": {
+      \"totalRetailSaleValue\": <corrected_value>
+    },
+    \"auditComment\": \"F15 discrepancy correction - approved by <name> on <date>\",
+    \"approvedBy\": \"<name>\"
+  }"
+```
+
+Supported correction targets are documented in `developer_docs/API_BILL_DATA_CORRECTION.md`.
 
 ---
 
