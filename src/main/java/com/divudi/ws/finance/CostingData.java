@@ -20,6 +20,8 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -486,6 +488,121 @@ public class CostingData {
         dto.setRetired(payment.isRetired());
 
         return dto;
+    }
+
+    /**
+     * List bills by bill type for a date range and department.
+     * Used by AI agents to drill into specific transaction types when investigating
+     * F15 report discrepancies.
+     *
+     * Endpoint: GET /costing_data/bills_by_type
+     * Params:
+     *   fromDate     - start datetime, format: yyyy-MM-dd HH:mm:ss  (e.g. 2026-02-18 00:00:00)
+     *   toDate       - end datetime,   format: yyyy-MM-dd HH:mm:ss  (e.g. 2026-02-18 23:59:59)
+     *   departmentId - department ID (e.g. 485 for Main Pharmacy)
+     *   billTypeAtomic - bill type name (e.g. PHARMACY_RETAIL_SALE, PHARMACY_GRN)
+     *   limit        - max results (default 200, max 1000)
+     *
+     * Returns lightweight bill summary list (not full bill details).
+     * Use /costing_data/by_bill_id/{id} to retrieve full details including bill items.
+     */
+    @GET
+    @Path("/bills_by_type")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBillsByType(
+            @QueryParam("fromDate") String fromDateStr,
+            @QueryParam("toDate") String toDateStr,
+            @QueryParam("departmentId") Long departmentId,
+            @QueryParam("billTypeAtomic") String billTypeAtomic,
+            @QueryParam("limit") Integer limit) {
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            return errorResponse("Not a valid key", 401);
+        }
+
+        if (fromDateStr == null || fromDateStr.trim().isEmpty()) {
+            return errorResponse("Parameter 'fromDate' is required (format: yyyy-MM-dd HH:mm:ss)", 400);
+        }
+        if (toDateStr == null || toDateStr.trim().isEmpty()) {
+            return errorResponse("Parameter 'toDate' is required (format: yyyy-MM-dd HH:mm:ss)", 400);
+        }
+        if (departmentId == null) {
+            return errorResponse("Parameter 'departmentId' is required", 400);
+        }
+        if (billTypeAtomic == null || billTypeAtomic.trim().isEmpty()) {
+            return errorResponse("Parameter 'billTypeAtomic' is required (e.g. PHARMACY_RETAIL_SALE)", 400);
+        }
+
+        int maxResults = (limit != null && limit > 0 && limit <= 1000) ? limit : 200;
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date fromDate;
+        Date toDate;
+        try {
+            fromDate = sdf.parse(fromDateStr.trim());
+            toDate = sdf.parse(toDateStr.trim());
+        } catch (ParseException e) {
+            return errorResponse("Invalid date format. Use yyyy-MM-dd HH:mm:ss (e.g. 2026-02-18 00:00:00)", 400);
+        }
+
+        try {
+            String jpql = "SELECT b FROM Bill b "
+                    + "WHERE b.retired = false "
+                    + "AND b.department.id = :departmentId "
+                    + "AND b.billTypeAtomic = :billTypeAtomic "
+                    + "AND b.billTime >= :fromDate "
+                    + "AND b.billTime <= :toDate "
+                    + "ORDER BY b.id ASC";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("departmentId", departmentId);
+            params.put("billTypeAtomic", com.divudi.core.data.BillTypeAtomic.valueOf(billTypeAtomic.trim()));
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            List<Bill> bills = billFacade.findByJpql(jpql, params, maxResults);
+
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Bill b : bills) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("billId", b.getId());
+                row.put("billNumber", b.getDeptId());
+                row.put("billType", b.getBillType() != null ? b.getBillType().toString() : null);
+                row.put("billTypeAtomic", b.getBillTypeAtomic() != null ? b.getBillTypeAtomic().toString() : null);
+                row.put("billTime", b.getBillTime());
+                row.put("netTotal", b.getNetTotal());
+                row.put("grossTotal", b.getTotal());
+                row.put("retired", b.isRetired());
+                row.put("completed", b.isCompleted());
+
+                if (b.getBillFinanceDetails() != null) {
+                    BillFinanceDetails bfd = b.getBillFinanceDetails();
+                    row.put("stockValueAtRetailRate", toDouble(bfd.getTotalRetailSaleValue()));
+                    row.put("stockValueAtCostRate", toDouble(bfd.getTotalCostValue()));
+                    row.put("stockValueAtPurchaseRate", toDouble(bfd.getTotalPurchaseValue()));
+                }
+
+                result.add(row);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("code", 200);
+            response.put("count", result.size());
+            response.put("departmentId", departmentId);
+            response.put("billTypeAtomic", billTypeAtomic);
+            response.put("fromDate", fromDateStr);
+            response.put("toDate", toDateStr);
+            response.put("data", result);
+            return Response.status(200).entity(gson.toJson(response)).build();
+
+        } catch (IllegalArgumentException e) {
+            return errorResponse("Unknown billTypeAtomic value: " + billTypeAtomic
+                    + ". Check PharmacyService for valid values.", 400);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
     }
 
     /**
