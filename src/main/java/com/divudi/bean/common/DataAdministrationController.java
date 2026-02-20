@@ -275,6 +275,10 @@ public class DataAdministrationController implements Serializable {
     private BillService billService;
     @EJB
     private DatabaseMigrationService databaseMigrationService;
+    @EJB
+    private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
+    @EJB
+    private com.divudi.core.facade.BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
 
     @Inject
     WebUserController webUserController;
@@ -1279,6 +1283,163 @@ public class DataAdministrationController implements Serializable {
             JsfUtil.addErrorMessage("Error: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Backfills missing BillFinanceDetails and BillItemFinanceDetails for
+     * PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bills that have no finance
+     * data. These bills represent stock-movement events in the F15 report; without
+     * BFD the totalRetailSaleValue is treated as 0 causing F15 discrepancies.
+     *
+     * Safe to re-run: skips bills whose BFD already has a non-zero totalRetailSaleValue.
+     * Uses the date range selected at the top of the admin page.
+     */
+    public void backfillBfdForPreToSettleAtCashierBills() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        int processedBills = 0;
+        int skippedBills = 0;
+        int updatedBills = 0;
+        int updatedItems = 0;
+
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> candidates = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            out.append("Found ").append(candidates.size()).append(" PRE_TO_SETTLE_AT_CASHIER bills in range.\n\n");
+
+            for (Bill candidate : candidates) {
+                processedBills++;
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                // Skip if BFD already has a non-zero retail value (already processed)
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null && bfd.getId() != null
+                        && bfd.getTotalRetailSaleValue() != null
+                        && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) != 0) {
+                    skippedBills++;
+                    continue;
+                }
+
+                if (bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+                    skippedBills++;
+                    continue;
+                }
+
+                // Ensure BFD exists
+                if (bfd == null || bfd.getId() == null) {
+                    bfd = new BillFinanceDetails();
+                    bfd.setBill(bill);
+                    bill.setBillFinanceDetails(bfd);
+                }
+
+                BigDecimal totalCostValue = BigDecimal.ZERO;
+                BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+                BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+
+                for (BillItem bi : bill.getBillItems()) {
+                    if (bi == null || !bi.isConsideredForCosting()) {
+                        continue;
+                    }
+                    PharmaceuticalBillItem pharmaItem = bi.getPharmaceuticalBillItem();
+                    if (pharmaItem == null) {
+                        continue;
+                    }
+
+                    BigDecimal qty = bi.getQty() != null
+                            ? BigDecimal.valueOf(bi.getQty()) : BigDecimal.ZERO;
+
+                    // Ensure BIFD exists on the item
+                    BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                    if (bifd == null || bifd.getId() == null) {
+                        bifd = new BillItemFinanceDetails();
+                        bifd.setBillItem(bi);
+                        bi.setBillItemFinanceDetails(bifd);
+                    }
+
+                    // Only populate if not already set
+                    if (bifd.getValueAtRetailRate() == null
+                            || bifd.getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+
+                        bifd.setQuantity(qty);
+                        bifd.setTotalQuantity(qty);
+
+                        // Cost rate: prefer ItemBatch.costRate, fall back to purchaseRate
+                        Double costRateValue = null;
+                        if (pharmaItem.getItemBatch() != null) {
+                            costRateValue = pharmaItem.getItemBatch().getCostRate();
+                        }
+                        if (costRateValue == null || costRateValue <= 0) {
+                            costRateValue = pharmaItem.getPurchaseRate();
+                        }
+                        if (costRateValue != null && costRateValue > 0) {
+                            BigDecimal costRate = BigDecimal.valueOf(costRateValue);
+                            BigDecimal valueAtCost = qty.multiply(costRate).negate();
+                            bifd.setCostRate(costRate);
+                            bifd.setValueAtCostRate(valueAtCost);
+                            totalCostValue = totalCostValue.add(valueAtCost);
+                        }
+
+                        // Purchase rate
+                        if (pharmaItem.getPurchaseRate() > 0) {
+                            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                            BigDecimal valueAtPurchase = qty.multiply(purchaseRate).negate();
+                            bifd.setPurchaseRate(purchaseRate);
+                            bifd.setValueAtPurchaseRate(valueAtPurchase);
+                            totalPurchaseValue = totalPurchaseValue.add(valueAtPurchase);
+                        }
+
+                        // Retail rate
+                        if (pharmaItem.getRetailRate() > 0) {
+                            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+                            BigDecimal valueAtRetail = qty.multiply(retailRate).negate();
+                            bifd.setRetailSaleRate(retailRate);
+                            bifd.setValueAtRetailRate(valueAtRetail);
+                            totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetail);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    }
+                }
+
+                bfd.setTotalCostValue(totalCostValue);
+                bfd.setTotalPurchaseValue(totalPurchaseValue);
+                bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("=== Backfill Summary ===\n");
+            out.append("Processed: ").append(processedBills).append(" bills\n");
+            out.append("Updated:   ").append(updatedBills).append(" bills (").append(updatedItems).append(" items)\n");
+            out.append("Skipped:   ").append(skippedBills).append(" bills (already had BFD or no items)\n");
+
+        } catch (Exception e) {
+            out.append("Error: ").append(e.getMessage());
+            JsfUtil.addErrorMessage("Error during BFD backfill: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        executionFeedback = out.toString();
     }
 
     private boolean isFinanceValueNegative(BillTypeAtomic bta) {
