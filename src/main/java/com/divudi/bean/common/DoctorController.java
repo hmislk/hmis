@@ -15,6 +15,8 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.DoctorFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.service.AuditService;
+import com.divudi.service.PersonService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,12 +55,20 @@ public class DoctorController implements Serializable {
     private DoctorFacade ejbFacade;
     @EJB
     private PersonFacade personFacade;
+    @EJB
+    private PersonService personService;
+    @EJB
+    private AuditService auditService;
+    
     List<Doctor> selectedItems;
     private Doctor current;
     private List<Doctor> items = null;
     String selectText = "";
     List<Doctor> doctors;
     Speciality speciality;
+    
+    private Map<String, Object> initialPerson;
+
 
     public Doctor getDoctorsByName(String name) {
         String jpql = "select d "
@@ -122,6 +132,13 @@ public class DoctorController implements Serializable {
         return selectedItems;
     }
 
+    public void changeStaff() {
+        initialPerson = new HashMap<>();
+        if (current.getPerson() != null) {            
+            personService.personToAuditMap(initialPerson, current.getPerson());
+        }
+    }
+    
     public String navigateToDoctorsIncludingConsultants() {
         fillDoctorsIncludingConsultants();
         return "/admin/staff/doctors_including_consultants?faces-redirect=true";
@@ -323,10 +340,21 @@ public class DoctorController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Speciality for Doctor");
             return;
         }
+        
+        // Prepare editedPersonMap for audit logging
+        Map<String, Object> editedPerson = new HashMap<>();
+        personService.personToAuditMap(editedPerson, current.getPerson());
+        
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
             getPersonFacade().create(current.getPerson());
+            
+            // Person created, log the creation event
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", null);
         } else {
             getPersonFacade().edit(current.getPerson());
+            
+            // Person edited, log the creation event
+            auditService.logAudit(initialPerson, editedPerson, sessionController.getLoggedUser(), "Person", "updatePerson", current.getPerson().getId());
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -339,6 +367,8 @@ public class DoctorController implements Serializable {
         }
         current = new Doctor();
         recreateModel();
+        initialPerson = null;
+        
         // getItems();
         fillDoctorsExcludingConsultants();
     }

@@ -57,7 +57,10 @@
                                 value="#{doctorController.current}" 
                                 filter="true" >
                                 <f:selectItems  value="#{doctorController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}"  ></f:selectItems>
-                                <p:ajax update="gpDetail" process="lstSelect" />                                        
+                                <p:ajax event="change"
+                                        update="gpDetail" 
+                                        process="lstSelect" 
+                                        listener="#{doctorController.changeStaff()}"/>                                        
                             </p:selectOneListbox>
 
                         </div>

@@ -11,8 +11,8 @@
                 <h:panelGroup >
                     <h:form >
                         <p:growl id="msg"/>
-                        <p:focus id="selectFocus" context="lstSelect" />
-                        <p:focus id="detailFocus" context="gpDetail" />
+                        <p:focus id="selectFocus" for="lstSelect" />
+                        <p:focus id="detailFocus" for="gpDetail" />
 
 
 
@@ -23,7 +23,7 @@
                                         <p:commandButton
                                             id="btnAdd" 
                                             process="btnAdd"
-                                            update="gpDetail"
+                                            update="gpDetail detailFocus"
                                             value="Add" 
                                             class="ui-button-success w-25"
                                             icon="fas fa-plus"
@@ -43,7 +43,10 @@
                                     </div>
                                     <p:selectOneListbox filter="true" id="lstSelect"   value="#{staffController.current}" style="height: auto;" class="w-100">
                                         <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.name}(#{myItem.code})" ></f:selectItems>
-                                        <p:ajax event="change" process="lstSelect" update="gpDetail" />                                        
+                                        <p:ajax event="change" 
+                                                process="lstSelect" 
+                                                update="gpDetail" 
+                                                listener="#{staffController.changeStaffWithoutDoctor()}"/>                                        
                                     </p:selectOneListbox>
 
 
@@ -53,13 +56,15 @@
                                         <f:facet name="header" >
                                             <div>
                                                 <p:outputLabel value="Details" ></p:outputLabel>
-                                                <p:commandButton class="w-25 ui-button-warning"
-                                                                 id="btnSave"
-                                                                 value="Save" 
-                                                                 ajax="false"
-                                                                 style="float: right;"
-                                                                 action="#{staffController.saveSelected()}"  >
-                                                </p:commandButton>
+                                                <p:commandButton id="btnSave" 
+                                                                value="Save" 
+                                                                icon="fas fa-save"
+                                                                class=" m-1 ui-button-warning w-25"
+                                                                action="#{staffController.saveSelected()}" 
+                                                                process="btnSave gpDetail"
+                                                                update="lstSelect selectFocus msg gpDetail"
+                                                                />
+                                               <p:defaultCommand target="btnSave"/>
                                             </div>
                                         </f:facet>
 
