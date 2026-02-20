@@ -956,29 +956,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         patientDetailsEditable = false;
-        if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
-            current.getPatient().setEditingMode(false);
-            bhtSummeryController.setPatientEncounter(current);
-            bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
-            return bhtSummeryController.navigateToInpatientProfile();
-        } else {
-            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()) {
-                current.getPatient().setEditingMode(false);
-                bhtSummeryController.setPatientEncounter(current);
-                bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
-                return bhtSummeryController.navigateToInpatientProfile();
-            } else {
-                if (current.getCurrentPatientRoom() == null) {
-                    current.getPatient().setEditingMode(false);
-                    bhtSummeryController.setPatientEncounter(current);
-                    bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
-                    return bhtSummeryController.navigateToInpatientProfile();
-                }
-                roomChangeController.setCurrent(current);
-                roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
-                return "/inward/admit_room?faces-redirect=true";
-            }
-        }
+        current.getPatient().setEditingMode(false);
+        bhtSummeryController.setPatientEncounter(current);
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
+        return bhtSummeryController.navigateToInpatientProfile();
 
     }
 
