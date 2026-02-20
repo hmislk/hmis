@@ -2639,7 +2639,7 @@ public class BillService {
 
         List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
 
-        // Updated to use new constructor with IDs for navigation support
+        // Step 1: Main aggregation query per item (no staff join to avoid fan-out / EclipseLink WITH clause incompatibility)
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
                 + " bi.item.category.id," // Category ID for navigation
                 + " coalesce(bi.item.category.name, 'No Category')," // Category name for display
@@ -2690,7 +2690,62 @@ public class BillService {
         jpql += " group by bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name"
                 + " order by bi.item.category.name, bi.item.name";
 
-        return (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Step 2: Separate query for staff (doctor/technician) names per item — standard JPQL, EclipseLink-compatible
+        // Uses inner join on bf.staff so only BillFees with a doctor/technician assigned are returned
+        String staffJpql = "select bi2.item.id, stf.person.name"
+                + " from BillFee bf"
+                + " join bf.billItem bi2"
+                + " join bi2.bill b2"
+                + " join bf.staff stf"
+                + " where b2.retired = false"
+                + " and b2.billTypeAtomic in :bts"
+                + " and b2.createdAt between :fd and :td"
+                + " and bf.retired = false";
+
+        Map<String, Object> staffParams = new HashMap<>();
+        staffParams.put("bts", billTypeAtomics);
+        staffParams.put("fd", fromDate);
+        staffParams.put("td", toDate);
+
+        if (institution != null) {
+            staffJpql += " and b2.department.institution=:ins";
+            staffParams.put("ins", institution);
+        }
+        if (department != null) {
+            staffJpql += " and b2.department=:dep";
+            staffParams.put("dep", department);
+        }
+        if (site != null) {
+            staffJpql += " and b2.department.site=:site";
+            staffParams.put("site", site);
+        }
+        if (category != null) {
+            staffJpql += " and bi2.item.category=:cat";
+            staffParams.put("cat", category);
+        }
+        if (item != null) {
+            staffJpql += " and bi2.item=:itm";
+            staffParams.put("itm", item);
+        }
+
+        staffJpql += " group by bi2.item.id, stf.id, stf.person.name";
+
+        List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
+
+        // Step 3: Build itemId → first staff name found, then set on each DTO
+        Map<Long, String> staffByItem = new HashMap<>();
+        for (Object[] row : staffRows) {
+            Long rowItemId = (Long) row[0];
+            String staffName = row[1] != null ? (String) row[1] : "";
+            staffByItem.putIfAbsent(rowItemId, staffName);
+        }
+        for (OpdSaleSummaryDTO dto : dtos) {
+            dto.setStaffName(staffByItem.getOrDefault(dto.getItemId(), ""));
+        }
+
+        return dtos;
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,
