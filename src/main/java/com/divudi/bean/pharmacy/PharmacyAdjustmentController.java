@@ -1063,7 +1063,8 @@ public class PharmacyAdjustmentController implements Serializable {
         java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldPurchaseRate * getStock().getStock());
         java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newPurchaseRate * getStock().getStock());
 
-        bfd.setTotalPurchaseValue(changeVal);
+        java.math.BigDecimal prevPurchaseValue = bfd.getTotalPurchaseValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalPurchaseValue();
+        bfd.setTotalPurchaseValue(prevPurchaseValue.add(changeVal));
         bfd.setNetTotal(changeVal);
         bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
         bfd.setTotalQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
@@ -1353,7 +1354,8 @@ public class PharmacyAdjustmentController implements Serializable {
             java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldRetailRate * dto.getStockQty());
             java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newRetailRate * dto.getStockQty());
 
-            bfd.setTotalRetailSaleValue(changeVal);
+            java.math.BigDecimal prevRetailValue = bfd.getTotalRetailSaleValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalRetailSaleValue();
+            bfd.setTotalRetailSaleValue(prevRetailValue.add(changeVal));
             bfd.setNetTotal(changeVal);
             bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
             bfd.setTotalQuantity(java.math.BigDecimal.valueOf(dto.getStockQty()));
