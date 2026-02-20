@@ -2384,6 +2384,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
+            System.out.println("Start oneOpdBillForEachDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -3509,7 +3510,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 
-        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
+        //addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
 
         bi.setRate(getBillBean().billItemRate(addingEntry));
