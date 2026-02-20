@@ -7,6 +7,12 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFinanceDetailsFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillItemFinanceDetailsFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -15,15 +21,29 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @Stateless
 public class BillDataCorrectionService {
 
-    @PersistenceContext
-    private EntityManager em;
+    @EJB
+    private BillFacade billFacade;
+
+    @EJB
+    private BillItemFacade billItemFacade;
+
+    @EJB
+    private BillFinanceDetailsFacade billFinanceDetailsFacade;
+
+    @EJB
+    private BillFeeFacade billFeeFacade;
+
+    @EJB
+    private BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
+
+    @EJB
+    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
 
     private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments"));
     private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
@@ -83,10 +103,9 @@ public class BillDataCorrectionService {
         }
 
         appendAuditLog(parentBill, normalizedType, targetId, previousValues, newValues, auditComment, approvedBy, apiUser);
-        em.merge(parentBill);
-        em.flush();
+        billFacade.edit(parentBill);
 
-        String correctedBy = apiUser != null ? apiUser.getWebUserName() : null;
+        String correctedBy = apiUser != null ? apiUser.getName() : null;
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("targetType", normalizedType);
@@ -101,7 +120,7 @@ public class BillDataCorrectionService {
     }
 
     private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
-        Bill entity = em.find(Bill.class, id);
+        Bill entity = billFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("Bill not found for id " + id);
         }
@@ -126,12 +145,12 @@ public class BillDataCorrectionService {
             newValues.put("comments", entity.getComments());
         }
 
-        em.merge(entity);
+        billFacade.edit(entity);
         return entity;
     }
 
     private Bill updateBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
-        BillItem entity = em.find(BillItem.class, id);
+        BillItem entity = billItemFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("BillItem not found for id " + id);
         }
@@ -168,12 +187,12 @@ public class BillDataCorrectionService {
             newValues.put("discount", entity.getDiscount());
         }
 
-        em.merge(entity);
+        billItemFacade.edit(entity);
         return entity.getBill();
     }
 
     private Bill updateBillFinanceDetails(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
-        BillFinanceDetails entity = em.find(BillFinanceDetails.class, id);
+        BillFinanceDetails entity = billFinanceDetailsFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("BillFinanceDetails not found for id " + id);
         }
@@ -210,12 +229,12 @@ public class BillDataCorrectionService {
             newValues.put("grossTotal", entity.getGrossTotal());
         }
 
-        em.merge(entity);
+        billFinanceDetailsFacade.edit(entity);
         return entity.getBill();
     }
 
     private Bill updateBillFee(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
-        BillFee entity = em.find(BillFee.class, id);
+        BillFee entity = billFeeFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("BillFee not found for id " + id);
         }
@@ -240,7 +259,7 @@ public class BillDataCorrectionService {
             newValues.put("netValue", entity.getFeeValue());
         }
 
-        em.merge(entity);
+        billFeeFacade.edit(entity);
         if (entity.getBill() != null) {
             return entity.getBill();
         }
@@ -251,7 +270,7 @@ public class BillDataCorrectionService {
     }
 
     private Bill updateBillItemFinanceDetails(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
-        BillItemFinanceDetails entity = em.find(BillItemFinanceDetails.class, id);
+        BillItemFinanceDetails entity = billItemFinanceDetailsFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("BillItemFinanceDetails not found for id " + id);
         }
@@ -282,12 +301,12 @@ public class BillDataCorrectionService {
             newValues.put("retailSaleRate", entity.getRetailSaleRate());
         }
 
-        em.merge(entity);
+        billItemFinanceDetailsFacade.edit(entity);
         return entity.getBillItem() != null ? entity.getBillItem().getBill() : null;
     }
 
     private Bill updatePharmaceuticalBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
-        PharmaceuticalBillItem entity = em.find(PharmaceuticalBillItem.class, id);
+        PharmaceuticalBillItem entity = pharmaceuticalBillItemFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("PharmaceuticalBillItem not found for id " + id);
         }
@@ -324,7 +343,7 @@ public class BillDataCorrectionService {
             newValues.put("costValue", entity.getCostValue());
         }
 
-        em.merge(entity);
+        pharmaceuticalBillItemFacade.edit(entity);
         return entity.getBillItem() != null ? entity.getBillItem().getBill() : null;
     }
 
@@ -346,7 +365,7 @@ public class BillDataCorrectionService {
             WebUser apiUser) {
 
         String existing = bill.getComments();
-        String correctedBy = apiUser != null ? apiUser.getWebUserName() : "Unknown API User";
+        String correctedBy = apiUser != null ? apiUser.getName() : "Unknown API User";
         String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
         StringBuilder sb = new StringBuilder();
