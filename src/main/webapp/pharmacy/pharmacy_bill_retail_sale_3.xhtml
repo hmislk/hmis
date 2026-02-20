@@ -19,12 +19,6 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacySaleController3.billPreview}">
-                        <i
-                            type="button"
-                            class="fas fa-shopping-cart rounded-circle shadow-lg"
-                            onclick="PF('findAMP').show()"
-                            style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
-                        </i>
 
                         <p:dialog
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
@@ -87,6 +81,10 @@
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <i class="fas fa-shopping-cart rounded-circle shadow-lg m-1"
+                                   onclick="PF('findAMP').show()"
+                                   style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle; float: right;">
+                                </i>
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"

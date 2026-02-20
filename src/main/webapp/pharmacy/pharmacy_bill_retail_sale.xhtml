@@ -19,12 +19,6 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
-                        <i
-                            type="button"
-                            class="fas fa-shopping-cart rounded-circle shadow-lg"
-                            onclick="PF('findAMP').show()"
-                            style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
-                        </i>
 
                         <p:dialog
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
@@ -98,6 +92,10 @@
                                         class="ui-button-secondary mx-2">
                                     </p:commandButton>
                                 </h:panelGroup>
+                                <i class="fas fa-shopping-cart rounded-circle shadow-lg m-1"
+                                   onclick="PF('findAMP').show()"
+                                   style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle; float: right;">
+                                </i>
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"
