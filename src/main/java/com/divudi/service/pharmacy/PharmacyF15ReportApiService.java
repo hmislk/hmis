@@ -50,7 +50,6 @@ public class PharmacyF15ReportApiService {
     private DepartmentFacade departmentFacade;
 
     private static final double BALANCE_TOLERANCE = 1.0;
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     /**
      * Generates the full F15 report for a given date and department.
@@ -70,7 +69,7 @@ public class PharmacyF15ReportApiService {
 
         // Closing stock uses start of next day (same logic as the JSF controller)
         Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
+        cal.setTime(startOfDay);
         cal.add(Calendar.DATE, 1);
         Date nextDayStart = cal.getTime();
 
@@ -101,7 +100,7 @@ public class PharmacyF15ReportApiService {
 
         // Build DTO
         PharmacyF15ReportDTO dto = new PharmacyF15ReportDTO();
-        dto.setDate(DATE_FORMAT.format(date));
+        dto.setDate(new SimpleDateFormat("yyyy-MM-dd").format(date));
         dto.setDepartmentId(departmentId);
         dto.setDepartmentName(department.getName());
         dto.setOpeningStock(new StockValueDTO(openingRetail, openingCost));
@@ -183,17 +182,18 @@ public class PharmacyF15ReportApiService {
         double transfersRetail = bundleTotalRetail(transfers);
         double adjustmentsRetail = bundleTotalRetail(adjustments);
 
-        double expectedClosing = openingRetail
+        double expectedClosing = round2(openingRetail
                 + salesRetail
                 + purchasesRetail
                 + transfersRetail
-                + adjustmentsRetail;
+                + adjustmentsRetail);
 
-        double discrepancy = closingRetail - expectedClosing;
+        double roundedClosing = round2(closingRetail);
+        double discrepancy = round2(roundedClosing - expectedClosing);
 
         BalanceCheckDTO check = new BalanceCheckDTO();
         check.setExpectedClosingAtRetailRate(expectedClosing);
-        check.setActualClosingAtRetailRate(closingRetail);
+        check.setActualClosingAtRetailRate(roundedClosing);
         check.setDiscrepancyAtRetailRate(discrepancy);
         check.setBalanced(Math.abs(discrepancy) <= BALANCE_TOLERANCE);
         check.setToleranceUsed(BALANCE_TOLERANCE);
@@ -203,9 +203,9 @@ public class PharmacyF15ReportApiService {
                 + " + purchases(" + round2(purchasesRetail) + ")"
                 + " + transfers(" + round2(transfersRetail) + ")"
                 + " + adjustments(" + round2(adjustmentsRetail) + ")"
-                + " = " + round2(expectedClosing)
-                + " | actual=" + round2(closingRetail)
-                + " | discrepancy=" + round2(discrepancy));
+                + " = " + expectedClosing
+                + " | actual=" + roundedClosing
+                + " | discrepancy=" + discrepancy);
 
         return check;
     }

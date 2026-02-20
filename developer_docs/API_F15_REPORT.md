@@ -26,7 +26,7 @@ AI agents can use this API to:
 > These values differ per deployment and must **never** be hardcoded.
 
 All endpoints require the `Finance` header:
-```
+```text
 Finance: <ask the user for their Finance API key>
 ```
 
@@ -36,7 +36,7 @@ Base URL: `<ask the user for their HMIS base URL>`/api
 
 ## Endpoint 1: Generate F15 Report
 
-```
+```http
 GET /api/pharmacy_f15_report?date=yyyy-MM-dd&departmentId=<long>
 ```
 
@@ -155,7 +155,7 @@ curl -s "$BASE_URL/api/pharmacy_f15_report?date=2026-02-18&departmentId=485" \
 
 ### Balance Formula
 
-```
+```text
 expectedClosing = opening
                 + sales.totals.stockValueAtRetailRate        (negative)
                 + purchases.totals.stockValueAtRetailRate    (positive)
@@ -176,7 +176,7 @@ Verified on production data (2026-02-18, dept 485):
 
 When a discrepancy is found, use this to list all bills of a specific type for investigation.
 
-```
+```http
 GET /api/costing_data/bills_by_type
 ```
 
@@ -238,7 +238,7 @@ curl -s "$BASE_URL/api/costing_data/bills_by_type\
 
 Use to inspect specific bill items and pharmaceutical bill item data.
 
-```
+```http
 GET /api/costing_data/by_bill_id/{billId}
 ```
 
@@ -443,7 +443,7 @@ developer action — a future correction API will be added once specific root ca
 ## Valid billTypeAtomic Values
 
 ### Sales
-```
+```text
 PHARMACY_RETAIL_SALE, PHARMACY_RETAIL_SALE_CANCELLED, PHARMACY_RETAIL_SALE_REFUND,
 PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS, PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
 PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY, PHARMACY_WHOLESALE, PHARMACY_WHOLESALE_CANCELLED,
@@ -457,20 +457,20 @@ ACCEPT_RETURN_MEDICINE_THEATRE
 ```
 
 ### Purchases
-```
+```text
 PHARMACY_DIRECT_PURCHASE, PHARMACY_DIRECT_PURCHASE_REFUND, PHARMACY_DIRECT_PURCHASE_CANCELLED,
 PHARMACY_GRN, PHARMACY_RETURN_WITHOUT_TREASING, PHARMACY_GRN_RETURN, PHARMACY_GRN_CANCELLED
 ```
 
 ### Transfers
-```
+```text
 PHARMACY_ISSUE, PHARMACY_RECEIVE, PHARMACY_DIRECT_ISSUE, PHARMACY_DIRECT_ISSUE_CANCELLED,
 PHARMACY_DISPOSAL_ISSUE, PHARMACY_DISPOSAL_ISSUE_CANCELLED, PHARMACY_DISPOSAL_ISSUE_RETURN,
 PHARMACY_ISSUE_CANCELLED, PHARMACY_ISSUE_RETURN, PHARMACY_RECEIVE_CANCELLED
 ```
 
 ### Adjustments
-```
+```text
 PHARMACY_PURCHASE_RATE_ADJUSTMENT, PHARMACY_RETAIL_RATE_ADJUSTMENT,
 PHARMACY_COST_RATE_ADJUSTMENT, PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
 PHARMACY_STOCK_ADJUSTMENT, PHARMACY_ADJUSTMENT, PHARMACY_ADJUSTMENT_CANCELLED
@@ -482,7 +482,7 @@ PHARMACY_STOCK_ADJUSTMENT, PHARMACY_ADJUSTMENT, PHARMACY_ADJUSTMENT_CANCELLED
 
 As of the initial implementation, a discrepancy of **+287.67** was detected:
 
-```
+```text
 Opening:      44,160,559.31
 + Sales:        -800,657.98
 + Purchases:  +2,487,780.04

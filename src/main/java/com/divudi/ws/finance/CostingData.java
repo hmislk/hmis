@@ -23,10 +23,12 @@ import com.google.gson.GsonBuilder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -39,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.persistence.TemporalType;
 
 @Path("costing_data")
 @RequestScoped
@@ -503,6 +506,8 @@ public class CostingData {
      *   billTypeAtomic - bill type name (e.g. PHARMACY_RETAIL_SALE, PHARMACY_GRN)
      *   limit        - max results (default 200, max 1000)
      *
+     * Filters apply on Bill.createdAt to align with PharmacyService F15 logic.
+     *
      * Returns lightweight bill summary list (not full bill details).
      * Use /costing_data/by_bill_id/{id} to retrieve full details including bill items.
      */
@@ -551,8 +556,8 @@ public class CostingData {
                     + "WHERE b.retired = false "
                     + "AND b.department.id = :departmentId "
                     + "AND b.billTypeAtomic = :billTypeAtomic "
-                    + "AND b.billTime >= :fromDate "
-                    + "AND b.billTime <= :toDate "
+                    + "AND b.createdAt >= :fromDate "
+                    + "AND b.createdAt <= :toDate "
                     + "ORDER BY b.id ASC";
 
             Map<String, Object> params = new HashMap<>();
@@ -561,7 +566,7 @@ public class CostingData {
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
-            List<Bill> bills = billFacade.findByJpql(jpql, params, maxResults);
+            List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResults);
 
             List<Map<String, Object>> result = new ArrayList<>();
             for (Bill b : bills) {
@@ -570,6 +575,7 @@ public class CostingData {
                 row.put("billNumber", b.getDeptId());
                 row.put("billType", b.getBillType() != null ? b.getBillType().toString() : null);
                 row.put("billTypeAtomic", b.getBillTypeAtomic() != null ? b.getBillTypeAtomic().toString() : null);
+                row.put("createdAt", b.getCreatedAt());
                 row.put("billTime", b.getBillTime());
                 row.put("netTotal", b.getNetTotal());
                 row.put("grossTotal", b.getTotal());
@@ -598,8 +604,11 @@ public class CostingData {
             return Response.status(200).entity(gson.toJson(response)).build();
 
         } catch (IllegalArgumentException e) {
+            String validValues = Arrays.stream(com.divudi.core.data.BillTypeAtomic.values())
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", "));
             return errorResponse("Unknown billTypeAtomic value: " + billTypeAtomic
-                    + ". Check PharmacyService for valid values.", 400);
+                    + ". Valid values (com.divudi.core.data.BillTypeAtomic): " + validValues, 400);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
