@@ -5,6 +5,13 @@
 (`LEFT JOIN … COALESCE(bfd.totalRetailSaleValue, 0.0)`) silently treats that bill's stock value
 as **zero**, producing a discrepancy.
 
+## When to Work Through This Guide
+
+- Use this playbook whenever you're resolving F15 report discrepancies that stem from missing
+  `BillFinanceDetails` rows for pre-bill (`PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER`) and
+  cancellation (`PHARMACY_RETAIL_SALE_CANCELLED_PRE`) bill types. It walks through diagnosing
+  the data gap and backfilling the required BFD entries.
+
 ---
 
 ## Which Bill Types May Have Missing BFDs

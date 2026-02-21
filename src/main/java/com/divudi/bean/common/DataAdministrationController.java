@@ -1418,6 +1418,17 @@ public class DataAdministrationController implements Serializable {
 
                         billItemFacade.edit(bi);
                         updatedItems++;
+                    } else {
+                        // Already populated — still include in bill-level totals
+                        if (bifd.getValueAtCostRate() != null) {
+                            totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+                        }
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+                        }
+                        if (bifd.getValueAtRetailRate() != null) {
+                            totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate());
+                        }
                     }
                 }
 

@@ -48,7 +48,7 @@ public class BillDataCorrectionService {
     private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments"));
     private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
     private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal"));
-    private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue", "netValue"));
+    private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue"));
     private static final Set<String> BILL_ITEM_FINANCE_FIELDS = new HashSet<>(Arrays.asList("valueAtRetailRate", "valueAtCostRate", "costRate", "retailSaleRate"));
     private static final Set<String> PHARMACEUTICAL_BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "retailRate", "costRate", "retailValue", "costValue"));
 
@@ -252,13 +252,6 @@ public class BillDataCorrectionService {
             entity.setFeeGrossValue(value);
             newValues.put("grossValue", entity.getFeeGrossValue());
         }
-        if (fields.containsKey("netValue")) {
-            previousValues.put("netValue", entity.getFeeValue());
-            double value = toDouble(fields.get("netValue"), "netValue");
-            entity.setFeeValue(value);
-            newValues.put("netValue", entity.getFeeValue());
-        }
-
         billFeeFacade.edit(entity);
         if (entity.getBill() != null) {
             return entity.getBill();

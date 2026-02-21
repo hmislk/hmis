@@ -42,7 +42,7 @@ Then apply updates using:
 | `BILL` | Bill | `netTotal`, `grossTotal`, `comments` |
 | `BILL_ITEM` | BillItem | `qty`, `rate`, `grossValue`, `netValue`, `discount` |
 | `BILL_FINANCE_DETAILS` | BillFinanceDetails | `totalRetailSaleValue`, `totalCostValue`, `totalPurchaseValue`, `netTotal`, `grossTotal` |
-| `BILL_FEES` | BillFee | `feeValue`, `grossValue`, `netValue` |
+| `BILL_FEES` | BillFee | `feeValue`, `grossValue` |
 | `BILL_ITEM_FINANCE_DETAILS` | BillItemFinanceDetails | `valueAtRetailRate`, `valueAtCostRate`, `costRate`, `retailSaleRate` |
 | `PHARMACEUTICAL_BILL_ITEM` | PharmaceuticalBillItem | `qty`, `retailRate`, `costRate`, `retailValue`, `costValue` |
 
@@ -77,13 +77,49 @@ Then apply updates using:
 }
 ```
 
-## Error Response
+## Error Responses
+
+The API layer maps `IllegalArgumentException` from missing entities (e.g., `targetId` not found)
+to `404 Not Found`, while true validation problems (unknown fields, empty payloads, etc.) remain
+`400 Bad Request` errors.
+
+### 400 – Validation Failure (Example)
 
 ```json
 {
   "status": "error",
   "code": 400,
   "message": "Field 'unknownField' is not allowed for BILL_FINANCE_DETAILS"
+}
+```
+
+### 401 – Invalid or Missing API Key
+
+```json
+{
+  "status": "error",
+  "code": 401,
+  "message": "Invalid or missing API key"
+}
+```
+
+### 404 – Target Entity Not Found
+
+```json
+{
+  "status": "error",
+  "code": 404,
+  "message": "Bill not found for id 123456"
+}
+```
+
+### 500 – Unexpected Server Error
+
+```json
+{
+  "status": "error",
+  "code": 500,
+  "message": "Internal server error"
 }
 ```
 

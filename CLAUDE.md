@@ -48,9 +48,6 @@
 - **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
 - **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
 
-### When Working on F15 Report Discrepancies
-- [F15 BFD Backfill Guide](developer_docs/pharmacy/f15-bfd-backfill-guide.md) - How to identify and fix missing BillFinanceDetails records for pre-bill and cancellation bill types
-
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
 
