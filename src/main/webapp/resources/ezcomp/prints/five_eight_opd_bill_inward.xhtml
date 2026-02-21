@@ -115,26 +115,26 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient ne null}" >
                         <tr>
                             <td style="padding: 2px; font-size: 12px;font-weight: 700;">Patient Name </td>
                             <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
 
                     <tr>
-                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString ne null}" >
                             <td  style="padding: 2px;">Age / Sex </td>
                             <td style="padding: 2px;">
-                                <h:outputText value="#{empty cc.attrs.bill.patient.person.ageAsShortString ? 'N/A' : cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                                <h:outputText value="#{empty cc.attrs.bill.patientEncounter.patient.person.ageAsShortString ? 'N/A' : cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex.label}"/>
                             </td>
                         </h:panelGroup>
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;">Mobile</td>
                         <td style="padding: 2px;">
-                            <h:outputLabel value="#{not empty cc.attrs.bill.patient.person.phone ? cc.attrs.bill.patient.person.phone : 'N/A'}" />
+                            <h:outputLabel value="#{not empty cc.attrs.bill.patientEncounter.patient.person.phone ? cc.attrs.bill.patientEncounter.patient.person.phone : 'N/A'}" />
                         </td>
                     </tr>
 
