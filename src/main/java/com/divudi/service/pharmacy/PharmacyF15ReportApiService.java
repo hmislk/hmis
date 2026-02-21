@@ -94,6 +94,13 @@ public class PharmacyF15ReportApiService {
                 .fetchPharmacyAdjustmentValueByBillTypeDto(
                         startOfDay, endOfDay, null, null, department, null, null, null);
 
+        // Pre-bill stock movements (informational section)
+        // PRE_TO_SETTLE_AT_CASHIER + CANCELLED_PRE: stock that moved in the period
+        // but whose financial settlement may fall on a different day.
+        PharmacyBundle preBillBundle = pharmacyService
+                .fetchPharmacyF15StockMovementBundleDto(
+                        startOfDay, endOfDay, null, null, department, null, null, null);
+
         // Closing stock (same as Step 8 in JSF controller)
         double closingRetail = stockHistoryFacade.calculateStockValueAtRetailRateOptimized(nextDayStart, departmentId);
         double closingCost = stockHistoryFacade.calculateStockValueAtCostRateOptimized(nextDayStart, departmentId);
@@ -112,6 +119,7 @@ public class PharmacyF15ReportApiService {
         dto.setBalanceCheck(buildBalanceCheck(
                 openingRetail, closingRetail,
                 salesBundle, purchasesBundle, transfersBundle, adjustmentsBundle));
+        dto.setPreBillStockMovements(buildBundleDTO(preBillBundle));
 
         return dto;
     }

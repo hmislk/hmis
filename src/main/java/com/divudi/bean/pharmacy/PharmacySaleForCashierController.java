@@ -4074,6 +4074,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
+        // Create BFD for pre-bill at creation time so F15 stock movement report can track it
+        if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
+            calculateAndRecordCostingValues(getPreBill());
+        }
         Long id = getPreBill().getId();
         if (id == null) {
             JsfUtil.addErrorMessage("Pre-bill is not persisted; cannot load for printing");
