@@ -360,7 +360,7 @@ public class BillBhtController implements Serializable {
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-
+        tmp.setPatient(patientEncounter.getPatient());
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
         String batchBillId = "";
         
@@ -616,7 +616,7 @@ public class BillBhtController implements Serializable {
 
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
         temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        temp.setPatient(patientEncounter.getPatient());
         temp.setFromDepartment(matrixDepartment);
 
         temp.setToDepartment(bt);
