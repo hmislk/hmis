@@ -272,6 +272,7 @@ public class LaboratoryManagementController implements Serializable {
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
+                case INTERFACE:
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     patientReportController.fillReportFormats(currentPatientReport);
                     addViewReportHistory(currentPatientReport.getId());
@@ -313,6 +314,7 @@ public class LaboratoryManagementController implements Serializable {
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
+                case INTERFACE:
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     addViewReportHistory(currentPatientReport.getId());
                     return "/lab/patient_report_print?faces-redirect=true";
@@ -342,6 +344,7 @@ public class LaboratoryManagementController implements Serializable {
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
+                case INTERFACE :
                     addViewReportHistory(currentPatientReport.getId());
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     return "/lab/report_print?faces-redirect=true";
