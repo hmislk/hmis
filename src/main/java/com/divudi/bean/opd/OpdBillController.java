@@ -3891,6 +3891,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 currentPatientMembershipScheme = null;
                 chiefHouseHolder = null;
                 currentPatientFamily = null;
+                if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
+                    referredBy = null;
+                    referredByInstitution = null;
+                }
                 collectingCentreBillController.setCollectingCentre(null);
                 if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                     return "/opd/opd_bill_ac?faces-redirect=true";
@@ -3908,7 +3912,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             patientEncounter = null;
-            referredBy = null;
+            if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
+                referredBy = null;
+                referredByInstitution = null;
+            }
             collectingCentreBillController.setCollectingCentre(null);
             if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                 return "/opd/opd_bill_ac?faces-redirect=true";
