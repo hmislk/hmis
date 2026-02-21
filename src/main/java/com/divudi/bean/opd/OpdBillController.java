@@ -3908,6 +3908,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             patientEncounter = null;
+            referredBy = null;
             collectingCentreBillController.setCollectingCentre(null);
             if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                 return "/opd/opd_bill_ac?faces-redirect=true";
