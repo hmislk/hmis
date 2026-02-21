@@ -433,7 +433,6 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
                 BillTypeAtomic.PHARMACY_WHOLESALE,
                 BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
                 BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
@@ -451,6 +450,35 @@ public class PharmacyService {
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
         );
+    }
+
+    /**
+     * Returns the two bill types that represent pre-bill retail sale stock movements.
+     * These are shown as a separate informational section on the F15 report to explain
+     * stock discrepancies caused by stock that moved (via pre-bill) but whose financial
+     * settlement has not yet been recorded within the report period:
+     * - PRE_TO_SETTLE_AT_CASHIER: stock flowed out when the pre-bill was saved
+     * - CANCELLED_PRE: stock was restored when a pre-bill was cancelled before settlement
+     */
+    public List<BillTypeAtomic> getPharmacyF15StockMovementBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE
+        );
+    }
+
+    /**
+     * Fetches the pharmacy sales bundle for F15 stock movement reconciliation.
+     * Uses getPharmacyF15StockMovementBillTypes() instead of getPharmacyIncomeBillTypes()
+     * so that the report tracks stock movement events (pre-bill creation/cancellation)
+     * rather than financial settlement events.
+     */
+    public PharmacyBundle fetchPharmacyF15StockMovementBundleDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyF15StockMovementBillTypes();
+        List<BillLight> billLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        PharmacyBundle bundle = new PharmacyBundle(billLights);
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+        return bundle;
     }
 
     public List<BillTypeAtomic> getPharmacyPurchaseBillTypes() {
