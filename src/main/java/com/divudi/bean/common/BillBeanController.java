@@ -5554,15 +5554,7 @@ public class BillBeanController implements Serializable {
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-        bfp.setCreater(sessionController.getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public ItemFacade getItemFacade() {

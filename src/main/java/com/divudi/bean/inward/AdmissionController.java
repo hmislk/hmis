@@ -2096,6 +2096,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             patient = new Patient();
             patientDetailsEditable = true;
             patient.setPerson(p);
+            if (current != null) {
+                current.setPatient(patient);
+            }
         }
         return patient;
     }
