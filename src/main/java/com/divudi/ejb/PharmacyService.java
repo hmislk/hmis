@@ -420,7 +420,9 @@ public class PharmacyService {
     public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
-        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        // Use the adjustment-specific fetch that prefers bfd.grossTotal/netTotal over bill.total/netTotal
+        // because some adjustment bills (e.g. retail rate adjustment) have bill.total=0 but correct BFD values
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsForAdjustmentsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
         bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
