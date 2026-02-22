@@ -760,6 +760,14 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
 
+                                            <p:outputLabel value="Total Bill Value" />
+                                            <p:outputLabel
+                                                id="totalBillValue"
+                                                class="w-100 text-end ui-inputfield bg-dark text-white"
+                                                value="#{0 - pharmacyDirectPurchaseController.bill.netTotal + pharmacyDirectPurchaseController.bill.expensesTotalNotConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+
                                             <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
                                             <h:outputLabel 
                                                 id="expensesNotConsidered"

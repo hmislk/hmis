@@ -231,6 +231,16 @@
                                 </f:facet>
                             </p:column>
                         </p:row>
+                        <p:row>
+                            <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Total Bill Value"/>
+                            <p:column style="padding: 4px; width: 6em;" class="text-end">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalBillValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
 
                         <!-- Expense Total Not considered for Costing -->
                         <p:row>
