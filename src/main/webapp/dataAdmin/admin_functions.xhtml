@@ -405,6 +405,8 @@
                                                 value="Backfill Pre-Bill BFDs"
                                                 styleClass="ui-button-warning m-1"
                                                 icon="pi pi-calculator"
+                                                title="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
+                                                aria-label="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 onclick="return confirm('This will create BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills missing BFD in the selected period. Proceed?');" />
                                         </td>

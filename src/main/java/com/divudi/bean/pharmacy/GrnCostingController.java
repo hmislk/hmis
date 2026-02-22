@@ -3876,6 +3876,9 @@ public class GrnCostingController implements Serializable {
 
         netTotal = lineNetTotal.abs().add(billTax.abs()).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting).abs()).subtract(billDiscount.abs());
 
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(bill.getExpensesTotalNotConsideredForCosting());
+        BigDecimal totalBillValue = netTotal.add(expensesNotForCosting);
+
         bill.setTotal(lineNetTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
@@ -3923,6 +3926,10 @@ public class GrnCostingController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
+
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(totalBillValue);
 
     }
 
