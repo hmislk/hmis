@@ -1035,43 +1035,41 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setCreater(getSessionController().getLoggedUser());
 
         try {
-            if (tbi.getId() == null) {
-                getBillItemFacade().create(tbi);
-            } else {
-                getBillItemFacade().edit(tbi);
-            }
+            getBillItemFacade().create(tbi);
+            getDeptAdjustmentPreBill().getBillItems().add(tbi);
         } catch (javax.persistence.PersistenceException e) {
             Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to save purchase rate adjustment bill items", e);
             throw new RuntimeException("Failed to save purchase rate adjustment bill items", e);
         }
 
-//        getDeptAdjustmentPreBill().getBillItems().add(tbi);
-        // Update bill totals with the change value
+        // Update bill totals with the change value so F15 Gross Value and Net Value columns are populated
         Double currentTotalObj = getDeptAdjustmentPreBill().getTotal();
         Double currentNetTotalObj = getDeptAdjustmentPreBill().getNetTotal();
-        double currentTotal = currentTotalObj != null ? currentTotalObj : 0.0;
-        double currentNetTotal = currentNetTotalObj != null ? currentNetTotalObj : 0.0;
+        getDeptAdjustmentPreBill().setTotal((currentTotalObj != null ? currentTotalObj : 0.0) + Math.abs(changeValue));
+        getDeptAdjustmentPreBill().setNetTotal((currentNetTotalObj != null ? currentNetTotalObj : 0.0) + changeValue);
 
-        getDeptAdjustmentPreBill().setTotal(currentTotal + Math.abs(changeValue));
-        getDeptAdjustmentPreBill().setNetTotal(currentNetTotal + changeValue);
-
-        // Update BillFinanceDetails using PharmacyCostingService for proper financial tracking
         BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
         if (bfd == null) {
             bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
             getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
         }
 
-        // Set the purchase value change (only this should be recorded as per requirement)
         java.math.BigDecimal changeVal = java.math.BigDecimal.valueOf(changeValue);
-        java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldPurchaseRate * getStock().getStock());
-        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newPurchaseRate * getStock().getStock());
+        // Use dto.getStockQty() (not getStock().getStock()) for correct per-batch quantity
+        java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldPurchaseRate * dto.getStockQty());
+        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newPurchaseRate * dto.getStockQty());
 
         java.math.BigDecimal prevPurchaseValue = bfd.getTotalPurchaseValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalPurchaseValue();
         bfd.setTotalPurchaseValue(prevPurchaseValue.add(changeVal));
-        bfd.setNetTotal(changeVal);
-        bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
-        bfd.setTotalQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
+
+        java.math.BigDecimal prevGross = bfd.getGrossTotal() == null ? java.math.BigDecimal.ZERO : bfd.getGrossTotal();
+        bfd.setGrossTotal(prevGross.add(java.math.BigDecimal.valueOf(Math.abs(changeValue))));
+
+        java.math.BigDecimal prevNet = bfd.getNetTotal() == null ? java.math.BigDecimal.ZERO : bfd.getNetTotal();
+        bfd.setNetTotal(prevNet.add(changeVal));
+
+        java.math.BigDecimal prevQty = bfd.getTotalQuantity() == null ? java.math.BigDecimal.ZERO : bfd.getTotalQuantity();
+        bfd.setTotalQuantity(prevQty.add(java.math.BigDecimal.valueOf(dto.getStockQty())));
 
         // Aggregate before/after totals
         java.math.BigDecimal prevBefore = bfd.getTotalBeforeAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalBeforeAdjustmentValue();
@@ -1079,16 +1077,17 @@ public class PharmacyAdjustmentController implements Serializable {
         bfd.setTotalBeforeAdjustmentValue(prevBefore.add(beforeVal));
         bfd.setTotalAfterAdjustmentValue(prevAfter.add(afterVal));
 
-        // Ensure cost rate, retail rate, wholesale rate values are NOT recorded as per requirement
-        bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
-        bfd.setTotalRetailSaleValue(java.math.BigDecimal.ZERO);
-        bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
-
-        if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
-        } else {
-            getBillItemFacade().edit(tbi);
+        // Cost, retail sale, and wholesale values do not change for purchase rate adjustments
+        if (bfd.getTotalCostValue() == null) {
+            bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
         }
+        if (bfd.getTotalRetailSaleValue() == null) {
+            bfd.setTotalRetailSaleValue(java.math.BigDecimal.ZERO);
+        }
+        if (bfd.getTotalWholesaleValue() == null) {
+            bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
+        }
+
         return ph;
     }
 
