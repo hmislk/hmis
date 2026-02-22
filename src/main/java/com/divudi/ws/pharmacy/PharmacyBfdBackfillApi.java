@@ -124,11 +124,8 @@ public class PharmacyBfdBackfillApi {
             try {
                 synchronized (DATE_FORMAT) {
                     fromDate = DATE_FORMAT.parse(request.getFromDate().trim());
-                    // Set toDate to end of day so the range is inclusive
                     toDate = DATE_FORMAT.parse(request.getToDate().trim());
                 }
-                // Advance toDate to 23:59:59 of the given day
-                toDate = new Date(toDate.getTime() + 86399999L);
             } catch (ParseException ex) {
                 return errorResponse("Invalid date format. Use yyyy-MM-dd (e.g. 2026-02-22)", 400);
             }

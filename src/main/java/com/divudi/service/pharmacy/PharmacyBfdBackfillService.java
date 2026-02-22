@@ -9,6 +9,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFinanceDetailsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 
 /**
  * EJB service that backfills missing or zeroed BillFinanceDetails for
@@ -69,10 +71,16 @@ public class PharmacyBfdBackfillService {
 
         List<BillTypeAtomic> types = resolveTypes(billTypeAtomics);
 
+        // Ensure fromDate starts at 00:00:00.000 and toDate ends at 23:59:59.999
+        // so the BETWEEN clause covers the full day when only a date string was given.
+        Date from = CommonFunctions.getStartOfDay(fromDate);
+        Date to = CommonFunctions.getEndOfDay(toDate);
+
         // Find bills that either:
         //  - have no BFD at all (PHARMACY_STOCK_ADJUSTMENT bills before the fix), or
         //  - have bill.total = 0 (PHARMACY_RETAIL_RATE_ADJUSTMENT bills where total was not persisted)
         // We use a LEFT JOIN so bills with no BFD are included (bfd IS NULL).
+        // Use TemporalType.TIMESTAMP so the full datetime is compared, not just the date portion.
         String jpql = "SELECT b FROM Bill b LEFT JOIN b.billFinanceDetails bfd"
                 + " WHERE b.retired = false"
                 + " AND b.billTypeAtomic IN :types"
@@ -82,13 +90,13 @@ public class PharmacyBfdBackfillService {
 
         Map<String, Object> params = new HashMap<>();
         params.put("types", types);
-        params.put("from", fromDate);
-        params.put("to", toDate);
+        params.put("from", from);
+        params.put("to", to);
         if (departmentId != null) {
             params.put("deptId", departmentId);
         }
 
-        List<Bill> bills = billFacade.findByJpql(jpql, params);
+        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         int backfilled = 0;
         int skipped = 0;
