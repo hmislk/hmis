@@ -1315,6 +1315,92 @@ public class BillService {
     }
 
     /**
+     * Fetch bill lights for adjustment bills using BillFinanceDetails grossTotal/netTotal
+     * in preference to bill.total/bill.netTotal.
+     *
+     * For adjustment bill types (retail rate adjustment, stock adjustment, etc.),
+     * the bill.total and bill.netTotal fields may be 0 due to historical save path issues,
+     * while bfd.grossTotal and bfd.netTotal are correctly populated.
+     * Using coalesce(bfd.grossTotal, b.total) ensures the BFD value is used when available.
+     * A dedicated BillLight constructor handles the BigDecimal→Double conversion.
+     */
+    public List<BillLight> fetchBillLightsForAdjustmentsWithFinanceDetails(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.light.common.BillLight("
+                + " b.id, "
+                + " b.billTypeAtomic, "
+                + " b.total, "
+                + " b.netTotal, "
+                + " b.discount, "
+                + " b.margin, "
+                + " b.serviceCharge, "
+                + " coalesce(bfd.totalCostValue, 0.0), "
+                + " coalesce(bfd.totalPurchaseValue, 0.0), "
+                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                + " b.paymentMethod, "
+                + " b.patientEncounter, "
+                + " bfd.grossTotal, "
+                + " bfd.netTotal "
+                + ") "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc ";
+
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
+    /**
      * Fetch bill lights with finance details and completed filter for purchase reports.
      * Only includes bills where completed = true.
      */
