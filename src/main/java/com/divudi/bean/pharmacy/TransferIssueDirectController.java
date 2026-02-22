@@ -176,7 +176,10 @@ public class TransferIssueDirectController implements Serializable {
 
         // Set the transfer rate based on configuration
         BigDecimal transferRate = determineTransferRate(getTmpStock().getItemBatch());
-        billItem.getBillItemFinanceDetails().setLineGrossRate(transferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack()));
+        BigDecimal lineGrossRate = transferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
+        billItem.getBillItemFinanceDetails().setLineGrossRate(lineGrossRate);
+        // Transfer Value = Transfer Rate * Quantity
+        billItem.getBillItemFinanceDetails().setLineGrossTotal(lineGrossRate.multiply(BigDecimal.valueOf(qty)));
 
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
@@ -475,51 +478,27 @@ public class TransferIssueDirectController implements Serializable {
      * Calculates and updates bill totals for transfer issue
      */
     private void calculateBillTotalsForTransferIssue(Bill bill) {
-        if (bill == null || bill.getBillItems() == null) {
+        if (bill == null) {
             return;
         }
 
-        BigDecimal grossTotal = BigDecimal.ZERO;
+        // Sum lineGrossTotal values from the controller's working list.
+        // bill.getBillItems() is empty until saveBillItems() is called, so we
+        // iterate getBillItems() here to keep the running total current while
+        // the user is still adding / removing items.
         BigDecimal netTotal = BigDecimal.ZERO;
-        BigDecimal lineGrossTotal = BigDecimal.ZERO;
-        BigDecimal lineNetTotal = BigDecimal.ZERO;
-
-        int serialNo = 1;
-
-        for (BillItem bi : bill.getBillItems()) {
+        for (BillItem bi : getBillItems()) {
             if (bi.isRetired()) {
                 continue;
             }
-
-            bi.setSearialNo(serialNo++);
-
-            // For transfer issue: stock goes out so qty is negative
-            double absQty = Math.abs(bi.getQty());
-            bi.setQty(-absQty);
-
-            // Revenue is positive (we receive money/value for stock going out)
-            double netValue = absQty * bi.getRate();
-            bi.setNetValue(netValue);
-
-            grossTotal = grossTotal.add(BigDecimal.valueOf(netValue));
-            netTotal = netTotal.add(BigDecimal.valueOf(netValue));
-            lineGrossTotal = lineGrossTotal.add(BigDecimal.valueOf(netValue));
-            lineNetTotal = lineNetTotal.add(BigDecimal.valueOf(netValue));
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (fd != null && fd.getLineGrossTotal() != null) {
+                netTotal = netTotal.add(fd.getLineGrossTotal());
+            }
         }
 
-        // Set bill totals as positive (revenue)
-        bill.setTotal(grossTotal.doubleValue());
+        bill.setTotal(netTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
-
-        // Set bill finance details totals as positive (revenue)
-        if (bill.getBillFinanceDetails() != null) {
-            bill.getBillFinanceDetails().setGrossTotal(grossTotal);
-            bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
-            bill.getBillFinanceDetails().setNetTotal(netTotal);
-            bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
-        }
-
-//        getBillFacade().edit(bill);
     }
 
     /**
