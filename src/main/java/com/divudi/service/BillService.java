@@ -958,9 +958,7 @@ public class BillService {
             bi.setCollectingCentreFee(collectingCentreFeesCalculatedByBillFees);
             bi.setStaffFee(staffFeesCalculatedByBillFees);
             bi.setHospitalFee(hospitalFeeCalculatedByBillFees);
-            billItemFacade.editAndCommit(bi);
-            // Log the values set to the BillItem
-            // Log the values set to the BillItem
+            billItemFacade.edit(bi);
 
             // Accumulate the fees to the Bill totals
             billCollectingCentreFee += collectingCentreFeesCalculatedByBillFees;
@@ -983,7 +981,7 @@ public class BillService {
         // Log the final bill totals
 
         // Persist the updated Bill
-        billFacade.editAndCommit(bill);
+        billFacade.edit(bill);
     }
 
     public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(List<Bill> bills) {
