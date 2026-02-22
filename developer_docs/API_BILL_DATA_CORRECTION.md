@@ -76,7 +76,8 @@ set them. You can calculate the values from the parent bill:
 
 - `billExpensesConsideredForCosting` = from `bill.expensesTotalConsideredForCosting`
 - `billExpensesNotConsideredForCosting` = from `bill.expensesTotalNotConsideredForCosting`
-- `totalBillValue` = `|netTotal|` + `billExpensesNotConsideredForCosting`
+- `totalBillValue` = `bfd.netTotal` + `billExpensesNotConsideredForCosting`
+  (Note: `bfd.netTotal` is stored as a positive value; use the BFD's netTotal, not the Bill's netTotal which may be negative)
 
 Example for a GRN where Net Total = 22,675 and non-costing expenses = 500:
 
