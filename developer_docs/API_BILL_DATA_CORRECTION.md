@@ -41,10 +41,62 @@ Then apply updates using:
 |---|---|---|
 | `BILL` | Bill | `netTotal`, `grossTotal`, `comments` |
 | `BILL_ITEM` | BillItem | `qty`, `rate`, `grossValue`, `netValue`, `discount` |
-| `BILL_FINANCE_DETAILS` | BillFinanceDetails | `totalRetailSaleValue`, `totalCostValue`, `totalPurchaseValue`, `netTotal`, `grossTotal` |
+| `BILL_FINANCE_DETAILS` | BillFinanceDetails | `totalRetailSaleValue`, `totalCostValue`, `totalPurchaseValue`, `netTotal`, `grossTotal`, `billExpensesConsideredForCosting`, `billExpensesNotConsideredForCosting`, `totalBillValue` |
 | `BILL_FEES` | BillFee | `feeValue`, `grossValue` |
 | `BILL_ITEM_FINANCE_DETAILS` | BillItemFinanceDetails | `valueAtRetailRate`, `valueAtCostRate`, `costRate`, `retailSaleRate` |
 | `PHARMACEUTICAL_BILL_ITEM` | PharmaceuticalBillItem | `qty`, `retailRate`, `costRate`, `retailValue`, `costValue` |
+
+## BILL_FINANCE_DETAILS Field Reference
+
+### Existing fields
+
+| Field | Type | Description |
+|---|---|---|
+| `netTotal` | BigDecimal | Net total after all deductions and costing expenses added |
+| `grossTotal` | BigDecimal | Gross total of line items |
+| `totalCostValue` | BigDecimal | Total value at cost rate across all bill items |
+| `totalPurchaseValue` | BigDecimal | Total value at purchase rate across all bill items |
+| `totalRetailSaleValue` | BigDecimal | Total value at retail sale rate across all bill items |
+
+### New fields (added 2026-02-23)
+
+These fields were added to support the **Total Bill Value** feature on GRN prints and must be
+backfilled for all historical GRN bills using the API.
+
+| Field | Type | Description |
+|---|---|---|
+| `billExpensesConsideredForCosting` | BigDecimal | Sum of bill expenses marked as "Considered for Costing". These are included in item cost rate calculations. |
+| `billExpensesNotConsideredForCosting` | BigDecimal | Sum of bill expenses marked as "NOT Considered for Costing". These are overhead costs that do not affect item cost rates. Always stored as a positive value. |
+| `totalBillValue` | BigDecimal | **Total Bill Value** = `netTotal` + `billExpensesNotConsideredForCosting`. Represents the actual total cash outflow to the supplier. Always stored as a positive value. |
+
+### Backfilling historical GRNs
+
+For GRN bills saved before 2026-02-23, these three fields will be `null`. Use the PATCH endpoint to
+set them. You can calculate the values from the parent bill:
+
+- `billExpensesConsideredForCosting` = from `bill.expensesTotalConsideredForCosting`
+- `billExpensesNotConsideredForCosting` = from `bill.expensesTotalNotConsideredForCosting`
+- `totalBillValue` = `bfd.netTotal` + `billExpensesNotConsideredForCosting`
+  (Note: `bfd.netTotal` is stored as a positive value; use the BFD's netTotal, not the Bill's netTotal which may be negative)
+
+Example for a GRN where Net Total = 22,675 and non-costing expenses = 500:
+
+```bash
+curl -s -X PATCH "$BASE_URL/api/bill_data_correction" \
+  -H "Finance: $FINANCE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetType": "BILL_FINANCE_DETAILS",
+    "targetId": 56789,
+    "fields": {
+      "billExpensesConsideredForCosting": 600.00,
+      "billExpensesNotConsideredForCosting": 500.00,
+      "totalBillValue": 23175.00
+    },
+    "auditComment": "Backfill totalBillValue for GRN 9927624 — new field added 2026-02-23",
+    "approvedBy": "Dr. Buddhika"
+  }'
+```
 
 ## Validation Rules
 
