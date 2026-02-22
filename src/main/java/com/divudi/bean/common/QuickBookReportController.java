@@ -702,9 +702,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -758,9 +760,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -816,9 +820,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -874,9 +880,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
