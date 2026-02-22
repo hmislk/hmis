@@ -8,6 +8,12 @@ This API provides a controlled way to correct already-saved bill-related financi
 - **Auth Header**: `Finance: <API_KEY>`
 - **Purpose**: Correct historical data in bill records without direct database access.
 
+> **Important:** This endpoint can only **update** existing records. It **cannot create** a missing
+> `BillFinanceDetails` row. If you need to create missing BFDs for historical
+> `PHARMACY_STOCK_ADJUSTMENT` or `PHARMACY_RETAIL_RATE_ADJUSTMENT` bills, use
+> `POST /api/pharmacy/backfill_bfd` instead (see
+> `developer_docs/pharmacy/f15-bfd-backfill-guide.md`).
+
 ## Current Related Endpoints
 
 Before applying corrections, use these read-only endpoints to identify the exact records:
@@ -18,7 +24,8 @@ Before applying corrections, use these read-only endpoints to identify the exact
 
 Then apply updates using:
 
-- `PATCH /api/bill_data_correction`
+- `PATCH /api/bill_data_correction` — update existing BFD/bill/item fields
+- `POST /api/pharmacy/backfill_bfd` — **create** missing BFDs for historical adjustment bills
 
 ## Request Body
 
