@@ -1946,8 +1946,20 @@ public class PharmacyAdjustmentController implements Serializable {
             s.getItemBatch().setPurcahseRate(newPurchaseRate);
             itemBatchFacade.edit(s.getItemBatch());
 
-            // Add to stock history so adjustment appears in stock ledger report
+            // Record stock history for the adjusted department's stock
             pharmacyBean.addToStockHistory(ph, s, getSessionController().getDepartment());
+
+            // Record stock history for every OTHER department that holds stock of the
+            // same ItemBatch — their stock values also change because the rate is shared
+            for (com.divudi.core.entity.pharmacy.Stock otherStock : pharmacyBean.getStocksForItemBatch(s.getItemBatch())) {
+                if (otherStock.getId().equals(s.getId())) {
+                    continue; // already recorded above
+                }
+                if (otherStock.getDepartment() == null) {
+                    continue;
+                }
+                pharmacyBean.addToStockHistory(ph, otherStock, otherStock.getDepartment());
+            }
         }
 
         if (!any) {
@@ -2059,8 +2071,20 @@ public class PharmacyAdjustmentController implements Serializable {
             s.getItemBatch().setRetailsaleRate(newRetailRate);
             itemBatchFacade.edit(s.getItemBatch());
 
-            // Add to stock history so adjustment appears in stock ledger report
+            // Record stock history for the adjusted department's stock
             pharmacyBean.addToStockHistory(ph, s, getSessionController().getDepartment());
+
+            // Record stock history for every OTHER department that holds stock of the
+            // same ItemBatch — their stock values also change because the rate is shared
+            for (com.divudi.core.entity.pharmacy.Stock otherStock : pharmacyBean.getStocksForItemBatch(s.getItemBatch())) {
+                if (otherStock.getId().equals(s.getId())) {
+                    continue; // already recorded above
+                }
+                if (otherStock.getDepartment() == null) {
+                    continue;
+                }
+                pharmacyBean.addToStockHistory(ph, otherStock, otherStock.getDepartment());
+            }
         }
 
         if (!any) {

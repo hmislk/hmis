@@ -2750,6 +2750,16 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             batchBillCancellationStarted = false;
             return "";
         }
+
+        List<Bill> individualBills = billService.fetchIndividualBillsOfBatchBill(getBatchBill());
+        for (Bill individualBill : individualBills) {
+            if (individualBill.isCancelled()) {
+                JsfUtil.addErrorMessage("Individual bill " + individualBill.getDeptId() + " has already been cancelled separately. Cannot cancel the batch bill.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
+        }
+
         if (professionalPaymentService.isProfessionalFeePaidForBatchBill(batchBill)) {
             JsfUtil.addErrorMessage("Professional Fees or Outside Fees have already made this bill. Cancel them first and try again.");
             batchBillCancellationStarted = false;
@@ -2897,6 +2907,15 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (errorsPresentOnOpdBatchBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
+        }
+
+        List<Bill> individualBills = billService.fetchIndividualBillsOfBatchBill(getBatchBill());
+        for (Bill individualBill : individualBills) {
+            if (individualBill.isCancelled()) {
+                JsfUtil.addErrorMessage("Individual bill " + individualBill.getDeptId() + " has already been cancelled separately. Cannot cancel the batch bill.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
         }
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
