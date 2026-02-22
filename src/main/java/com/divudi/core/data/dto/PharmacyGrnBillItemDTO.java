@@ -18,6 +18,8 @@ public class PharmacyGrnBillItemDTO implements Serializable {
     private BigDecimal retailSaleRate;
     private Double netTotal;
     private Double saleValue;
+    private Long grnBillId;
+    private Long poBillId;
 
     public PharmacyGrnBillItemDTO() {
     }
@@ -54,6 +56,15 @@ public class PharmacyGrnBillItemDTO implements Serializable {
         this.purchaseRate = purchaseRate;
         this.saleValue = saleValue;
         this.netTotal = netTotal;
+    }
+
+    public PharmacyGrnBillItemDTO(String grnNo, String departmentName, String poNo, String supplierName,
+                                  String itemName, Double quantity, Double freeQuantity, Double purchaseRate,
+                                  Double saleValue, Double netTotal, Long grnBillId, Long poBillId) {
+        this(grnNo, departmentName, poNo, supplierName, itemName, quantity, freeQuantity, purchaseRate,
+                saleValue, netTotal);
+        this.grnBillId = grnBillId;
+        this.poBillId = poBillId;
     }
 
     public String getGrnNo() {
@@ -158,5 +169,21 @@ public class PharmacyGrnBillItemDTO implements Serializable {
 
     public void setSaleValue(Double saleValue) {
         this.saleValue = saleValue;
+    }
+
+    public Long getGrnBillId() {
+        return grnBillId;
+    }
+
+    public void setGrnBillId(Long grnBillId) {
+        this.grnBillId = grnBillId;
+    }
+
+    public Long getPoBillId() {
+        return poBillId;
+    }
+
+    public void setPoBillId(Long poBillId) {
+        this.poBillId = poBillId;
     }
 }
