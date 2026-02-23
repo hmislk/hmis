@@ -298,6 +298,15 @@
                         </td>
                     </tr>
 
+                    <tr style="font-size: 15px">
+                        <td colspan="9" style="text-align: left; font-weight: bold!important;">Total Bill Value</td>
+                        <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                            <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalBillValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
                 </table>
                 <!--                <table class="my-3">
                 

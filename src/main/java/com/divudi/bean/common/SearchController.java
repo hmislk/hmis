@@ -3707,7 +3707,12 @@ public class SearchController implements Serializable {
                           "AND b.department.id = :deptid ";
 
             jpql4 = checkSearchKeywordForSearch(jpql4, params);
-            
+
+            if (paymentMethod != null) {
+                jpql4 += " AND b.paymentMethod = :paymentMethod ";
+                params.put("paymentMethod", paymentMethod);
+            }
+
             jpql4 += " ORDER BY b.createdAt DESC";
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()

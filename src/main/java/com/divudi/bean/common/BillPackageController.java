@@ -1963,15 +1963,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(amount);
-        bfp.setInstitution(bf.getBillItem().getItem().getTransInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getTransDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        billFeePaymentFacade.create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     @Override

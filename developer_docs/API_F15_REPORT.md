@@ -150,8 +150,8 @@ curl -s "$BASE_URL/api/pharmacy_f15_report?date=2026-02-18&departmentId=485" \
 | PHARMACY_ISSUE      | Negative | Stock issued OUT to ward         |
 | PHARMACY_RECEIVE    | Positive | Stock received FROM another dept |
 | PHARMACY_DIRECT_ISSUE| Negative| Direct issue OUT                 |
-| Rate Adjustments    | Zero     | No stock quantity change         |
-| Stock Adjustments   | Signed   | Depends on direction             |
+| Rate Adjustments    | Signed   | Positive = rate increased; negative = rate decreased |
+| Stock Adjustments   | Signed   | Positive = qty increased; negative = qty decreased |
 
 ### Balance Formula
 
@@ -407,11 +407,33 @@ def generate_discrepancy_report(date_str, dept_id):
 
 ### Step 7: Apply Corrections (After Approval)
 
-For stock-level corrections (quantity/rate), use the existing adjustment APIs:
+**For missing or zeroed BFDs on adjustment bills** (`PHARMACY_STOCK_ADJUSTMENT`,
+`PHARMACY_RETAIL_RATE_ADJUSTMENT`), use the dedicated backfill endpoint:
 
 ```bash
-# Set BASE_URL, FINANCE_KEY, and DEPT_ID from user input before running
+# Set BASE_URL and FINANCE_KEY from user input before running
+curl -s -X POST "$BASE_URL/api/pharmacy/backfill_bfd" \
+  -H "Finance: $FINANCE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "billTypeAtomics": ["PHARMACY_STOCK_ADJUSTMENT", "PHARMACY_RETAIL_RATE_ADJUSTMENT"],
+    "departmentId": <departmentId>,
+    "fromDate": "2020-01-01",
+    "toDate": "<day-before-fix-date>",
+    "approvedBy": "<approver name>",
+    "auditComment": "Backfill BFDs missing before 2026-02-23 fix – approved by <name>"
+  }'
+```
 
+Response: `{ "backfilledBills": N, "skipped": M, "errors": [] }`
+
+This endpoint creates or corrects BFD records derived from `PharmaceuticalBillItem` data
+(quantities and rates). It also fixes `bill.total` and `bill.netTotal`. See
+`developer_docs/pharmacy/f15-bfd-backfill-guide.md` for full details.
+
+**For stock-level corrections** (quantity/rate), use the adjustment APIs:
+
+```bash
 # Adjust stock quantity
 curl -s -X POST "$BASE_URL/api/pharmacy_adjustments/stock_quantity" \
   -H "Finance: $FINANCE_KEY" \
@@ -435,8 +457,27 @@ curl -s -X POST "$BASE_URL/api/pharmacy_adjustments/purchase_rate" \
   }'
 ```
 
-For bill-level data corrections (wrong `BillItemFinanceDetails` values), these require
-developer action — a future correction API will be added once specific root causes are identified.
+**For updating existing BFD field values** (when BFD exists but has wrong data), use the
+correction endpoint after explicit human approval:
+
+```bash
+curl -s -X PATCH "$BASE_URL/api/bill_data_correction" \
+  -H "Finance: $FINANCE_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"targetType\": \"BILL_FINANCE_DETAILS\",
+    \"targetId\": <billFinanceDetailsId>,
+    \"fields\": {
+      \"totalRetailSaleValue\": <corrected_value>
+    },
+    \"auditComment\": \"F15 discrepancy correction - approved by <name> on <date>\",
+    \"approvedBy\": \"<name>\"
+  }"
+```
+
+Supported correction targets are documented in `developer_docs/API_BILL_DATA_CORRECTION.md`.
+Note: `PATCH /api/bill_data_correction` **cannot create** a missing BFD — use
+`POST /api/pharmacy/backfill_bfd` for that.
 
 ---
 
