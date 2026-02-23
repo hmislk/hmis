@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -1687,6 +1688,17 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
         this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public String getSelectedDepartmentTypesPrintDisplay() {
+        List<DepartmentType> list = getSelectedDepartmentTypes();
+        if (list.isEmpty()) {
+            return "All";
+        }
+
+        return list.stream()
+                .map(DepartmentType::getLabel)
+                .collect(Collectors.joining(", "));
     }
 
     public List<DepartmentType> getAvailableDepartmentTypes() {

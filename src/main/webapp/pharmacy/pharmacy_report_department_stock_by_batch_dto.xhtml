@@ -97,15 +97,12 @@
                                     <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
                                         <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print" icon="fas fa-print" 
-                                        styleClass="ui-button-info mx-1"
-                                        actionListener="#{reportsStock.prepareForPrint()}"
-                                        oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
-                                    <p:commandButton id="print" value="Actual print" style="display: none;">
-                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
-                                        <p:printer target=":frm:tbl" />
-                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        value="To Print"
+                                        styleClass="ui-button-info m-1"
+                                        icon="pi pi-print"
+                                        action="pharmacy_report_department_stock_by_batch_dto_print?faces-redirect=true"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>
