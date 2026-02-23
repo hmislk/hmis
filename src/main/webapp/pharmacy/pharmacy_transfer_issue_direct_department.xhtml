@@ -154,7 +154,7 @@
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
+                                                <p:ajax event="itemSelect" update="txtQty txtRate focusQty txtBillItemValue" listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"></p:ajax>
                                             </p:autoComplete>
                                         </h:panelGrid>
                                     </div>
@@ -165,6 +165,23 @@
                                                 accesskey="q"
                                                 autocomplete="off"
                                                 id="txtQty"
+                                                value="#{transferIssueDirectController.qty}"
+                                                class="w-100">
+                                                <p:ajax 
+                                                    process="txtQty"
+                                                    event="keyup" 
+                                                    update="txtBillItemValue" 
+                                                    listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"></p:ajax>
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                    </div>
+                                     <div class="col-4" >
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:inputText
+                                                accesskey="q"
+                                                autocomplete="off"
+                                                id="txtBillItemValue"
                                                 value="#{transferIssueDirectController.qty}"
                                                 class="w-100">
 

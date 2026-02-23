@@ -34,6 +34,7 @@ import com.divudi.core.facade.InvestigationItemFacade;
 import com.divudi.core.facade.InvestigationItemValueFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ReportItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1709,6 +1710,77 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    public void addNewHtml() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        current = new InvestigationItem();
+        current.setName("Html Template");
+        current.setItem(currentInvestigation);
+        current.setIxItemType(InvestigationItemType.Html);
+        current.setIxItemValueType(InvestigationItemValueType.Memo);
+        current.setCreatedAt(new Date());
+        current.setCreater(getSessionController().getLoggedUser());
+        currentInvestigation.getReportItems().add(current);
+        getIxFacade().edit(currentInvestigation);
+        listInvestigationItem();
+    }
+
+    /**
+     * Parses {placeholder} tokens from the current Html item's htmltext and
+     * creates a Value-type InvestigationItem for each placeholder that does
+     * not already exist in the investigation. Called automatically on save.
+     */
+    public void autoCreateValueItemsFromHtmlPlaceholders() {
+        if (current == null || current.getIxItemType() != InvestigationItemType.Html) {
+            return;
+        }
+        if (currentInvestigation == null) {
+            return;
+        }
+        String htmlText = current.getHtmltext();
+        if (htmlText == null || htmlText.trim().isEmpty()) {
+            return;
+        }
+
+        List<String> placeholders = CommonFunctions.extractPlaceholders(htmlText);
+        if (placeholders.isEmpty()) {
+            return;
+        }
+
+        // Collect names of existing non-retired items
+        List<String> existingNames = new ArrayList<>();
+        for (ReportItem ri : currentInvestigation.getReportItems()) {
+            if (!ri.isRetired() && ri.getName() != null) {
+                existingNames.add(ri.getName());
+            }
+        }
+
+        int created = 0;
+        for (String placeholder : placeholders) {
+            if (existingNames.contains(placeholder)) {
+                continue; // already exists
+            }
+            InvestigationItem valueItem = new InvestigationItem();
+            valueItem.setName(placeholder);
+            valueItem.setItem(currentInvestigation);
+            valueItem.setIxItemType(InvestigationItemType.Value);
+            valueItem.setIxItemValueType(InvestigationItemValueType.Varchar);
+            valueItem.setCreatedAt(new Date());
+            valueItem.setCreater(getSessionController().getLoggedUser());
+            currentInvestigation.getReportItems().add(valueItem);
+            existingNames.add(placeholder);
+            created++;
+        }
+
+        if (created > 0) {
+            getIxFacade().edit(currentInvestigation);
+            listInvestigationItem();
+            JsfUtil.addSuccessMessage(created + " value item(s) auto-created from HTML placeholders.");
+        }
+    }
+
     public void prepareAdd() {
         current = new InvestigationItem();
     }
@@ -1740,6 +1812,7 @@ public class InvestigationItemController implements Serializable {
             getCurrentInvestigation().getReportItems().add(current);
             getIxFacade().edit(currentInvestigation);
         }
+        autoCreateValueItemsFromHtmlPlaceholders();
     }
 
     public InvestigationFacade getIxFacade() {

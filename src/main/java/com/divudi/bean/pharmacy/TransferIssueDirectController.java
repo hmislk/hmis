@@ -87,6 +87,7 @@ public class TransferIssueDirectController implements Serializable {
     private List<BillItem> billItems;
     private BillItem billItem;
     private Double qty;
+    private Double billItemValue;
     private Stock tmpStock;
     private StockDTO stockDto;
     UserStockContainer userStockContainer;
@@ -254,7 +255,6 @@ public class TransferIssueDirectController implements Serializable {
             pharmacyTransferIsByRetailRate = true;
         }
 
-        
         issuedBill.getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
 
         double calculatedNetTotal = calculateBillNetTotal();
@@ -453,6 +453,21 @@ public class TransferIssueDirectController implements Serializable {
             recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
         }
         return recentToDepartments;
+    }
+
+    public void calculateCurrentBillItemValue() {
+        if (stockDto == null) {
+            return;
+        }
+
+        if (stockDto.getRetailRate() == null) {
+            return;
+        }
+        if (qty == null) {
+            return;
+        }
+
+        billItemValue = qty * stockDto.getRetailRate();
     }
 
     /**
@@ -655,12 +670,17 @@ public class TransferIssueDirectController implements Serializable {
     }
 
     /**
-     * Validates if an item can be added to the direct issue based on department type restrictions
-     * Note: Direct issue validation is handled by stock filtering via stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments
-     * This additional validation ensures only allowed department types can be added
+     * Validates if an item can be added to the direct issue based on department
+     * type restrictions Note: Direct issue validation is handled by stock
+     * filtering via
+     * stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments
+     * This additional validation ensures only allowed department types can be
+     * added
      */
     private boolean validateItemForDirectIssue(Item item) {
-        if (item == null) return true;
+        if (item == null) {
+            return true;
+        }
 
         DepartmentType itemDeptType = item.getDepartmentType();
         // Treat items without department type as Pharmacy
@@ -670,8 +690,8 @@ public class TransferIssueDirectController implements Serializable {
 
         List allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
         if (allowedTypes == null || !allowedTypes.contains(itemDeptType)) {
-            JsfUtil.addErrorMessage("Items of type " + itemDeptType.getLabel() +
-                " are not allowed for this department");
+            JsfUtil.addErrorMessage("Items of type " + itemDeptType.getLabel()
+                    + " are not allowed for this department");
             return false;
         }
         return true;
@@ -787,6 +807,14 @@ public class TransferIssueDirectController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    public Double getBillItemValue() {
+        return billItemValue;
+    }
+
+    public void setBillItemValue(Double billItemValue) {
+        this.billItemValue = billItemValue;
     }
 
 }

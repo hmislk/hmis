@@ -1174,8 +1174,7 @@ public class PatientReportController implements Serializable {
 
         updateTemplate();
 
-        getFacade().edit(currentPatientReport);
-        getPiFacade().edit(currentPtIx);
+        savePatientReportItemValues();
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
@@ -1320,6 +1319,82 @@ public class PatientReportController implements Serializable {
             }
         }
 
+    }
+
+    public String getHtmlTemplateContent() {
+        if (currentPatientReport == null) {
+            return "";
+        }
+        Investigation investigation = (Investigation) currentPatientReport.getItem();
+        if (investigation == null || investigation.getReportType() != InvestigationReportType.HtmlTemplate) {
+            return "";
+        }
+
+        // Find the Html-type InvestigationItem (the template)
+        InvestigationItem templateItem = null;
+        for (InvestigationItem ii : investigation.getReportItems()) {
+            if (ii != null && !ii.isRetired() && ii.getIxItemType() == InvestigationItemType.Html) {
+                templateItem = ii;
+                break;
+            }
+        }
+        if (templateItem == null || templateItem.getHtmltext() == null || templateItem.getHtmltext().isEmpty()) {
+            return "";
+        }
+
+        String htmlTemplate = templateItem.getHtmltext();
+        List<String> placeholders = CommonFunctions.extractPlaceholders(htmlTemplate);
+        if (placeholders.isEmpty()) {
+            return htmlTemplate;
+        }
+
+        // Build a map of placeholder name -> current value from in-memory PRIVs
+        Map<String, String> replacementMap = new HashMap<>();
+        for (PatientReportItemValue prv : currentPatientReport.getPatientReportItemValues()) {
+            if (prv == null || prv.getInvestigationItem() == null) {
+                continue;
+            }
+            String name = prv.getInvestigationItem().getName();
+            if (!placeholders.contains(name)) {
+                continue;
+            }
+            InvestigationItemValueType valueType = prv.getInvestigationItem().getIxItemValueType();
+            if (valueType == null) {
+                continue;
+            }
+            String value = null;
+            switch (valueType) {
+                case Varchar:
+                    value = prv.getStrValue();
+                    break;
+                case Double:
+                    Double dbl = prv.getDoubleValue();
+                    if (dbl != null) {
+                        String fmt = prv.getInvestigationItem().getFormatString();
+                        if (fmt == null || fmt.isEmpty()) {
+                            fmt = "%.2f";
+                        }
+                        String prefix = prv.getInvestigationItem().getFormatPrefix() != null ? prv.getInvestigationItem().getFormatPrefix() : "";
+                        String suffix = prv.getInvestigationItem().getFormatSuffix() != null ? prv.getInvestigationItem().getFormatSuffix() : "";
+                        value = prefix + String.format(fmt, dbl) + suffix;
+                    }
+                    break;
+                case Memo:
+                    value = prv.getLobValue();
+                    break;
+                default:
+                    break;
+            }
+            if (value != null && !value.isEmpty()) {
+                replacementMap.put(name, value);
+            }
+        }
+
+        // Substitute placeholders with current values (empty string if no value entered)
+        for (String ph : placeholders) {
+            htmlTemplate = htmlTemplate.replace("{" + ph + "}", replacementMap.getOrDefault(ph, ""));
+        }
+        return htmlTemplate;
     }
 
     public String emailMessageBody(PatientReport r) {
