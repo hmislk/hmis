@@ -170,7 +170,10 @@
 
                                                     <!-- Row 1 -->
                                                     <h:outputText value="Date:" styleClass="label"/>
-                                                    <h:outputText value="#{pharmacyReportController.fromDate}">
+                                                    <h:outputText value="#{pharmacyReportController.fromDate}" rendered="#{reportController.getReportTemplateFileIndexName() eq 'Opening Stock'}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    </h:outputText>
+                                                    <h:outputText value="#{pharmacyReportController.toDate}" rendered="#{reportController.getReportTemplateFileIndexName() ne 'Opening Stock'}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                                     </h:outputText>
 
@@ -370,7 +373,10 @@
                                                 columnClasses="label,value,label,value,label,value">
 
                                             <h:outputText value="Date:" styleClass="label"/>
-                                            <h:outputText value="#{pharmacyReportController.fromDate}">
+                                            <h:outputText value="#{pharmacyReportController.fromDate}" rendered="#{reportController.getReportTemplateFileIndexName() eq 'Opening Stock'}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                            <h:outputText value="#{pharmacyReportController.toDate}" rendered="#{reportController.getReportTemplateFileIndexName() ne 'Opening Stock'}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
 
