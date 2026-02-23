@@ -1,12 +1,7 @@
 package com.divudi.service;
 
-import com.divudi.core.data.BillType;
-import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Category;
-import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.PreBill;
-import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillItemFacade;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,6 +28,9 @@ public class SerialNumberGeneratorService {
     }
     
     public String fetchLastSerialNumberForDay(Institution institution, Category category){
+        if (institution == null || category == null) {
+            return "";
+        }
         
         String lockKey = getLockKey(institution, category);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
