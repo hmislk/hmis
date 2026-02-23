@@ -820,7 +820,12 @@ public class VmpController implements Serializable {
     }
 
     public List<VmpDto> completeVmpDto(String query) {
-        if (query == null || query.trim().length() < 2) {
+        if (query == null) {
+            return new ArrayList<>();
+        }
+
+        String trimmedQuery = query.trim();
+        if (trimmedQuery.length() < 2) {
             return new ArrayList<>();
         }
 
@@ -830,7 +835,7 @@ public class VmpController implements Serializable {
                 + "AND v.departmentType=:dep AND v.retired=:retired ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toLowerCase() + "%");
+        params.put("query", "%" + trimmedQuery.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
         params.put("retired", false); // Only show non-deleted items
 
