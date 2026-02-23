@@ -685,9 +685,15 @@
                                     target="tblBillType"
                                     fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_bill_type_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblBillType"/>
@@ -964,8 +970,14 @@
                                     fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_discount_admission_view?faces-redirect=true"/>
+                        <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByDiscountAndAdmission"/>
@@ -1238,9 +1250,15 @@
                                     target="tblGroupedByBillTypeAndDiscountAdmission"
                                     fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_bill_type_discount_admission_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByBillTypeAndDiscountAdmission"/>
