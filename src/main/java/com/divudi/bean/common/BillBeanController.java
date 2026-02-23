@@ -3755,12 +3755,8 @@ public class BillBeanController implements Serializable {
             String serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDay(sessionController.getInstitution(), billEntry.getBillItem().getItem().getCategory());
             billEntry.getBillItem().setSessionId(serialNumber);
 
-            if (billEntry.getBillItem().getId() == null) {
-                getBillItemFacade().create(billEntry.getBillItem());
-            } else {
-                getBillItemFacade().edit(billEntry.getBillItem());
+            getBillItemFacade().edit(billEntry.getBillItem());
 
-            }
         }
 
         saveBillComponent(billEntry, bill, user);
@@ -3810,12 +3806,8 @@ public class BillBeanController implements Serializable {
             String serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDay(sessionController.getInstitution(), billEntry.getBillItem().getItem().getCategory());
             billEntry.getBillItem().setSessionId(serialNumber);
 
-            if (billEntry.getBillItem().getId() == null) {
-                getBillItemFacade().create(billEntry.getBillItem());
-            } else {
-                getBillItemFacade().edit(billEntry.getBillItem());
+            getBillItemFacade().edit(billEntry.getBillItem());
 
-            }
         }
 
         saveBillComponentForOpdBill(billEntry, bill, user);
