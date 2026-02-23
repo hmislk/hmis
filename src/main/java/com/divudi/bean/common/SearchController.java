@@ -3229,8 +3229,14 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
+                sql += " and (b.netTotal = :netTotal)";
+                m.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Net Total value. Please enter a valid number.");
+                return;
+            }
         }
 
         sql += " order by b.createdAt desc  ";
