@@ -106,6 +106,7 @@ import org.primefaces.model.file.UploadedFile;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
+import java.text.SimpleDateFormat;
 import org.primefaces.model.DefaultStreamedContent;
 
 import org.primefaces.model.StreamedContent;
@@ -2563,6 +2564,10 @@ public class PharmacySummaryReportController implements Serializable {
         }
         return fromDate;
     }
+    
+    public String getFromDateFormatted(){
+        return new SimpleDateFormat("dd_MM_yyyy").format(fromDate);
+    }
 
     /**
      * @param fromDate the fromDate to set
@@ -2579,6 +2584,10 @@ public class PharmacySummaryReportController implements Serializable {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
+    }
+    
+    public String getToDateFormatted(){
+         return new SimpleDateFormat("dd_MM_yyyy").format(toDate);
     }
 
     /**

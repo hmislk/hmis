@@ -213,7 +213,7 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tbl"
-                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="To Print"
@@ -683,7 +683,7 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblBillType"
-                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="Print"
@@ -961,7 +961,7 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByDiscountAndAdmission"
-                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="Print"
@@ -1236,7 +1236,7 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByBillTypeAndDiscountAdmission"
-                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="Print"
