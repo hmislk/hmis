@@ -183,15 +183,6 @@
                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
 
-                                                <h:outputText value="Serial Numbers Generation Strategy" ></h:outputText>
-                                                <p:selectOneMenu 
-                                                    class="form-control w-100" 
-                                                    id="cmbSerial"  
-                                                    value="#{itemController.current.sessionNumberType}" >
-                                                    <f:selectItem itemLabel="Please select a Session Number Generation Strategy"/>
-                                                    <f:selectItems value="#{enumController.sessionNumberTypes}" />
-                                                </p:selectOneMenu>
-
                                             </h:panelGrid>
 
                                         </p:tab>
@@ -219,6 +210,8 @@
                                                 <p:selectBooleanCheckbox value="#{itemController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.printFeesForBills}" itemLabel="Print Separate Fees"/>
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{itemController.current.printSessionNumber}" itemLabel="Print Session Number"/>
                                                 
                                             </h:panelGrid>
                                             <hr/>
