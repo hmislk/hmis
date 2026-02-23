@@ -1690,6 +1690,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         bfd.setLineGrossTotal(grossTotalLines);
         bfd.setNetTotal(finalNet);
         bfd.setLineNetTotal(netTotalLines);
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(getBill().getExpensesTotalNotConsideredForCosting());
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(getBill().getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(finalNet.add(expensesNotForCosting));
     }
 
     /**

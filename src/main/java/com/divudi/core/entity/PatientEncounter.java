@@ -587,6 +587,9 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
 
     public Person getGuardian() {
+        if (guardian == null) {
+            guardian = new Person();
+        }
         return guardian;
     }
 

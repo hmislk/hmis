@@ -2172,7 +2172,7 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.Image);
         l.add(InvestigationItemType.ReportImage);
         l.add(InvestigationItemType.ExternalImage);
-        l.add(InvestigationItemType.WorningFlag);
+        l.add(InvestigationItemType.WarningFlag);
         l.add(InvestigationItemType.QrCode);
         l.add(InvestigationItemType.Antibiotic);
         l.add(InvestigationItemType.MeasurementUnit);
