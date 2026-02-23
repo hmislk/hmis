@@ -4,10 +4,16 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillItemFacade;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
 
@@ -16,36 +22,65 @@ import javax.persistence.TemporalType;
  */
 @Stateless
 public class SerialNumberGeneratorService {
+    
+    @EJB
+    BillItemFacade billItemFacade;
+    
+    private final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
+    
+    private String getLockKey(Institution institution, Category categorye) {
+        return institution.getId() + "-" + categorye.getId();
+    }
+    
+    public String fetchLastSerialNumberForDay(Institution institution, Category category){
+        
+        String lockKey = getLockKey(institution, category);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 
-    public String generateDailyBillNumberForOpd(Department department, Category cat, Staff fromStaff) {
-        String sql = "SELECT count(b) FROM Bill b "
-                + " where (b.billType=:bTp1 or b.billType=:bTp2) "
-                + " and b.billDate=:bd "
-                + " and (type(b)=:class1 or type(b)=:class2) ";
+        lock.lock();
+        try {
+            return generateDailyBillItemSerialNumber(institution, category);
+        } finally {
+            lock.unlock();
+        }
+        
+    }
+    
+    public String generateDailyBillItemSerialNumber(Institution institution, Category category) {
+        if(institution == null){
+            return "";
+        }
+        if(category == null){
+            return "";
+        }
+
+        Calendar calStart = Calendar.getInstance();
+        calStart.set(Calendar.HOUR_OF_DAY, 0);
+        calStart.set(Calendar.MINUTE, 0);
+        calStart.set(Calendar.SECOND, 0);
+        calStart.set(Calendar.MILLISECOND, 0);
+        Date startOfDay = calStart.getTime();
+
+        Calendar calEnd = Calendar.getInstance();
+        calEnd.set(Calendar.HOUR_OF_DAY, 23);
+        calEnd.set(Calendar.MINUTE, 59);
+        calEnd.set(Calendar.SECOND, 59);
+        calEnd.set(Calendar.MILLISECOND, 999);
+        Date endOfDay = calEnd.getTime();
+        
+        String jpql = "SELECT count(bi) FROM BillItem bi "
+                + " where bi.bill.billDate between :fd and :td "
+                + " and bi.bill.institution=:ins "
+                + " and bi.item.category=:cat ";
         HashMap hm = new HashMap();
 
-        if (department != null) {
-            sql += " and b.department=:dep ";
-            hm.put("dep", department);
-        }
+        hm.put("ins", institution);
+        hm.put("cat", category);
+        hm.put("fd", startOfDay);
+        hm.put("td", endOfDay);
 
-        if (cat != null) {
-            sql += " and b.category=:cat ";
-            hm.put("cat", cat);
-        }
+        Long dd = billItemFacade.findAggregateLong(jpql, hm, TemporalType.TIMESTAMP);
 
-        if (fromStaff != null) {
-            sql += " and b.fromStaff=:staff ";
-            hm.put("staff", fromStaff);
-        }
-
-        hm.put("bTp1", BillType.OpdBill);
-        hm.put("bTp2", BillType.OpdPreBill);
-        hm.put("bd", new Date());
-        hm.put("class1", BilledBill.class);
-        hm.put("class2", PreBill.class);
-
-        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
     
