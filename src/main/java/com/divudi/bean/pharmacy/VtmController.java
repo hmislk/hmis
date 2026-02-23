@@ -1024,23 +1024,18 @@ public class VtmController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            System.out.println("VtmDtoConverter.getAsObject called with value: '" + value + "'");
-
             if (value == null || value.isEmpty()) {
-                System.out.println("Value is null or empty, returning null");
                 return null;
             }
 
             try {
                 Long id = Long.parseLong(value);
-                System.out.println("Parsed ID: " + id);
 
                 // Get controller instance
                 VtmController controller = (VtmController) facesContext.getApplication().getELResolver().
                         getValue(facesContext.getELContext(), null, "vtmController");
 
                 if (controller == null) {
-                    System.out.println("Controller not found!");
                     return null;
                 }
 
@@ -1048,19 +1043,14 @@ public class VtmController implements Serializable {
                 Vtm entity = controller.getFacade().find(id);
                 if (entity != null) {
                     VtmDto dto = controller.createVtmDto(entity);
-                    System.out.println("Created DTO from entity: " + dto.getName());
                     return dto;
                 } else {
-                    System.out.println("Entity not found for ID: " + id);
                     return null;
                 }
 
             } catch (NumberFormatException e) {
-                System.out.println("NumberFormatException: " + e.getMessage());
                 return null;
             } catch (Exception e) {
-                System.out.println("Exception in getAsObject: " + e.getMessage());
-                e.printStackTrace();
                 return null;
             }
         }
@@ -1074,7 +1064,6 @@ public class VtmController implements Serializable {
             if (object instanceof VtmDto) {
                 VtmDto dto = (VtmDto) object;
                 String result = dto.getId() != null ? dto.getId().toString() : null;
-                System.out.println("VtmDtoConverter.getAsString: " + dto.getName() + " -> " + result);
                 return result;
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
