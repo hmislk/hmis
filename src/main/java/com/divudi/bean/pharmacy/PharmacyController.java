@@ -5861,7 +5861,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
-    private PdfPTable createInfoTablePdfExport(SimpleDateFormat sdf, Map<String, Object> filters)
+    public PdfPTable createInfoTablePdfExport(SimpleDateFormat sdf, Map<String, Object> filters)
             throws DocumentException {
 
         if (filters == null || filters.isEmpty()) {
@@ -5929,7 +5929,6 @@ public class PharmacyController implements Serializable {
             }
         }
 
-        System.out.println("Info table created with " + filters.size() + " filters."); // Debug log to confirm table creation
         return infoTable;
 
     }
@@ -5937,7 +5936,6 @@ public class PharmacyController implements Serializable {
     public Map<String, Object> getFiltersForStockTrasnferReport() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         Map<String, Object> filters = new LinkedHashMap<>();
-        System.out.println("Gathering filters for report. Current values - reportType: " + reportType + ", fromDate: " + fromDate + ", toDate: " + toDate + ", fromInstitution: " + (fromInstitution != null ? fromInstitution.getName() : "null") + ", fromSite: " + (fromSite != null ? fromSite.getName() : "null") + ", fromDepartment: " + (fromDepartment != null ? fromDepartment.getName() : "null") + ", toInstitution: " + (toInstitution != null ? toInstitution.getName() : "null") + ", toSite: " + (toSite != null ? toSite.getName() : "null") + ", toDepartment: " + (toDepartment != null ? toDepartment.getName() : "null") + ", category: " + (category != null ? category.getName() : "null") + ", dosageForm: " + (dosageForm != null ? dosageForm.getName() : "null") + ", item: " + (item != null ? item.getName() : "null") + ", transferType: " + transferType);
         
         String finalReportType;
         if (reportType == null) {
@@ -5976,7 +5974,6 @@ public class PharmacyController implements Serializable {
         filters.put("Transfer", transferType.equals("receive") ? "Receive" : "Issue");
         filters.put("Department Type", getSelectedDepartmentTypesString() != null ? getSelectedDepartmentTypesString() : "None");
         
-        System.out.println("Filters gathered for report: " + filters); // Debug log to check final filters map
         return filters;
     }
 
