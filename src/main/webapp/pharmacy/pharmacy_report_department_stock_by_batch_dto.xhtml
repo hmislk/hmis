@@ -90,11 +90,11 @@
                                         ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
                                         actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
 
-                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
-                                        <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
-                                    </p:commandButton>
+                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false"
+                                                     action="#{reportsStock.exportCurrentStockByBatchToPDF()}"
+                                                     />
 
-                                    
+
                                     <p:commandButton icon="fas fa-file-excel"
                                                      styleClass="ui-button-success mx-1"
                                                      value="Excel"

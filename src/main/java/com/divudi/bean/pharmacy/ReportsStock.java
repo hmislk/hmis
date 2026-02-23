@@ -71,9 +71,16 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.util.Objects;
+import javax.faces.context.ExternalContext;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -535,6 +542,175 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
         } catch (Exception e) {
             Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportCurrentStockByBatchToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Current_Stock_By_Batch.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Fonts
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER (Institution, Site, Department)
+            // =========================
+            Paragraph instPara = new Paragraph(institution != null ? institution.getName() : "", titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(site != null ? site.getName() : "", titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(department != null ? department.getName() : "", titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            document.add(new Paragraph(" ")); // empty line
+
+            // Filters
+            Paragraph filterPara = new Paragraph(
+                    "Category: " + (category != null ? category.getName() : "All")
+                    + " | Dosage Form: " + (dosageForm != null ? dosageForm.getName() : "All")
+                    + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay(),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            // Report Title
+            Paragraph titlePara = new Paragraph("Current Stock By Batch Report", subTitleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(titlePara);
+
+            document.add(new Paragraph(" ")); // empty line
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 14;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+
+            String[] headers = {
+                "Category", "Dosage Form", "Item", "Type", "Code",
+                "Expiry", "Batch No", "Stock",
+                "Purchase Rate", "Purchase Value",
+                "Cost Rate", "Cost Value",
+                "Retail Rate", "Retail Value"
+            };
+
+            float[] widths = {3f, 3f, 4f, 3f, 3f, 3f, 3f, 2f, 3f, 3f, 3f, 3f, 3f, 3f};
+            table.setWidths(widths);
+
+            // Header row
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                
+                table.addCell(cell);
+            }
+
+            // Data rows
+            for (StockDTO row : stockDtos) {
+                table.addCell(new PdfPCell(new Phrase(row.getCategoryName() != null ? row.getCategoryName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDosageFormName() != null ? row.getDosageFormName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getItemName() != null ? row.getItemName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDepartmentType() != null ? row.getDepartmentType().name() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getCode() != null ? row.getCode() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDateOfExpire() != null ? sdf.format(row.getDateOfExpire()) : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getBatchNo() != null ? row.getBatchNo() : "-", dataFont)));
+
+                PdfPCell stockCell = new PdfPCell(new Phrase(String.valueOf(Objects.requireNonNullElse(row.getStockQty(), 0.0)), dataFont));
+                stockCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockCell);
+
+                // Numeric columns
+                double purchaseRate = Objects.requireNonNullElse(row.getPurchaseRate(), 0.0);
+                double costRate = Objects.requireNonNullElse(row.getCostRate(), 0.0);
+                double retailRate = Objects.requireNonNullElse(row.getRetailRate(), 0.0);
+                double purchaseValue = purchaseRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+                double costValue = costRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+                double retailValue = retailRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+
+                PdfPCell prCell = new PdfPCell(new Phrase(String.format("%,.2f", purchaseRate), dataFont));
+                prCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(prCell);
+
+                PdfPCell pvCell = new PdfPCell(new Phrase(String.format("%,.2f", purchaseValue), dataFont));
+                pvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(pvCell);
+
+                PdfPCell crCell = new PdfPCell(new Phrase(String.format("%,.2f", costRate), dataFont));
+                crCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(crCell);
+
+                PdfPCell cvCell = new PdfPCell(new Phrase(String.format("%,.2f", costValue), dataFont));
+                cvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cvCell);
+
+                PdfPCell rrCell = new PdfPCell(new Phrase(String.format("%,.2f", retailRate), dataFont));
+                rrCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rrCell);
+
+                PdfPCell rvCell = new PdfPCell(new Phrase(String.format("%,.2f", retailValue), dataFont));
+                rvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rvCell);
+            }
+
+            // Totals row
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Total", headerFont));
+            totalLabel.setColspan(8); // First 8 columns
+            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalLabel);
+
+            PdfPCell purchaseRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            purchaseRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseRateTotalCell);
+
+            PdfPCell purchaseValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockPurchaseValue), headerFont));
+            purchaseValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseValueTotalCell);
+
+            PdfPCell costRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            costRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costRateTotalCell);
+
+            PdfPCell costValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockCostValue), headerFont));
+            costValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costValueTotalCell);
+
+            PdfPCell retailRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            retailRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailRateTotalCell);
+
+            PdfPCell retailValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockSaleValue), headerFont));
+            retailValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailValueTotalCell);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, "Error exporting Current Stock By Batch PDF", e);
         }
     }
 
