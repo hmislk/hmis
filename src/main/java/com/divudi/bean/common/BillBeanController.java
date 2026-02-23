@@ -16,6 +16,7 @@ import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OpdBillingStrategy;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
+import static com.divudi.core.data.SessionNumberType.ByBill;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemDTO;
@@ -2899,7 +2900,7 @@ public class BillBeanController implements Serializable {
         if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
             b.setCreditBill(true);
         }
-        
+
         if (paymentMethod.equals(PaymentMethod.ewallet)) {
             b.setCreditCardRefNo(paymentMethodData.getEwallet().getNo());
             b.setBank(paymentMethodData.getEwallet().getInstitution());
@@ -3717,7 +3718,7 @@ public class BillBeanController implements Serializable {
         m.put("b", b);
         return billItemFacade.findByJpql(j, m);
     }
-    
+
     public List<BillItemDTO> fillBillItemDTOs(Long billId) {
         String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.bill.id, bi.item.id, bi.bill.paymentMethod, bi.item.clazz, bi.netValue, bi.discount, bi.marginValue ) "
                 + " from BillItem bi "
@@ -3788,10 +3789,48 @@ public class BillBeanController implements Serializable {
         billEntry.getBillItem().setCreatedAt(new Date());
         billEntry.getBillItem().setCreater(user);
         billEntry.getBillItem().setBill(bill);
+        
+        billEntry.getBillItem().setSessionId(serialNumber);
 
         if (billEntry.getBillItem().getId() == null) {
             getBillItemFacade().create(billEntry.getBillItem());
         }
+        
+        String serialNumber = "";
+        
+        BillNumberGenerator.generateDailyBillNumberForOpd(bill.getDepartment());
+
+        switch (billEntry.getBillItem().getItem().getSessionNumberType()) {
+            case ByBill:
+                serialNumber = "";
+                break;
+            case ByCategory:
+                serialNumber = "";
+                break;
+            case ByDoctor:
+                serialNumber = "";
+                break;
+            case ByDoctorSession:
+                serialNumber = "";
+                break;
+            case ByItem:
+                serialNumber = "";
+                break;
+            case ByItemDepatrment:
+                serialNumber = "";
+                break;
+            case BySubCategory:
+                serialNumber = "";
+                break;
+            case None:
+                serialNumber = "";
+                break;
+            default:
+                serialNumber = "";
+                break;
+        }
+        
+        billEntry.getBillItem().setSessionId(serialNumber);
 
         saveBillComponentForOpdBill(billEntry, bill, user);
         saveBillFeeForOpdBill(billEntry, bill, user, billFeeBundleEntries);
@@ -4508,7 +4547,7 @@ public class BillBeanController implements Serializable {
         //TODO: Create Logic
         return null;
     }
-    
+
     public Double calBillItemMargin(BillEntry billEntry) {
         Double marginTot = 0.0;
         for (BillFee f : billEntry.getLstBillFees()) {
@@ -4516,7 +4555,6 @@ public class BillBeanController implements Serializable {
         }
         return marginTot;
     }
-
 
     public List<BillFee> billFeefromBillItemPackage(BillItem billItem, Item packege) {
         List<BillFee> t = new ArrayList<>();
