@@ -44,7 +44,7 @@ public class SerialNumberGeneratorService {
         
     }
     
-    public String generateDailyBillItemSerialNumber(Institution institution, Category category) {
+    private String generateDailyBillItemSerialNumber(Institution institution, Category category) {
         if(institution == null){
             return "";
         }
