@@ -79,6 +79,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -108,6 +109,7 @@ import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
@@ -132,6 +134,7 @@ import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
 import javax.annotation.PostConstruct;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 /**
  * @author Pubudu Piyankara
@@ -187,6 +190,8 @@ public class PharmacyReportController implements Serializable {
     SessionController sessionController;
     @Inject
     SearchController searchController;
+    @Inject
+    ReportController reportController;
     @EJB
     private ReportTimerController reportTimerController;
 
@@ -7472,6 +7477,147 @@ public class PharmacyReportController implements Serializable {
         return cell;
     }
 
+    // For postProcessor of closing stock report
+    public String getSelectedDepartmentTypesString() {
+        if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
+            return "All";
+        }
+        return selectedDepartmentTypes.stream().map(dt -> {
+            try {
+                Method m = dt.getClass().getMethod("getLabel");
+                Object v = m.invoke(dt);
+                return v != null ? v.toString() : dt.toString();
+            } catch (Exception ex) {
+                return dt.toString();
+            }
+        }).collect(Collectors.joining(", "));
+    }
+
+    // PostProcessor for closing stock report excel export, add filter data and title
+    public void postProcessXLSClosingStockReport(Object document) {
+        try {
+            System.out.println("Preprocessing Excel document for export...");
+            if (document == null) {
+                return;
+            }
+
+            Workbook wb;
+            if (document instanceof Workbook) {
+                wb = (Workbook) document;
+                System.out.println("Workbook instance received for preprocessing.");
+            } else {
+                return;
+            }
+
+            Sheet sheet = wb.getSheetAt(0);
+            if (sheet == null) {
+                return;
+            }
+
+            // Font styles
+            CellStyle headerStyle = wb.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+            headerFont.setFontName("Arial");
+            headerFont.setFontHeightInPoints((short) 14);
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            org.apache.poi.ss.usermodel.Font metaFont = wb.createFont();
+            metaFont.setFontName("Arial");
+            CellStyle metaStyle = wb.createCellStyle();
+            metaStyle.setFont(metaFont);
+
+            org.apache.poi.ss.usermodel.Font metaFontBold = wb.createFont();
+            metaFontBold.setFontName("Arial");
+            metaFontBold.setBold(true);
+            CellStyle metaStyleBold = wb.createCellStyle();
+            metaStyleBold.setFont(metaFontBold);
+
+            System.out.println("Sheet found: " + sheet.getSheetName());
+            // Shift existing rows down to make room for header rows
+            int headerRows = 4;
+            sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
+            if (reportType != null && reportType.equals("batchWise")) {
+                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+            }  else {
+                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 9));
+            }           
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
+
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellStyle(headerStyle);
+            titleCell.setCellValue("Closing Stock Report");
+
+            Row metaRow = sheet.createRow(1);
+            metaRow.createCell(0).setCellValue("Report Type:");
+            metaRow.getCell(0).setCellStyle(metaStyleBold);
+            System.out.println("reportType = " + reportType);
+            if ("itemWise".equalsIgnoreCase(reportType)) {
+                System.out.println("item wise = " );
+                metaRow.createCell(1).setCellValue("Item Wise");
+            } else if ("batchWise".equalsIgnoreCase(reportType)) {
+                System.out.println("batch wise = " );
+                metaRow.createCell(1).setCellValue("Batch Wise");
+            } else {
+                metaRow.createCell(1).setCellValue(" ");
+            }
+            metaRow.getCell(1).setCellStyle(metaStyle);
+            metaRow.createCell(3).setCellValue("Date:");
+            metaRow.getCell(3).setCellStyle(metaStyleBold);
+            String dateStr = "";
+            if (reportController.getReportTemplateFileIndexName().equals("Opening Stock") && fromDate != null) {
+                dateStr = sdf.format(fromDate);
+            } else if (!reportController.getReportTemplateFileIndexName().equals("Opening Stock") && toDate != null){
+                dateStr = sdf.format(toDate);
+            }
+            metaRow.createCell(4).setCellValue(dateStr);
+            metaRow.getCell(4).setCellStyle(metaStyle);
+            metaRow.createCell(6).setCellValue("Item Category:");
+            metaRow.getCell(6).setCellStyle(metaStyleBold);
+            metaRow.createCell(7).setCellValue(category != null ? category.getName() : "All Categories");
+            metaRow.getCell(7).setCellStyle(metaStyle);
+
+            Row instRow = sheet.createRow(2);
+            instRow.createCell(0).setCellValue("Institution:");
+            instRow.getCell(0).setCellStyle(metaStyleBold);
+            instRow.createCell(1).setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instRow.getCell(1).setCellStyle(metaStyle);
+            instRow.createCell(3).setCellValue("Site:");
+            instRow.getCell(3).setCellStyle(metaStyleBold);
+            instRow.createCell(4).setCellValue(site != null ? site.getName() : "All Sites");
+            instRow.getCell(4).setCellStyle(metaStyle);
+            instRow.createCell(6).setCellValue("Dosage Form:");
+            instRow.getCell(6).setCellStyle(metaStyleBold);
+            instRow.createCell(7).setCellValue(dosageForm != null ? dosageForm.getName() : "All Dosage Forms");
+            instRow.getCell(7).setCellStyle(metaStyle);
+
+            Row deptRow = sheet.createRow(3);
+            deptRow.createCell(0).setCellValue("Department:");
+            deptRow.getCell(0).setCellStyle(metaStyleBold);
+            deptRow.createCell(1).setCellValue(department != null ? department.getName() : "All Departments");
+            deptRow.getCell(1).setCellStyle(metaStyle);
+            deptRow.createCell(3).setCellValue("Department Types:");
+            deptRow.getCell(3).setCellStyle(metaStyleBold);
+            deptRow.createCell(4).setCellValue(getSelectedDepartmentTypesString());
+            deptRow.getCell(4).setCellStyle(metaStyle);
+            deptRow.createCell(6).setCellValue("Item Name:");
+            deptRow.getCell(6).setCellStyle(metaStyleBold);
+            deptRow.createCell(7).setCellValue(selectedAmpDto != null ? selectedAmpDto.getName() : "None");
+            deptRow.getCell(7).setCellStyle(metaStyle);
+            deptRow.createCell(9).setCellValue("Is Consignment Item:");
+            deptRow.getCell(9).setCellStyle(metaStyleBold);
+            deptRow.createCell(10).setCellValue(consignmentItem == true ? "true" : "false");
+            deptRow.getCell(10).setCellStyle(metaStyle);
+
+
+        } catch (Exception ex) {
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error in Excel preProcessor", ex);
+        }
+    }
+
 // Helper calculation methods
     private double calculateCostValue(BillItemDTO item) {
         if (item.getCostRate() != null && item.getQty() != null) {
@@ -7510,8 +7656,19 @@ public class PharmacyReportController implements Serializable {
             document.open();
 
             document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                    FontFactory.getFont(FontFactory.HELVETICA, 8)));
             document.add(new Paragraph(" "));
+
+            // Title
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            // Info table for filters and metadata 
+            PdfPTable infoTable = createInfoTableClosingStockReport(sdf);
+            document.add(infoTable);
 
             PdfPTable table = new PdfPTable(14);
             table.setWidthPercentage(100);
@@ -7574,6 +7731,68 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    // Helper method for spacer cells
+    private PdfPCell createSpacerCell() {
+        PdfPCell cell = new PdfPCell(new Phrase(""));
+        return cell;
+    }
+
+    // Info table for Closing_stock_report
+    private PdfPTable createInfoTableClosingStockReport(SimpleDateFormat sdf) throws DocumentException {
+        System.out.println("infotable started = ");
+        PdfPTable infoTable = new PdfPTable(11);
+        infoTable.setWidthPercentage(100);
+        infoTable.setSpacingAfter(10);
+
+        // Relative widths: data columns wider, spacer columns narrow
+        float[] colWidths = {1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f};
+        infoTable.setWidths(colWidths);
+
+        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+        infoTable.addCell(new PdfPCell(new Phrase("Date:", labelFont)));
+        if (reportController.getReportTemplateFileIndexName().equals("Opening Stock")) {
+            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(fromDate) : sdf.format(new Date())), dataFont)));
+        } else {
+            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(toDate) : sdf.format(new Date())), dataFont)));
+        }
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Report Type:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((reportType.equals("itemWise") ? "Item Wise" : "Batch Wise"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Institute:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((institution != null ? institution.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Site:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((site != null ? site.getName() : "All"), dataFont)));
+
+        infoTable.addCell(new PdfPCell(new Phrase("Department:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((department != null ? department.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Department Type:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((getSelectedDepartmentTypesString() != null ? getSelectedDepartmentTypesString() : "None"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Item Category:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((category != null ? category.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Dosage Forms:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((dosageForm != null ? dosageForm.getName() : "All"), dataFont)));
+
+        infoTable.addCell(new PdfPCell(new Phrase("Item Name:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((selectedAmpDto != null ? selectedAmpDto.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Is Consignment:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((consignmentItem != false ? "true" : "false"), dataFont)));
+        
+        for (int i = 0; i < 6; i++) {
+            infoTable.addCell(createSpacerCell());
+        }
+
+        System.out.println("infoTable = " + infoTable);
+        return infoTable;
+    }
+
     public void exportItemWisePharmacyStockToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -7590,8 +7809,18 @@ public class PharmacyReportController implements Serializable {
             document.open();
 
             document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                    FontFactory.getFont(FontFactory.HELVETICA, 8)));
             document.add(new Paragraph(" "));
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            // Info table for filters and metadata 
+            PdfPTable infoTable = createInfoTableClosingStockReport(sdf);
+            document.add(infoTable);
 
             PdfPTable table = new PdfPTable(9);
             table.setWidthPercentage(100);

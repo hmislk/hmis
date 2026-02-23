@@ -1,0 +1,570 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <style>
+                            @media screen{
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+                                
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+                                
+                                .table-item {
+                                    width: 99.9%;
+                                    font-size: 8pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+
+                                .table-batch {
+                                    width: 99.9%;
+                                    font-size: 8pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+                                
+                                th, td {
+                                    border: 1pt solid #000000 !important;
+                                    padding: 1pt!important;
+                                    text-align: left;
+                                    overflow-wrap: break-word;
+                                    white-space: normal;
+                                }
+
+                                .report-header-table {
+                                    border-collapse: collapse;
+                                }
+
+                                .report-header-table .label {
+                                    font-weight: 600;
+                                    padding-right: 5px;
+                                    white-space: nowrap;
+                                }
+
+                                .report-header-table td {
+                                    padding: 3px 8px;
+                                    vertical-align: top;
+                                }
+                            }
+                            
+                            @media print {
+                                @page {
+                                    size: A4 landscape!important;
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+                                
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                }
+                                
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+                                
+                                .table-item {
+                                    width: 99.9%;
+                                    font-size: 10px!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+
+                                .table-batch {
+                                    width: 99.9%;
+                                    font-size: 10px!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+                                
+                                th, td {
+                                    border: 1pt solid #000000 !important;
+                                    padding: 1pt!important;
+                                    text-align: left;
+                                    overflow-wrap: break-word;
+                                    white-space: normal;
+                                }
+
+                                .report-header-table {
+                                    border-collapse: collapse;
+                                }
+
+                                .report-header-table .label {
+                                    font-weight: 600;
+                                    padding-right: 5px;
+                                    white-space: nowrap;
+                                }
+
+                                .report-header-table td {
+                                    padding: 3px 8px;
+                                    vertical-align: top;
+                                }
+                                
+                            }
+                            
+                        </style>
+                        <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
+                            <p:panel header="#{reportController.reportTemplateFileIndexName}" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="#{reportController.reportTemplateFileIndexName}" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="itemRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/inventoryReports/closing_stock_report?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="itemRp" class="d-flex justify-content-center">
+                                <div class="paper">
+                                    <div class="header" >
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="#{reportController.reportTemplateFileIndexName}"/>
+                                                <h:outputText value=" (Item Wise)"/>
+                                            </div>
+
+                                            <div class="d-flex justify-content-center m-3">
+                                                <h:panelGrid columns="6"
+                                                            styleClass="report-header-table"
+                                                            style="font-size:10px; width:75%;"
+                                                            columnClasses="label,value,label,value,label,value">
+
+                                                    <!-- Row 1 -->
+                                                    <h:outputText value="Date:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Institute:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
+
+                                                    <h:outputText value="Site:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.site != null ? pharmacyReportController.site.name : 'All'}"/>
+
+
+                                                    <!-- Row 2 -->
+                                                    <h:outputText value="Department:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.department != null ? pharmacyReportController.department.name : 'All'}"/>
+
+                                                    <h:outputText value="Department Type:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.selectedDepartmentTypesString}"/>
+
+                                                    <h:outputText value="Item Categories:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.category != null ? pharmacyReportController.category.name : 'All'}"/>
+
+
+                                                    <!-- Row 3 -->
+                                                    <h:outputText value="Dosage Forms:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.dosageForm != null ? pharmacyReportController.dosageForm.name : 'All'}"/>
+
+                                                    <h:outputText value="Item:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
+
+                                                    <h:outputText value="Consignment:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.consignmentItem ? 'true' : 'false'}"/>
+
+                                                </h:panelGrid>
+                                            </div>
+                                            
+                                    </div>
+                                        <p:dataTable
+                                            id="itemWise"
+                                            value="#{pharmacyReportController.rows}"
+                                            var="p"
+                                            rowIndexVar="n"
+                                            rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
+                                            styleClass="table-item table-sm">
+                                            <p:column headerText="S.No" width="10mm" styleClass="text-end">
+                                                <h:outputText value="#{n+1}"/>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="Total"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Item Category" width="30mm">
+                                                <h:outputText value="#{p.item.category.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Dosage Form" width="15mm">
+                                                <h:outputText value="#{p.item.dosageForm.name}"/>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Item Code"
+                                                width="15mm"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}">
+                                                <h:outputText value="#{p.item.code}"/>
+                                            </p:column>
+                                            <p:column headerText="Item Name" width="45mm">
+                                                <h:outputText value="#{p.item.name}"/>
+                                            </p:column>
+                                            <p:column headerText="UOM" width="10mm">
+                                                <h:outputText value="#{p.item.measurementUnit.name}"/>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Closing Stock"
+                                                styleClass="text-end"
+                                                width="25mm">
+                                                <h:outputText value="#{p.quantity}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyReportController.stockQty}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Purchase Value"
+                                                styleClass="text-end"
+                                                width="25mm">
+                                                <h:outputText
+                                                    value="#{p.purchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Cost Value"
+                                                styleClass="text-end"
+                                                width="25mm">
+                                                <h:outputText
+                                                    value="#{p.costValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyReportController.stockCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column
+                                                headerText="Sale Value"
+                                                styleClass="text-end"
+                                                width="25mm">
+                                                <h:outputText
+                                                    value="#{p.saleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyReportController.stockSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column
+                                                rendered="#{webUserController.hasPrivilege('Developer')}"
+                                                headerText="Closing Stock Value at Sale Rate"
+                                                styleClass="text-end"
+                                                width="25mm">
+                                                <h:outputText
+                                                    value="#{p.saleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyReportController.stockSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column
+                                                rendered="#{webUserController.hasPrivilege('Developer')}"
+                                                headerText="Closing Stock Value at Purchase Rate"
+                                                styleClass="text-end"
+                                                width="25mm">
+                                                <h:outputText
+                                                    value="#{p.purchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:dataTable> 
+                                    </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        
+                    <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'batchWise'}">
+                        <p:panel header="#{reportController.reportTemplateFileIndexName}" styleClass="my-2" >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="#{reportController.reportTemplateFileIndexName}" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false" 
+                                            value="Print">
+                                            <p:printer target="batchRp" />
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Back to Report" 
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/closing_stock_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+                        <h:panelGroup id="batchRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="#{reportController.reportTemplateFileIndexName}"/>
+                                        <h:outputText value=" (Batch Wise)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6"
+                                                styleClass="report-header-table"
+                                                style="font-size:10px; width:75%;"
+                                                columnClasses="label,value,label,value,label,value">
+
+                                            <h:outputText value="Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+
+                                            <h:outputText value="Institute:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
+
+                                            <h:outputText value="Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.site != null ? pharmacyReportController.site.name : 'All'}"/>
+
+                                            <h:outputText value="Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.department != null ? pharmacyReportController.department.name : 'All'}"/>
+
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.selectedDepartmentTypesString}"/>
+
+                                            <h:outputText value="Item Categories:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.category != null ? pharmacyReportController.category.name : 'All'}"/>
+
+                                            <h:outputText value="Dosage Forms:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.dosageForm != null ? pharmacyReportController.dosageForm.name : 'All'}"/>
+
+                                            <h:outputText value="Item:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
+
+                                            <h:outputText value="Consignment:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyReportController.consignmentItem ? 'true' : 'false'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+                                
+                                <p:dataTable
+                                    id="batchWise"
+                                    value="#{pharmacyReportController.rows}"
+                                    var="f"
+                                    rowIndexVar="n"
+                                    rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
+                                    styleClass="table-sm table-batch">
+                                    <p:column headerText="S.No" width="8mm" styleClass="text-end">
+                                        <h:outputText value="#{n+1}"/>
+                                        <f:facet name="footer">
+                                            <h:outputText value="Total"/>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        id="txtStockHistoryIdForBatchReport" 
+                                        headerText="StockHistory ID" 
+                                        width="18mm" 
+                                        styleClass="text-end">
+                                        <h:outputText value="#{f.id}"/>
+                                        <f:facet name="footer">
+                                            <h:outputText value=""/>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Item Category" width="22mm">
+                                        <h:outputText value="#{f.item.category.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Dosage Form" width="16mm">
+                                        <h:outputText value="#{f.item.dosageForm.name}"/>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Item Code"
+                                        width="15mm"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}">
+                                        <h:outputText value="#{f.item.code}"/>
+                                    </p:column>
+                                    <p:column headerText="Item Name" width="30mm">
+                                        <h:outputText value="#{f.item.name}"/>
+                                    </p:column>
+                                    <p:column headerText="UOM" width="8mm">
+                                        <h:outputText value="#{f.item.measurementUnit.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Expiry" width="15mm">
+                                        <h:outputText value="#{f.itemBatch.dateOfExpire}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Batch No" width="15mm">
+                                        <h:outputText value="#{f.itemBatch.batchNo}"/>
+                                    </p:column>
+                                    <p:column 
+                                        headerText="Qty" 
+                                        width="15mm" 
+                                        sortBy="#{f.stockQty}"
+                                        styleClass="text-end">
+                                        <h:outputText value="#{f.stockQty}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyReportController.stockQty}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Purchase Rate" width="15mm" styleClass="text-end">
+                                        <h:outputText
+                                            value="#{f.purchaseRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Purchase Value"
+                                        width="16mm"
+                                        styleClass="text-end">
+                                        <h:outputText value="#{f.purchaseValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Cost Rate" width="16mm" styleClass="text-end">
+                                        <h:outputText
+                                            value="#{f.costRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Cost Value"
+                                        width="16mm"
+                                        styleClass="text-end">
+                                        <h:outputText value="#{f.costValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyReportController.stockCostValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Sale Rate"
+                                        width="16mm"
+                                        styleClass="text-end">
+                                        <h:outputText
+                                            value="#{f.retailRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Sale Value"
+                                        width="16mm"
+                                        styleClass="text-end">
+                                        <h:outputText value="#{f.saleValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyReportController.stockSaleValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column
+                                        rendered="#{webUserController.hasPrivilege('Developer')}"
+                                        headerText="Closing Stock Value at Sale Rate"
+                                        styleClass="text-end"
+                                        width="16mm">
+                                        <h:outputText
+                                            value="#{f.saleValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyReportController.stockSaleValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column
+                                        rendered="#{webUserController.hasPrivilege('Developer')}"
+                                        headerText="Closing Stock Value at Purchase Rate"
+                                        styleClass="text-end"
+                                        width="16mm">
+                                        <h:outputText
+                                            value="#{f.purchaseValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
