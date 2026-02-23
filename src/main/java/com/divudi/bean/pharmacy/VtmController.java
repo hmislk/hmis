@@ -715,21 +715,15 @@ public class VtmController implements Serializable {
     }
 
     public void setSelectedVtmDto(VtmDto selectedVtmDto) {
-        System.out.println("setSelectedVtmDto called");
-        System.out.println("selectedVtmDto = " + selectedVtmDto);
         this.selectedVtmDto = selectedVtmDto;
 
         // Sync with entity if DTO is selected
         if (selectedVtmDto != null && selectedVtmDto.getId() != null) {
-            System.out.println("selectedVtmDto.getId() = " + selectedVtmDto.getId());
             this.current = getFacade().find(selectedVtmDto.getId());
-            System.out.println("Loaded entity: " + (this.current != null ? this.current.getName() : "null"));
         } else {
             // Clear current entity when no DTO is selected
-            System.out.println("Clearing current entity (selectedVtmDto is null or has null ID)");
             this.current = null;
         }
-        System.out.println("current = " + current);
     }
 
     // Audit Events Methods
@@ -764,7 +758,6 @@ public class VtmController implements Serializable {
                 ae.calculateDifference();
             }
 
-            System.out.println("VTM Audit Events loaded: " + vtmAuditEvents.size() + " events for VTM ID: " + current.getId());
         }
     }
 
