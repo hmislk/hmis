@@ -38,22 +38,24 @@
                                                 itemLabel="#{option}"
                                                 itemValue="#{option}"/>
                                         </p:selectOneMenu>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
-                                            value="Cancel Package Bill" 
+                                            value="Cancel Package Bill"
                                             icon="fa fa-times"
                                             style="float: right"
                                             rendered="#{opdBatchBillCancellationController.batchBill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}"
-                                            class="ui-button-danger" 
+                                            class="ui-button-danger"
+                                            onclick="if(!confirm('Are you sure you want to cancel this package bill?')){return false;}this.disabled=true;"
                                             action="#{opdBatchBillCancellationController.cancelPackageBatchBill()}">
                                         </p:commandButton>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
-                                            value="Cancel OPD Batch Bill" 
+                                            value="Cancel OPD Batch Bill"
                                             icon="fa fa-times"
                                             rendered="#{opdBatchBillCancellationController.batchBill.billTypeAtomic eq 'OPD_BATCH_BILL_WITH_PAYMENT'}"
                                             style="float: right"
-                                            class="ui-button-danger" 
+                                            class="ui-button-danger"
+                                            onclick="if(!confirm('Are you sure you want to cancel this OPD batch bill?')){return false;}this.disabled=true;"
                                             action="#{opdBatchBillCancellationController.cancelOpdBatchBill()}">
                                         </p:commandButton>
                                     </div>

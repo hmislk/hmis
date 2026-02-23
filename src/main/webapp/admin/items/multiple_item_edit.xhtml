@@ -348,6 +348,19 @@
                                 
                                 <p:column 
                                     width="4em;"
+                                    sortBy="#{i.printSessionNumber}"
+                                    filterMatchMode="contains" 
+                                    filterBy="#{i.printSessionNumber}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Print Session Number" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.printSessionNumber ?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column 
+                                    width="4em;"
                                     sortBy="#{i.allowedForBillingPriority}"
                                     filterMatchMode="contains" 
                                     filterBy="#{i.allowedForBillingPriority}">

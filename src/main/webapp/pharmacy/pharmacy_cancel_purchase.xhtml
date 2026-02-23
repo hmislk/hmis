@@ -20,7 +20,10 @@
                             </p:toolbarGroup>
                             <p:toolbarGroup align="right">
                                 <p:outputLabel value="Payment Method:" for="cmbPs" style="margin-right: 6px; font-weight: bold;"/>
-                                <p:selectOneMenu id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true" style="margin-right: 10px;">
+                                <!--Business Logic - THe very same payment method used for purchase must be used for cancellation.-->
+                                <p:selectOneMenu
+                                    disabled="true"
+                                    id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true" style="margin-right: 10px;">
                                     <f:selectItems value="#{enumController.allPaymentMethods}"/>
                                 </p:selectOneMenu>
                                 <p:outputLabel value="Cancellation Reason:" for="txtComments" style="margin-right: 6px; font-weight: bold;"/>

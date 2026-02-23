@@ -19,7 +19,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        
+
         <style>
             .fiveinchbill{
                 position: relative!important;
@@ -31,7 +31,7 @@
                 text-transform: capitalize!important;
             }
         </style>
-        
+
         <div class="fiveinchbill" style="page-break-after: always" >
 
             <div class="institutionName">
@@ -154,18 +154,20 @@
                     <ui:repeat value="#{billController.billItemsOfBill(cc.attrs.bill)}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td style="width:80%!important;">
-                                <h:outputLabel value="#{billItem.item.name}"></h:outputLabel>
-                                <h:outputLabel value=" (N)" rendered="#{billItem.item.speciality}"/>
+                                <div class="d-flex justify-content-between">
+                                    <div class="d-flex gap-2">
+                                        <h:outputLabel value="#{billItem.item.name}"></h:outputLabel>
+                                        <h:outputLabel value=" (N)" rendered="#{billItem.item.speciality}"/>
+                                    </div>
+                                    <h:panelGroup rendered="#{billItem.item.printSessionNumber}" style="">
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
+                                            <h:outputLabel  value="#{billItem.sessionId}" style="border: 1px solid black; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;"></h:outputLabel>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
                             </td>
                             <td style="width:10%!important;">
-                                <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
-                                        <td>
-                                            <h:outputLabel  value="#{billItem.billSession.serialNo}"    >
-                                            </h:outputLabel>
-                                        </td>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+
                             </td>
                             <td   style="width:10%!important;text-align: right;">
                                 <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
@@ -254,7 +256,7 @@
                         </div>
                         <div class="mx-2">
                             <h:outputLabel value="#{p.paidValue}" >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber></h:outputLabel>
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber></h:outputLabel>
                         </div>
                     </div>
                 </ui:repeat>
