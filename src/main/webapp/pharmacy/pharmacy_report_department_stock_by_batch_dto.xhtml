@@ -94,9 +94,12 @@
                                         <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
                                     </p:commandButton>
 
-                                    <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
-                                    </p:commandButton>
+                                    
+                                    <p:commandButton icon="fas fa-file-excel"
+                                                     styleClass="ui-button-success mx-1"
+                                                     value="Excel"
+                                                     ajax="false"
+                                                     action="#{reportsStock.exportCurrentStockByBatchToExcel}" />
 
                                     <p:commandButton
                                         value="To Print"

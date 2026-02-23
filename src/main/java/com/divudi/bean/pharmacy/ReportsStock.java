@@ -49,7 +49,9 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.CommonFunctions;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -61,12 +63,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -336,6 +346,196 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                     })
                     .sum();
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    public void exportCurrentStockByBatchToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Current_Stock_By_Batch.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Current Stock By Batch");
+
+            int rowIndex = 0;
+            int totalColumns = 14;
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            // Title Style (Big + Bold + Center)
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            //filter Style
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // Header Style
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // Data Style
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+
+            CellStyle formatStyle = workbook.createCellStyle();
+            formatStyle.cloneStyleFrom(dataStyle);
+            formatStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            // =========================
+            // HEADER
+            // =========================
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Filters row
+            Row filterRow = sheet.createRow(rowIndex++);
+            Cell filterCell = filterRow.createCell(0);
+            filterCell.setCellValue(
+                    "Category: " + (category != null ? category.getName() : "All")
+                    + " | Dosage Form: " + (dosageForm != null ? dosageForm.getName() : "All")
+                    + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay()
+            );
+            filterCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Current Stock By Batch Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // header
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {
+                "Category", "Dosage Form", "Item", "Type", "Code",
+                "Expiry", "Batch No", "Stock",
+                "Purchase Rate", "Purchase Value",
+                "Cost Rate", "Cost Value",
+                "Retail Rate", "Retail Value"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // data row
+            // =========================
+            for (StockDTO row : stockDtos) {
+
+                Row dataRow = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                dataRow.createCell(col++).setCellValue(row.getCategoryName());
+                dataRow.createCell(col++).setCellValue(row.getDosageFormName());
+                dataRow.createCell(col++).setCellValue(row.getItemName());
+                dataRow.createCell(col++).setCellValue(row.getDepartmentType().name());
+                dataRow.createCell(col++).setCellValue(row.getCode());
+
+                dataRow.createCell(col++).setCellValue(
+                        row.getDateOfExpire() != null
+                        ? new SimpleDateFormat("dd/MM/yyyy")
+                                .format(row.getDateOfExpire()) : "-"
+                );
+
+                dataRow.createCell(col++).setCellValue(row.getBatchNo());
+                dataRow.createCell(col++).setCellValue(row.getStockQty());
+
+                double purchaseRate = row.getPurchaseRate() != null ? row.getPurchaseRate() : 0.0;
+                double costRate = row.getCostRate() != null ? row.getCostRate() : 0.0;
+                double retailRate = row.getRetailRate() != null ? row.getRetailRate() : 0.0;
+
+                dataRow.createCell(col++).setCellValue(purchaseRate);
+                dataRow.createCell(col++).setCellValue(purchaseRate * row.getStockQty());
+                dataRow.createCell(col++).setCellValue(costRate);
+                dataRow.createCell(col++).setCellValue(costRate * row.getStockQty());
+                dataRow.createCell(col++).setCellValue(retailRate);
+                dataRow.createCell(col++).setCellValue(retailRate * row.getStockQty());
+
+                for (int i = 0; i < totalColumns; i++) {
+                    dataRow.getCell(i).setCellStyle(dataStyle);
+                }
+            }
+
+            // =========================
+            // total
+            // =========================
+            Row footerRow = sheet.createRow(rowIndex++);
+            Cell totalLabel = footerRow.createCell(7);
+            totalLabel.setCellValue("Total");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell totalPurchase = footerRow.createCell(9);
+            totalPurchase.setCellValue(stockPurchaseValue);
+            totalPurchase.setCellStyle(formatStyle);
+
+            Cell totalCost = footerRow.createCell(11);
+            totalCost.setCellValue(stockCostValue);
+            totalCost.setCellStyle(formatStyle);
+
+            Cell totalSale = footerRow.createCell(13);
+            totalSale.setCellValue(stockSaleValue);
+            totalSale.setCellStyle(formatStyle);
+
+            // Auto size
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
     }
 
     public void toggleIncludeZeroStock() {
