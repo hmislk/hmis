@@ -1029,6 +1029,15 @@ public class PharmacySummaryReportController implements Serializable {
         }
         bundle.generatePaymentDetailsForBills();
     }
+    public String getReportHeader() {
+        return "Date From: " + getFromDateFormatted() +
+               " To: " + getToDateFormatted() +
+               "   |   Site: " + (site == null ? "All institutions" : site.getName()) +
+               "   |   Department: " + (department == null ? "All departments" : department.getName()) +
+               "   |   Admission Type: " + (admissionType == null ? "All admission types" : admissionType.getName()) +
+               "   |   Discount Scheme: " + (paymentScheme == null ? "All discount schemes" : paymentScheme.getName()) +
+               "   |   Report Type: " + (reportViewType == null ? "" : reportViewType.getLabel());
+    }
 
     public void processMovementOutWithStocksReportByBill() {
         reportTimerController.trackReportExecution(() -> {

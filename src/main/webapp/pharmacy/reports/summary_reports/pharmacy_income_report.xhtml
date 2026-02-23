@@ -238,6 +238,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
+                            </f:facet>
                             <p:column headerText="Bill No" width="16em"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText value="#{row.bill.deptId}"
@@ -708,6 +712,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
+                            </f:facet>
                             <p:column headerText="Bill Type" width="18em">
                                 <h:outputText value="#{row.billTypeAtomic}"/>
                             </p:column>
@@ -992,6 +1000,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
+                            </f:facet>
                             <p:column headerText="Group" width="24em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>
@@ -1273,6 +1285,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen},5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:18px;" />
+                            </f:facet>
                             <p:column headerText="Bill Type + Group" width="32em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>
