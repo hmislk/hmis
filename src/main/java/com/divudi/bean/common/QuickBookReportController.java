@@ -1007,8 +1007,9 @@ public class QuickBookReportController implements Serializable {
                 }
             }
 
-            // Fallback: If no individual expense items found, use bill expense totals (only considered for costing)
-            if (b.getBillExpenses().isEmpty() && b.getExpensesTotalConsideredForCosting() != 0) {
+            // Fallback: If no costing expenses were accumulated (getBillExpenses() empty or all items
+            // are non-costing), use the bill-level aggregate for costing expenses.
+            if (expensesConsideredTotal == 0 && b.getExpensesTotalConsideredForCosting() != 0) {
                 double transportSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalConsideredForCosting()) : b.getExpensesTotalConsideredForCosting();
                 qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Transport", "", "", "", transportSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 expensesConsideredTotal += b.getExpensesTotalConsideredForCosting();
@@ -1137,8 +1138,9 @@ public class QuickBookReportController implements Serializable {
                 }
             }
 
-            // Fallback: If no individual expense items found, use bill expense totals (only considered for costing)
-            if (b.getBillExpenses().isEmpty() && b.getExpensesTotalConsideredForCosting() != 0) {
+            // Fallback: If no costing expenses were accumulated (getBillExpenses() empty or all items
+            // are non-costing), use the bill-level aggregate for costing expenses.
+            if (expensesConsideredTotal == 0 && b.getExpensesTotalConsideredForCosting() != 0) {
                 double transportSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalConsideredForCosting()) : b.getExpensesTotalConsideredForCosting();
                 qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Transport", "", "", "", transportSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
                 expensesConsideredTotal += b.getExpensesTotalConsideredForCosting();
