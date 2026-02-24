@@ -8,7 +8,7 @@ import java.util.Date;
 public class InwardAdmissionDTO {
 
     private Long staffId;
-    private Title title;
+    private Title doctorTitle;
     private String nameWithTitle;
     private String doctorName;
     private String specialityName;
@@ -36,7 +36,7 @@ public class InwardAdmissionDTO {
     // Constructor for fetching data for admission count table
     public InwardAdmissionDTO(Long staffId, Title title, String doctorName, String specialityName, Date dateOfDischarge) {
         this.staffId = staffId;
-        this.title = title;
+        this.doctorTitle = title;
         this.doctorName = doctorName;
         this.specialityName = specialityName;
         this.dateOfDischarge = dateOfDischarge;
@@ -274,17 +274,17 @@ public class InwardAdmissionDTO {
         this.dateOfDischarge = dateOfDischarge;
     }
 
-    public Title getTitle() {
-        return title;
+    public Title getDoctorTitle() {
+        return doctorTitle;
     }
 
-    public void setTitle(Title title) {
-        this.title = title;
+    public void setDoctorTitle(Title doctorTitle) {
+        this.doctorTitle = doctorTitle;
     }
 
     public String getNameWithTitle() {
         String temT;
-        Title t = getTitle();
+        Title t = getDoctorTitle();
         if (t != null) {
             temT = t.getLabel();
         } else {
