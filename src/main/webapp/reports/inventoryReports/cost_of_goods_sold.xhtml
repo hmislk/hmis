@@ -187,12 +187,13 @@
                                 <p:printer target="tbl1" oncomplete="restorePaginatorAfterPrint()"/>
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="Cost of Good Sold Report" 
-                                    target="tbl1"  />
-                            </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download"
+                                action="#{pharmacyReportController.exportCostOfGoodsSoldToExcel()}"/>
+                            
                             <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
                                 <p:dataExporter type="pdf"
                                                 target="tbl1"
