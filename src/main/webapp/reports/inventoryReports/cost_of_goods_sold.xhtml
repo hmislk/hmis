@@ -25,10 +25,10 @@
                             </p:commandButton>
                         </f:facet>
 
-                        <p:panelGrid columns="6" class="w-100">
+                        <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputText value="&#xf073;" styleClass="fa ml-3" />
                                 <p:outputLabel value="From Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
@@ -42,7 +42,7 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputText value="&#xf073;" styleClass="fa ml-3" />
                                 <p:outputLabel value="To Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
@@ -54,11 +54,10 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
 
-                            <p:spacer />
-                            <p:spacer />
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university ml-5" />
+                                <h:outputText styleClass="fa fa-university ml-3" />
                                 <p:outputLabel value="Institution" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
@@ -74,7 +73,7 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5" />
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-3" />
                                 <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu
@@ -90,7 +89,7 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building ml-5" />
+                                <h:outputText styleClass="fa fa-building ml-3" />
                                 <p:outputLabel value="Department" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
@@ -154,7 +153,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-pills ml-5" />
+                                <h:outputText styleClass="fa fa-pills ml-3" />
                                 <p:outputLabel value="Item" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
@@ -187,18 +186,21 @@
                                 <p:printer target="tbl1" oncomplete="restorePaginatorAfterPrint()"/>
                             </p:commandButton>
 
+
                             <p:commandButton 
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Download"
                                 action="#{pharmacyReportController.exportCostOfGoodsSoldToExcel()}"/>
-                            
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf"
-                                                target="tbl1"
-                                                fileName="cost of good sold.pdf"/>
-                            </p:commandButton>
+
+
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                action="#{pharmacyReportController.exportCostOfGoodsSoldToPDF()}"/>
                         </div>
                         <h:outputScript>
                             function hidePaginatorBeforePrint() {
