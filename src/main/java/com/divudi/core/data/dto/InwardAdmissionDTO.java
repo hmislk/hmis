@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Staff;
 import java.util.Calendar;
 import java.util.Date;
@@ -7,6 +8,8 @@ import java.util.Date;
 public class InwardAdmissionDTO {
 
     private Long staffId;
+    private Title title;
+    private String nameWithTitle;
     private String doctorName;
     private String specialityName;
     private Date createdAt;
@@ -31,8 +34,9 @@ public class InwardAdmissionDTO {
     private boolean isGrandTotal;
 
     // Constructor for fetching data for admission count table
-    public InwardAdmissionDTO(Long staffId, String doctorName, String specialityName, Date dateOfDischarge) {
+    public InwardAdmissionDTO(Long staffId, Title title, String doctorName, String specialityName, Date dateOfDischarge) {
         this.staffId = staffId;
+        this.title = title;
         this.doctorName = doctorName;
         this.specialityName = specialityName;
         this.dateOfDischarge = dateOfDischarge;
@@ -268,5 +272,29 @@ public class InwardAdmissionDTO {
 
     public void setDateOfDischarge(Date dateOfDischarge) {
         this.dateOfDischarge = dateOfDischarge;
+    }
+
+    public Title getTitle() {
+        return title;
+    }
+
+    public void setTitle(Title title) {
+        this.title = title;
+    }
+
+    public String getNameWithTitle() {
+        String temT;
+        Title t = getTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        nameWithTitle = temT + " " + getDoctorName();
+        return nameWithTitle;
+    }
+
+    public void setNameWithTitle(String nameWithTitle) {
+        this.nameWithTitle = nameWithTitle;
     }
 }
