@@ -72,8 +72,8 @@
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All" >
-                                <p:printer target="countTable" />
+                                value="Print Report"
+                                action="/reports/managementReports/admission_count_consultant_wise_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -86,6 +86,7 @@
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1"
+                                rendered="false"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 value="PDF" >
@@ -127,7 +128,7 @@
                                          styleClass="table-sm">
 
                                 <p:column headerText="Doctor Name" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; width: 250px;">
-                                    <h:outputText value="#{item.doctorName}" 
+                                    <h:outputText value="#{item.nameWithTitle}" 
                                                   style="#{item.subtotal or item.grandTotal ? 'font-weight:bold;' : ''}"/>
                                 </p:column>
 
