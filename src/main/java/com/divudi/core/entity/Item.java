@@ -882,7 +882,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public SessionNumberType getSessionNumberType() {
         if (sessionNumberType == null) {
-            sessionNumberType = SessionNumberType.ByBill;
+            sessionNumberType = SessionNumberType.None;
         }
         return sessionNumberType;
     }
