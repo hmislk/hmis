@@ -221,19 +221,8 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.name}"/>
                                 </p:column>
-
-                                <p:column 
-                                    width="12em;"
-                                    sortBy="#{i.name}"
-                                    filterMatchMode="contains" 
-                                    filterBy="#{i.name}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Institution" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
-                                </p:column>
-
-                                <p:column 
+                                
+                                 <p:column 
                                     width="9em;"
                                     sortBy="#{i.category.name}" 
                                     filterMatchMode="contains" 
@@ -242,6 +231,17 @@
                                         <h:outputLabel value="Category" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column 
+                                    width="12em;"
+                                    sortBy="#{i.institution.name}"
+                                    filterMatchMode="contains" 
+                                    filterBy="#{i.institution.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Institution" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column 
@@ -343,6 +343,19 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{i.chargesVisibleForInward ?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column 
+                                    width="4em;"
+                                    sortBy="#{i.printSessionNumber}"
+                                    filterMatchMode="contains" 
+                                    filterBy="#{i.printSessionNumber}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Print Session Number" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.printSessionNumber ?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
                                 

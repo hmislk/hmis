@@ -2750,6 +2750,16 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             batchBillCancellationStarted = false;
             return "";
         }
+
+        List<Bill> individualBills = billService.fetchIndividualBillsOfBatchBill(getBatchBill());
+        for (Bill individualBill : individualBills) {
+            if (individualBill.isCancelled()) {
+                JsfUtil.addErrorMessage("Individual bill " + individualBill.getDeptId() + " has already been cancelled separately. Cannot cancel the batch bill.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
+        }
+
         if (professionalPaymentService.isProfessionalFeePaidForBatchBill(batchBill)) {
             JsfUtil.addErrorMessage("Professional Fees or Outside Fees have already made this bill. Cancel them first and try again.");
             batchBillCancellationStarted = false;
@@ -2897,6 +2907,15 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (errorsPresentOnOpdBatchBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
+        }
+
+        List<Bill> individualBills = billService.fetchIndividualBillsOfBatchBill(getBatchBill());
+        for (Bill individualBill : individualBills) {
+            if (individualBill.isCancelled()) {
+                JsfUtil.addErrorMessage("Individual bill " + individualBill.getDeptId() + " has already been cancelled separately. Cannot cancel the batch bill.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
         }
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
@@ -5020,15 +5039,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(amount);
-        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public double calBillPaidValue(Bill b) {
@@ -5811,7 +5822,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 return null;
             }
             OpdBatchBillCancellationController controller = (OpdBatchBillCancellationController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
+                    getValue(facesContext.getELContext(), null, "opdBatchBillCancellationController");
             return controller.getBillFacade().find(getKey(value));
         }
 

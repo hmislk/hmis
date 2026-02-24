@@ -2384,6 +2384,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
+            System.out.println("Start oneOpdBillForEachDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -3509,7 +3510,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 
-        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
+        //addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
 
         bi.setRate(getBillBean().billItemRate(addingEntry));
@@ -3891,6 +3892,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 currentPatientMembershipScheme = null;
                 chiefHouseHolder = null;
                 currentPatientFamily = null;
+                if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
+                    referredBy = null;
+                    referredByInstitution = null;
+                }
                 collectingCentreBillController.setCollectingCentre(null);
                 if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                     return "/opd/opd_bill_ac?faces-redirect=true";
@@ -3908,6 +3913,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             patientEncounter = null;
+            if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
+                referredBy = null;
+                referredByInstitution = null;
+            }
             collectingCentreBillController.setCollectingCentre(null);
             if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                 return "/opd/opd_bill_ac?faces-redirect=true";
@@ -4434,17 +4443,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        if (bf.getId() != null) {
-            BillFeePayment bfp = new BillFeePayment();
-            bfp.setBillFee(bf);
-            bfp.setAmount(amount);
-            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-            bfp.setCreater(getSessionController().getLoggedUser());
-            bfp.setCreatedAt(new Date());
-            bfp.setPayment(p);
-            billFeePaymentFacade.create(bfp);
-        }
+        // BillFeePayment is deprecated and no longer used
     }
 
     public double calBillPaidValue(Bill b) {

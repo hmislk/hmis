@@ -180,6 +180,35 @@ public class BillLight {
         this.patientEncounter = patientEncounter;
     }
 
+    // Constructor for adjustment bills that also receives bfd.grossTotal and bfd.netTotal.
+    // When bill.total = 0 but bfd.grossTotal is non-zero, the BFD value is used instead.
+    // This handles the case where adjustment bills have bill.total=0 due to JPA persistence
+    // issues in legacy save paths, but BillFinanceDetails values are correctly populated.
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
+                     Double discount, Double margin, Double serviceCharge,
+                     BigDecimal totalCostValue, BigDecimal totalPurchaseValue, BigDecimal totalRetailSaleValue,
+                     PaymentMethod paymentMethod, PatientEncounter patientEncounter,
+                     BigDecimal bfdGrossTotal, BigDecimal bfdNetTotal) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        // Prefer bfd.grossTotal when bill.total is zero but BFD has a non-zero value.
+        // This handles adjustment bills where bill.total was not persisted but bfd.grossTotal is correct.
+        double bfdGross = (bfdGrossTotal != null) ? bfdGrossTotal.doubleValue() : 0.0;
+        double bfdNet = (bfdNetTotal != null) ? bfdNetTotal.doubleValue() : 0.0;
+        double billTotal = (total != null) ? total : 0.0;
+        double billNetTotal = (netTotal != null) ? netTotal : 0.0;
+        this.total = (billTotal == 0.0 && bfdGross != 0.0) ? bfdGross : billTotal;
+        this.netTotal = (billNetTotal == 0.0 && bfdNet != 0.0) ? bfdNet : billNetTotal;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.totalCostValue = totalCostValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.paymentMethod = paymentMethod;
+        this.patientEncounter = patientEncounter;
+    }
+
     // Constructor for Pharmacy Sales with PaymentScheme (for proper discount scheme grouping)
     public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
                      Double discount, Double margin, Double serviceCharge,

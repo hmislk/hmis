@@ -3707,7 +3707,12 @@ public class SearchController implements Serializable {
                           "AND b.department.id = :deptid ";
 
             jpql4 = checkSearchKeywordForSearch(jpql4, params);
-            
+
+            if (paymentMethod != null) {
+                jpql4 += " AND b.paymentMethod = :paymentMethod ";
+                params.put("paymentMethod", paymentMethod);
+            }
+
             jpql4 += " ORDER BY b.createdAt DESC";
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
@@ -9394,6 +9399,10 @@ public class SearchController implements Serializable {
     }
 
     public void addToStock() {
+        if (getSelectedBills().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a bill from the list to proceed.");
+            return;
+        }
         bill = new Bill();
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());

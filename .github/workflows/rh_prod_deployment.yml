@@ -1,9 +1,7 @@
 name: RH-PROD Build & Blue-Green Deployment Pipeline
 
 on:
-  push:
-    branches:
-      - ruhunu-prod
+  workflow_dispatch:
 
 jobs:
   build:

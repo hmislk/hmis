@@ -388,6 +388,34 @@
                                     </tr>
 
                                     <tr>
+                                        <td><strong>Backfill BFD for Pre-To-Settle Bills</strong></td>
+                                        <td>
+                                            Creates missing BillFinanceDetails and BillItemFinanceDetails for
+                                            PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bills that have no finance data.
+                                            Required for accurate F15 Daily Stock Values report when bills were created via
+                                            the settlePreBill() path before the Feb 2026 fix.
+                                            Use the date range filter above to limit scope.
+                                            Safe to re-run: skips bills already having BFD with non-zero retail value.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnBackfillBfdPreToSettle"
+                                                action="#{dataAdministrationController.backfillBfdForPreToSettleAtCashierBills()}"
+                                                ajax="false"
+                                                value="Backfill Pre-Bill BFDs"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-calculator"
+                                                title="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
+                                                aria-label="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will create BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills missing BFD in the selected period. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td><strong>Assign Pharmacy Department Type</strong></td>
                                         <td>
                                             Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.

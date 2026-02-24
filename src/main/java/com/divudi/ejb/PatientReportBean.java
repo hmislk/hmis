@@ -212,7 +212,7 @@ public class PatientReportBean {
                         val.setPatientReport(ptReport);
                     }
                 }
-            } else if (ii.getIxItemType() == InvestigationItemType.WorningFlag && !ii.isRetired()) {
+            } else if (ii.getIxItemType() == InvestigationItemType.WarningFlag && !ii.isRetired()) {
                 val = new PatientReportItemValue();
                 
                 val.setStrValue(ii.getHtmltext());
