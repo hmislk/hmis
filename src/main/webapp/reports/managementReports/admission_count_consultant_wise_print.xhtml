@@ -143,30 +143,12 @@
                                         </div>
                                         <div></div>
                                     </div>
-
-                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" id="toinsdept">
-                                        <div class="d-flex gap-2">
-                                            <h:outputText 
-                                                rendered="#{laborataryReportController.toInstitution ne null}"
-                                                value="#{laborataryReportController.toInstitution.name}" 
-                                                style="font-weight: 600;">
-                                            </h:outputText>
-                                            <h:outputText 
-                                                value="-" 
-                                                rendered="#{laborataryReportController.toInstitution ne null and laborataryReportController.toDepartment ne null}"
-                                                style="width: 2em!important; font-weight: 600; text-align: center;"/>
-                                            <h:outputText 
-                                                rendered="#{laborataryReportController.toInstitution ne null and laborataryReportController.toDepartment ne null}"
-                                                value="#{laborataryReportController.toDepartment.name}" 
-                                                style="font-weight: 600;">
-                                            </h:outputText>
-                                        </div>
-
+                                    
                                         <div class="d-flex justify-content-between mt-2 w-100 gap-2" id="toinsdept">
                                             <table>
                                                 <thead>
                                                     <tr>
-                                                        <th style="font-weight: 700; text-align: center;">
+                                                        <th style="font-weight: 700; text-align: center; height: 25px;">
                                                             <h:outputText value="Doctor Name" />
                                                         </th>
                                                         <th style="font-weight: 700; text-align: center;">
@@ -224,142 +206,62 @@
                                                                     <h:outputText value="#{item.specialityName}" style="margin-left: 1mm;" />
                                                                 </td>
                                                             </ui:fragment>
-                                                            <ui:fragment rendered="#{item.subtotal or item.grandTotal}">
+                                                            <ui:fragment rendered="#{item.subtotal and !item.grandTotal}">
                                                                 <td colspan="2" style="font-weight:bold; background-color: #ebebef;">
                                                                     <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm; font-weight:bold;" />
                                                                 </td>
                                                             </ui:fragment>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <ui:fragment rendered="#{!item.subtotal and item.grandTotal}">
+                                                                <td colspan="2" style="font-weight:bold; text-align: center; background-color: #ebebef; height: 30px;">
+                                                                    <h:outputText value="#{item.nameWithTitle}" style="font-weight:bold; font-size: 15px;" />
+                                                                </td>
+                                                            </ui:fragment>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.january}" rendered="#{item.january > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.february}" rendered="#{item.february > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.march}" rendered="#{item.march > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.april}" rendered="#{item.april > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.may}" rendered="#{item.may > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.june}" rendered="#{item.june > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.july}" rendered="#{item.july > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.august}" rendered="#{item.august > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.september}" rendered="#{item.september > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.october}" rendered="#{item.october > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.november}" rendered="#{item.november > 0}"/>
                                                             </td>
-                                                            <td style="text-align: center; #{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
                                                                 <h:outputText value="#{item.december}" rendered="#{item.december > 0}"/>
                                                             </td>
                                                             <td style="text-align: center; background-color: #ebebef; color: black; font-weight: bold;">
-                                                                <h:outputText value="#{item.totalAdmissions}"/>
+                                                                <h:outputText value="#{item.totalAdmissions}" style="text-align: center; #{item.grandTotal ? 'font-size: 15px;' : ''}" />
                                                             </td>
                                                         </tr>
                                                     </ui:repeat> 
                                                 </tbody>
                                             </table>
 
-                                            <!--                                            <p:dataTable id="countTable"
-                                                                                                     var="item"
-                                                                                                     rowIndexVar="n"
-                                                                                                     value="#{inwardReportController.list}"
-                                                                                                     rendered="true">
-                                            
-                                                                                            <p:column headerText="Doctor Name" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; width: 250px;">
-                                                                                                <h:outputText value="#{item.doctorName}" 
-                                                                                                              style="#{item.subtotal or item.grandTotal ? 'font-weight:bold;' : ''}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Speciality" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; width: 200px;" >
-                                                                                                <h:outputText value="#{item.specialityName}"
-                                                                                                              style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; ' : ''}"
-                                                                                                              rendered="#{!item.subtotal and !item.grandTotal}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Jan" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.january}"
-                                                                                                              rendered="#{item.january > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Feb" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.february}" 
-                                                                                                              rendered="#{item.february > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Mar" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.march}" 
-                                                                                                              rendered="#{item.march > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Apr" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.april}" 
-                                                                                                              rendered="#{item.april > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="May" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.may}" 
-                                                                                                              rendered="#{item.may > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Jun" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.june}" 
-                                                                                                              rendered="#{item.june > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Jul" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.july}" 
-                                                                                                              rendered="#{item.july > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Aug" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.august}" 
-                                                                                                              rendered="#{item.august > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Sep" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.september}" 
-                                                                                                              rendered="#{item.september > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Oct" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.october}" 
-                                                                                                              rendered="#{item.october > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Nov" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.november}" 
-                                                                                                              rendered="#{item.november > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Dec" styleClass="text-center" style="#{item.subtotal or item.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}">
-                                                                                                <h:outputText value="#{item.december}" 
-                                                                                                              rendered="#{item.december > 0}"/>
-                                                                                            </p:column>
-                                            
-                                                                                            <p:column headerText="Total" styleClass="text-center" 
-                                                                                                      style="background-color: #a0a0a0; color: black; font-weight: bold;">
-                                                                                                <h:outputText value="#{item.totalAdmissions}"/>
-                                                                                            </p:column>
-                                                                                        </p:dataTable>-->
-
-
                                         </div>
 
-                                    </div>
                                 </div>
                             </div>
                         </h:panelGroup>
