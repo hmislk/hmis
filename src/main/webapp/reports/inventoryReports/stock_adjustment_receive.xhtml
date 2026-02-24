@@ -188,24 +188,17 @@
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="Stock Adjustment Receive Report" 
-                                    target="tbl"  />
-                            </p:commandButton>
-
+                                value="Download"
+                                action="#{pharmacyReportController.exportStockAdjustmentReceiveToExcel()}"/>
+                            
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Stock Adjustment Receive Report" />
-                            </p:commandButton>
-
+                                value="PDF"
+                                action="#{pharmacyReportController.exportStockAdjustmentReceiveToPDF()}"
+                                />
+ 
                         </div>
 
 
