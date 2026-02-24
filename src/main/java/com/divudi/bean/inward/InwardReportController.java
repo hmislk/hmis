@@ -1211,7 +1211,7 @@ public class InwardReportController implements Serializable {
             if (aggregated == null) {
                 aggregated = new InwardAdmissionDTO(
                         dto.getStaffId(),
-                        dto.getTitle(),
+                        dto.getDoctorTitle(),
                         dto.getDoctorName(),
                         dto.getSpecialityName(),
                         null
