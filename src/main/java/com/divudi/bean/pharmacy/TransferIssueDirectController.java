@@ -468,12 +468,21 @@ public class TransferIssueDirectController implements Serializable {
         if (stockDto == null || tmpStock == null || tmpStock.getItemBatch() == null) {
             return;
         }
-        transferRate = determineTransferRate(tmpStock.getItemBatch()).doubleValue();
+        BigDecimal unitRate = determineTransferRate(tmpStock.getItemBatch());
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        Item item = tmpStock.getItemBatch().getItem();
+        if (item instanceof Ampp && item.getDblValue() > 0) {
+            unitsPerPack = BigDecimal.valueOf(item.getDblValue());
+        }
+        BigDecimal effectiveRate = unitRate.multiply(unitsPerPack);
+        transferRate = effectiveRate.doubleValue();
         if (qty == null) {
             billItemValue = null;
             return;
         }
-        billItemValue = qty * transferRate;
+        billItemValue = BigDecimal.valueOf(Math.abs(qty))
+                .multiply(effectiveRate)
+                .doubleValue();
     }
 
     /**
