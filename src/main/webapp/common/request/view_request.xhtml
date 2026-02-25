@@ -141,34 +141,34 @@
                                     rowsPerPageTemplate="10,25,50"
                                     >
 
-                                    <p:column headerText="Request No" width="16em;">
+                                    <p:column headerText="Request No" width="17em;" style="padding: 8px;">
                                         <h:outputLabel value="#{r.requestNo}" />
                                     </p:column>
 
-                                    <p:column headerText="Request From">
+                                    <p:column headerText="Request From" style="padding: 8px;">
                                         <h:outputLabel value="#{r.department.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Request At">
+                                    <p:column headerText="Request At" style="padding: 8px;">
                                         <p:outputLabel value="#{r.createdAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Request by">
+                                    <p:column headerText="Request by" style="padding: 8px;">
                                         <h:outputLabel value="#{r.creator.webUserPerson.name}" />
                                     </p:column>
                                     
-                                    <p:column headerText="Bill No">
+                                    <p:column headerText="Bill No" style="padding: 8px;">
                                         <h:outputLabel value="#{r.bill.deptId}" />
                                     </p:column>
                                     
-                                    <p:column headerText="BHT No">
+                                    <p:column headerText="BHT No" style="padding: 8px;">
                                         <h:outputLabel value="N/A" rendered="#{r.bill.patientEncounter eq null}"/>
                                         <h:outputLabel value="#{r.bill.patientEncounter.bhtNo}" rendered="#{r.bill.patientEncounter ne null}"/>
                                     </p:column>
 
-                                    <p:column headerText="Request Type" style="width: 12em;" >
+                                    <p:column headerText="Request Type" style="width: 12em; padding: 8px;">
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'ITEM_REFUND'}" value="#{r.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
@@ -176,13 +176,13 @@
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 8em;">
+                                    <p:column headerText="Status" style="width: 8em; padding: 8px;">
                                         <p:badge 
                                             value="#{r.status.label}">
                                         </p:badge>
                                     </p:column>
 
-                                    <p:column headerText="Actions" style="width: 260px;" >
+                                    <p:column headerText="Actions" style="width: 260px; padding: 8px;">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
