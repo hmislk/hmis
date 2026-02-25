@@ -6,6 +6,8 @@
 
 package com.divudi.core.facade;
 
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.dto.StockHistoryDTO;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import java.util.Date;
 import java.util.List;
@@ -256,6 +258,78 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             e.printStackTrace();
             return 0.0;
         }
+    }
+
+
+    public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
+            HistoryType historyType, int maxResults) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT new com.divudi.core.data.dto.StockHistoryDTO(")
+                .append("sh.id, sh.createdAt, sh.stockAt, sh.historyType, ")
+                .append("item.id, item.name, ib.batchNo, ib.dateOfExpire, ")
+                .append("dept.id, dept.name, ")
+                .append("bill.id, bill.deptId, bill.billTypeAtomic, pb.qty, ")
+                .append("sh.stockQty, sh.instituionBatchQty, sh.totalBatchQty, ")
+                .append("sh.itemStock, sh.institutionItemStock, sh.totalItemStock, ")
+                .append("sh.retailRate, sh.purchaseRate, sh.costRate, ")
+                .append("sh.stockSaleValue, sh.stockPurchaseValue, sh.stockCostValue, ")
+                .append("sh.itemStockValueAtSaleRate, sh.itemStockValueAtPurchaseRate, sh.itemStockValueAtCostRate, ")
+                .append("sh.institutionBatchStockValueAtSaleRate, sh.institutionBatchStockValueAtPurchaseRate, sh.institutionBatchStockValueAtCostRate, ")
+                .append("sh.totalBatchStockValueAtSaleRate, sh.totalBatchStockValueAtPurchaseRate, sh.totalBatchStockValueAtCostRate")
+                .append(") ")
+                .append("FROM StockHistory sh ")
+                .append("LEFT JOIN sh.item item ")
+                .append("LEFT JOIN sh.itemBatch ib ")
+                .append("LEFT JOIN sh.department dept ")
+                .append("LEFT JOIN sh.pbItem pb ")
+                .append("LEFT JOIN pb.billItem bi ")
+                .append("LEFT JOIN bi.bill bill ")
+                .append("WHERE sh.retired = false ");
+
+        if (itemId != null) {
+            jpql.append("AND item.id = :itemId ");
+        }
+        if (departmentId != null) {
+            jpql.append("AND dept.id = :departmentId ");
+        }
+        if (billId != null) {
+            jpql.append("AND bill.id = :billId ");
+        }
+        if (fromDate != null) {
+            jpql.append("AND sh.createdAt >= :fromDate ");
+        }
+        if (toDate != null) {
+            jpql.append("AND sh.createdAt <= :toDate ");
+        }
+        if (historyType != null) {
+            jpql.append("AND sh.historyType = :historyType ");
+        }
+
+        jpql.append("ORDER BY sh.id DESC");
+
+        javax.persistence.TypedQuery<StockHistoryDTO> query = getEntityManager().createQuery(jpql.toString(), StockHistoryDTO.class);
+
+        if (itemId != null) {
+            query.setParameter("itemId", itemId);
+        }
+        if (departmentId != null) {
+            query.setParameter("departmentId", departmentId);
+        }
+        if (billId != null) {
+            query.setParameter("billId", billId);
+        }
+        if (fromDate != null) {
+            query.setParameter("fromDate", fromDate, TemporalType.TIMESTAMP);
+        }
+        if (toDate != null) {
+            query.setParameter("toDate", toDate, TemporalType.TIMESTAMP);
+        }
+        if (historyType != null) {
+            query.setParameter("historyType", historyType);
+        }
+
+        query.setMaxResults(maxResults);
+        return query.getResultList();
     }
 
 }
