@@ -146,6 +146,8 @@ public class TransferIssueDirectController implements Serializable {
             return; // Don't add the item if validation fails
         }
 
+        billItem.setItem(getTmpStock().getItemBatch().getItem());
+
         if (billItem.getBillItemFinanceDetails().getUnitsPerPack() == null || billItem.getBillItemFinanceDetails().getUnitsPerPack() == BigDecimal.ZERO) {
             if (billItem.getItem() instanceof Ampp) {
                 billItem.getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(billItem.getItem().getDblValue()));
@@ -171,7 +173,6 @@ public class TransferIssueDirectController implements Serializable {
         billItem.getPharmaceuticalBillItem().setRetailValue(billItem.getPharmaceuticalBillItem().getRetailRate() * billItem.getPharmaceuticalBillItem().getQty());
         billItem.getPharmaceuticalBillItem().setPurchaseValue(billItem.getPharmaceuticalBillItem().getPurchaseRate() * billItem.getPharmaceuticalBillItem().getQty());
 
-        billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
 
         billItem.setSearialNo(getBillItems().size());
