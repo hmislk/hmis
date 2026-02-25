@@ -1007,8 +1007,9 @@ public class QuickBookReportController implements Serializable {
                 }
             }
 
-            // Fallback: If no individual expense items found, use bill expense totals (only NOT considered for costing)
-            if (b.getBillExpenses().isEmpty() && b.getExpensesTotalNotConsideredForCosting() != 0) {
+            // Fallback: If no non-costing expenses were accumulated (getBillExpenses() empty or all items
+            // are costing), use the bill-level aggregate for non-costing expenses.
+            if (expensesNotConsideredTotal == 0 && b.getExpensesTotalNotConsideredForCosting() != 0) {
                 double expenseSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
                 qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 expensesNotConsideredTotal += b.getExpensesTotalNotConsideredForCosting();
@@ -1134,8 +1135,9 @@ public class QuickBookReportController implements Serializable {
                 }
             }
 
-            // Fallback: If no individual expense items found, use bill expense totals (only NOT considered for costing)
-            if (b.getBillExpenses().isEmpty() && b.getExpensesTotalNotConsideredForCosting() != 0) {
+            // Fallback: If no non-costing expenses were accumulated (getBillExpenses() empty or all items
+            // are costing), use the bill-level aggregate for non-costing expenses.
+            if (expensesNotConsideredTotal == 0 && b.getExpensesTotalNotConsideredForCosting() != 0) {
                 double expenseSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
                 qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
                 expensesNotConsideredTotal += b.getExpensesTotalNotConsideredForCosting();

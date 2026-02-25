@@ -74,6 +74,7 @@
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Flag" action="#{investigationItemController.addNewFlag() }"/>
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Image" action="#{investigationItemController.addNewImage() }"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Html" action="#{investigationItemController.addNewHtml() }"/>
                                         </div>
 
                                     </p:panel>
@@ -381,28 +382,39 @@
                                                 <div class="row">
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Left" class="mt-2"/>
-                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtLeft" value="#{investigationItemController.current.riLeft}"/>
-
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtLeft" value="#{investigationItemController.current.riLeft}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Top" class="mt-2"/>
-                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtTop" value="#{investigationItemController.current.riTop}"/>
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtTop" value="#{investigationItemController.current.riTop}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Width" class="mt-2"/>
-                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtWidth" value="#{investigationItemController.current.riWidth}" />
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtWidth" value="#{investigationItemController.current.riWidth}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Height" class="mt-2"/>
-                                                        <p:inputText  style="width: 60px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
+                                                        <p:inputText style="width: 60px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Height PX" class="mt-2" />
-                                                        <p:inputText style="width: 60px;"  autocomplete="off" id="txtHtPx" value="#{investigationItemController.current.htPix}"/>
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtHtPx" value="#{investigationItemController.current.htPix}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Width Px" class="mt-2"/>
-                                                        <p:inputText  style="width: 60px;" autocomplete="off" id="txtWtPx" value="#{investigationItemController.current.wtPix}"/>
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtWtPx" value="#{investigationItemController.current.wtPix}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                 </div>
 
@@ -417,6 +429,7 @@
                                                             <f:selectItem itemLabel="Center" itemValue="Center"/>
                                                             <f:selectItem itemLabel="Justify" itemValue="Justify"/>
                                                             <f:selectItem itemLabel="Inherit" itemValue="Inherit"/>
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                                         </p:selectOneMenu>
                                                     </div>
 
@@ -426,6 +439,7 @@
                                                     <div class="col-3">
                                                         <p:selectOneMenu class="w-100" id="cmbTxtVerticalAlign" value="#{investigationItemController.current.cssVerticalAlign}"  >
                                                             <f:selectItems value="#{enumController.cssVerticalAlign}" ></f:selectItems>
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                                         </p:selectOneMenu>
                                                     </div>
                                                 </div>
@@ -437,11 +451,15 @@
                                                 <div class="row">
                                                     <div class="col-8 d-flex gap-1 justify-content-between">
                                                         <h:outputText value="Font Family" class="w-50 mt-2"/>
-                                                        <p:inputText class="w-100" autocomplete="off" id="txtFontFamily" value="#{investigationItemController.current.cssFontFamily}"/>
+                                                        <p:inputText class="w-100" autocomplete="off" id="txtFontFamily" value="#{investigationItemController.current.cssFontFamily}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-2 d-flex gap-1 justify-content-between">
                                                         <h:outputText value="Size" class="mt-2" />
-                                                        <p:inputText style="width: 70px;" autocomplete="off" id="txtFontSize" value="#{investigationItemController.current.riFontSize}"/>
+                                                        <p:inputText style="width: 70px;" autocomplete="off" id="txtFontSize" value="#{investigationItemController.current.riFontSize}">
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                        </p:inputText>
                                                     </div>
                                                 </div>
 
@@ -451,7 +469,8 @@
                                                         <p:selectOneMenu  id="cmbPos" value="#{investigationItemController.current.cssFontStyle}" >
                                                             <f:selectItem itemLabel="Normal" itemValue="Normal"/>
                                                             <f:selectItem itemLabel="Italic" itemValue="Italic"/>
-                                                            <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
+                                                            <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                                         </p:selectOneMenu>
                                                     </div>
                                                     <div class="col-6 d-flex gap-1 justify-content-between">
@@ -471,6 +490,7 @@
                                                             <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
                                                             <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
                                                             <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                                         </p:selectOneMenu>
                                                     </div>
                                                 </div>
@@ -482,6 +502,7 @@
                                                             <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
                                                             <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
                                                             <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                                         </p:selectOneMenu>
                                                     </div>
                                                 </div>
@@ -492,26 +513,38 @@
                                                 <p:panelGrid layout="tabular" columns="2" class="w-100">
                                                     <h:outputText value="Custom CSS to Override All Others" class="mt-2 w-100"/>
                                                     <p:inputTextarea class="w-100" rows="5"
-                                                                     value="#{investigationItemController.current.customCss}"/>
-
+                                                                     value="#{investigationItemController.current.customCss}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputTextarea>
 
                                                     <h:outputText value="Background Color" class="mt-2 w-100"/>
-                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBackColor" value="#{investigationItemController.current.cssBackColor}"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBackColor" value="#{investigationItemController.current.cssBackColor}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputText>
 
                                                     <h:outputText value="Color" class="mt-2 w-100"/>
-                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssColor" value="#{investigationItemController.current.cssColor}"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssColor" value="#{investigationItemController.current.cssColor}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputText>
 
                                                     <h:outputText value="Border Radius" class="mt-2 w-100"/>
-                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBorderRadius" value="#{investigationItemController.current.cssBorderRadius}"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBorderRadius" value="#{investigationItemController.current.cssBorderRadius}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputText>
 
                                                     <h:outputText value="Margin" class="mt-2 w-100"/>
-                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssMargin" value="#{investigationItemController.current.cssMargin}"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssMargin" value="#{investigationItemController.current.cssMargin}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputText>
 
                                                     <h:outputText value="Padding" class="mt-2 w-100"/>
-                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssPadding" value="#{investigationItemController.current.cssPadding}"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssPadding" value="#{investigationItemController.current.cssPadding}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputText>
                                                     <h:outputText value="Border" class="mt-2 w-100"/>
-                                                    <p:inputText class="w-100" autocomplete="off"  value="#{investigationItemController.current.cssBorder}"/>
-
+                                                    <p:inputText class="w-100" autocomplete="off"  value="#{investigationItemController.current.cssBorder}">
+                                                        <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
+                                                    </p:inputText>
 
                                                 </p:panelGrid>
 
@@ -727,16 +760,25 @@
                                             </ui:repeat>
 
 
-                                            <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'HtmlTemplate'}" var="myIiTmp" >
-                                                <h:panelGroup id="myIiTmp" rendered="#{myIiTmp.retired ne true and  myIiTmp.ixItemType eq 'Html'}">
-                                                    <div style="#{myIiTmp.cssStyle};background-color: yellowgreen; border: 1px solid green; " >
-                                                        <h:outputLabel 
-                                                            value="#{myIiTmp.htmltext}" 
-                                                            escape="false" >
-                                                        </h:outputLabel> 
+                                            <!-- HtmlTemplate preview: render from 'current' so live positioning edits are immediately reflected -->
+                                            <h:panelGroup rendered="#{investigationItemController.currentInvestigation.reportType eq 'HtmlTemplate'}">
+                                                <!-- Selected Html item: render from current (in-memory, reflects AJAX edits) -->
+                                                <h:panelGroup rendered="#{investigationItemController.current ne null and investigationItemController.current.ixItemType eq 'Html' and investigationItemController.current.retired ne true}">
+                                                    <div style="#{investigationItemController.current.cssStyle}; position: absolute; background-color: yellowgreen; border: 1px solid green;">
+                                                        <h:outputText value="#{investigationItemController.current.htmltext}" escape="false" />
                                                     </div>
                                                 </h:panelGroup>
-                                            </ui:repeat>
+                                                <!-- Fallback: no Html item selected yet, render from items list -->
+                                                <h:panelGroup rendered="#{investigationItemController.current eq null or investigationItemController.current.ixItemType ne 'Html' or investigationItemController.current.retired eq true}">
+                                                    <ui:repeat value="#{investigationItemController.items}" var="myIiTmp">
+                                                        <h:panelGroup rendered="#{myIiTmp.retired ne true and myIiTmp.ixItemType eq 'Html'}">
+                                                            <div style="#{myIiTmp.cssStyle}; position: absolute; background-color: yellowgreen; border: 1px solid green;">
+                                                                <h:outputText value="#{myIiTmp.htmltext}" escape="false" />
+                                                            </div>
+                                                        </h:panelGroup>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
 
                                         </div>
                                     </h:panelGroup>
