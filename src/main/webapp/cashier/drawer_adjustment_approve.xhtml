@@ -42,6 +42,7 @@
                                         id="commentsInput"
                                         value="#{requestController.comment}"
                                         placeholder="Approval / Rejection Comment"
+                                        title="Enter a comment for the approval or rejection decision"
                                         disabled="#{!(requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW')}"
                                         style="float: right; width: 400px;">
                                     </p:inputText>
@@ -50,6 +51,7 @@
                                         ajax="false"
                                         value="Approve"
                                         icon="fa fa-check"
+                                        title="Approve this drawer adjustment request"
                                         rendered="#{requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW'}"
                                         class="ui-button-success"
                                         action="#{requestController.approveDrawerAdjustmentRequest()}">
@@ -59,6 +61,7 @@
                                         ajax="false"
                                         value="Reject"
                                         icon="fa fa-times"
+                                        title="Reject this drawer adjustment request"
                                         rendered="#{requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW'}"
                                         class="ui-button-danger"
                                         action="#{requestController.rejectRequest()}">
