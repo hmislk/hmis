@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -73,6 +73,7 @@
 
                             @media print {
                                 @page {
+                                    size: A4 landscape;
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
@@ -87,7 +88,6 @@
                                 .paper{
                                     position: static !important;
                                     width: 297mm!important;
-                                    size: A4 landscape!important;
 
                                 }
 
@@ -163,7 +163,7 @@
                                         </div>
 
                                         <div class="d-flex gap-2">
-                                            <h:outputText value="Diccount Scheme" style="font-weight:600;"/>
+                                            <h:outputText value="Discount Scheme" style="font-weight:600;"/>
                                             <h:outputText 
                                                 value="#{empty pharmacySummaryReportController.paymentScheme ? 'All discount schemes' :pharmacySummaryReportController.paymentScheme.name}"/>
                                         </div>
@@ -268,7 +268,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.discount}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{commonFunctionsProxy.reverseSign(row.discount)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -336,7 +336,7 @@
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{commonFunctionsProxy.reverseSign(pharmacySummaryReportController.bundle.summaryRow.discount)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>

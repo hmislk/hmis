@@ -181,7 +181,7 @@
                                         <thead>
                                             <tr>
                                                 <th style="width: 25mm;font-weight: 700;">
-                                                    <h:outputText value="Bill Tyoe + Group" style="margin-left: 1mm;"/>
+                                                    <h:outputText value="Bill Type + Group" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Net Total" style="margin-right: 1mm;"/>
@@ -268,7 +268,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.discount}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{commonFunctionsProxy.reverseSign(row.discount)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -336,7 +336,7 @@
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{commonFunctionsProxy.reverseSign(pharmacySummaryReportController.bundle.summaryRow.discount)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
@@ -349,12 +349,13 @@
                                                     <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
-                                                     <td style="width: 17mm; text-align: right;">
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.totalCostValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
-                                                </td>
+                                                
                                             </tr>
                                         </tfoot>
                                     </table>
