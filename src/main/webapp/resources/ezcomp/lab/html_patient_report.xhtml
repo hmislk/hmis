@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
-            <div id="divReport"  class="labReport" >
+            <div id="divReport"  class="labReport" style="height: 297mm;">
                 <ez:common_report
                     showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}"
                     commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
