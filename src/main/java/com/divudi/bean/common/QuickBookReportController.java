@@ -703,7 +703,7 @@ public class QuickBookReportController implements Serializable {
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
                 if (!bi.isConsideredForCosting()) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), "", b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                     grantTot += bi.getNetValue();
                     qbfs.add(qbf);
                 }
@@ -761,7 +761,7 @@ public class QuickBookReportController implements Serializable {
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
                 if (!bi.isConsideredForCosting()) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), "", b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                     grantTot += bi.getNetValue();
                     qbfs.add(qbf);
                 }
@@ -998,19 +998,17 @@ public class QuickBookReportController implements Serializable {
                     String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                     // Expenses are stored as positive, for returns we negate them
                     double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
-                    // Prepend expense item code to docNum
-                    String expenseItemCode = bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "";
-                    String docNumWithExpenseCode = expenseItemCode.isEmpty() ? b.getInvoiceNumber() : expenseItemCode + " " + b.getInvoiceNumber();
-                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, docNumWithExpenseCode, b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getDeptId() + "/" + supplierName, "", "", "", "", "");
                     expensesNotConsideredTotal += bi.getNetValue();
                     qbfs.add(qbf);
                 }
             }
 
-            // Fallback: If no individual expense items found, use bill expense totals (only NOT considered for costing)
-            if (b.getBillExpenses().isEmpty() && b.getExpensesTotalNotConsideredForCosting() != 0) {
+            // Fallback: If no non-costing expenses were accumulated (getBillExpenses() empty or all items
+            // are costing), use the bill-level aggregate for non-costing expenses.
+            if (expensesNotConsideredTotal == 0 && b.getExpensesTotalNotConsideredForCosting() != 0) {
                 double expenseSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
-                qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getDeptId() + "/" + supplierName, "", "", "", "", "");
                 expensesNotConsideredTotal += b.getExpensesTotalNotConsideredForCosting();
                 qbfs.add(qbf);
             }
@@ -1020,7 +1018,7 @@ public class QuickBookReportController implements Serializable {
 
             QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
                     "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
-                    b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+                    b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
 
             // Add inventory SPL as the last SPL (before ENDTRNS)
             qbfs.add(inventorySpl);
@@ -1126,18 +1124,17 @@ public class QuickBookReportController implements Serializable {
                 if (!bi.isConsideredForCosting()) {
                     String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                     double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
-                    String expenseItemCode = bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "";
-                    String docNumWithExpenseCode = expenseItemCode.isEmpty() ? b.getInvoiceNumber() : expenseItemCode + " " + b.getInvoiceNumber();
-                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, docNumWithExpenseCode, b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber() + "/" + supplierName, "", "", "", "", "");
                     expensesNotConsideredTotal += bi.getNetValue();
                     qbfs.add(qbf);
                 }
             }
 
-            // Fallback: If no individual expense items found, use bill expense totals (only NOT considered for costing)
-            if (b.getBillExpenses().isEmpty() && b.getExpensesTotalNotConsideredForCosting() != 0) {
+            // Fallback: If no non-costing expenses were accumulated (getBillExpenses() empty or all items
+            // are costing), use the bill-level aggregate for non-costing expenses.
+            if (expensesNotConsideredTotal == 0 && b.getExpensesTotalNotConsideredForCosting() != 0) {
                 double expenseSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
-                qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber() + "/" + supplierName, "", "", "", "", "");
                 expensesNotConsideredTotal += b.getExpensesTotalNotConsideredForCosting();
                 qbfs.add(qbf);
             }
@@ -1147,7 +1144,7 @@ public class QuickBookReportController implements Serializable {
 
             QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
                     "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
-                    b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+                    b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
             qbfs.add(inventorySpl);
 
             // TRNS = total bill value = netTotal + expenses NOT considered for costing
@@ -3353,9 +3350,6 @@ public class QuickBookReportController implements Serializable {
     }
 
     public Institution getInstitution() {
-        if (institution == null && getWebUserController().hasPrivilege("Developers")) {
-            institution = getSessionController().getInstitution();
-        }
         return institution;
     }
 
