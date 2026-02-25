@@ -88,11 +88,11 @@ public class StockHistoryApi {
                 try {
                     historyType = HistoryType.valueOf(historyTypeStr.trim());
                 } catch (IllegalArgumentException e) {
-                    return errorResponse("Invalid historyType: " + historyTypeStr, 400);
+                    return errorResponse("Invalid historyType value", 400);
                 }
             }
 
-            int maxResults = (limit != null && limit > 0) ? limit : 100;
+            int maxResults = (limit != null && limit > 0) ? Math.min(limit, 1000) : 100;
 
             List<StockHistoryDTO> results = stockHistoryFacade.findStockHistoryDtos(
                     itemId,
@@ -106,7 +106,9 @@ public class StockHistoryApi {
 
             return successResponse(results);
         } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            java.util.logging.Logger.getLogger(StockHistoryApi.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Stock history API error", e);
+            return errorResponse("An internal error occurred", 500);
         }
     }
 

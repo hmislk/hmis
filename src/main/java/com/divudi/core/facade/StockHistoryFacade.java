@@ -15,6 +15,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TemporalType;
+import java.util.Calendar;
 
 /**
  *
@@ -299,7 +300,7 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             jpql.append("AND sh.createdAt >= :fromDate ");
         }
         if (toDate != null) {
-            jpql.append("AND sh.createdAt <= :toDate ");
+            jpql.append("AND sh.createdAt < :toDate ");
         }
         if (historyType != null) {
             jpql.append("AND sh.historyType = :historyType ");
@@ -322,7 +323,10 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             query.setParameter("fromDate", fromDate, TemporalType.TIMESTAMP);
         }
         if (toDate != null) {
-            query.setParameter("toDate", toDate, TemporalType.TIMESTAMP);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(toDate);
+            cal.add(Calendar.SECOND, 1);
+            query.setParameter("toDate", cal.getTime(), TemporalType.TIMESTAMP);
         }
         if (historyType != null) {
             query.setParameter("historyType", historyType);

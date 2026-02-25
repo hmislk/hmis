@@ -7,12 +7,12 @@ The Stock History API provides transaction-level stock movement records captured
 All requests require API key authentication via the `Finance` header.
 
 **Header:**
-```
+```text
 Finance: <your-api-key>
 ```
 
 ## Base URL
-```
+```text
 /api/stock_history
 ```
 
@@ -89,6 +89,6 @@ curl -X GET \
 
 ## Notes
 - Results are ordered by latest records first (`id DESC`).
-- `limit` defaults to 100 if omitted or invalid (<= 0).
+- `limit` defaults to 100 if omitted or invalid (<= 0). Maximum allowed value is 1000.
 - Date parsing requires exact format: `yyyy-MM-dd HH:mm:ss`.
 - `historyType` must match an enum value in `HistoryType`.
