@@ -150,7 +150,7 @@
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="itemSelect" update="txtQty txtRate focusQty txtBillItemValue" listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"/>
+                                                <p:ajax event="itemSelect" update="txtQty focusQty rateValuePanel" listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"/>
                                             </p:autoComplete>
                                         </h:panelGrid>
                                     </div>
@@ -166,7 +166,7 @@
                                                 <p:ajax
                                                     process="txtQty"
                                                     event="keyup"
-                                                    update="txtBillItemValue"
+                                                    update="rateValuePanel"
                                                     listener="#{transferIssueDirectController.calculateCurrentBillItemValue}"/>
                                             </p:inputText>
                                         </h:panelGrid>
@@ -188,34 +188,36 @@
                                         </h:panelGrid>
                                     </div>
                                 </div>
-                                <h:panelGroup layout="block" styleClass="row mt-2"
-                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
-                                    <div class="col-6">
-                                        <h:panelGrid columns="1" class="w-100">
-                                            <p:outputLabel value="Transfer Rate"/>
-                                            <p:inputText
-                                                autocomplete="off"
-                                                id="txtRate"
-                                                value="#{transferIssueDirectController.transferRate}"
-                                                class="w-100 text-end"
-                                                readonly="true">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </p:inputText>
-                                        </h:panelGrid>
-                                    </div>
-                                    <div class="col-6">
-                                        <h:panelGrid columns="1" class="w-100">
-                                            <p:outputLabel value="Transfer Value"/>
-                                            <p:inputText
-                                                autocomplete="off"
-                                                id="txtBillItemValue"
-                                                value="#{transferIssueDirectController.billItemValue}"
-                                                class="w-100 text-end"
-                                                readonly="true">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </p:inputText>
-                                        </h:panelGrid>
-                                    </div>
+                                <h:panelGroup id="rateValuePanel" layout="block">
+                                    <h:panelGroup layout="block" styleClass="row mt-2"
+                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                        <div class="col-6">
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel value="Transfer Rate"/>
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    id="txtRate"
+                                                    value="#{transferIssueDirectController.transferRate}"
+                                                    class="w-100 text-end"
+                                                    readonly="true">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:inputText>
+                                            </h:panelGrid>
+                                        </div>
+                                        <div class="col-6">
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel value="Transfer Value"/>
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    id="txtBillItemValue"
+                                                    value="#{transferIssueDirectController.billItemValue}"
+                                                    class="w-100 text-end"
+                                                    readonly="true">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </p:inputText>
+                                            </h:panelGrid>
+                                        </div>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </p:panel>
                             <p:panel >
