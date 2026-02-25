@@ -443,6 +443,11 @@ public class RequestController implements Serializable {
             return;
         }
 
+        if (currentRequest.getRequestType() != RequestType.DRAWER_ADJUSTMENT) {
+            JsfUtil.addErrorMessage("Invalid request type for drawer adjustment approval.");
+            return;
+        }
+
         if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
             JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
             return;
