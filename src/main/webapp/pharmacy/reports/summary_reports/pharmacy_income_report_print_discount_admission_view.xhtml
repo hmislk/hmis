@@ -73,12 +73,12 @@
 
                             @media print {
                                 @page {
-                                    size: A4 landscape;
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
                                         font-size: 10pt;
                                     }
+                                    size: A4 landscape;
                                 }
 
                                 body {
@@ -278,7 +278,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{row.actualTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -346,7 +346,7 @@
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
