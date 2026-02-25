@@ -19,17 +19,16 @@
             <div style="width: 210mm;">
                 <div class="">
                     <div class="col-12 text-center">
-                        <h3><h:outputLabel value="#{cc.attrs.admission.institution.name}" /></h3>
-                        <h5 style="margin-top: -10px;"><h:outputLabel value="#{cc.attrs.admission.institution.address}" /></h5>
+                        <h3><h:outputLabel value="#{sessionController.institution.name}" /></h3>
+                        <h5 style="margin-top: -10px;"><h:outputLabel value="#{sessionController.institution.address}" /></h5>
                         <div class="d-flex justify-content-center">
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.phone}</h6>
-                            <p:spacer width="10px"/>
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.email}</h6>
+                            <h:outputText value="#{sessionController.institution.phone}" />
+                            <br/>
+                            <h:outputText value="#{sessionController.institution.email}" />
                         </div>
-                        <div class="d-flex text-center">
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.fax}</h6>
-                            <p:spacer width="10px"/>
-                            <h6 style="margin-top: -10px;">#{cc.attrs.admission.institution.web}</h6>
+                        <div class="d-flex  justify-content-center">
+                            <h:outputText value="#{sessionController.institution.fax}" /> <br/>
+                            <h:outputText value="#{sessionController.institution.web}" />
                         </div>
 
                     </div>

@@ -134,6 +134,11 @@ public class TransferIssueDirectController implements Serializable {
             return;
         }
 
+        if (isBatchAlreadyAdded(getTmpStock())) {
+            JsfUtil.addErrorMessage("Already added this item batch");
+            return;
+        }
+
         // Validate item department type for direct issue
         if (!validateItemForDirectIssue(getTmpStock().getItemBatch().getItem())) {
             return; // Don't add the item if validation fails
@@ -184,6 +189,15 @@ public class TransferIssueDirectController implements Serializable {
         qty = null;
         stockDto = null;
         tmpStock = null;
+    }
+
+    private boolean isBatchAlreadyAdded(Stock stock) {
+        for (BillItem bItem : getBillItems()) {
+            if (bItem.getPharmaceuticalBillItem().getStock().equals(stock)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
