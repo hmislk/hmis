@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('DrawerAdjustmentDirect')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('DrawerAdjustmentDirect')}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <i class="pi pi-wallet"></i>
+                                        <h:outputLabel value=" Direct Drawer Balance Adjustment" class="mx-2"/>
+                                    </div>
+                                    <div>
+                                        <p:commandButton
+                                            value="Back"
+                                            icon="fa fa-arrow-left"
+                                            ajax="false"
+                                            class="ui-button-warning"
+                                            action="/cashier/index?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <div class="row mt-3">
+                                <div class="col-md-6 offset-md-3">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Adjustment Details"/>
+                                        </f:facet>
+
+                                        <p:panelGrid columns="2" style="width: 100%;" styleClass="ui-panelgrid-blank">
+                                            <h:outputLabel value="Target User *" />
+                                            <p:autoComplete
+                                                id="targetUser"
+                                                value="#{drawerAdjustmentController.targetDrawerUser}"
+                                                completeMethod="#{webUserController.completeUser}"
+                                                var="u"
+                                                itemLabel="#{u.webUserPerson.name}"
+                                                itemValue="#{u}"
+                                                forceSelection="true"
+                                                required="true"
+                                                requiredMessage="Please select a user."
+                                                class="w-100"
+                                                placeholder="Start typing username...">
+                                            </p:autoComplete>
+
+                                            <h:outputLabel value="Payment Method *" />
+                                            <p:selectOneMenu
+                                                value="#{drawerAdjustmentController.paymentMethod}"
+                                                required="true"
+                                                requiredMessage="Please select a payment method."
+                                                class="w-100">
+                                                <f:selectItem itemLabel="-- Select Payment Method --" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItem itemLabel="Cash" itemValue="Cash"/>
+                                                <f:selectItem itemLabel="Card" itemValue="Card"/>
+                                                <f:selectItem itemLabel="Cheque" itemValue="Cheque"/>
+                                                <f:selectItem itemLabel="Slip" itemValue="Slip"/>
+                                                <f:selectItem itemLabel="E-Wallet" itemValue="ewallet"/>
+                                                <f:selectItem itemLabel="Credit" itemValue="Credit"/>
+                                                <f:selectItem itemLabel="Staff" itemValue="Staff"/>
+                                                <f:selectItem itemLabel="Voucher" itemValue="Voucher"/>
+                                                <f:selectItem itemLabel="IOU" itemValue="IOU"/>
+                                            </p:selectOneMenu>
+
+                                            <h:outputLabel value="Adjustment Amount *" />
+                                            <p:inputText
+                                                id="adjustmentDelta"
+                                                value="#{drawerAdjustmentController.adjustmentDelta}"
+                                                required="true"
+                                                requiredMessage="Please enter an adjustment amount."
+                                                placeholder="Positive to add, negative to deduct"
+                                                class="w-100">
+                                                <f:convertNumber/>
+                                            </p:inputText>
+
+                                            <h:outputLabel value="Reason *" />
+                                            <p:inputTextarea
+                                                id="reason"
+                                                value="#{drawerAdjustmentController.reason}"
+                                                required="true"
+                                                requiredMessage="Please provide a reason."
+                                                rows="3"
+                                                class="w-100"
+                                                placeholder="Reason for adjustment">
+                                            </p:inputTextarea>
+                                        </p:panelGrid>
+
+                                        <div class="d-flex justify-content-end gap-2 mt-3">
+                                            <p:commandButton
+                                                value="Apply Adjustment"
+                                                icon="fa fa-check"
+                                                ajax="false"
+                                                class="ui-button-danger"
+                                                action="#{drawerAdjustmentController.applyDirectAdjustment()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fa fa-times"
+                                                ajax="false"
+                                                class="ui-button-secondary"
+                                                action="/cashier/index?faces-redirect=true"
+                                                immediate="true">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
