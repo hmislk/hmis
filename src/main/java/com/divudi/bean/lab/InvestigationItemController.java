@@ -1749,10 +1749,11 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        // Collect names of existing non-retired items
+        // Collect names of existing non-retired Value items only
         List<String> existingNames = new ArrayList<>();
         for (ReportItem ri : currentInvestigation.getReportItems()) {
-            if (!ri.isRetired() && ri.getName() != null) {
+            if (!ri.isRetired() && ri.getName() != null
+                    && ri.getIxItemType() == InvestigationItemType.Value) {
                 existingNames.add(ri.getName());
             }
         }

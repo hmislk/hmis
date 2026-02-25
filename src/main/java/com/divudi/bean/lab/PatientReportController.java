@@ -1350,6 +1350,9 @@ public class PatientReportController implements Serializable {
 
         // Build a map of placeholder name -> current value from in-memory PRIVs
         Map<String, String> replacementMap = new HashMap<>();
+        if (currentPatientReport.getPatientReportItemValues() == null) {
+            return htmlTemplate;
+        }
         for (PatientReportItemValue prv : currentPatientReport.getPatientReportItemValues()) {
             if (prv == null || prv.getInvestigationItem() == null) {
                 continue;
