@@ -12,12 +12,12 @@ on:
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+    # Only run for trusted contributors to avoid failing on fork PRs (secrets unavailable for forks)
+    if: contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+    timeout-minutes: 20
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,4 +41,3 @@ jobs:
           prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
-
