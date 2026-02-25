@@ -58,8 +58,9 @@
                                                 placeholder="Start typing username...">
                                             </p:autoComplete>
 
-                                            <h:outputLabel value="Payment Method *" />
+                                            <h:outputLabel for="paymentMethod" value="Payment Method *" />
                                             <p:selectOneMenu
+                                                id="paymentMethod"
                                                 value="#{drawerAdjustmentController.paymentMethod}"
                                                 required="true"
                                                 requiredMessage="Please select a payment method."
@@ -76,7 +77,7 @@
                                                 <f:selectItem itemLabel="IOU" itemValue="IOU"/>
                                             </p:selectOneMenu>
 
-                                            <h:outputLabel value="Adjustment Amount *" />
+                                            <h:outputLabel for="adjustmentDelta" value="Adjustment Amount *" />
                                             <p:inputText
                                                 id="adjustmentDelta"
                                                 value="#{drawerAdjustmentController.adjustmentDelta}"
@@ -87,7 +88,7 @@
                                                 <f:convertNumber/>
                                             </p:inputText>
 
-                                            <h:outputLabel value="Reason *" />
+                                            <h:outputLabel for="reason" value="Reason *" />
                                             <p:inputTextarea
                                                 id="reason"
                                                 value="#{drawerAdjustmentController.reason}"
@@ -105,6 +106,7 @@
                                                 icon="fa fa-check"
                                                 ajax="false"
                                                 class="ui-button-danger"
+                                                title="Apply the drawer balance adjustment directly"
                                                 action="#{drawerAdjustmentController.applyDirectAdjustment()}">
                                             </p:commandButton>
 
@@ -113,6 +115,7 @@
                                                 icon="fa fa-times"
                                                 ajax="false"
                                                 class="ui-button-secondary"
+                                                title="Cancel and return to cashier index"
                                                 action="/cashier/index?faces-redirect=true"
                                                 immediate="true">
                                             </p:commandButton>

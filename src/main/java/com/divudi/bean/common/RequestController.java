@@ -175,6 +175,11 @@ public class RequestController implements Serializable {
 
         // Handle DRAWER_ADJUSTMENT requests by bill type
         if (currentRequest.getBill().getBillType() == BillType.DrawerAdjustment) {
+            if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+                return "";
+            }
+            bills = new ArrayList<>();
             if (currentRequest.getStatus() == RequestStatus.PENDING) {
                 currentRequest.setReviewedBy(sessionController.getLoggedUser());
                 currentRequest.setReviewedAt(new Date());
@@ -448,6 +453,16 @@ public class RequestController implements Serializable {
             return;
         }
 
+        if (currentRequest.getStatus() == RequestStatus.COMPLETED) {
+            JsfUtil.addErrorMessage("This request is already completed.");
+            return;
+        }
+        if (currentRequest.getStatus() != RequestStatus.PENDING
+                && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
         WebUser targetUser = currentRequest.getTargetWebUser();
         if (targetUser == null) {
             JsfUtil.addErrorMessage("Target user not found on request.");
@@ -515,8 +530,13 @@ public class RequestController implements Serializable {
             return;
         }
 
-        if (!webUserController.hasPrivilege("BillCancelRequestApproval")
-                && !webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+        boolean canReject;
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            canReject = webUserController.hasPrivilege("DrawerAdjustmentRequestApproval");
+        } else {
+            canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
+        }
+        if (!canReject) {
             JsfUtil.addErrorMessage("You have not authorize to Cancel this.");
             return;
         }

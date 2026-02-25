@@ -37,8 +37,9 @@
                                     </f:facet>
 
                                     <p:panelGrid columns="2" style="width: 100%;" styleClass="ui-panelgrid-blank">
-                                        <h:outputLabel value="Payment Method *" />
+                                        <h:outputLabel for="paymentMethod" value="Payment Method *" />
                                         <p:selectOneMenu
+                                            id="paymentMethod"
                                             value="#{drawerAdjustmentController.paymentMethod}"
                                             required="true"
                                             requiredMessage="Please select a payment method."
@@ -55,7 +56,7 @@
                                             <f:selectItem itemLabel="IOU" itemValue="IOU"/>
                                         </p:selectOneMenu>
 
-                                        <h:outputLabel value="Adjustment Amount *" />
+                                        <h:outputLabel for="adjustmentDelta" value="Adjustment Amount *" />
                                         <p:inputText
                                             id="adjustmentDelta"
                                             value="#{drawerAdjustmentController.adjustmentDelta}"
@@ -66,7 +67,7 @@
                                             <f:convertNumber/>
                                         </p:inputText>
 
-                                        <h:outputLabel value="Reason *" />
+                                        <h:outputLabel for="reason" value="Reason *" />
                                         <p:inputTextarea
                                             id="reason"
                                             value="#{drawerAdjustmentController.reason}"
@@ -84,6 +85,7 @@
                                             icon="fa fa-paper-plane"
                                             ajax="false"
                                             class="ui-button-success"
+                                            title="Submit drawer adjustment request for approval"
                                             action="#{drawerAdjustmentController.submitAdjustmentRequest()}">
                                         </p:commandButton>
 
@@ -92,6 +94,7 @@
                                             icon="fa fa-times"
                                             ajax="false"
                                             class="ui-button-danger"
+                                            title="Cancel and return to cashier index"
                                             action="/cashier/index?faces-redirect=true"
                                             immediate="true">
                                         </p:commandButton>

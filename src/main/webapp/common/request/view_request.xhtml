@@ -189,7 +189,7 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
-                                                rendered="#{webUserController.hasPrivilege('BillCancelRequestApproval') or webUserController.hasPrivilege('DrawerAdjustmentRequestApproval')}"
+                                                rendered="#{(r.requestType eq 'BILL_CANCELLATION' and webUserController.hasPrivilege('BillCancelRequestApproval')) or (r.requestType eq 'DRAWER_ADJUSTMENT' and webUserController.hasPrivilege('DrawerAdjustmentRequestApproval'))}"
                                                 disabled="#{r.status eq 'CANCELLED'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >

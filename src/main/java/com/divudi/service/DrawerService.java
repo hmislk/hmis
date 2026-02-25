@@ -584,11 +584,11 @@ public class DrawerService {
      * @param user the user performing the adjustment
      */
     public void applyDrawerAdjustment(Drawer drawer, PaymentMethod paymentMethod, double delta, Bill bill, WebUser user) {
-        if (drawer == null || paymentMethod == null) {
+        if (drawer == null || paymentMethod == null || bill == null || user == null) {
             return;
         }
-        drawerEntryUpdate(bill, drawer, paymentMethod, user, delta);
         synchronized (drawer) {
+            drawerEntryUpdate(bill, drawer, paymentMethod, user, delta);
             switch (paymentMethod) {
                 case OnCall:
                     drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), delta));

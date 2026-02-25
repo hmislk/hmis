@@ -127,9 +127,13 @@ public class DrawerAdjustmentController implements Serializable {
             return "";
         }
 
-        Bill bill = createAndPersistAdjustmentBill(sessionController.getLoggedUser());
-
         Drawer drawer = drawerService.getUsersDrawer(targetDrawerUser);
+        if (drawer == null) {
+            JsfUtil.addErrorMessage("Drawer not found for the selected user.");
+            return "";
+        }
+
+        Bill bill = createAndPersistAdjustmentBill(sessionController.getLoggedUser());
         drawerService.applyDrawerAdjustment(drawer, paymentMethod, adjustmentDelta, bill, sessionController.getLoggedUser());
 
         JsfUtil.addSuccessMessage("Drawer adjusted successfully. Bill No: " + bill.getDeptId());
