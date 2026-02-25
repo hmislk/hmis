@@ -228,7 +228,13 @@
                                 icon="pi pi-print">
                             <p:printer target="tbl"/>
                         </p:commandButton>
-
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillToPdf()}" />
+          
                         <p:dataTable
                                 id="tbl"
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
@@ -702,6 +708,12 @@
                                 icon="pi pi-print">
                             <p:printer target="tblBillType"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeToPdf()}" />
 
                         <p:dataTable
                                 id="tblBillType"
@@ -990,6 +1002,12 @@
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByDiscountAndAdmission"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf()}" />
 
                         <p:dataTable
                                 id="tblGroupedByDiscountAndAdmission"
@@ -1275,6 +1293,12 @@
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByBillTypeAndDiscountAdmission"/>
                         </p:commandButton>
+                       <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf()}" />
 
                         <p:dataTable
                                 id="tblGroupedByBillTypeAndDiscountAdmission"
