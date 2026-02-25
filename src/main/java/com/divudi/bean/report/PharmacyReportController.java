@@ -3298,7 +3298,7 @@ public class PharmacyReportController implements Serializable {
             Cell dateCell = dateRow.createCell(0);
             dateCell.setCellValue(
                     "From Date : " + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy hh:mm a").format(fromDate) : "-")
-                    + "  To Date: " + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy hh:mm a").format(toDate) : "-")
+                    + "  |  To Date: " + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy hh:mm a").format(toDate) : "-")
             );
             dateCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
@@ -3484,7 +3484,7 @@ public class PharmacyReportController implements Serializable {
 
             Paragraph filterPara = new Paragraph(
                     "From Date : " + (fromDate != null ? sdf.format(fromDate) : "-")
-                    + "  To Date : " + (toDate != null ? sdf.format(toDate) : "-"),
+                    + "  |  To Date : " + (toDate != null ? sdf.format(toDate) : "-"),
                     filterFont);
             filterPara.setAlignment(Element.ALIGN_CENTER);
             document.add(filterPara);
