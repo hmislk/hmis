@@ -590,7 +590,7 @@
                                         useCORS: true,
                                         allowTaint: false
                                     },
-                                    jsPDF: {unit: 'mm', format: [210, 280], orientation: 'portrait'}
+                                    jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
                                 };
 
                                 html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
