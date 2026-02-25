@@ -266,9 +266,9 @@
                                                     <td style="min-width: 200px!important;">
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
-                                                    <td >
+                                                    <td class="w-100">
                                                         <p:inputText 
-                                                            class="mx-2" 
+                                                            class="mx-2 w-100" 
                                                             autocomplete="off" 
                                                             value="#{pvv.strValue}" 
                                                             disabled="#{patientReportController.currentPatientReport.approved}"
@@ -277,7 +277,7 @@
                                                         </p:inputText>
 
                                                         <p:selectOneMenu 
-                                                            class="mx-2" 
+                                                            class="mx-2 w-100" 
                                                             value="#{pvv.strValue}" 
                                                             disabled="#{patientReportController.currentPatientReport.approved}"
                                                             rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
@@ -288,7 +288,7 @@
                                                         </p:selectOneMenu>
 
                                                         <p:inputText 
-                                                            class="mx-2" 
+                                                            class="mx-2 w-100" 
                                                             id="txtValDbl" 
                                                             autocomplete="off" 
                                                             value="#{pvv.doubleValue}" 
@@ -300,7 +300,7 @@
                                                         </p:inputText>
 
                                                         <p:inputTextarea 
-                                                            class="mx-2" 
+                                                            class="mx-2 w-100" 
                                                             value="#{pvv.lobValue}" 
                                                             queryDelay="0" 
                                                             disabled="#{patientReportController.currentPatientReport.approved}"
