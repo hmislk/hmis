@@ -475,9 +475,7 @@ public class RequestController implements Serializable {
             return;
         }
 
-        if (currentRequest.getPaymentMethod() == null
-                || currentRequest.getBill() == null
-                || currentRequest.getBill().getNetTotal() == null) {
+        if (currentRequest.getPaymentMethod() == null || currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Request is missing required adjustment details (payment method or amount).");
             return;
         }
