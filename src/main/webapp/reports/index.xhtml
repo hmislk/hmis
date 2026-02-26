@@ -229,7 +229,7 @@
                             </p:tab>
                             <p:tab title="Financial Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return?faces-redirect=true"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="#{searchController.navigateToDailyReturn()}"/>
                                     <p:commandButton   class="w-100 ui-button-success"  ajax="false" value="Daily return – Fast" action="/reports/financialReports/daily_return_dto.xhtml?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Income Breakdown by Category"  action="/reports/financialReports/income_breakdown_by_category?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Bills by Category" action="/reports/financialReports/bills_by_item_category?faces-redirect=true"/>
@@ -432,9 +432,14 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="9. GRN" action="#{reportController.navigateToGrn()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Before Stock Taking" action="#{reportController.navigateToBeforeStockTaking()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="11. After Stock Taking" action="#{reportController.navigateToAfterStockTaking()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="12. Stock Leger" action="#{reportController.navigateToStockLedger()}" />
+                                    
+                                    <p:commandButton   class="w-100 ui-button-success"  ajax="false" value="12. Stock Ledger" action="#{reportController.navigateToStockLedgerDto()}" icon="fa fa-rocket" title="High-performance DTO-based Stock Ledger report" />
+                                    <p:commandButton   class="w-100 ui-button-secondary"  ajax="false" value="12. Stock Leger (Legacy)" action="#{reportController.navigateToStockLedger()}" />
+                                    
                                     <p:commandButton   class="w-100"  ajax="false" value="13. Expiry Item Report" action="#{reportController.navigateToExpiryItem()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="14. GRN Return Variance Report" action="#{reportController.navigateToGrnReturnVarianceReport()}" />
+                                    <!--<p:commandButton   class="w-100"  ajax="false" value="15. GRN Summary Report" action="#{reportController.navigateToGrnSummaryReport()}" />-->
+                                    <p:commandButton   class="w-100"  ajax="false" value="15. GRN Summary Report" action="/reports/inventoryReports/grn_summary_report"/>
                                 </div>
                             </p:tab>
 
@@ -470,10 +475,11 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="1. Room Occupancy" action="#{reportController.navigateToRoomOccupancyReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Surgery Survey" action="/reports/managementReports/surgery_survey"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Surgery Status" action="#{reportController.navigateToSugeryStatus()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="4. Surgery Cost Estimation" action="/reports/managementReports/surgery_cost_estimation"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="4. Surgery Cost Estimation" action="/reports/managementReports/surgery_cost_estimation?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Duration Service Report" action="/reports/managementReports/duration_service_report"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Pharmacy Department Wise Sale Report" />
                                     <p:commandButton   class="w-100"  ajax="false" value="7. Referring Doctor Wise Revenue" action="#{reportController.navigateToManagementAdmissionCountReport()}"/>
+                                    <p:commandButton   class="w-100 ui-button-success"  ajax="false" value="7a. Referring Doctor Wise Revenue (DTO - Fast)" action="#{reportController.navigateToReferringDoctorWiseRevenueDto()}" title="High-performance DTO-based report - Recommended"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="8. OT Room Wise Surgery Count" action="#{reportController.navigateToOtRoomWiseSergeryCount()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="9. Surgery Count(Surgery Wise)" action="#{reportController.navigateToSurgeryWiseCount()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Surgery Count(Doctor Wise)" action="#{reportController.navigateToSurgeryCountDoctorWise()}" />

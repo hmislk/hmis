@@ -172,11 +172,18 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println(">>> Sales total: " + (saleBundle != null && saleBundle.getSummaryRow() != null ? saleBundle.getSummaryRow().getNetTotal() : "null"));
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-        // STEP 5: Fetch Purchase Data
-        stepStartTime = System.currentTimeMillis();
-        System.out.println("\n🔄 STEP 5: Fetching PURCHASE data...");
+        // STEP 4B: Fetch Pre-Bill Stock Movements (informational section)
+        // Covers PRE_TO_SETTLE_AT_CASHIER and CANCELLED_PRE — stock that moved
+        // within the day but whose financial settlement may not yet be recorded.
+        PharmacyBundle preBillBundle = pharmacyService.fetchPharmacyF15StockMovementBundleDto(
+                startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPreBillStockMovementsBundle(preBillBundle);
 
-        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDto(
+        // STEP 5: Fetch Purchase Data (only completed bills)
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 5: Fetching PURCHASE data (completed=true only)...");
+
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDtoCompleted(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
 
         stepDuration = System.currentTimeMillis() - stepStartTime;

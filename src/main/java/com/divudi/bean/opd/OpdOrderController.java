@@ -77,6 +77,7 @@ import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -145,6 +146,8 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     private TokenFacade tokenFacade;
     @EJB
     BillService billService;
+    @EJB
+    PatientDepositService patientDepositService;
     @EJB
     PaymentService paymentService;
 
@@ -1944,8 +1947,8 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 getPatient().setRunningBalance(0.0 - netTotal);
             }
             getPatientFacade().edit(getPatient());
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getBatchBill(), pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(getBatchBill(), pd);
         }
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);
@@ -2656,7 +2659,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 //            } else {
 //                runningBalance = 0.0;
 //            }
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
             runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
@@ -3734,17 +3737,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        if (bf.getId() != null) {
-            BillFeePayment bfp = new BillFeePayment();
-            bfp.setBillFee(bf);
-            bfp.setAmount(amount);
-            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-            bfp.setCreater(getSessionController().getLoggedUser());
-            bfp.setCreatedAt(new Date());
-            bfp.setPayment(p);
-            billFeePaymentFacade.create(bfp);
-        }
+        // BillFeePayment is deprecated and no longer used
     }
 
     public double calBillPaidValue(Bill b) {

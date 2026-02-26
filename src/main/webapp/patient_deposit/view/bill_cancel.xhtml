@@ -7,263 +7,244 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!patientController.printPreview}" styleClass="alignTop">
-                        <p:panel>
-                            <f:facet name="header">
-                                <h:outputText value="Cancellation" class="mt-5"/>
-                                <h:panelGrid columns="3" style="float: right" class="w-50">
-                                    <p:selectOneMenu 
-                                        id="commentsMenu" 
-                                        value="#{patientController.cancelBill.comments}" 
-                                        editable="true" 
-                                        filter="true" 
-                                        placeholder="Select or enter a comment"
-                                        filterMatchMode="contains"  
-                                        style="float: right; width: 100%" 
-                                        class="p-2">
-                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
-                                        <f:selectItems 
-                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
-                                            var="option" 
-                                            itemLabel="#{option}" 
-                                            itemValue="#{option}"/>
-                                    </p:selectOneMenu>
-
-                                    <p:commandButton 
-                                        ajax="false"
-                                        value="Cancel Bill" 
-                                        icon="fa fa-cancel"
-                                        style="float: right"
-                                        class="ui-button-danger" 
-                                        action="#{patientDepositController.settlePatientDepositCancel()}">
-                                        <f:setPropertyActionListener value="#{patientController.bill.patient}" target="#{patientDepositController.patient}" />
-                                    </p:commandButton>
-                                    <p:commandButton  
-                                        class="ui-button-secondary d-flex justify-content-end mx-2"
-                                        style="float: right"
+                    <p:panel rendered="#{!patientController.printPreview}"  >
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-ban mr-2"/>
+                                    <h:outputText value="Cancel Patient Deposit"/>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        class="ui-button-secondary"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
                                         immediate="true"
                                         action="/patient_deposit/patient_deposit_search?faces-redirect=true"
-                                        ajax="false">
-                                    </p:commandButton>
-                                </h:panelGrid>
-                            </f:facet>
-
-                            <!-- Payment Mode Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
-                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <p:selectOneMenu 
-                                            id="cmbPs" 
-                                            value="#{patientController.cancelBill.paymentMethod}" >
-                                            <f:selectItem itemLabel="Select payment Method"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsForPatientDepositCancel}"/>
-                                            <p:ajax process="cmbPs" update="paymentDetails creditCard credit multiplePaymentMethods patientDeposit slip cheque eWallet"  event="itemSelect"></p:ajax>
-                                        </p:selectOneMenu>
-                                    </div>
-                                </div>
-                                
-
-                                <div class="row">
-                                    <h:panelGroup id="paymentDetails" layout="block" class="col-md-12" >
-
-<!--                                        <h:panelGroup id="cashC" rendered="#{patientController.cancelBill.paymentMethod eq 'Cash'}">
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p:inputText 
-                                                        placeholder="Amount"
-                                                        autocomplete="off" 
-                                                        value="" 
-                                                        onfocus="this.select()"
-                                                        class="m-1"
-                                                        id="txtVal">
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:inputText>
-                                                </div>   
-                                            </div>
-                                        </h:panelGroup>-->
-
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="creditCard" rendered="#{patientController.cancelBill.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="credit" rendered="#{patientController.cancelBill.paymentMethod eq 'Credit'}" >
-                                            <pa:credit paymentMethodData="#{patientController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="eWallet"  rendered="#{patientController.cancelBill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{patientController.paymentMethodData}" />
-                                        </h:panelGroup>
-
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="cheque"  rendered="#{patientController.cancelBill.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="slip"  rendered="#{patientController.cancelBill.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="patientDeposit"  rendered="#{patientController.cancelBill.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{patientController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup
-                                            class="row my-1 w-100"
-                                            layout="block" 
-                                            id="multiplePaymentMethods"  rendered="#{patientController.cancelBill.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                            <pa:multiple_payment_methods controller="#{patientController}" paymentMethods="#{enumController.paymentMethodsForPatientDepositCancel}" class="w-100"/>
-                                        </h:panelGroup>
-
-
-                                    </h:panelGroup>
-
-                                </div>
-
-                            </p:panel>
-
-                            <!-- Patient Details and Bill Details Panels -->
-                            <div class="row">
-                                <div class="col-6">
-                                    <p:panel>
-                                        <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
-                                        </f:facet>
-                                        <common:patient patient="#{patientController.bill.patient}" class="w-100"/>
-                                    </p:panel>
-                                </div>
-                                <div class="col-6">
-                                    <p:panel>
-                                        <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
-                                        </f:facet>
-                                        <p:panelGrid columns="2">
-                                            <h:outputLabel value="Collecting Centre Name:" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.collectingCentre.name}" ></h:outputLabel>
-                                            <h:outputLabel value="Collecting Centre Code:" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.collectingCentre.code}" ></h:outputLabel>
-                                            <h:outputLabel value="Route :" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.collectingCentre.route.name}" ></h:outputLabel>
-
-                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.deptId}" ></h:outputLabel>
-                                            <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.total}" ></h:outputLabel>
-                                            <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.discount}" ></h:outputLabel>
-                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{patientController.bill.netTotal}" ></h:outputLabel>
-                                        </p:panelGrid>
-                                    </p:panel>
+                                        ajax="false"/>
                                 </div>
                             </div>
-
-                            <!-- Bill Item Detail Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                    <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:dataTable rowIndexVar="rowIndex" value="#{patientController.billItems}" var="bip">
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip.item.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
-                                        <h:outputLabel value="#{bip.netValue}"/>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
-                        </p:panel>
-                    </h:panelGroup>
-
-                    <!-- Print Preview Panel -->
-                    <h:panelGroup rendered="#{patientController.printPreview}">
-                        <h:form >
-                            <p:panel>
-
-                                <f:facet name="header">
-                                    <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
-                                        <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
-                                            <p:printer target="billPanel"></p:printer>
-                                        </p:commandButton>
-                                        <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
-                                                         ajax="false" action="#{patientDepositController.navigateToAddNewPatientDeposit()}" >
-                                        </p:commandButton>
-                                        <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
-                                                         action="#{patientController.navigateToSearchPatients}"></p:commandButton>
-                                        <p:commandButton
-                                            value="Profile"
-                                            ajax="false"
-                                            icon="fa fa-user"
-                                            class="ui-button-warning  w-100"
-                                            action="#{patientController.navigateToOpdPatientProfile()}"
-                                            >
-                                            <f:setPropertyActionListener
-                                                value="#{patientController.bill.patient}"
-                                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                    </h:panelGrid>
-                                </f:facet>
+                        </f:facet>
 
 
+                        <div class="row" >
+                            <div class="col-3" >
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-user mr-2"/>
+                                        <h:outputLabel value="Patient Details"/>
+                                    </f:facet>
+                                    <common:patient patient="#{patientController.bill.patient}" class="w-100"/>
+                                </p:panel>
 
+                            </div>
+                            <div class="col-3" >
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice-dollar mr-2"/>
+                                        <h:outputLabel value="Bill Details"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="2" styleClass="w-100" columnClasses="label-column,value-column">
+                                        <h:outputLabel value="Bill No:" styleClass="font-weight-bold"/>
+                                        <h:outputLabel value="#{patientController.bill.deptId}"/>
 
+                                        <h:outputLabel value="Bill Date:" styleClass="font-weight-bold"/>
+                                        <h:outputLabel value="#{patientController.bill.billDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputLabel>
 
+                                        <h:outputLabel value="Total:" styleClass="font-weight-bold"/>
+                                        <h:outputLabel value="#{patientController.bill.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
 
-                                <div class="container-fluid my-2">
-                                    <div class="row justify-content-center align-items-center">
-                                        <div class="col-md-6">
-                                            <div class="align-items-center my-2" style="max-width: 80%" >
-                                                <div>
-                                                    <h:panelGroup id="billPanel" class="bill" layout="block">
-                                                        <prints:five_five_paper_custom_1_patient_deposit_cancel bill="#{patientController.bill}" />
-                                                    </h:panelGroup>
-                                                </div>
+                                        <h:outputLabel value="Discount:" styleClass="font-weight-bold"/>
+                                        <h:outputLabel value="#{patientController.bill.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="Net Total:" styleClass="font-weight-bold"/>
+                                        <h:outputLabel value="#{patientController.bill.netTotal}" styleClass="text-primary font-weight-bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </div>
+                            <div class="col-3" >
+                                <!-- Original Payment Details -->
+                                <p:panel styleClass="mb-3">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-money-bill mr-2"/>
+                                        <h:outputLabel value="Original Payment Method"/>
+                                    </f:facet>
+
+                                    <h:panelGroup id="originalPaymentDisplay">
+                                        <!-- Display payment method type badge -->
+                                        <div class="mb-3">
+                                            <h:outputLabel value="Payment Method: " styleClass="font-weight-bold"/>
+                                            <p:badge value="#{patientController.bill.paymentMethod.label}"
+                                                     severity="info"
+                                                     styleClass="ml-2"/>
+                                        </div>
+
+                                        <!-- Single Payment Method Display -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod ne 'MultiplePaymentMethods'}">
+
+                                            <!-- Cash View -->
+                                            <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Cash'}">
+                                                <pa:cash_view paymentMethodData="#{patientController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- Card View -->
+                                            <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Card'}">
+                                                <pa:creditCard_view paymentMethodData="#{patientController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- Cheque View -->
+                                            <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Cheque'}">
+                                                <pa:cheque_view paymentMethodData="#{patientController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- Slip View -->
+                                            <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Slip'}">
+                                                <pa:slip_view paymentMethodData="#{patientController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- E-wallet View -->
+                                            <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'ewallet'}">
+                                                <pa:ewallet_view paymentMethodData="#{patientController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <!-- Patient Deposit View -->
+                                            <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'PatientDeposit'}">
+                                                <pa:patient_deposit_view paymentMethodData="#{patientController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <!-- Multiple Payment Methods Display -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'MultiplePaymentMethods'}">
+                                            <pa:multiple_payment_methods_view controller="#{patientController}"/>
+                                        </h:panelGroup>
+
+                                        <div class="alert alert-warning mb-0">
+                                            <h:outputText styleClass="fas fa-exclamation-triangle mr-2"/>
+                                            <strong>Important:</strong> This will automatically reverse all payment method(s) used in the original deposit.
+                                            <div class="mt-2">
+                                                <small>
+                                                    If you need to return funds using different payment methods, use
+                                                    <h:commandLink
+                                                        value="Return Patient Deposits"
+                                                        action="/patient_deposit/pay?faces-redirect=true"
+                                                        actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                        styleClass="alert-link font-weight-bold"
+                                                        style="text-decoration: underline;"/>
+                                                    instead.
+                                                </small>
                                             </div>
+                                        </div>
+
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                            <div class="col-3" >
+                                <!-- Cancellation Action Panel - PRIMARY FOCUS -->
+                                <p:panelGrid 
+                                    columns="1" >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-ban mr-2 text-danger"/>
+                                        <h:outputText value="Cancel Patient Deposit" styleClass="text-danger font-weight-bold"/>
+                                    </f:facet>
+
+                                    <p:outputLabel for="commentsMenu" class="font-weight-bold">Cancellation Reason / Comments: </p:outputLabel>
+                                    <p:selectOneMenu
+                                        id="commentsMenu"
+                                        value="#{patientController.cancelBill.comments}"
+                                        editable="true"
+                                        filter="true"
+                                        placeholder="Select or enter a comment"
+                                        filterMatchMode="contains"
+                                        styleClass="w-100">
+                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems
+                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}"
+                                            var="option"
+                                            itemLabel="#{option}"
+                                            itemValue="#{option}"/>
+                                    </p:selectOneMenu>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Cancel This Deposit"
+                                        icon="fas fa-ban"
+                                        styleClass="ui-button-danger"
+                                        action="#{patientDepositController.settlePatientDepositCancel()}"
+                                        onclick="if (!confirm('Are you sure you want to cancel this patient deposit?\n\nThis will reverse all payments and cannot be undone.'))
+                                                    return false;">
+                                        <f:setPropertyActionListener value="#{patientController.bill.patient}" target="#{patientDepositController.patient}" />
+                                    </p:commandButton>
+
+                                </p:panelGrid>
+                            </div>
+
+                        </div>
+
+
+
+
+
+
+                    </p:panel>
+                    <!-- Print Preview Panel -->
+                    <p:panel rendered="#{patientController.printPreview}">
+                        <f:facet name="header">
+                            <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
+                                <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                                    <p:printer target="billPanel"></p:printer>
+                                </p:commandButton>
+                                <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
+                                                 ajax="false" action="#{patientDepositController.navigateToAddNewPatientDeposit()}" >
+                                </p:commandButton>
+                                <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
+                                                 action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                                <p:commandButton
+                                    value="Profile"
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning  w-100"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    >
+                                    <f:setPropertyActionListener
+                                        value="#{patientController.bill.patient}"
+                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </f:facet>
+
+
+
+
+
+
+                        <div class="container-fluid my-2">
+                            <div class="row justify-content-center align-items-center">
+                                <div class="col-md-6">
+                                    <div class="align-items-center my-2" style="max-width: 80%" >
+                                        <div>
+                                            <h:panelGroup id="billPanel" class="bill" layout="block">
+                                                <prints:five_five_paper_custom_1_patient_deposit_cancel bill="#{patientController.bill}" />
+                                            </h:panelGroup>
                                         </div>
                                     </div>
                                 </div>
-                            </p:panel>
-                        </h:form>
+                            </div>
+                        </div>
+                    </p:panel>
 
-                    </h:panelGroup>
                 </h:form>                
             </ui:define>
         </ui:composition>

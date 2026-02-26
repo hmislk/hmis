@@ -26,7 +26,7 @@
                                     <div>
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                             <p:commandButton 
-                                                value="Back to WorkBench" 
+                                                value="Nursing WorkBench" 
                                                 action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                                 ajax="false"
                                                 class="ui-button-operating-theatre"
@@ -133,7 +133,7 @@
                                     action="/inward/inward_bill_outside_charge?faces-redirect=true" >
                                 </p:commandButton>
 
-                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             ajax="false"
@@ -172,7 +172,7 @@
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton 
-                                        value="Back to WorkBench" 
+                                        value="Nursing WorkBench" 
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                         ajax="false"
                                         class="ui-button-operating-theatre"
@@ -317,7 +317,7 @@
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>
-                                                                <p:ajax process="itm" update="gpQtyLbl gpQtyTxt" />
+                                                                <p:ajax process="itm" update="gpQtyLbl gpQtyTxt slmPriority" />
                                                             </p:selectOneListbox>
 
                                                         </div>
@@ -341,13 +341,40 @@
                                                         </div>
                                                     </div>
 
-
                                                     <div class="row mt-2 mb-2 mx-1">
                                                         <div class="col-3">
                                                             <h:outputLabel value="Details"/>
                                                         </div>
-                                                        <div class="col-9">
+                                                        <div class="col-7">
                                                             <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" class="w-100" ></p:inputTextarea>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            
+                                                            <h:panelGrid columns="1" id="slmPriority">
+                                                                <h:outputLabel 
+                                                                    rendered="#{billBhtController.currentBillItem.item.allowedForBillingPriority}"
+                                                                    value="Priority"/>
+                                                                <p:selectOneMenu
+                                                                    class="w-100 mb-2 mt-2"
+                                                                    styleClass="form-control"
+                                                                    var="pt"
+                                                                    style="height: auto; width: 150px;"
+                                                                    value="#{billBhtController.currentBillItemPriority}"
+                                                                    rendered="#{billBhtController.currentBillItem.item.allowedForBillingPriority}">
+                                                                    <f:selectItems 
+                                                                        value="#{enumController.priorities}" 
+                                                                        var="pty" 
+                                                                        itemValue="#{pty}" 
+                                                                        itemLabel="#{pty.displayName}">
+                                                                    </f:selectItems>
+                                                                    <p:column style="padding: 5px; width: 33px;">
+                                                                        <span style="width: 30px; height: 30px; background-color: #{pt.priorityColor}; display: inline-block; border-radius: 3px;"/>
+                                                                    </p:column>
+                                                                    <p:column style="padding: 8px;">
+                                                                        <h:outputText value="#{pt.displayName}" style="font-weight: 700;"/>
+                                                                    </p:column>
+                                                                </p:selectOneMenu>
+                                                            </h:panelGrid>
                                                         </div>
                                                     </div>
 
@@ -406,9 +433,41 @@
                                                             <h:outputLabel value="#{bi.billItem.item.department.name}"/>
                                                         </p:column>
 
-                                                        <p:column width="12em">
+                                                        <p:column width="8em">
                                                             <f:facet name="header">Category</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.item.category.name}"/>
+                                                        </p:column>
+
+                                                        <p:column width="6em">
+                                                            <f:facet name="header">Priority</f:facet>
+                                                            <p:selectOneMenu  
+                                                                class="w-100"
+                                                                id="tblpriority"
+                                                                styleClass="form-control"
+                                                                var="pt"
+                                                                style="height: auto; background-color: #{bi.billItem.priority.priorityColor}; color:black;"
+                                                                value="#{bi.billItem.priority}"
+                                                                rendered="#{bi.billItem.item.allowedForBillingPriority}">
+                                                                <f:selectItems 
+                                                                    value="#{enumController.priorities}" 
+                                                                    var="pty" 
+                                                                    itemValue="#{pty}" 
+                                                                    itemLabel="#{pty.displayName}">
+                                                                </f:selectItems>
+                                                                <p:ajax process="tblpriority" update="tblpriority" />
+                                                                <p:column style="padding: 5px; width: 33px;">
+                                                                    <span style="width: 30px; height: 30px; background-color: #{pt.priorityColor}; display: inline-block; border-radius: 3px;"/>
+                                                                </p:column>
+                                                                <p:column style="padding: 8px;">
+                                                                    <h:outputText value="#{pt.displayName}" style="font-weight: 700;"/>
+                                                                </p:column>
+                                                            </p:selectOneMenu>
+                                                            <h:panelGroup rendered="#{not bi.billItem.item.allowedForBillingPriority}">
+                                                                <div class="card bg-secondary text-white">
+                                                                    <h:outputText value="Not Allow" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
+                                                                </div>
+                                                            </h:panelGroup>
+
                                                         </p:column>
 
                                                         <p:column width="8em" class="text-end">
@@ -432,12 +491,12 @@
                                                             </h:outputLabel>
                                                         </p:column>
 
-                                                        <p:column width="8em">
+                                                        <p:column width="3em">
                                                             <p:commandButton
                                                                 id="btnRemove"
-                                                                icon="fa fa-times"
-                                                                value="Remove"
+                                                                value="X"
                                                                 ajax="false"
+                                                                title="Remove"
                                                                 onclick="if (!confirm('Are you Sure you want to Remove this Item?'))
                                                                             return false;"
                                                                 class="ui-button-danger"

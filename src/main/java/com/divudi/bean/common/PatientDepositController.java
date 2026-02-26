@@ -26,6 +26,8 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PatientDepositHistory;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.data.dto.PatientDepositHistoryDto;
+import javax.persistence.TemporalType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientDepositFacade;
@@ -102,6 +104,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     private Boolean patientDetailsEditable = false;
     private List<PatientDepositHistory> latestPatientDeposits;
     private List<PatientDepositHistory> latestPatientDepositHistory;
+    private List<PatientDepositHistoryDto> latestPatientDepositsDto;
+    private List<PatientDepositHistoryDto> latestPatientDepositHistoryDto;
 
     private int patientDepositManagementIndex = 0;
 
@@ -122,8 +126,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
-        fillLatestPatientDeposits(current);
-        fillLatestPatientDepositHistory(current);
+        fillLatestPatientDepositsDto(current);
+        fillLatestPatientDepositHistoryDto(current);
         return "/patient_deposit/receive?faces-redirect=true";
     }
 
@@ -136,6 +140,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         paymentMethodData=null;
         latestPatientDepositHistory = new ArrayList<>();
         latestPatientDeposits = new ArrayList<>();
+        latestPatientDepositsDto = new ArrayList<>();
+        latestPatientDepositHistoryDto = new ArrayList<>();
         patientController.clearDataForPatientDeposite();
         paymentMethodData = new PaymentMethodData();
         billItem = new BillItem();
@@ -171,8 +177,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
-        fillLatestPatientDeposits(current);
-        fillLatestPatientDepositHistory(current);
+        fillLatestPatientDepositsDto(current);
+        fillLatestPatientDepositHistoryDto(current);
     }
 
     public void getPatientDepositOnPatientDepositAddingMulti() {
@@ -182,8 +188,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
-        fillLatestPatientDeposits(current);
-        fillLatestPatientDepositHistory(current);
+        fillLatestPatientDepositsDto(current);
+        fillLatestPatientDepositHistoryDto(current);
     }
 
     private boolean validatePaymentMethodDataForPatientDeposit() {
@@ -342,6 +348,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         billItemFacade.create(addingSingleBillItem);
         paymentService.createPayment(bill, getPaymentMethodData());
         patientDepositService.updateBalance(bill, current);
+        refreshLatestTransactions();
         printPreview = true;
     }
 
@@ -354,7 +361,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Entered Patient is Not Registered");
             return;
         }
-        current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
+        current = patientDepositService.getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
         if (patientController.getBill().getNetTotal() > current.getBalance()) {
             JsfUtil.addErrorMessage("Insufficient Balance");
             return;
@@ -363,18 +370,32 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         int code = patientController.settlePatientDepositReceiveCancelNew();
 
         if (code == 1) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
+            JsfUtil.addErrorMessage("No Patient");
             return;
         } else if (code == 2) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            JsfUtil.addErrorMessage("Error creating cancellation bill");
             return;
         }
 
-        updateBalance(patientController.getCancelBill(), current);
-        List<Payment> p = billBeanController.createPayment(patientController.getCancelBill(),
-                patientController.getCancelBill().getPaymentMethod(),
-                patientController.getPaymentMethodData());
-        drawerController.updateDrawerForOuts(p);        
+        // Ensure billedBill reference is set before creating payments
+        if (patientController.getCancelBill().getBilledBill() == null) {
+            patientController.getCancelBill().setBilledBill(patientController.getBill());
+        }
+
+        // Update patient deposit balance
+        patientDepositService.updateBalance(patientController.getCancelBill(), current);
+
+        // Automatically reverse original payments (ignores any user input)
+        List<Payment> reversedPayments = paymentService.createPaymentsForCancelling(patientController.getCancelBill());
+
+        // Validate that payments were created (handles legacy data without payment records)
+        if (reversedPayments == null || reversedPayments.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot cancel deposit: Original payment records not found. This may be legacy data. Please contact system administrator.");
+            return;
+        }
+
+        // Note: No need to call drawerController.updateDrawerForOuts()
+        // because createPaymentsForCancelling() already handles drawer updates via drawerService.updateDrawer()
     }
 
     public void settlePatientDepositReturn() {
@@ -393,9 +414,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("No Bill in patient controller. please start from beginning");
             return;
         }
-        
+
         patientController.setBillNetTotal();
-        
+
         if (validatePaymentMethodDataForPatientDepositReturn()) {
             return;
         }
@@ -425,7 +446,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
 
-        updateBalance(patientController.getBill(), current);
+        patientDepositService.updateBalance(patientController.getBill(), current);
         List<Payment> ps = billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
@@ -683,6 +704,67 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         latestPatientDepositHistory = patientDepositHistoryFacade.findByJpql(jpql, m, 10);
     }
 
+    public void fillLatestPatientDepositsDto(PatientDeposit pd) {
+        if (pd == null || pd.getId() == null) {
+            latestPatientDepositsDto = new ArrayList<>();
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.PatientDepositHistoryDto("
+                + "pdh.id, "
+                + "pdh.createdAt, "
+                + "pdh.transactionValue, "
+                + "pdh.historyType, "
+                + "CONCAT(pdh.bill.paymentMethod, ''), "
+                + "pdh.bill.billTypeAtomic, "
+                + "pdh.bill.deptId) "
+                + "FROM PatientDepositHistory pdh "
+                + "WHERE pdh.patientDeposit.id = :pd "
+                + "AND pdh.historyType = :ht "
+                + "AND pdh.retired = :ret "
+                + "ORDER BY pdh.id DESC";
+
+        m.put("pd", pd.getId());
+        m.put("ht", HistoryType.PatientDeposit);
+        m.put("ret", false);
+
+        latestPatientDepositsDto = (List<PatientDepositHistoryDto>) patientDepositHistoryFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP, 10);
+    }
+
+    public void fillLatestPatientDepositHistoryDto(PatientDeposit pd) {
+        if (pd == null || pd.getId() == null) {
+            latestPatientDepositHistoryDto = new ArrayList<>();
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.PatientDepositHistoryDto("
+                + "pdh.id, "
+                + "pdh.createdAt, "
+                + "pdh.transactionValue, "
+                + "pdh.historyType, "
+                + "CONCAT(pdh.bill.paymentMethod, ''), "
+                + "pdh.bill.billTypeAtomic, "
+                + "pdh.bill.deptId) "
+                + "FROM PatientDepositHistory pdh "
+                + "WHERE pdh.patientDeposit.id = :pd "
+                + "AND pdh.retired = :ret "
+                + "ORDER BY pdh.id DESC";
+
+        m.put("pd", pd.getId());
+        m.put("ret", false);
+
+        latestPatientDepositHistoryDto = (List<PatientDepositHistoryDto>) patientDepositHistoryFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP, 10);
+    }
+
+    public void refreshLatestTransactions() {
+        if (current != null) {
+            fillLatestPatientDepositsDto(current);
+            fillLatestPatientDepositHistoryDto(current);
+        }
+    }
+
     public PatientDepositFacade getPatientDepositFacade() {
         return patientDepositFacade;
     }
@@ -819,6 +901,22 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
     public void setLatestPatientDepositHistory(List<PatientDepositHistory> latestPatientDepositHistory) {
         this.latestPatientDepositHistory = latestPatientDepositHistory;
+    }
+
+    public List<PatientDepositHistoryDto> getLatestPatientDepositsDto() {
+        return latestPatientDepositsDto;
+    }
+
+    public void setLatestPatientDepositsDto(List<PatientDepositHistoryDto> latestPatientDepositsDto) {
+        this.latestPatientDepositsDto = latestPatientDepositsDto;
+    }
+
+    public List<PatientDepositHistoryDto> getLatestPatientDepositHistoryDto() {
+        return latestPatientDepositHistoryDto;
+    }
+
+    public void setLatestPatientDepositHistoryDto(List<PatientDepositHistoryDto> latestPatientDepositHistoryDto) {
+        this.latestPatientDepositHistoryDto = latestPatientDepositHistoryDto;
     }
 
     @Override

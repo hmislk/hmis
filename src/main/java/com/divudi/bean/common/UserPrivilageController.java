@@ -141,6 +141,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode addCreditLimit = new DefaultTreeNode(new PrivilegeHolder(Privileges.AddCreditLimitInRegistration, "Add Credit Limit During Patient Registration"), opdNode);
         TreeNode addNewRefferalDoctor = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewRefferalDoctor, "Add New Referral Doctor"), opdNode);
         TreeNode addNewCollectingCentre = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewCollectingCentre, "Add New Referral Center"), opdNode);
+        TreeNode opdEditPatientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdEditPatientDetails, "Edit Patient Details in OPD Billing"), opdNode);
 
         TreeNode cashierNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Cashier, "Cashier Menu"), opdNode);
         TreeNode acceptPaymentForCashierBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForPharmacyBills, "Accept payment for sale for cashier bills"), cashierNode);
@@ -597,6 +598,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyTheme, "Change User Theme"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangePreferece, "Change User Preferances"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeMyApiKeys, "Change API Keys"), userNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.AiChat, "AI Chat"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeReceiptPrintingPaperTypes, "Change Receipt Printing Paper Types"), userNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.MyFinanacialTransactionManager, "User Financial Transaction Manager"), userNode);
 
@@ -1155,6 +1157,36 @@ public class UserPrivilageController implements Serializable {
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
     }
+    
+    public List<WebUserPrivilege> loadUserPrivileges(WebUser wu, Department dept){
+        List<WebUserPrivilege> list = new ArrayList<>();
+        
+        if (wu == null) {
+            return list;
+        }
+        if (dept == null) {
+            return list;
+        }
+        String jpql = "SELECT i "
+                + " FROM WebUserPrivilege i "
+                + " where i.webUser=:wu "
+                + " and i.department=:dep";
+        Map m = new HashMap();
+        m.put("wu", wu);
+        m.put("dep", dept);
+        
+        list =  getEjbFacade().findByJpqlWithoutCache(jpql, m);
+        
+        return list;
+    }
+    
+    public void clearUserAllDepartmentPrivileges(WebUser wu, Department dept){
+        for(WebUserPrivilege wup : loadUserPrivileges(wu,dept)){
+            wup.setRetired(true);
+            getFacade().edit(wup);
+        }
+    }
+    
 
     public WebUserPrivilege addUserPrivilege(Privileges prv, WebUser wu, Department dept) {
         if (prv == null) {

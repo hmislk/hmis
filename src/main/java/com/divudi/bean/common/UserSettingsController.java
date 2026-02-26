@@ -780,6 +780,16 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("stock_ledger", settings);
     }
 
+    public boolean isStockLedgerDosageFormVisible() {
+        return isColumnVisible("stock_ledger", "dosageForm");
+    }
+
+    public void setStockLedgerDosageFormVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("dosageForm", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
     public boolean isStockLedgerItemCodeVisible() {
         return isColumnVisible("stock_ledger", "itemCode");
     }

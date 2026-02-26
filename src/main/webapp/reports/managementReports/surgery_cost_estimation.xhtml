@@ -17,7 +17,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
+                                <p:outputLabel value="Discharge from" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
                              <p:datePicker
@@ -36,7 +36,7 @@
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
-                                <p:outputLabel value="To" for="toDate" class="m-3"/>
+                                <p:outputLabel value="Discharge to" for="toDate" class="m-3"/>
                             </h:panelGroup>
                             
                              <p:datePicker
@@ -141,24 +141,24 @@
                             
                             <p:spacer width="20"/>
                             
-                             <!-- Surgury Status -->
+                             <!-- Surgery Status -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Surgury Status" for="staus" class="m-3"/>
+                                <p:outputLabel value="Surgery Status" for="staus" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="staus" styleClass="w-100 form-control" filter="true">
-                                <f:selectItem itemLabel="All Surgury Status"/>
+                                <f:selectItem itemLabel="All Surgery Status"/>
                             </p:selectOneMenu>
                             
                             <p:spacer width="20"/>
                             
-                            <!-- Surgury Type -->
+                            <!-- Surgery Type -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Surgury Type" for="st" class="m-3"/>
+                                <p:outputLabel value="Surgery Type" for="st" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="st" styleClass="w-100 form-control" filter="true">
-                                <f:selectItem itemLabel="All Surgury Type"/>
+                                <f:selectItem itemLabel="All Surgery Type"/>
                             </p:selectOneMenu>
                             
                             <p:spacer width="20"/>
@@ -174,13 +174,13 @@
                             
                             <p:spacer width="20"/>
                             
-                               <!-- Surgury Name -->
+                               <!-- Surgery Name -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Surgury Name" for="surg" class="m-3"/>
+                                <p:outputLabel value="Surgery Name" for="surg" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="surg" styleClass="w-100 form-control" filter="true">
-                                <f:selectItem itemLabel="All Surgury Names"/>
+                                <f:selectItem itemLabel="All Surgery Names"/>
                             </p:selectOneMenu>
                            
                            <p:spacer width="20"/>
@@ -191,6 +191,7 @@
                             </h:panelGroup>
                             <p:selectOneMenu id="summeryType" styleClass="w-100">
                                 <f:selectItem itemLabel="Select Report Type " itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Detail" itemValue="line"/>
                                 <f:selectItem itemLabel="Summary By Surgery Time" itemValue="bar"/>
                                 <f:selectItem itemLabel="Summary By Surgery" itemValue="line"/>
                                 <f:selectItem itemLabel="Summary By Surgon" itemValue="line"/>

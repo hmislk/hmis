@@ -115,26 +115,26 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient ne null}" >
                         <tr>
                             <td style="padding: 2px; font-size: 12px;font-weight: 700;">Patient Name </td>
                             <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
                             </td>
                         </tr>
                     </h:panelGroup>
 
                     <tr>
-                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString ne null}" >
                             <td  style="padding: 2px;">Age / Sex </td>
                             <td style="padding: 2px;">
-                                <h:outputText value="#{empty cc.attrs.bill.patient.person.ageAsShortString ? 'N/A' : cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                                <h:outputText value="#{empty cc.attrs.bill.patientEncounter.patient.person.ageAsShortString ? 'N/A' : cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex.label}"/>
                             </td>
                         </h:panelGroup>
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px;">Mobile</td>
                         <td style="padding: 2px;">
-                            <h:outputLabel value="#{not empty cc.attrs.bill.patient.person.phone ? cc.attrs.bill.patient.person.phone : 'N/A'}" />
+                            <h:outputLabel value="#{not empty cc.attrs.bill.patientEncounter.patient.person.phone ? cc.attrs.bill.patientEncounter.patient.person.phone : 'N/A'}" />
                         </td>
                     </tr>
 
@@ -188,7 +188,15 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>
+                                    <h:outputLabel value="#{item.item.name}"/>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority in InwardBill Preview.',false)}" >
+                                        <h:outputLabel 
+                                            value="(#{item.priority.displayName})" 
+                                            class="mx-1" 
+                                            rendered="#{!item.priority.shortName.blank and item.item.allowedForBillingPriority}"/>
+                                    </h:panelGroup>
+                                </td>
                                 <td style="text-align: right">
                                     <h:outputLabel value="#{item.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />

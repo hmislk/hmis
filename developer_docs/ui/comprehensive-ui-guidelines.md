@@ -1,10 +1,22 @@
 # HMIS UI Development Handbook
 
 ## Scope and Principles
-- Applies to all JSF/PrimeFaces pages in the HMIS ERP web tier.
-- Build with consistency, accessibility, and privilege validation in mind.
+- Applies to all JSF pages
+- Build with consistency, accessibility and privilege validation in mind.
 - Prefer simple, template-aligned solutions before adding custom code or CSS.
 - Keep behaviour aligned with centralized configuration (`configOptionApplicationController`) and feature toggles.
+
+## Critical Rules for Claude Code
+
+**🚨 These rules MUST be followed when working on UI tasks:**
+
+**UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
+**KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
+**FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
+**ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
+**PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
+**XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
+**XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
 
 ---
 
@@ -48,6 +60,33 @@
 
 ---
 
+## Panel Structure Best Practices
+
+### Panel Layout Patterns
+- **Action placement**: Use `f:facet name="header"` for panel-related actions instead of separate button rows
+- **Data display**: Use `p:panelGrid columns="2" layout="tabular"` for label-value pairs instead of Bootstrap grid divs
+- **Avoid over-nesting**: Place dataTable directly in panel content when it's the primary element; don't wrap in additional panels
+
+Example:
+```xhtml
+<p:panel header="Entity Information">
+    <f:facet name="header">
+        <p:commandButton value="Action" styleClass="ui-button-info"/>
+    </f:facet>
+
+    <p:panelGrid columns="2" layout="tabular">
+        <p:outputLabel value="Name:"/>
+        <h:outputText value="#{bean.name}"/>
+    </p:panelGrid>
+
+    <p:dataTable value="#{bean.items}" var="item">
+        <!-- Direct table content -->
+    </p:dataTable>
+</p:panel>
+```
+
+---
+
 ## Forms and Input Patterns
 - Align labels and inputs with `p:outputLabel` + PrimeFaces components; include `for` attributes for accessibility.
 - Reuse controller state; avoid duplicating filters or adding new global variables when not required.
@@ -84,20 +123,39 @@
 | Cancel / Close | `ui-button-danger ui-button-outlined` | `fas fa-times` | Always add confirmation. |
 
 Supporting rules:
-- Keep buttons in a flex container (`d-flex gap-2`) or vertical stack when space is limited.
-- Apply `min-width: 90px` to primary buttons; `70px` for secondary ones.
-- Gate every action with `rendered="#{webUserController.hasPrivilege('...')}"`.
-- Add global `<p:confirmDialog>` once per page and attach `<p:confirm>` to destructive buttons.
 - Use `p:growl` for feedback after actions.
 
 ---
 
 ## Data Presentation
-- Use `p:dataTable` with `styleClass="table-striped"` (or other theme classes) and keep a single action column.
 - Align numeric fields with `text-end`, status columns with `text-center`, and specify column widths in `em`.
 - Format numbers with `<f:convertNumber pattern="#,##0.00"/>` and dates with application preference patterns (`#{sessionController.applicationPreference.shortDateTimeFormat}` etc.).
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
 - Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) and neutral icons such as `pi pi-money-bill` (or `fas fa-coins` when no PrimeFaces option exists) so pages stay multi-currency friendly.
+
+### Badge Usage for Status Indicators
+- **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)
+- PrimeFaces badges provide better visibility and theming support
+- Use semantic severity attributes: `success`, `info`, `warning`, `danger`, `secondary`
+- Example implementation:
+```xhtml
+<!-- ❌ AVOID: HTML badges (may not be visible in all themes) -->
+<span class="badge badge-success">Active</span>
+
+<!-- ✅ PREFER: PrimeFaces badges -->
+<p:badge value="Active" severity="success"/>
+
+<!-- ✅ Dynamic severity based on conditions -->
+<p:badge value="#{item.status}"
+         severity="#{item.active ? 'success' : 'danger'}"/>
+```
+- Center-align badge columns with `styleClass="text-center"` for better presentation
+- Common severity mappings:
+  - `success`: Active, Completed, Approved
+  - `danger`: Retired, Failed, Rejected, Cancelled
+  - `warning`: Pending, In Progress, Draft
+  - `info`: Information counts, totals
+  - `secondary`: Codes, identifiers
 
 ---
 
@@ -112,7 +170,6 @@ Supporting rules:
 ## Accessibility, Security, and Behaviour
 - Always pair icons with text labels; never rely on colour or icon alone.
 - Provide `title` attributes or `aria` labels for buttons and links.
-- Validate privileges through `webUserController.hasPrivilege()` before rendering actions.
 - Honour configuration toggles (feature flags, color schemes) via `configOptionApplicationController`.
 - Prefer server-side sanitised data and avoid embedding secrets or hard-coded environment values.
 

@@ -40,23 +40,42 @@
                                     icon="fa fa-search" >
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false" 
+                                <p:commandButton
+                                    ajax="false"
                                     immediate="true"
-                                    class="ui-button-warning mx-1" 
-                                    value="Patient Profile" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    class="ui-button-warning mx-1"
+                                    value="Patient Profile"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
                                     icon="fa fa-user" > <!-- Font Awesome icon for user -->
                                     <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        immediate="true"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('inward/inward_admission')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ms-5">
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                         </div>
                     </f:facet>
 
                     <div class="row">
-<!--                        <p:messages id="messages" showDetail="true" closable="true">
+                        <p:messages 
+                            id="messages" 
+                            showDetail="true" 
+                            closable="true"
+                            class="w-100"
+                            role="alert" 
+                            aria-live="assertive" 
+                            aria-atomic="true">
                             <p:autoUpdate/>
-                        </p:messages>-->
+                        </p:messages>
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"

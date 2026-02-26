@@ -266,7 +266,7 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForDepartmentUpload;
     private StreamedContent templateForPharmacyItemImport;
     private StreamedContent templateForPharmacyItemImportWithStock;
-
+    private StreamedContent templateForPharmacyItemImportWithoutStock;
 
     List<Item> itemsToSave;
     List<Item> itemsSaved;
@@ -597,18 +597,20 @@ public class DataUploadController implements Serializable {
     }
 
     /**
-     * Imports pharmaceutical items with stock data from Excel file and navigates
-     * to the NEW direct purchase page (direct_purchase.xhtml).
+     * Imports pharmaceutical items with stock data from Excel file and
+     * navigates to the NEW direct purchase page (direct_purchase.xhtml).
      *
-     * This method mirrors importToExcelWithStock() but uses PharmacyDirectPurchaseController
-     * instead of PharmacyPurchaseController, mapping data to BillItemFinanceDetails structure.
+     * This method mirrors importToExcelWithStock() but uses
+     * PharmacyDirectPurchaseController instead of PharmacyPurchaseController,
+     * mapping data to BillItemFinanceDetails structure.
      *
-     * Excel columns expected:
-     * A=Serial, B=Category, C=Product, D=Code, E=Barcode, F=Generic, G=Strength,
-     * H=StrengthUnit, I=PackSize, J=IssueUnit, K=PackUnit, L=Distributor,
-     * M=Manufacturer, N=Importer, O=DOE, P=Batch, Q=Quantity, R=PurchasePrice, S=SalePrice
+     * Excel columns expected: A=Serial, B=Category, C=Product, D=Code,
+     * E=Barcode, F=Generic, G=Strength, H=StrengthUnit, I=PackSize,
+     * J=IssueUnit, K=PackUnit, L=Distributor, M=Manufacturer, N=Importer,
+     * O=DOE, P=Batch, Q=Quantity, R=PurchasePrice, S=SalePrice
      *
-     * @return Navigation outcome to direct_purchase page or empty string on error
+     * @return Navigation outcome to direct_purchase page or empty string on
+     * error
      */
     public String importToExcelWithStockNewDirectPurchase() {
         if (file == null) {
@@ -831,36 +833,36 @@ public class DataUploadController implements Serializable {
 
                 // Set quantity via BillItemFinanceDetails (BigDecimal)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setQuantity(java.math.BigDecimal.valueOf(stockQty));
+                        .getBillItemFinanceDetails()
+                        .setQuantity(java.math.BigDecimal.valueOf(stockQty));
 
                 // Set purchase rate (lineGrossRate in BillItemFinanceDetails)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setLineGrossRate(java.math.BigDecimal.valueOf(pp));
+                        .getBillItemFinanceDetails()
+                        .setLineGrossRate(java.math.BigDecimal.valueOf(pp));
 
                 // Set sale rate (retailSaleRatePerUnit in BillItemFinanceDetails)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setRetailSaleRatePerUnit(java.math.BigDecimal.valueOf(sp));
+                        .getBillItemFinanceDetails()
+                        .setRetailSaleRatePerUnit(java.math.BigDecimal.valueOf(sp));
 
                 // Set free quantity to zero (required field)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+                        .getBillItemFinanceDetails()
+                        .setFreeQuantity(java.math.BigDecimal.ZERO);
 
                 // Set date of expiry via PharmaceuticalBillItem
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getPharmaceuticalBillItem()
-                    .setDoe(doe);
+                        .getPharmaceuticalBillItem()
+                        .setDoe(doe);
 
                 // Set batch via PharmaceuticalBillItem
                 if (batch == null || batch.trim().isEmpty()) {
                     getPharmacyDirectPurchaseController().setBatch();
                 } else {
                     getPharmacyDirectPurchaseController().getCurrentBillItem()
-                        .getPharmaceuticalBillItem()
-                        .setStringValue(batch);
+                            .getPharmaceuticalBillItem()
+                            .setStringValue(batch);
                 }
 
                 // Add item to the bill
@@ -880,21 +882,20 @@ public class DataUploadController implements Serializable {
     }
 
     /**
-     * Simplified stock upload for direct purchase using two-phase validation approach.
+     * Simplified stock upload for direct purchase using two-phase validation
+     * approach.
      *
-     * Phase 1: Validate ALL rows - find items by Code AND Name
-     * Phase 2: Only proceed with upload if ALL items are found
+     * Phase 1: Validate ALL rows - find items by Code AND Name Phase 2: Only
+     * proceed with upload if ALL items are found
      *
-     * Required Excel columns:
-     * - C (2): Product/Item Name - for AMP lookup
-     * - D (3): Code - for AMP lookup
-     * - O (14): DOE - Date of Expiry
-     * - P (15): Batch - Batch number (optional, auto-generate if empty)
-     * - Q (16): Quantity - Stock quantity
-     * - R (17): Purchase Price - Purchase rate
-     * - S (18): Sale Price - Retail rate
+     * Required Excel columns: - C (2): Product/Item Name - for AMP lookup - D
+     * (3): Code - for AMP lookup - O (14): DOE - Date of Expiry - P (15): Batch
+     * - Batch number (optional, auto-generate if empty) - Q (16): Quantity -
+     * Stock quantity - R (17): Purchase Price - Purchase rate - S (18): Sale
+     * Price - Retail rate
      *
-     * @return Navigation outcome to direct_purchase page or empty string on error
+     * @return Navigation outcome to direct_purchase page or empty string on
+     * error
      */
     public String importStockForDirectPurchaseSimplified() {
         // Clear previous errors
@@ -920,8 +921,7 @@ public class DataUploadController implements Serializable {
         List<String> validationErrors = new ArrayList<>();
         List<ValidatedStockRow> validatedRows = new ArrayList<>();
 
-        try (InputStream in = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(in)) {
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
 
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
@@ -949,8 +949,8 @@ public class DataUploadController implements Serializable {
                 }
 
                 // Skip completely empty rows
-                if ((itemName == null || itemName.trim().isEmpty()) &&
-                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
+                if ((itemName == null || itemName.trim().isEmpty())
+                        && (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
                     continue;
                 }
 
@@ -973,8 +973,8 @@ public class DataUploadController implements Serializable {
                 Amp amp = ampFacade.findFirstByJpql(jpql, params);
 
                 if (amp == null) {
-                    validationErrors.add("Row " + excelRowNumber + ": Item not found - Code: '" +
-                        itemCodeNormalized.trim() + "', Name: '" + itemName.trim() + "'");
+                    validationErrors.add("Row " + excelRowNumber + ": Item not found - Code: '"
+                            + itemCodeNormalized.trim() + "', Name: '" + itemName.trim() + "'");
                     continue;
                 }
 
@@ -1059,36 +1059,36 @@ public class DataUploadController implements Serializable {
 
                 // Set quantity via BillItemFinanceDetails
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setQuantity(validRow.quantity);
+                        .getBillItemFinanceDetails()
+                        .setQuantity(validRow.quantity);
 
                 // Set purchase rate (lineGrossRate)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setLineGrossRate(validRow.purchaseRate);
+                        .getBillItemFinanceDetails()
+                        .setLineGrossRate(validRow.purchaseRate);
 
                 // Set sale rate (retailSaleRatePerUnit)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setRetailSaleRatePerUnit(validRow.saleRate);
+                        .getBillItemFinanceDetails()
+                        .setRetailSaleRatePerUnit(validRow.saleRate);
 
                 // Set free quantity to zero
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+                        .getBillItemFinanceDetails()
+                        .setFreeQuantity(java.math.BigDecimal.ZERO);
 
                 // Set date of expiry
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getPharmaceuticalBillItem()
-                    .setDoe(validRow.dateOfExpiry);
+                        .getPharmaceuticalBillItem()
+                        .setDoe(validRow.dateOfExpiry);
 
                 // Set batch - auto-generate if empty
                 if (validRow.batch == null || validRow.batch.trim().isEmpty()) {
                     getPharmacyDirectPurchaseController().setBatch();
                 } else {
                     getPharmacyDirectPurchaseController().getCurrentBillItem()
-                        .getPharmaceuticalBillItem()
-                        .setStringValue(validRow.batch);
+                            .getPharmaceuticalBillItem()
+                            .setStringValue(validRow.batch);
                 }
 
                 // Add item to the bill
@@ -1105,9 +1105,10 @@ public class DataUploadController implements Serializable {
     }
 
     /**
-     * Validates stock upload Excel file and shows detailed errors.
-     * Does NOT perform any upload - validation only.
-     * Shows all fields (name, code, DOE, qty, purchase rate, sale rate) for each error.
+     * Validates stock upload Excel file and shows detailed errors. Does NOT
+     * perform any upload - validation only. Shows all fields (name, code, DOE,
+     * qty, purchase rate, sale rate) for each error.
+     *
      * @return empty string to stay on same page
      */
     public String checkStockUploadErrors() {
@@ -1138,8 +1139,7 @@ public class DataUploadController implements Serializable {
         int validRowCount = 0;
         int totalRowCount = 0;
 
-        try (InputStream in = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(in)) {
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
 
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -1177,8 +1177,8 @@ public class DataUploadController implements Serializable {
                 }
 
                 // Skip completely empty rows
-                if ((itemName == null || itemName.trim().isEmpty()) &&
-                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
+                if ((itemName == null || itemName.trim().isEmpty())
+                        && (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
                     continue;
                 }
 
@@ -1279,8 +1279,9 @@ public class DataUploadController implements Serializable {
     }
 
     /**
-     * Uploads valid stock rows and silently skips rows with errors.
-     * Shows summary of uploaded vs skipped items.
+     * Uploads valid stock rows and silently skips rows with errors. Shows
+     * summary of uploaded vs skipped items.
+     *
      * @return navigation to direct purchase page on success
      */
     public String uploadStockSkipErrors() {
@@ -1307,8 +1308,7 @@ public class DataUploadController implements Serializable {
         List<ValidatedStockRow> validatedRows = new ArrayList<>();
         List<ValidatedStockRow> skippedRows = new ArrayList<>();
 
-        try (InputStream in = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(in)) {
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
 
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
@@ -1338,8 +1338,8 @@ public class DataUploadController implements Serializable {
                 }
 
                 // Skip completely empty rows
-                if ((itemName == null || itemName.trim().isEmpty()) &&
-                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
+                if ((itemName == null || itemName.trim().isEmpty())
+                        && (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
                     continue;
                 }
 
@@ -1420,36 +1420,36 @@ public class DataUploadController implements Serializable {
 
                 // Set quantity via BillItemFinanceDetails
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setQuantity(validRow.quantity);
+                        .getBillItemFinanceDetails()
+                        .setQuantity(validRow.quantity);
 
                 // Set purchase rate (lineGrossRate)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setLineGrossRate(validRow.purchaseRate);
+                        .getBillItemFinanceDetails()
+                        .setLineGrossRate(validRow.purchaseRate);
 
                 // Set sale rate (retailSaleRatePerUnit)
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setRetailSaleRatePerUnit(validRow.saleRate);
+                        .getBillItemFinanceDetails()
+                        .setRetailSaleRatePerUnit(validRow.saleRate);
 
                 // Set free quantity to zero
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getBillItemFinanceDetails()
-                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+                        .getBillItemFinanceDetails()
+                        .setFreeQuantity(java.math.BigDecimal.ZERO);
 
                 // Set date of expiry
                 getPharmacyDirectPurchaseController().getCurrentBillItem()
-                    .getPharmaceuticalBillItem()
-                    .setDoe(validRow.dateOfExpiry);
+                        .getPharmaceuticalBillItem()
+                        .setDoe(validRow.dateOfExpiry);
 
                 // Set batch - auto-generate if empty
                 if (validRow.batch == null || validRow.batch.trim().isEmpty()) {
                     getPharmacyDirectPurchaseController().setBatch();
                 } else {
                     getPharmacyDirectPurchaseController().getCurrentBillItem()
-                        .getPharmaceuticalBillItem()
-                        .setStringValue(validRow.batch);
+                            .getPharmaceuticalBillItem()
+                            .setStringValue(validRow.batch);
                 }
 
                 // Add item to the bill
@@ -1590,7 +1590,7 @@ public class DataUploadController implements Serializable {
                 strBarcode = getCellValueAsString(row.getCell(barcodeCol));
 
                 strDistributor = getCellValueAsString(row.getCell(distributorCol));
-                
+
                 DepartmentType deptType = null;
                 if (!skipDepartmentTypeColumn) {
                     String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
@@ -3054,7 +3054,7 @@ public class DataUploadController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Fee List before uploading.");
             return;
         }
-        
+
         itemFees = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
@@ -3117,7 +3117,7 @@ public class DataUploadController implements Serializable {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
-        
+
         int totalRows = sheet.getLastRowNum();
         List<String> validationErrors = new ArrayList<>();
         StringBuilder errorDetailsBuilder = new StringBuilder();
@@ -3248,8 +3248,8 @@ public class DataUploadController implements Serializable {
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
             }
-            if (discountAllowed != null && !discountAllowed.trim().equals("") && 
-                (discountAllowed.equalsIgnoreCase("yes") || discountAllowed.equalsIgnoreCase("true") || discountAllowed.equals("1"))) {
+            if (discountAllowed != null && !discountAllowed.trim().equals("")
+                    && (discountAllowed.equalsIgnoreCase("yes") || discountAllowed.equalsIgnoreCase("true") || discountAllowed.equals("1"))) {
                 disAllowd = true;
             }
 
@@ -3273,27 +3273,27 @@ public class DataUploadController implements Serializable {
         if (!validationErrors.isEmpty()) {
             // Set errors for display
             this.uploadErrors = validationErrors;
-            
+
             // Build detailed error message
             errorDetailsBuilder.append("=== UPLOAD VALIDATION FAILED ===\n");
             errorDetailsBuilder.append("Fee List: ").append(selectedFeeList.getName()).append("\n");
             errorDetailsBuilder.append("Total Rows: ").append(totalRows).append("\n");
             errorDetailsBuilder.append("Valid Items: ").append(validatedItemFees.size()).append("\n");
             errorDetailsBuilder.append("Errors Found: ").append(validationErrors.size()).append("\n\n");
-            
+
             errorDetailsBuilder.append("=== ERROR DETAILS ===\n");
             for (int i = 0; i < validationErrors.size(); i++) {
                 errorDetailsBuilder.append((i + 1)).append(". ").append(validationErrors.get(i)).append("\n");
             }
-            
+
             errorDetailsBuilder.append("\n=== INSTRUCTIONS ===\n");
             errorDetailsBuilder.append("1. Fix the errors listed above in your Excel file\n");
             errorDetailsBuilder.append("2. Ensure all item codes exist in the system\n");
             errorDetailsBuilder.append("3. Check that fee amounts are valid numbers\n");
             errorDetailsBuilder.append("4. Re-upload the corrected file\n");
-            
+
             this.uploadErrorDetails = errorDetailsBuilder.toString();
-            
+
             JsfUtil.addErrorMessage(validationErrors.size() + " validation errors found. No data was saved. See error details below.");
             return new ArrayList<>(); // Return empty list - no data saved
         } else {
@@ -3302,7 +3302,7 @@ public class DataUploadController implements Serializable {
                 itemFeeFacade.create(itemFee);
                 itemFees.add(itemFee);
             }
-            
+
             JsfUtil.addSuccessMessage("✓ SUCCESS: " + validatedItemFees.size() + " item fees uploaded to " + selectedFeeList.getName());
             return itemFees;
         }
@@ -3999,10 +3999,10 @@ public class DataUploadController implements Serializable {
         dateString = dateString.trim();
 
         String[] dateFormats = {
-                "dd/MM/yyyy",  // Handles 02/05/2000 as May 2nd, 2000
-                "d/M/yyyy",    // Handles 2/5/2000 as May 2nd, 2000
-                "dd/MM/yy",    // Handles 02/05/00 as May 2nd, 2000
-                "d/M/yy"       // Handles 2/5/00 as May 2nd, 2000
+            "dd/MM/yyyy", // Handles 02/05/2000 as May 2nd, 2000
+            "d/M/yyyy", // Handles 2/5/2000 as May 2nd, 2000
+            "dd/MM/yy", // Handles 02/05/00 as May 2nd, 2000
+            "d/M/yy" // Handles 2/5/00 as May 2nd, 2000
         };
 
         SimpleDateFormat sdf = new SimpleDateFormat();
@@ -6468,7 +6468,6 @@ public class DataUploadController implements Serializable {
 //            String supplierPrintingName = null;
 //            String ownerName = null;
 
-
             Cell faxCell = row.getCell(7);
             if (faxCell != null) {
                 if (faxCell.getCellType() == CellType.NUMERIC) {
@@ -8650,7 +8649,7 @@ public class DataUploadController implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
+
     public void createTemplateForPharmacyItemImport() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -8662,7 +8661,7 @@ public class DataUploadController implements Serializable {
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
         String[] columnHeaders = {"Serial No", "Category", "Product", "Code", "Bar Code", "Generic Name", "Strength", "Strength Unit", "Pack Size", "Issue Unit", "Pack Unit",
-        "Distributor", "Manufacturer", "Importer"};
+            "Distributor", "Manufacturer", "Importer"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -8687,7 +8686,7 @@ public class DataUploadController implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
+
     public void createTemplateForPharmacyItemImportWithStock() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -8699,7 +8698,7 @@ public class DataUploadController implements Serializable {
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
         String[] columnHeaders = {"Serial No", "Category", "Product", "Code", "Bar Code", "Generic Name", "Strength", "Strength Unit", "Pack Size", "Issue Unit", "Pack Unit",
-        "Distributor", "Manufacturer", "Importer", "Date of Expiry (M/d/yyyy)", "Batch", "Quantity", "Purchase Price", "Sale Price"};
+            "Distributor", "Manufacturer", "Importer", "Date of Expiry (M/d/yyyy)", "Batch", "Quantity", "Purchase Price", "Sale Price"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -8725,20 +8724,65 @@ public class DataUploadController implements Serializable {
                 .build();
     }
     
-     public StreamedContent getTemplateForPharmacyItemImportWithStock(){
+    public void createTemplateForPharmacyItemImportWithoutStock() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Serial No", "Category", "Product", "Code", "Bar Code", "Generic Name", "Strength", "Strength Unit", "Pack Size", "Issue Unit", "Pack Unit",
+            "Distributor", "Manufacturer", "Importer", "Department Type"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading filetemplateForPharmacyItemImport
+        templateForPharmacyItemImportWithoutStock = DefaultStreamedContent.builder()
+                .name("template_for_pharmacy_item_import_without_stock.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public StreamedContent getTemplateForPharmacyItemImportWithStock() {
         try {
             createTemplateForPharmacyItemImportWithStock();
-        } catch (IOException e){
+        } catch (IOException e) {
             // Handle IOException
         }
         return templateForPharmacyItemImportWithStock;
     }
-    
 
-    public StreamedContent getTemplateForPharmacyItemImport(){
+    public StreamedContent getTemplateForPharmacyItemImportWithoutStock() {
+        try {
+            createTemplateForPharmacyItemImportWithoutStock();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForPharmacyItemImportWithoutStock;
+    }
+
+    public StreamedContent getTemplateForPharmacyItemImport() {
         try {
             createTemplateForPharmacyItemImport();
-        } catch (IOException e){
+        } catch (IOException e) {
             // Handle IOException
         }
         return templateForPharmacyItemImport;
@@ -9308,7 +9352,7 @@ public class DataUploadController implements Serializable {
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
         String[] columnHeaders = {"Code", "Supplier Name", "QB Supplier Name", "Active", "Contact Person Name", "Address",
-                "Telephone", "Fax", "E Mail", "Web", "Mobile No.", "Payment Company Name", "Bank Name", "Branch Name", "Acc No", "Legal Company"};
+            "Telephone", "Fax", "E Mail", "Web", "Mobile No.", "Payment Company Name", "Bank Name", "Branch Name", "Acc No", "Legal Company"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -9664,10 +9708,11 @@ public class DataUploadController implements Serializable {
     }
 
     /**
-     * Data transfer object for validated stock upload row.
-     * Used in simplified direct purchase stock upload.
+     * Data transfer object for validated stock upload row. Used in simplified
+     * direct purchase stock upload.
      */
     private static class ValidatedStockRow {
+
         int rowNumber;
         Amp amp;
         java.math.BigDecimal quantity;

@@ -219,7 +219,8 @@
                                 <ez:companyPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}"/>
                                 <ez:companyPaymentBillPharmacy bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}"/>
                                 <ez:companyPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}"/>
-                                <ez:patientDepositPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'patientDepositPayments'}" ></ez:patientDepositPayments>
+                                <ez:patientDepositPayments id="ccPatientDepositSection" bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'patientDepositPayments'}" ></ez:patientDepositPayments>
+                                <ez:inwardDepositPayments id="inwardPatientDepositSection" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'inwardDepositPayments'}"/>
                                 <ez:collectionForTheDay bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'collectionForTheDay'}"/>
                                 <ez:pettyCashPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'pettyCashPayments'}"/>
 
@@ -235,7 +236,10 @@
                                 <ez:ewalletPayments  id="ewalletPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
                                 <ez:slipPayments  id="slipPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
                                 <ez:patientDepositUtilization id="patientDepositUtilizationPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositUtilization'}"/>
+                                
                                 <ez:opdPatientDepositPayments id="opdPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdPatientDepositPayments'}"/>
+                                <ez:opdPatientDepositPayments id="pharmacyPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyPatientDepositPayments'}"/>
+                                <ez:inwardPatientDepositPayments id="inwardPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'inwardPatientDepositPayments'}"/>
 
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
 

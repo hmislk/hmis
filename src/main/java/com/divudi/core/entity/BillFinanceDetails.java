@@ -188,6 +188,11 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal netValueAdjustment;
 
+    // Total Bill Value = Net Total (abs) + Expenses NOT Considered for Costing
+    // Represents the actual total cash outflow to the supplier
+    @Column(precision = 20, scale = 4, nullable = true)
+    private BigDecimal totalBillValue;
+
 //    // Payment method totals
 //    private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
@@ -276,6 +281,7 @@ public class BillFinanceDetails implements Serializable {
         clone.setNetTotal(this.netTotal);
         clone.setActualNetValue(this.actualNetValue);
         clone.setNetValueAdjustment(this.netValueAdjustment);
+        clone.setTotalBillValue(this.totalBillValue);
 
 //        // ------------------ PAYMENT METHODS ------------------
 //        clone.setTotalPaidAsCash(this.totalPaidAsCash);
@@ -299,6 +305,73 @@ public class BillFinanceDetails implements Serializable {
 //
 //        // Note: skip ID, createdAt, etc. – those should be managed by persistence layer
         return clone;
+    }
+
+    public BillFinanceDetails invertValue(BillFinanceDetails original) {
+        if (original == null) return this;
+
+        // Discounts - invert
+        this.billDiscount = negate(original.billDiscount);
+        this.lineDiscount = negate(original.lineDiscount);
+        this.totalDiscount = negate(original.totalDiscount);
+
+        // Expenses - invert
+        this.billExpense = negate(original.billExpense);
+        this.lineExpense = negate(original.lineExpense);
+        this.totalExpense = negate(original.totalExpense);
+        this.billExpensesConsideredForCosting = negate(original.billExpensesConsideredForCosting);
+        this.billExpensesNotConsideredForCosting = negate(original.billExpensesNotConsideredForCosting);
+
+        // Cost values - invert
+        this.billCostValue = negate(original.billCostValue);
+        this.lineCostValue = negate(original.lineCostValue);
+        this.totalCostValue = negate(original.totalCostValue);
+        this.totalCostValueFree = negate(original.totalCostValueFree);
+        this.totalCostValueNonFree = negate(original.totalCostValueNonFree);
+
+        // Tax values - invert
+        this.billTaxValue = negate(original.billTaxValue);
+        this.itemTaxValue = negate(original.itemTaxValue);
+        this.totalTaxValue = negate(original.totalTaxValue);
+
+        // Stock valuations - invert
+        this.totalPurchaseValue = negate(original.totalPurchaseValue);
+        this.totalPurchaseValueFree = negate(original.totalPurchaseValueFree);
+        this.totalPurchaseValueNonFree = negate(original.totalPurchaseValueNonFree);
+        this.totalOfFreeItemValues = negate(original.totalOfFreeItemValues);
+        this.totalOfFreeItemValuesFree = negate(original.totalOfFreeItemValuesFree);
+        this.totalOfFreeItemValuesNonFree = negate(original.totalOfFreeItemValuesNonFree);
+        this.totalRetailSaleValue = negate(original.totalRetailSaleValue);
+        this.totalRetailSaleValueFree = negate(original.totalRetailSaleValueFree);
+        this.totalRetailSaleValueNonFree = negate(original.totalRetailSaleValueNonFree);
+        this.totalWholesaleValue = negate(original.totalWholesaleValue);
+        this.totalWholesaleValueFree = negate(original.totalWholesaleValueFree);
+        this.totalWholesaleValueNonFree = negate(original.totalWholesaleValueNonFree);
+        this.totalBeforeAdjustmentValue = negate(original.totalBeforeAdjustmentValue);
+        this.totalAfterAdjustmentValue = negate(original.totalAfterAdjustmentValue);
+
+        // Quantities - invert
+        this.totalQuantity = negate(original.totalQuantity);
+        this.totalFreeQuantity = negate(original.totalFreeQuantity);
+        this.totalQuantityInAtomicUnitOfMeasurement = negate(original.totalQuantityInAtomicUnitOfMeasurement);
+        this.totalFreeQuantityInAtomicUnitOfMeasurement = negate(original.totalFreeQuantityInAtomicUnitOfMeasurement);
+
+        // Gross & Net totals - invert
+        this.lineGrossTotal = negate(original.lineGrossTotal);
+        this.billGrossTotal = negate(original.billGrossTotal);
+        this.grossTotal = negate(original.grossTotal);
+        this.lineNetTotal = negate(original.lineNetTotal);
+        this.billNetTotal = negate(original.billNetTotal);
+        this.netTotal = negate(original.netTotal);
+        this.actualNetValue = negate(original.actualNetValue);
+        this.netValueAdjustment = negate(original.netValueAdjustment);
+        this.totalBillValue = negate(original.totalBillValue);
+
+        return this;
+    }
+
+    private BigDecimal negate(BigDecimal value) {
+        return value == null ? null : value.negate();
     }
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -700,6 +773,14 @@ public class BillFinanceDetails implements Serializable {
 
     public void setNetValueAdjustment(BigDecimal netValueAdjustment) {
         this.netValueAdjustment = netValueAdjustment;
+    }
+
+    public BigDecimal getTotalBillValue() {
+        return totalBillValue;
+    }
+
+    public void setTotalBillValue(BigDecimal totalBillValue) {
+        this.totalBillValue = totalBillValue;
     }
 
 }

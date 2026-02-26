@@ -76,12 +76,25 @@
                                     </div>
 
                                     <!-- Advanced Filters -->
-                                    <p:panel header="Advanced Filters" toggleable="true" collapsed="true">
+                                    <p:panel id="search-keywords" >
                                         <f:facet name="header">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-cogs text-warning me-2"></i>
-                                                <h:outputText value="Advanced Filters" styleClass="fw-bold"/>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-cogs text-warning me-2"></i>
+                                                    <h:outputText value="Advanced Filters" styleClass="fw-bold"/>
+                                              
+                                                </div>
+                                                <p:commandButton 
+                                                    class="btn ui-button-warning p-0" 
+                                                    action="#{searchController.clearSearchKeywords()}" 
+                                                    ajax="true"
+                                                    process="@this"
+                                                    update="search-keywords"
+                                                    value="Clear Filters">
+                                                </p:commandButton>
                                             </div>
+
+
                                         </f:facet>
 
                                         <div class="mb-2">
@@ -172,6 +185,21 @@
                                             <div class="mb-2">
                                                 <i class="fas fa-hospital me-1 text-info"></i>
                                                 <h:outputText value="#{bill.departmentName}" styleClass="text-muted"/>
+                                            </div>
+
+                                            <!-- Payment Method -->
+
+                                            <div class="mb-2" >
+                                                <i class="fa-solid fa-money-bill me-1 text-success" />
+                                                <h:outputText value="Payment Method : " styleClass="text-muted"/>
+                                                <p:badge value="#{bill.paymentMethod}" 
+                                                         severity="#{bill.paymentMethod eq 'Cash' ? 'success' 
+                                                                     : bill.paymentMethod eq 'Card' ? 'warning' 
+                                                                     : bill.paymentMethod eq 'Cheque' ? 'info' 
+                                                                     : bill.paymentMethod eq 'Slip' ? 'danger' 
+                                                                     : 'secondary'}"
+
+                                                         styleClass="mr-2" class="text-capitalize" />
                                             </div>
 
                                             <!-- Created At and By -->

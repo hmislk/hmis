@@ -194,7 +194,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-
         return tmp;
 
     }
@@ -223,7 +222,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-
         return tmp;
 
     }
@@ -249,7 +247,6 @@ public class QuickBookReportController implements Serializable {
         m.put("typ", Investigation.class);
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-
 
         return tmp;
 
@@ -518,11 +515,11 @@ public class QuickBookReportController implements Serializable {
             }
         }
 
-
     }
 
     /**
      * Validates a bill for QuickBooks export
+     *
      * @param bill The bill to validate
      * @throws RuntimeException if bill is invalid for QB export
      */
@@ -532,33 +529,35 @@ public class QuickBookReportController implements Serializable {
         }
 
         if (bill.getNetTotal() == 0) {
-            throw new RuntimeException("Bill has zero total. Bill ID: " + bill.getId() +
-                ". Please check if this bill was properly processed.");
+            throw new RuntimeException("Bill has zero total. Bill ID: " + bill.getId()
+                    + ". Please check if this bill was properly processed.");
         }
 
         if (bill.getDepartment() == null) {
-            throw new RuntimeException("Bill missing department. Bill ID: " + bill.getId() +
-                ". Please assign a department to this bill before exporting to QuickBooks.");
+            throw new RuntimeException("Bill missing department. Bill ID: " + bill.getId()
+                    + ". Please assign a department to this bill before exporting to QuickBooks.");
         }
 
         if (bill.getFromInstitution() == null && bill.getPaymentMethod() != PaymentMethod.Cash) {
-            throw new RuntimeException("Bill missing supplier institution. Bill ID: " + bill.getId() +
-                ". Please assign a supplier or mark as Cash payment.");
+            throw new RuntimeException("Bill missing supplier institution. Bill ID: " + bill.getId()
+                    + ". Please assign a supplier or mark as Cash payment.");
         }
 
         if (bill.getInvoiceNumber() == null || bill.getInvoiceNumber().trim().isEmpty()) {
-            throw new RuntimeException("Bill missing invoice number. Bill ID: " + bill.getId() +
-                ". Please enter an invoice number for this bill.");
+            throw new RuntimeException("Bill missing invoice number. Bill ID: " + bill.getId()
+                    + ". Please enter an invoice number for this bill.");
         }
 
         if (bill.getDeptId() == null || bill.getDeptId().trim().isEmpty()) {
-            throw new RuntimeException("Bill missing GRN/Department ID. Bill ID: " + bill.getId() +
-                ". Please ensure this bill has a proper GRN number.");
+            throw new RuntimeException("Bill missing GRN/Department ID. Bill ID: " + bill.getId()
+                    + ". Please ensure this bill has a proper GRN number.");
         }
     }
 
     /**
-     * Validates that a QB transaction balances (TRNS amount equals sum of SPL amounts)
+     * Validates that a QB transaction balances (TRNS amount equals sum of SPL
+     * amounts)
+     *
      * @param trnsAmount The TRNS line amount (should be negative for purchases)
      * @param splAmounts List of SPL line amounts (should be positive)
      * @param billId Bill ID for error reporting
@@ -570,27 +569,28 @@ public class QuickBookReportController implements Serializable {
 
         if (Math.abs(Math.abs(trnsAmount) - splTotal) > tolerance) {
             throw new RuntimeException(String.format(
-                "Transaction out of balance for Bill %s. TRNS amount: %.2f, SPL total: %.2f. " +
-                "Difference: %.2f. Please check expense calculations.",
-                billId, trnsAmount, splTotal, Math.abs(Math.abs(trnsAmount) - splTotal)
+                    "Transaction out of balance for Bill %s. TRNS amount: %.2f, SPL total: %.2f. "
+                    + "Difference: %.2f. Please check expense calculations.",
+                    billId, trnsAmount, splTotal, Math.abs(Math.abs(trnsAmount) - splTotal)
             ));
         }
     }
 
     /**
      * Validates that expense items have proper mapping to QB accounts
+     *
      * @param expenseItem The expense item to validate
      * @param billId Bill ID for error reporting
      */
     private void validateExpenseMapping(Item expenseItem, String billId) {
         if (expenseItem == null) {
-            throw new RuntimeException("Expense item is null for Bill " + billId +
-                ". Please check bill expense data integrity.");
+            throw new RuntimeException("Expense item is null for Bill " + billId
+                    + ". Please check bill expense data integrity.");
         }
 
         if (expenseItem.getName() == null || expenseItem.getName().trim().isEmpty()) {
-            throw new RuntimeException("Expense item missing name for Bill " + billId +
-                ". Item ID: " + expenseItem.getId() + ". Please set a proper expense type name.");
+            throw new RuntimeException("Expense item missing name for Bill " + billId
+                    + ". Item ID: " + expenseItem.getId() + ". Please set a proper expense type name.");
         }
 
         if (expenseItem.getPrintName() == null || expenseItem.getPrintName().trim().isEmpty()) {
@@ -598,8 +598,8 @@ public class QuickBookReportController implements Serializable {
     }
 
     /**
-     * NOTE: This mapping function is no longer used.
-     * Team will configure expense accounts directly in Item.printName to match QB requirements.
+     * NOTE: This mapping function is no longer used. Team will configure
+     * expense accounts directly in Item.printName to match QB requirements.
      * Keeping for reference only.
      */
     /*
@@ -635,8 +635,7 @@ public class QuickBookReportController implements Serializable {
                 return "OTHER MATERIAL & SERVICE COST:Other";
         }
     }
-    */
-
+     */
     public void createQBFormatPharmacyGRNAndPurchaseBills() {
         List<Bill> bills = new ArrayList<>();
         List<Bill> billsBilled = new ArrayList<>();
@@ -703,9 +702,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), "", b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -759,9 +760,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), "", b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -817,9 +820,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -875,9 +880,11 @@ public class QuickBookReportController implements Serializable {
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
             for (BillItem bi : b.getBillExpenses()) {
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
+                if (!bi.isConsideredForCosting()) {
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                    grantTot += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
@@ -896,14 +903,15 @@ public class QuickBookReportController implements Serializable {
     }
 
     /**
-     * Enhanced QB format method that includes fallback logic for expense totals.
-     * This method handles cases where expenses are stored as totals in BILL table
-     * rather than as individual BILLITEM records.
+     * Enhanced QB format method that includes fallback logic for expense
+     * totals. This method handles cases where expenses are stored as totals in
+     * BILL table rather than as individual BILLITEM records.
      */
     /**
-     * Enhanced QB format method for approved pharmacy transactions filtered by approval date.
-     * This method includes only approved GRN, Direct Purchase, GRN Return, Direct Purchase Return,
-     * and Return without tracing receipts, filtered by approval date instead of creation date.
+     * Enhanced QB format method for approved pharmacy transactions filtered by
+     * approval date. This method includes only approved GRN, Direct Purchase,
+     * GRN Return, Direct Purchase Return, and Return without tracing receipts,
+     * filtered by approval date instead of creation date.
      */
     public void createQBFormatPharmacyGRNAndPurchaseBillsWithExpenses() {
         List<Bill> bills = new ArrayList<>();
@@ -920,135 +928,109 @@ public class QuickBookReportController implements Serializable {
 
         // Define the approved bill types to include
         List<BillTypeAtomic> approvedBillTypes = Arrays.asList(
-            BillTypeAtomic.PHARMACY_GRN,                    // Approved GRN (not GRN_PRE)
-            BillTypeAtomic.PHARMACY_GRN_RETURN,             // GRN Return
-            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,        // Direct Purchase
-            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, // Direct Purchase Return
-            BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
+                BillTypeAtomic.PHARMACY_GRN, // Approved GRN (not GRN_PRE)
+                BillTypeAtomic.PHARMACY_GRN_RETURN, // GRN Return
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, // Direct Purchase
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, // Direct Purchase Return
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
         );
 
-        // Get departments with approved bills filtered by approval date
-        for (Department d : getApprovedDepartments(approvedBillTypes, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-
-            // Get approved GRNs (not pending/pre-approval)
-            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-
-            // Get approved Direct Purchases
-            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-
-            // Get approved GRN Returns
-            billsReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-
-            // Get approved Direct Purchase Returns
-            billsDirectPurchaseReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-
-            // Get approved Returns without tracing receipts
-            billsReturnP.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-
-            // Get cancelled bills (if needed for QB reporting)
-            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+        // Determine which departments to process based on filter selections
+        List<Department> departmentsToProcess;
+        if (department != null) {
+            // User selected a specific department - use only that one
+            departmentsToProcess = Arrays.asList(department);
+        } else {
+            // Get all approved departments, optionally filtered by site
+            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, fromDate, toDate);
         }
 
-        // Aggregate all approved bills for processing
-        System.out.println("billsBilled (Approved GRNs).size() = " + billsBilled.size());
-        bills.addAll(billsBilled);
-
-        System.out.println("billsDirectPurchase.size() = " + billsDirectPurchase.size());
-        bills.addAll(billsDirectPurchase);
-
-        System.out.println("billsReturn (GRN Returns).size() = " + billsReturn.size());
-        bills.addAll(billsReturn);
-
-        System.out.println("billsDirectPurchaseReturn.size() = " + billsDirectPurchaseReturn.size());
-        bills.addAll(billsDirectPurchaseReturn);
-
-        System.out.println("billsReturnP (Returns without tracing).size() = " + billsReturnP.size());
-        bills.addAll(billsReturnP);
-
-        // Add cancelled bills if needed
-        bills.addAll(billsCanceled);
-        bills.addAll(billsReturnCancel);
+        // Get bills for each department
+        for (Department d : departmentsToProcess) {
+            bills.addAll(getApprovedBills(approvedBillTypes, d,fromDate, toDate
+            ));
+        }
 
         System.out.println("Total approved bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
         for (Bill b : bills) {
-            grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
 
             // Add bill type detection for return transactions
             BillTypeAtomic billType = b.getBillTypeAtomic();
-            boolean isReturnTransaction = (billType == BillTypeAtomic.PHARMACY_GRN_RETURN ||
-                                           billType == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND ||
-                                           billType == BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            boolean isReturnTransaction = (billType == BillTypeAtomic.PHARMACY_GRN_RETURN
+                    || billType == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND
+                    || billType == BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
 
             QuickBookFormat qbf = new QuickBookFormat();
 
             // Use approval date instead of creation date for approved bills
             Date approvalDate = b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt();
 
-            // Create inventory SPL but store separately - will be added after expenses
-            double splInventoryAmount = isReturnTransaction ? (0 - b.getNetTotal()) : b.getNetTotal();
-
             // For memo, prefer invoice date, then approval date, then creation date
-            Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate() :
-                           (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
+            Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate()
+                    : (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
 
-            String memoText;
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + b.getFromInstitution().getChequePrintingName();
-            } else {
-                memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate);
-            }
+            String supplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
+            String memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + supplierName;
 
-            // Store inventory SPL for later addition (after expenses)
-            QuickBookFormat inventorySpl = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate),
-                "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
-                b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+            // Determine TRNSTYPE based on transaction type
+            String trnsType = isReturnTransaction ? "Bill Refund" : "Bill";
+
+            // Calculate inventory value (NET TOTAL without expenses) - stored as negative for GRN
+            // For GRN: b.getNetTotal() is negative (e.g., -10750), we need positive for SPL
+            // For Returns: b.getNetTotal() is positive (e.g., 10750), we need negative for SPL
+            double inventoryValue = Math.abs(b.getNetTotal());
 
             System.out.println("b.getApproveAt() = " + b.getApproveAt());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
             System.out.println("b.getInsId() = " + b.getInsId());
 
-            grantTot += b.getNetTotal();
+            // Track total expenses NOT considered for costing (outside netTotal, added to total bill value)
+            double expensesNotConsideredTotal = 0.0;
 
-            // First add individual expense items with correct signs for returns
+            // Add individual expense items - ONLY those NOT considered for costing
             for (BillItem bi : b.getBillExpenses()) {
-                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
-                double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
+                if (!bi.isConsideredForCosting()) {
+                    String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
+                    // Expenses are stored as positive, for returns we negate them
+                    double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
+                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getDeptId() + "/" + supplierName, "", "", "", "", "");
+                    expensesNotConsideredTotal += bi.getNetValue();
+                    qbfs.add(qbf);
+                }
+            }
+
+            // Fallback: If no non-costing expenses were accumulated (getBillExpenses() empty or all items
+            // are costing), use the bill-level aggregate for non-costing expenses.
+            if (expensesNotConsideredTotal == 0 && b.getExpensesTotalNotConsideredForCosting() != 0) {
+                double expenseSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
+                qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getDeptId() + "/" + supplierName, "", "", "", "", "");
+                expensesNotConsideredTotal += b.getExpensesTotalNotConsideredForCosting();
                 qbfs.add(qbf);
             }
 
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
+            // Inventory SPL = netTotal (costing expenses already baked in, no deduction needed)
+            double splInventoryAmount = isReturnTransaction ? (0 - inventoryValue) : inventoryValue;
 
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    double transportSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalConsideredForCosting()) : b.getExpensesTotalConsideredForCosting();
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Transport", "", "", "", transportSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
+            QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
+                    "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
+                    b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
 
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    double installationSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation Charges", "", "", "", installationSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-
-            // Now add inventory SPL as the last SPL (before TRANS)
+            // Add inventory SPL as the last SPL (before ENDTRNS)
             qbfs.add(inventorySpl);
 
-            // Calculate TRANS amount with correct sign based on transaction type
-            double transAmount = isReturnTransaction ? grantTot : (0 - grantTot);
+            // TRNS = total bill value = netTotal + expenses NOT considered for costing
+            // For GRN: negative (total payable). For returns: positive (reduces payable).
+            double transAmount;
+            if (isReturnTransaction) {
+                transAmount = inventoryValue + expensesNotConsideredTotal; // Positive for returns
+            } else {
+                transAmount = 0 - (inventoryValue + expensesNotConsideredTotal); // Negative for GRN
+            }
 
             // Calculate total SPL amounts for balance validation
             double totalSplAmount = 0.0;
@@ -1059,17 +1041,13 @@ public class QuickBookReportController implements Serializable {
             // Validate accounting equation: TRANS + sum(SPLs) should equal 0
             double balance = transAmount + totalSplAmount;
             if (Math.abs(balance) > 0.01) {
-                System.err.println("WARNING: QB entry does not balance for bill " + b.getDeptId() +
-                                  " (Type: " + billType + ", Return: " + isReturnTransaction + ")" +
-                                  " - TRANS: " + transAmount + ", SPL Total: " + totalSplAmount +
-                                  ", Balance: " + balance);
+                System.err.println("WARNING: QB entry does not balance for bill " + b.getDeptId()
+                        + " (Type: " + billType + ", Return: " + isReturnTransaction + ")"
+                        + " - TRANS: " + transAmount + ", SPL Total: " + totalSplAmount
+                        + ", Balance: " + balance);
             }
 
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", transAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-            } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", transAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-            }
+            qbf = new QuickBookFormat("TRNS", trnsType, sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), supplierName, "", "", transAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
@@ -1081,525 +1059,125 @@ public class QuickBookReportController implements Serializable {
         // Process cancelled bills, returns, and return cancels (following same pattern as original method)
         // For brevity, I'm focusing on the main bill processing logic
         // The other sections (cancelled, return, return cancelled) would follow the same pattern
-
         System.out.println("bills.size() = " + bills.size());
     }
 
     public void createQBFormatStoreGRNAndPurchaseBills() {
         List<Bill> bills = new ArrayList<>();
-        List<Bill> billsBilled = new ArrayList<>();
-        List<Bill> billsCanceled = new ArrayList<>();
-        List<Bill> billsReturn = new ArrayList<>();
-        List<Bill> billsReturnCancel = new ArrayList<>();
-        List<Bill> billsBilledP = new ArrayList<>();
-        List<Bill> billsCanceledP = new ArrayList<>();
-        List<Bill> billsReturnP = new ArrayList<>();
-        List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.StorePurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+        // Define the approved bill types to include (same as Pharmacy GRN and Purchase Bills)
+        List<BillTypeAtomic> approvedBillTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN, // Approved GRN (not GRN_PRE)
+                BillTypeAtomic.PHARMACY_GRN_RETURN, // GRN Return
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, // Direct Purchase
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, // Direct Purchase Return
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
+        );
+
+        // Determine which departments to process based on filter selections
+        List<Department> departmentsToProcess;
+        if (department != null) {
+            departmentsToProcess = Arrays.asList(department);
+        } else {
+            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, fromDate, toDate);
         }
 
-        System.out.println("billsBilled.size() = " + billsBilled.size());
-        bills.addAll(billsBilled);
-        System.out.println("billsBilledP.size() = " + billsBilledP.size());
-        bills.addAll(billsBilledP);
+        for (Department d : departmentsToProcess) {
+            bills.addAll(getApprovedBills(approvedBillTypes, d, fromDate, toDate));
+        }
 
-        System.out.println("bills.size() = " + bills.size());
+        System.out.println("Total approved bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
         for (Bill b : bills) {
-            // Validate bill before processing
-            try {
-                validateBillForQBExport(b);
-            } catch (RuntimeException e) {
-                continue; // Skip this bill and process the next one
-            }
-
-            grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
+
+            BillTypeAtomic billType = b.getBillTypeAtomic();
+            boolean isReturnTransaction = (billType == BillTypeAtomic.PHARMACY_GRN_RETURN
+                    || billType == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND
+                    || billType == BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+
             QuickBookFormat qbf = new QuickBookFormat();
 
-            qbf.setRowType("SPL");
-            qbf.setTrnsType("Bill");
-            qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getName());
-            qbf.setName("");
-            qbf.setInvItemType("");
-            qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
-            qbf.setDocNum(b.getDeptId());
-//            qbf.setDocNum(b.getInvoiceNumber());
-            qbf.setPoNum(b.getDeptId());
-            qbf.setQbClass(b.getDepartment().getName());
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
-            } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
-            }
-            qbf.setCustFld1("");
-            qbf.setCustFld2("");
-            qbf.setCustFld3("");
-            qbf.setCustFld4("");
-            qbf.setCustFld5("");
-            grantTot += b.getNetTotal();
-            qbfs.add(qbf);
+            Date approvalDate = b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt();
+
+            Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate()
+                    : (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
+
+            String supplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
+            String memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + supplierName;
+
+            String trnsType = isReturnTransaction ? "Bill Refund" : "Bill";
+
+            double inventoryValue = Math.abs(b.getNetTotal());
+
+            System.out.println("b.getApproveAt() = " + b.getApproveAt());
+            System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
+            System.out.println("b.getInvoiceDate() = " + b.getInsId());
+
+            double expensesNotConsideredTotal = 0.0;
+
+            // Add individual expense items - ONLY those NOT considered for costing
             for (BillItem bi : b.getBillExpenses()) {
-
-                // Validate expense item
-                try {
-                    validateExpenseMapping(bi.getItem(), b.getDeptId());
-                } catch (RuntimeException e) {
-                    continue; // Skip this expense and process the next one
+                if (!bi.isConsideredForCosting()) {
+                    String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
+                    double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
+                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber() + "/" + supplierName, "", "", "", "", "");
+                    expensesNotConsideredTotal += bi.getNetValue();
+                    qbfs.add(qbf);
                 }
+            }
 
-                // Use the item's printName directly - team will set this to match QB requirements
-                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
+            // Fallback: If no non-costing expenses were accumulated (getBillExpenses() empty or all items
+            // are costing), use the bill-level aggregate for non-costing expenses.
+            if (expensesNotConsideredTotal == 0 && b.getExpensesTotalNotConsideredForCosting() != 0) {
+                double expenseSplAmount = isReturnTransaction ? (0 - b.getExpensesTotalNotConsideredForCosting()) : b.getExpensesTotalNotConsideredForCosting();
+                qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", expenseSplAmount, "", b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber() + "/" + supplierName, "", "", "", "", "");
+                expensesNotConsideredTotal += b.getExpensesTotalNotConsideredForCosting();
                 qbfs.add(qbf);
             }
 
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
+            // Inventory SPL = netTotal (costing expenses already baked in, no deduction needed)
+            double splInventoryAmount = isReturnTransaction ? (0 - inventoryValue) : inventoryValue;
 
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
+            QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
+                    "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
+                    b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+            qbfs.add(inventorySpl);
 
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
+            // TRNS = total bill value = netTotal + expenses NOT considered for costing
+            double transAmount;
+            if (isReturnTransaction) {
+                transAmount = inventoryValue + expensesNotConsideredTotal;
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
+                transAmount = 0 - (inventoryValue + expensesNotConsideredTotal);
             }
+
+            double totalSplAmount = 0.0;
+            for (QuickBookFormat splFormat : qbfs) {
+                totalSplAmount += splFormat.getAmount();
+            }
+
+            double balance = transAmount + totalSplAmount;
+            if (Math.abs(balance) > 0.01) {
+                System.err.println("WARNING: QB entry does not balance for bill " + b.getDeptId()
+                        + " (Type: " + billType + ", Return: " + isReturnTransaction + ")"
+                        + " - TRANS: " + transAmount + ", SPL Total: " + totalSplAmount
+                        + ", Balance: " + balance);
+            }
+
+            qbf = new QuickBookFormat("TRNS", trnsType, sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), supplierName, "", "", transAmount, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
-
-            // Validate transaction balance before completing
-            try {
-                List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
-                // Note: Inventory amount is already included in qbfs, no need to add again
-                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
-            } catch (RuntimeException e) {
-                // Log the error but continue processing
-                
-            }
-
-            qbf = new QuickBookFormat();
-            qbf.setRowType("ENDTRNS");
-            quickBookFormats.add(qbf);
-        }
-        bills = new ArrayList<>();
-        System.out.println("billsCanceled.size() = " + billsCanceled.size());
-        bills.addAll(billsCanceled);
-        System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
-        bills.addAll(billsCanceledP);
-        System.out.println("bills.size() = " + bills.size());
-
-        for (Bill b : bills) {
-            // Validate bill before processing
-            try {
-                validateBillForQBExport(b);
-            } catch (RuntimeException e) {
-                continue; // Skip this bill and process the next one
-            }
-
-            grantTot = 0.0;
-            List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-            QuickBookFormat qbf = new QuickBookFormat();
-
-            qbf.setRowType("SPL");
-            qbf.setTrnsType("Bill Refund");
-            qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getName());
-            qbf.setName("");
-            qbf.setInvItemType("");
-            qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
-            qbf.setDocNum(b.getDeptId());
-//            qbf.setDocNum(b.getInvoiceNumber());
-            qbf.setPoNum(b.getDeptId());
-            qbf.setQbClass(b.getDepartment().getName());
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName() + " / " + b.getBilledBill().getDeptId());
-            } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
-            }
-            qbf.setCustFld1("");
-            qbf.setCustFld2("");
-            qbf.setCustFld3("");
-            qbf.setCustFld4("");
-            qbf.setCustFld5("");
-            grantTot += b.getNetTotal();
-            qbfs.add(qbf);
-            for (BillItem bi : b.getBillExpenses()) {
-
-                // Validate expense item
-                try {
-                    validateExpenseMapping(bi.getItem(), b.getDeptId());
-                } catch (RuntimeException e) {
-                    continue; // Skip this expense and process the next one
-                }
-
-                // Use the item's printName directly - team will set this to match QB requirements
-                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
-            } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
-            }
-            quickBookFormats.add(qbf);
-
-            quickBookFormats.addAll(qbfs);
-
-            // Validate transaction balance before completing
-            try {
-                List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
-                // Note: Inventory amount is already included in qbfs, no need to add again
-                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
-            } catch (RuntimeException e) {
-                // Log the error but continue processing
-                
-            }
-
-            qbf = new QuickBookFormat();
-            qbf.setRowType("ENDTRNS");
-            quickBookFormats.add(qbf);
-        }
-
-        bills = new ArrayList<>();
-        System.out.println("billsReturn.size() = " + billsReturn.size());
-        bills.addAll(billsReturn);
-        System.out.println("billsReturnP.size() = " + billsReturnP.size());
-        bills.addAll(billsReturnP);
-        System.out.println("bills.size() = " + bills.size());
-
-        for (Bill b : bills) {
-            // Validate bill before processing
-            try {
-                validateBillForQBExport(b);
-            } catch (RuntimeException e) {
-                continue; // Skip this bill and process the next one
-            }
-
-            grantTot = 0.0;
-            List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-            QuickBookFormat qbf = new QuickBookFormat();
-
-            qbf.setRowType("SPL");
-            qbf.setTrnsType("Bill Refund");
-            qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getName());
-            qbf.setName("");
-            qbf.setInvItemType("");
-            qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
-            qbf.setDocNum(b.getDeptId());
-//            qbf.setDocNum(b.getInvoiceNumber());
-            qbf.setPoNum(b.getDeptId());
-            qbf.setQbClass(b.getDepartment().getName());
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getToInstitution().getName());
-            } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
-            }
-            qbf.setCustFld1("");
-            qbf.setCustFld2("");
-            qbf.setCustFld3("");
-            qbf.setCustFld4("");
-            qbf.setCustFld5("");
-            grantTot += b.getNetTotal();
-            qbfs.add(qbf);
-            for (BillItem bi : b.getBillExpenses()) {
-
-                // Validate expense item
-                try {
-                    validateExpenseMapping(bi.getItem(), b.getDeptId());
-                } catch (RuntimeException e) {
-                    continue; // Skip this expense and process the next one
-                }
-
-                // Use the item's printName directly - team will set this to match QB requirements
-                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
-            } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
-            }
-            quickBookFormats.add(qbf);
-
-            quickBookFormats.addAll(qbfs);
-
-            // Validate transaction balance before completing
-            try {
-                List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
-                // Note: Inventory amount is already included in qbfs, no need to add again
-                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
-            } catch (RuntimeException e) {
-                // Log the error but continue processing
-                
-            }
-
-            qbf = new QuickBookFormat();
-            qbf.setRowType("ENDTRNS");
-            quickBookFormats.add(qbf);
-        }
-
-        bills = new ArrayList<>();
-        System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
-        bills.addAll(billsReturnCancel);
-        System.out.println("billsReturnCancelP.size() = " + billsReturnCancelP.size());
-        bills.addAll(billsReturnCancelP);
-        System.out.println("bills.size() = " + bills.size());
-
-        for (Bill b : bills) {
-            // Validate bill before processing
-            try {
-                validateBillForQBExport(b);
-            } catch (RuntimeException e) {
-                continue; // Skip this bill and process the next one
-            }
-
-            grantTot = 0.0;
-            List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-            QuickBookFormat qbf = new QuickBookFormat();
-
-            qbf.setRowType("SPL");
-            qbf.setTrnsType("Bill");
-            qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getName());
-            qbf.setName("");
-            qbf.setInvItemType("");
-            qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
-            qbf.setDocNum(b.getDeptId());
-//            qbf.setDocNum(b.getInvoiceNumber());
-            qbf.setPoNum(b.getDeptId());
-            qbf.setQbClass(b.getDepartment().getName());
-            System.out.println("b.getInsId() = " + b.getInsId());
-            System.out.println("b.getDeptId() = " + b.getDeptId());
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
-            } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
-            }
-            qbf.setCustFld1("");
-            qbf.setCustFld2("");
-            qbf.setCustFld3("");
-            qbf.setCustFld4("");
-            qbf.setCustFld5("");
-            grantTot += b.getNetTotal();
-            qbfs.add(qbf);
-            for (BillItem bi : b.getBillExpenses()) {
-
-                // Validate expense item
-                try {
-                    validateExpenseMapping(bi.getItem(), b.getDeptId());
-                } catch (RuntimeException e) {
-                    continue; // Skip this expense and process the next one
-                }
-
-                // Use the item's printName directly - team will set this to match QB requirements
-                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                grantTot += bi.getNetValue();
-                qbfs.add(qbf);
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-
-            // Fallback: If no individual expense items found, check bill expense totals
-            if (b.getBillExpenses().isEmpty()) {
-
-                // Add expenses considered for costing (Transport-like)
-                if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-
-                // Add expenses NOT considered for costing (Installation-like)
-                if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-                    grantTot += b.getExpensesTotalNotConsideredForCosting();
-                    qbfs.add(qbf);
-                }
-            }
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
-            } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getPrintingName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
-            }
-            quickBookFormats.add(qbf);
-
-            quickBookFormats.addAll(qbfs);
-
-            // Validate transaction balance before completing
-            try {
-                List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
-                // Note: Inventory amount is already included in qbfs, no need to add again
-                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
-            } catch (RuntimeException e) {
-                // Log the error but continue processing
-                
-            }
-
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
         }
 
         System.out.println("bills.size() = " + bills.size());
-
     }
 
     public void createQBFormatCafeRGRNAndPurchaseBills() {
@@ -1737,14 +1315,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1860,14 +1438,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1985,14 +1563,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -2110,14 +1688,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -3560,11 +3138,13 @@ public class QuickBookReportController implements Serializable {
     }
 
     /**
-     * Enhanced method to get approved bills filtered by approval date instead of creation date.
-     * This method ensures only completed/approved bills are included in QB reports.
+     * Enhanced method to get approved bills filtered by approval date instead
+     * of creation date. This method ensures only completed/approved bills are
+     * included in QB reports.
      *
      * @param billClass - Bill class (BilledBill, CancelledBill)
-     * @param billTypeAtomic - BillTypeAtomic enum for precise bill type filtering
+     * @param billTypeAtomic - BillTypeAtomic enum for precise bill type
+     * filtering
      * @param dep - Department filter
      * @param ins - Institution filter
      * @param fd - From approval date
@@ -3575,18 +3155,16 @@ public class QuickBookReportController implements Serializable {
         String sql;
         Map<String, Object> temMap = new HashMap<>();
 
-        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
-                + " and b.retired=false "
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
                 + " and b.billTypeAtomic = :bta "
                 + " and b.department=:d "
                 + " and b.institution=:ins "
-                + " and b.completed = true "  // Only approved/completed bills
-                + " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+                + " and b.completed = true " // Only approved/completed bills
+                + " and b.approveAt between :fromDate and :toDate " // Filter by approval date
                 + " order by b.approveAt, b.id ";
 
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
-        temMap.put("bill", billClass.getClass());
         temMap.put("bta", billTypeAtomic);
         temMap.put("d", dep);
         temMap.put("ins", ins);
@@ -3594,24 +3172,52 @@ public class QuickBookReportController implements Serializable {
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    public List<Bill> getApprovedBills(List<BillTypeAtomic> billTypeAtomics, Department dep, Date fd, Date td) {
+        String sql;
+        Map<String, Object> temMap = new HashMap<>();
+
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " and b.billTypeAtomic in :btas "
+                + " and b.department=:d "
+                + " and b.completed = true " // Only approved/completed bills
+                + " and b.approveAt between :fromDate and :toDate " // Filter by approval date
+                + " order by b.approveAt, b.id ";
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("btas", billTypeAtomics);
+        temMap.put("d", dep);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
     /**
-     * Enhanced method to get departments that have approved bills within approval date range.
+     * Enhanced method to get departments that have approved bills within
+     * approval date range.
      *
      * @param billTypeAtomics - List of BillTypeAtomic values
      * @param ins - Institution filter
+     * @param siteFilter - Site filter (filters by bill.department.site), can be
+     * null
      * @param fd - From approval date
      * @param td - To approval date
      * @return List of departments with approved bills
      */
-    public List<Department> getApprovedDepartments(List<BillTypeAtomic> billTypeAtomics, Institution ins, Date fd, Date td) {
+    public List<Department> getApprovedDepartments(List<BillTypeAtomic> billTypeAtomics, Institution ins, Institution siteFilter, Date fd, Date td) {
         String sql;
         Map<String, Object> temMap = new HashMap<>();
 
         sql = "SELECT distinct(b.department) FROM Bill b WHERE b.retired=false "
                 + " and b.billTypeAtomic in :btas "
                 + " and b.institution=:ins "
-                + " and b.completed = true "  // Only approved/completed bills
-                + " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+                + " and b.completed = true ";  // Only approved/completed bills
+
+        // Add site filter if provided
+        if (siteFilter != null) {
+            sql += " and b.department.site = :site ";
+            temMap.put("site", siteFilter);
+        }
+
+        sql += " and b.approveAt between :fromDate and :toDate " // Filter by approval date
                 + " order by b.department.name ";
 
         temMap.put("fromDate", fd);
@@ -3680,7 +3286,6 @@ public class QuickBookReportController implements Serializable {
 
         pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-
         return pes;
     }
 
@@ -3745,9 +3350,6 @@ public class QuickBookReportController implements Serializable {
     }
 
     public Institution getInstitution() {
-        if (institution == null && getWebUserController().hasPrivilege("Developers")) {
-            institution = getSessionController().getInstitution();
-        }
         return institution;
     }
 

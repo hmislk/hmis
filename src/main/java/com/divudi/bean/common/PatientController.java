@@ -1022,10 +1022,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
+        paymentMethodData = new PaymentMethodData();
         current = getBill().getPatient();
-        
+
         PaymentMethod pm = getBill().getPaymentMethod();
-        
+
+        // Fetch original bill payments for display
         originalBillPayments = billBeanController.fetchBillPayments(getBill());
 
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
@@ -1035,7 +1037,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             cancelBill.setPaymentMethod(pm);
         }
-        
+
+        // Fetch bill items for display in cancel page
+        billItems = billBeanController.fetchBillItems(getBill());
     }
 
     public void clearDataForPatientRefund() {
@@ -1307,30 +1311,33 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public int settlePatientDepositReceiveCancelNew() {
-        if (getCancelBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
-            return 1;
-        }
-//        if (!current.getHasAnAccount()) {
-//            JsfUtil.addErrorMessage("Please Create Patient Account");
-//            return;
-//        }
-        if (paymentSchemeController.checkPaymentMethodError(getCancelBill().getPaymentMethod(), paymentMethodData)) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-            return 2;
+        if (current == null) {
+            return 1; // No Patient
         }
 
-        PaymentMethod tempPm = getCancelBill().getPaymentMethod();
+        // Ensure billedBill reference is set for automatic payment reversal
+        if (getCancelBill().getBilledBill() == null) {
+            getCancelBill().setBilledBill(getBill());
+        }
+
+        // Set payment method from original bill for display/record purposes
+        // (User input is ignored - payments will be auto-reversed from original bill)
+        getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
+
         String tempComment = getCancelBill().getComments();
 
+        // Copy bill details
         cancelBill.copy(getBill());
-        getCancelBill().setPaymentMethod(tempPm);
+        // Copy financial values (netTotal, total, discount, etc.) which are needed for proper cancellation
+        getCancelBill().copyValue(getBill());
+        getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
         getCancelBill().setComments(tempComment);
         getBill().setCancelled(true);
         getBill().setCancelledBill(getCancelBill());
-        getCancelBill().setReferenceBill(cancelBill);
-        getCancelBill().setNetTotal(0 - getBill().getNetTotal());
+        getCancelBill().setReferenceBill(getBill());
+        getCancelBill().invertValueOfThisBill();
 
+        // Save the cancellation bill (payment creation happens in PatientDepositController)
         settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
 
         billFacade.edit(getCancelBill());
@@ -1371,7 +1378,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void settleCancelBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
 
         saveCancelBill(billType, billNumberSuffix, patient);
-        billBeanController.setPaymentMethodData(getBill(), getCancelBill().getPaymentMethod(), getPaymentMethodData());
+        // Payment method data setting removed - payments are auto-reversed by PaymentService.createPaymentsForCancelling()
         addToCancelBill();
         saveBillItem();
         getCancelBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
@@ -1569,7 +1576,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     private void saveBillItem() {
+        if (getBill().isCancelled() && getBill().getCancelledBill() != null) {
+            for (BillItem tmp : getBillItems()) {
+                tmp.setId(null);
+                tmp.setCreatedAt(new Date());
+                tmp.setCreater(getSessionController().getLoggedUser());
+                tmp.setBill(getBill().getCancelledBill());
+                tmp.setNetValue(tmp.getNetValue());
+                billItemFacade.create(tmp);
+            }
+            return;
+        }
         for (BillItem tmp : getBillItems()) {
+            tmp.setId(null);
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getBill());
@@ -3141,7 +3160,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3159,7 +3178,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3287,6 +3306,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         return "/opd/patient?faces-redirect=true";
+    }
+
+    public String saveAndNavigateToAdmissionProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return null;
+        }
+        return admissionController.navigateToAdmissionProfilePage();
     }
 
     public boolean saveSelected(Patient p) {

@@ -57,6 +57,7 @@ public enum Privileges {
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
     OpdPackageBillCancel("OPD Package Bill Cancel"),
+    OpdEditPatientDetails("OPD Edit Patient Details"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -686,6 +687,8 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Approval">
     BillCancelRequestApproval("Bill Cancel Request Approval"),
     ItemRefundRequestApproval("Item Refund Request Approval"),
+    DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
+    DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -699,6 +702,7 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
+    AiChat("AI Chat")
     ;
 
     private final String label;
@@ -748,6 +752,7 @@ public enum Privileges {
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:
+            case OpdEditPatientDetails:
             case OpdCollectingCentreBilling:
             case OpdCollectingCentreBillSearch:
             case OpdCollectingCentreBillingMenu:
@@ -986,6 +991,8 @@ public enum Privileges {
             // Approval Privileges
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
+            case DrawerAdjustmentRequestApproval:
+            case DrawerAdjustmentDirect:
                 return "Approval";
             
             case NursingWorkBench:

@@ -1,23 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-<h:body>
-    <ui:composition template="/reports/index.xhtml">
-        <ui:define name="subcontent">
-            <h:form>
-                <p:panel header="Expiry Item Report">
-                    <h:panelGrid columns="8" class="w-100">
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                            <p:outputLabel value="From Date" for="fromDate" class="m-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <f:metadata>
+                    <f:viewAction action="#{pharmacyReportController.initExpiryReportDefaults()}" onPostback="false"/>
+                </f:metadata>
+                <h:form>
+                    <p:panel header="Expiry Item Report">
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" for="fromDate" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
@@ -25,14 +28,14 @@
                                 navigator="false"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                            <p:outputLabel value="To Date" for="toDate" class="m-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To Date" for="toDate" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
@@ -40,414 +43,669 @@
                                 navigator="false"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                            <p:outputLabel value="Date Range" for="phmDateRange" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Date Range" for="phmDateRange" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmDateRange"
                                 styleClass="w-100"
                                 value="#{pharmacyReportController.dateRange}">
-                            <f:selectItem itemLabel="Select" itemValue=""/>
-                            <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
-                            <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
-                            <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
-                            <f:selectItem itemLabel="Expired Items" itemValue="shortexpiry"/>
-                            <p:ajax
+                                <f:selectItem itemLabel="Select" itemValue=""/>
+                                <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
+                                <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
+                                <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
+                                <f:selectItem itemLabel="Expired Items" itemValue="shortexpiry"/>
+                                <p:ajax
                                     event="change"
                                     listener="#{pharmacyReportController.updateDateRange}"
                                     update="fromDate toDate"/>
-                        </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-university mr-2"/>
-                            <p:outputLabel value="Institution" for="phmIns" class="m-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
                                 value="#{pharmacyReportController.institution}"
                                 filter="true">
-                            <f:selectItem itemLabel="All Institutions"/>
-                            <f:selectItems
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems
                                     value="#{institutionController.companies}"
                                     var="ins"
                                     itemLabel="#{ins.name}"
                                     itemValue="#{ins}"/>
-                            <p:ajax process="phmIns" update="phmDept"/>
-                        </p:selectOneMenu>
+                                <p:ajax process="phmIns" update="phmDept"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
-                            <p:outputLabel value="Site" for="phmSite" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmSite"
                                 class="w-100"
                                 value="#{pharmacyReportController.site}"
                                 filter="true">
-                            <f:selectItem itemLabel="All Sites"/>
-                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                           itemValue="#{site}"/>
-                            <p:ajax process="phmSite" update="phmDept"/>
-                        </p:selectOneMenu>
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="phmDept"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-building mr-2"/>
-                            <p:outputLabel value="Department" for="phmDept" class="m-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <h:panelGroup id="phmDept">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup id="phmDept">
 
-                            <!-- Component 1: Without Institution and Site -->
-                            <p:selectOneMenu
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                <f:selectItem itemLabel="All Departments"/>
-                                <f:selectItems
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
-                            </p:selectOneMenu>
+                                </p:selectOneMenu>
 
-                            <!-- Component 2: With Site Only -->
-                            <p:selectOneMenu
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                <f:selectItem itemLabel="All Departments"/>
-                                <f:selectItems
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
-                            </p:selectOneMenu>
+                                </p:selectOneMenu>
 
-                            <!-- Component 3: With Institution Only -->
-                            <p:selectOneMenu
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                <f:selectItem itemLabel="All Departments"/>
-                                <f:selectItems
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
-                            </p:selectOneMenu>
+                                </p:selectOneMenu>
 
-                            <!-- Component 4: With Both Institution and Site -->
-                            <p:selectOneMenu
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
-                                <f:selectItem itemLabel="All Departments"/>
-                                <f:selectItems
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+
+                            </h:panelGroup>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf009;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Report Type" for="reportType" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="reportType"
+                                styleClass="w-100"
+                                value="#{pharmacyReportController.expiryReportType}">
+                                <f:selectItem itemLabel="Stock List (Default)" itemValue="stockList"/>
+                                <f:selectItem itemLabel="Item List" itemValue="itemList"/>
+                                <f:selectItem itemLabel="Detailed Report" itemValue="detailed"/>
                             </p:selectOneMenu>
 
-                        </h:panelGroup>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-tags mr-2"/>
-                            <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags mr-2"/>
+                                <p:outputLabel value="Item Category" for="phmCategory" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmCategory"
                                 value="#{pharmacyReportController.category}"
                                 filter="true"
                                 class="w-100 ">
-                            <f:selectItem itemLabel="All Categories"/>
-                            <f:selectItems
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems
                                     value="#{pharmaceuticalItemCategoryController.items}"
                                     var="category"
                                     itemLabel="#{category.name}"
                                     itemValue="#{category}"/>
-                            <p:ajax process="phmCategory" update="phmItem"/>
-                        </p:selectOneMenu>
+                                <p:ajax process="phmCategory" update="phmItem"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-box mr-2"/>
-                            <p:outputLabel value="Item" for="phmItem" class="m-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:autoComplete
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-capsules mr-2"/>
+                                <p:outputLabel value="Dosage Form" for="phmDf" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDf"
+                                value="#{pharmacyReportController.dosageForm}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Dosage Forms"/>
+                                <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all."
+                                    aria-label="Select one or more department types to filter results. Leave empty to include all.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                            </h:panelGroup>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-box mr-2"/>
+                                <p:outputLabel value="Item" for="phmItem" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
                                 id="phmItem"
-                                value="#{pharmacyReportController.amp}"
-                                completeMethod="#{ampController.completeAmp}"
+                                value="#{pharmacyReportController.selectedAmpDto}"
+                                completeMethod="#{itemController.completeAmpItemDto}"
+                                converter="ampDtoConverter"
                                 var="item"
                                 class="w-100"
                                 minQueryLength="3"
                                 maxResults="20"
                                 inputStyleClass="w-100"
                                 itemLabel="#{item.name}"
-                                itemValue="#{item}"/>
+                                itemValue="#{item}">
+                                <p:column headerText="Name">
+                                    <h:outputText value="#{item.name}"/>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputText value="#{item.code}"/>
+                                </p:column>
+                                <p:column headerText="Dept. Type">
+                                    <h:outputText value="#{item.departmentTypeLabel}"/>
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <p:badge value="#{item.inactive ? 'Inactive' : 'Active'}"
+                                             severity="#{item.inactive ? 'danger' : 'success'}"
+                                             style="font-size: 0.65em;"/>
+                                </p:column>
+                            </p:autoComplete>
 
-                    </h:panelGrid>
+                        </h:panelGrid>
 
-                    <div class="d-flex align-items-center">
-                        <p:commandButton
+                        <div class="d-flex align-items-center">
+                            <p:commandButton
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
                                 action="#{pharmacyReportController.processExpiryItemReport()}">
-                        </p:commandButton>
-                        <p:commandButton
-                                class="ui-button- mx-1"
+                            </p:commandButton>
+                            <p:commandButton
+                                class="ui-button-secondary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print All">
-                            <p:printer target="printPanel"/>
-                        </p:commandButton>
-                        <p:commandButton
+                                <p:printer target="printPanel"/>
+                            </p:commandButton>
+                            <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 action="#{pharmacyReportController.exportExpiryItemReportToExcel()}"
                                 value="Download">
-                        </p:commandButton>
-                        <p:commandButton
+                            </p:commandButton>
+                            <p:commandButton
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 action="#{pharmacyReportController.exportExpiryItemReportToPdf()}"
                                 value="PDF">
-                        </p:commandButton>
-                    </div>
+                            </p:commandButton>
+                        </div>
 
-                    <h:panelGroup id="printPanel">
-                        <div class="mt-5">
-                            <h5>Expiry Item Report</h5>
-                            <ui:repeat value="#{pharmacyReportController.itemStockMap.entrySet()}" var="entry"
-                                       varStatus="status1">
-                                <p:dataTable
-                                        id="tblExport2"
-                                        value="#{entry.value.entrySet()}"
-                                        rows="10"
-                                        var="map"
-                                        rowIndexVar="n">
+                        <h:panelGroup id="printPanel">
+                            <div class="mt-5">
+                                <!-- Stock List Report -->
+                                <h:panelGroup rendered="#{pharmacyReportController.expiryReportType eq 'stockList'}">
+                                    <h5>Expiry Item Report - Stock List</h5>
+                                    <p:dataTable
+                                        id="stockListTable"
+                                        value="#{pharmacyReportController.expiryStockListDtos}"
+                                        var="stock"
+                                        paginator="true"
+                                        rows="50"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="25,50,100">
 
-                                    <p:columnGroup type="header">
-                                        <p:row>
-                                            <p:column headerText="Department/Staff" width="5rem"/>
-                                            <p:column headerText="Item Category Code" width="5rem"/>
-                                            <p:column headerText="Item Category Name" width="10rem"/>
-                                            <p:column headerText="Item Code" width="5rem"/>
-                                            <p:column headerText="Item Name" width="5rem"/>
-                                            <p:column headerText="Base UOM" width="5rem"/>
-                                            <p:column headerText="Item Type" width="5rem"/>
-                                            <p:column headerText="Batch No" width="5rem"/>
-                                            <p:column headerText="Batch Date" width="5rem"/>
-                                            <p:column headerText="Expiry Date" width="5rem"/>
-                                            <p:column headerText="Supplier" width="5rem"/>
-                                            <p:column headerText="Shelf life remaining (Days)" width="5rem"/>
-                                            <p:column headerText="Rate" width="5rem"/>
-                                            <p:column headerText="MRP" width="5rem"/>
-                                            <p:column headerText="Quantity" width="5rem"/>
-                                            <p:column headerText="Item Value" width="5rem"/>
-                                            <p:column headerText="Batch wise Item Value" width="5rem"/>
-                                            <p:column headerText="Batch wise Qty" width="5rem"/>
-                                            <p:column headerText="Item wise total" width="5rem"/>
-                                            <p:column headerText="Item wise Qty" width="5rem"/>
-                                        </p:row>
-                                    </p:columnGroup>
-
-                                    <p:subTable value="#{map.value}" var="f">
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.department.name ne null ? f.department.name: f.staff.person.nameWithTitle}"/>
-                                            <f:facet name="footer">
-                                                <h:outputText value="Total"/>
-                                            </f:facet>
+                                        <p:column headerText="Department" width="8rem">
+                                            <h:outputText value="#{stock.departmentName}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.item.category.id}"/>
+                                        <p:column headerText="Category Code" width="5rem">
+                                            <h:outputText value="#{stock.categoryCode}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.item.category.name}"/>
+                                        <p:column headerText="Category Name" width="8rem">
+                                            <h:outputText value="#{stock.categoryName}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.item.code}"/>
+                                        <p:column headerText="Dosage Form" width="7rem">
+                                            <h:outputText value="#{stock.dosageFormName}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.item.name}"/>
+                                        <p:column headerText="Item Code" width="6rem">
+                                            <h:outputText value="#{stock.itemCode}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText
-                                                    value="#{f.itemBatch.item.measurementUnit.name eq null ? '-' : f.itemBatch.item.measurementUnit.name}"/>
+                                        <p:column headerText="Item Name" width="12rem">
+                                            <h:outputText value="#{stock.itemName}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.item.category.name}"/>
+                                        <p:column headerText="UOM" width="4rem">
+                                            <h:outputText value="#{stock.uom}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.id}"/>
+                                        <p:column headerText="Item Type" width="6rem">
+                                            <h:outputText value="#{stock.itemType}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.lastPurchaseBillItem.bill.createdAt}"/>
+                                        <p:column headerText="Batch Number" width="6rem">
+                                            <h:outputText value="#{stock.batchNumber}"/>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.dateOfExpire}"/>
+                                        <p:column headerText="Expiry Date" width="6rem">
+                                            <h:outputText value="#{stock.expiryDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText
-                                                    value="#{f.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"/>
-                                        </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText
-                                                    value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
-                                                    style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}"/>
-                                        </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.itemBatch.purcahseRate}">
+                                        <p:column headerText="Cost Rate" width="6rem" style="text-align: right;">
+                                            <h:outputText value="#{stock.costRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputLabel value="#{f.itemBatch.retailsaleRate}">
+                                        <p:column headerText="Retail Rate" width="6rem" style="text-align: right;">
+                                            <h:outputText value="#{stock.retailRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </p:column>
-                                        <p:column width="10em">
-                                            <h:outputText value="#{f.stock}"/>
-                                        </p:column>
-                                        <p:column width="10em">
-                                            <h:outputLabel value="#{f.itemBatch.purcahseRate * f.stock}">
+                                        <p:column headerText="Quantity" width="5rem" style="text-align: right;">
+                                            <h:outputText value="#{stock.stockQuantity}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </p:column>
-                                        <p:column width="10em" style="text-align: center;">
-                                            <h:outputText value="-"/>
+                                        <p:column headerText="Value at Cost Rate" width="7rem" style="text-align: right;">
+                                            <h:outputText value="#{stock.valueAtCostRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
                                         </p:column>
-                                        <p:column width="10em" style="text-align: center;">
-                                            <h:outputText value="-"/>
+                                        <p:column headerText="Value at Retail Rate" width="7rem" style="text-align: right;">
+                                            <h:outputText value="#{stock.valueAtRetailRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
                                         </p:column>
-                                        <p:column width="10em" style="text-align: center;">
-                                            <h:outputText value="-"/>
-                                        </p:column>
-                                        <p:column width="10em" style="text-align: center;">
-                                            <h:outputText value="-"/>
-                                        </p:column>
+
+                                        <!-- Footer with totals -->
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column footerText="" colspan="16"
-                                                          style="text-align: center; font-weight: bold;"/>
-                                                <p:column>
+                                                <p:column footerText="Total" colspan="13" style="text-align: center; font-weight: bold;"/>
+                                                <p:column style="text-align: right; font-weight: bold;">
                                                     <f:facet name="footer">
-                                                        <h:outputText
-                                                                value="#{pharmacyReportController.calculateBatchWiseTotalOfExpiredItems(entry.key, map.key)}"
-                                                                style="font-weight: bold;">
+                                                        <h:outputText value="#{pharmacyReportController.totalValueAtCostRate}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column>
+                                                <p:column style="text-align: right; font-weight: bold;">
                                                     <f:facet name="footer">
-                                                        <h:outputText
-                                                                value="#{pharmacyReportController.calculateBatchWiseQtyOfExpiredItems(entry.key, map.key)}"
-                                                                style="font-weight: bold;">
+                                                        <h:outputText value="#{pharmacyReportController.totalValueAtRetailRate}">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column footerText=""/>
-                                                <p:column footerText=""/>
                                             </p:row>
                                         </p:columnGroup>
-                                    </p:subTable>
-                                    <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column footerText="" colspan="18"
-                                                      style="text-align: center; font-weight: bold;"/>
-                                            <p:column>
-                                                <f:facet name="footer">
+                                    </p:dataTable>
+                                </h:panelGroup>
+
+                                <!-- Item List Report -->
+                                <h:panelGroup rendered="#{pharmacyReportController.expiryReportType eq 'itemList'}">
+                                    <h5>Expiry Item Report - Item List</h5>
+                                    <p:dataTable
+                                        id="itemListTable"
+                                        value="#{pharmacyReportController.expiryItemListDtos}"
+                                        var="item"
+                                        paginator="true"
+                                        rows="50"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="25,50,100">
+
+                                        <p:column headerText="Department" width="10rem">
+                                            <h:outputText value="#{item.departmentName}"/>
+                                        </p:column>
+                                        <p:column headerText="Category Code" width="6rem">
+                                            <h:outputText value="#{item.categoryCode}"/>
+                                        </p:column>
+                                        <p:column headerText="Category Name" width="9rem">
+                                            <h:outputText value="#{item.categoryName}"/>
+                                        </p:column>
+                                        <p:column headerText="Dosage Form" width="9rem">
+                                            <h:outputText value="#{item.dosageFormName}"/>
+                                        </p:column>
+                                        <p:column headerText="Item Code" width="8rem">
+                                            <h:outputText value="#{item.itemCode}"/>
+                                        </p:column>
+                                        <p:column headerText="Item Name" width="15rem">
+                                            <h:outputText value="#{item.itemName}"/>
+                                        </p:column>
+                                        <p:column headerText="UOM" width="5rem">
+                                            <h:outputText value="#{item.uom}"/>
+                                        </p:column>
+                                        <p:column headerText="Item Type" width="8rem">
+                                            <h:outputText value="#{item.itemType}"/>
+                                        </p:column>
+                                        <p:column headerText="Earliest Expiry Date" width="8rem">
+                                            <h:outputText value="#{item.expiryDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Total Stock Quantity" width="8rem" style="text-align: right;">
+                                            <h:outputText value="#{item.totalStockQuantity}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Total Cost Value" width="10rem" style="text-align: right;">
+                                            <h:outputText value="#{item.totalCostValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Total Retail Value" width="10rem" style="text-align: right;">
+                                            <h:outputText value="#{item.totalRetailValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <!-- Footer with totals -->
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total" colspan="10" style="text-align: center; font-weight: bold;"/>
+                                                <p:column style="text-align: right; font-weight: bold;">
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{pharmacyReportController.totalValueAtCostRate}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right; font-weight: bold;">
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{pharmacyReportController.totalValueAtRetailRate}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+                                </h:panelGroup>
+
+                                <!-- Detailed Report (Original) -->
+                                <h:panelGroup rendered="#{pharmacyReportController.expiryReportType eq 'detailed'}">
+                                    <h5>Expiry Item Report - Detailed</h5>
+                                    <ui:repeat value="#{pharmacyReportController.itemStockMap.entrySet()}" var="entry"
+                                               varStatus="status1">
+                                        <p:dataTable
+                                            id="tblExport2"
+                                            value="#{entry.value.entrySet()}"
+                                            rows="10"
+                                            var="map"
+                                            rowIndexVar="n">
+
+                                            <p:columnGroup type="header">
+                                                <p:row>
+                                                    <p:column headerText="Department/Staff" width="5rem"/>
+                                                    <p:column headerText="Item Category Code" width="5rem"/>
+                                                    <p:column headerText="Item Category Name" width="10rem"/>
+                                                    <p:column headerText="Dosage Form" width="8rem"/>
+                                                    <p:column headerText="Item Code" width="5rem"/>
+                                                    <p:column headerText="Item Name" width="5rem"/>
+                                                    <p:column headerText="Base UOM" width="5rem"/>
+                                                    <p:column headerText="Item Type" width="5rem"/>
+                                                    <p:column headerText="Batch No" width="5rem"/>
+                                                    <p:column headerText="Batch Date" width="5rem"/>
+                                                    <p:column headerText="Expiry Date" width="5rem"/>
+                                                    <p:column headerText="Supplier" width="5rem"/>
+                                                    <p:column headerText="Shelf life remaining (Days)" width="5rem"/>
+                                                    <p:column headerText="Rate" width="5rem"/>
+                                                    <p:column headerText="MRP" width="5rem"/>
+                                                    <p:column headerText="Quantity" width="5rem"/>
+                                                    <p:column headerText="Item Value" width="5rem"/>
+                                                    <p:column headerText="Batch wise Item Value" width="5rem"/>
+                                                    <p:column headerText="Batch wise Qty" width="5rem"/>
+                                                    <p:column headerText="Item wise total" width="5rem"/>
+                                                    <p:column headerText="Item wise Qty" width="5rem"/>
+                                                </p:row>
+                                            </p:columnGroup>
+
+                                            <p:subTable value="#{map.value}" var="f">
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.department.name ne null ? f.department.name: f.staff.person.nameWithTitle}"/>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="Total"/>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.item.category.id}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.item.category.name}"/>
+                                                </p:column>
+                                                <p:column width="8em">
+                                                    <h:outputText value="#{f.itemBatch.item.dosageForm.name}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.item.code}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.item.name}"/>
+                                                </p:column>
+                                                <p:column width="10em">
                                                     <h:outputText
-                                                            value="#{pharmacyReportController.calculateItemWiseTotalOfExpiredItems(entry.key)}"
-                                                            style="font-weight: bold;">
+                                                        value="#{f.itemBatch.item.measurementUnit.name eq null ? '-' : f.itemBatch.item.measurementUnit.name}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.item.category.name}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.id}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.lastPurchaseBillItem.bill.createdAt}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.dateOfExpire}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText
+                                                        value="#{f.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText
+                                                        value="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire)}"
+                                                        style="#{pharmacyReportController.calculateDaysRemaining(f.itemBatch.dateOfExpire) &lt; 0 ? 'color:red;' : 'color:green;'}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.itemBatch.purcahseRate}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="footer">
-                                                    <h:outputText
-                                                            value="#{pharmacyReportController.calculateItemWiseQtyOfExpiredItems(entry.key)}"
-                                                            style="font-weight: bold;">
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputLabel value="#{f.itemBatch.retailsaleRate}">
                                                         <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                        <p:row rendered="#{status1.last}">
-                                            <p:column footerText="Total" colspan="16"
-                                                      style="text-align: center; font-weight: bold;"/>
-                                            <p:column>
-                                                <f:facet name="footer">
-                                                    <h:outputText
-                                                            value="#{pharmacyReportController.stockPurchaseValue}"
-                                                            style="font-weight: bold;">
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputText value="#{f.stock}"/>
+                                                </p:column>
+                                                <p:column width="10em">
+                                                    <h:outputLabel value="#{f.itemBatch.purcahseRate * f.stock}">
                                                         <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="footer">
-                                                    <h:outputText
-                                                            value="#{pharmacyReportController.quantity}"
-                                                            style="font-weight: bold;">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="footer">
-                                                    <h:outputText
-                                                            value="#{pharmacyReportController.stockPurchaseValue}"
-                                                            style="font-weight: bold;">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="footer">
-                                                    <h:outputText
-                                                            value="#{pharmacyReportController.quantity}"
-                                                            style="font-weight: bold;">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-                                    </p:columnGroup>
-                                </p:dataTable>
-                            </ui:repeat>
-                        </div>
-                    </h:panelGroup>
-                </p:panel>
-            </h:form>
-        </ui:define>
-    </ui:composition>
-</h:body>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column width="10em" style="text-align: center;">
+                                                    <h:outputText value="-"/>
+                                                </p:column>
+                                                <p:column width="10em" style="text-align: center;">
+                                                    <h:outputText value="-"/>
+                                                </p:column>
+                                                <p:column width="10em" style="text-align: center;">
+                                                    <h:outputText value="-"/>
+                                                </p:column>
+                                                <p:column width="10em" style="text-align: center;">
+                                                    <h:outputText value="-"/>
+                                                </p:column>
+                                                <p:columnGroup type="footer">
+                                                    <p:row>
+                                                        <p:column footerText="" colspan="17"
+                                                                  style="text-align: center; font-weight: bold;"/>
+                                                        <p:column>
+                                                            <f:facet name="footer">
+                                                                <h:outputText
+                                                                    value="#{pharmacyReportController.calculateBatchWiseTotalOfExpiredItems(entry.key, map.key)}"
+                                                                    style="font-weight: bold;">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </f:facet>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <f:facet name="footer">
+                                                                <h:outputText
+                                                                    value="#{pharmacyReportController.calculateBatchWiseQtyOfExpiredItems(entry.key, map.key)}"
+                                                                    style="font-weight: bold;">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </f:facet>
+                                                        </p:column>
+                                                        <p:column footerText=""/>
+                                                        <p:column footerText=""/>
+                                                    </p:row>
+                                                </p:columnGroup>
+                                            </p:subTable>
+                                            <p:columnGroup type="footer">
+                                                <p:row>
+                                                    <p:column footerText="" colspan="19"
+                                                              style="text-align: center; font-weight: bold;"/>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText
+                                                                value="#{pharmacyReportController.calculateItemWiseTotalOfExpiredItems(entry.key)}"
+                                                                style="font-weight: bold;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText
+                                                                value="#{pharmacyReportController.calculateItemWiseQtyOfExpiredItems(entry.key)}"
+                                                                style="font-weight: bold;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                </p:row>
+                                                <p:row rendered="#{status1.last}">
+                                                    <p:column footerText="Total" colspan="17"
+                                                              style="text-align: center; font-weight: bold;"/>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText
+                                                                value="#{pharmacyReportController.stockPurchaseValue}"
+                                                                style="font-weight: bold;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText
+                                                                value="#{pharmacyReportController.quantity}"
+                                                                style="font-weight: bold;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText
+                                                                value="#{pharmacyReportController.stockPurchaseValue}"
+                                                                style="font-weight: bold;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText
+                                                                value="#{pharmacyReportController.quantity}"
+                                                                style="font-weight: bold;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                </p:row>
+                                            </p:columnGroup>
+                                        </p:dataTable>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
 </html>

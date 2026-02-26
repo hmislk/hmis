@@ -42,8 +42,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -1080,6 +1082,17 @@ public class WebUserController implements Serializable {
         return "/admin/users/user_icons?faces-redirect=true";
     }
 
+    public String navigateToManageUserIconsTree() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        userIconController.setUser(selected);
+        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
+        userIconController.setIconsLoaded(false);
+        return "/admin/users/user_icons_tree?faces-redirect=true";
+    }
+
     public String navigateToManageUserSubscriptions() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -1155,6 +1168,33 @@ public class WebUserController implements Serializable {
         getUserDepartmentController().setSelectedUser(selected);
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_routes?faces-redirect=true";
+    }
+    
+    public String navigateToManageUserRole() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        webUserRoleUserController.setWebUser(selected);
+        webUserRoleUserController.setDepartments(fillWebUserDepartments(selected));
+        webUserRoleUserController.loadWebUserRoles();
+        webUserRoleUserController.clear();
+        return "/admin/users/user_role_users?faces-redirect=true";
+    }
+    
+    public List<Department> fillWebUserDepartments(WebUser wu) {
+        Set<Department> departmentSet = new HashSet<>();
+        String sql = "SELECT i.department "
+                + " FROM WebUserDepartment i "
+                + " WHERE i.retired = :ret "
+                + " AND i.webUser = :wu "
+                + " ORDER BY i.department.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("wu", wu);
+        List<Department> depts = departmentFacade.findByJpql(sql, m);
+        departmentSet.addAll(depts);
+        return new ArrayList<>(departmentSet);
     }
 
     public String toManageDashboards() {

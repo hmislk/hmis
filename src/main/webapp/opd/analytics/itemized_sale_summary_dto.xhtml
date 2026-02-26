@@ -119,15 +119,13 @@
                                                  icon="fas fa-file-pdf"
                                                  value="Export as PDF">
                                     <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
-                                </p:commandButton>
-
-                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
-                                                 icon="fas fa-print"
-                                                 ajax="false"
-                                                 value="Print Table">
-                                    <p:printer target="tbl" />
-                                </p:commandButton>
-
+                                </p:commandButton>    
+                                <p:button 
+                                    disabled="false"
+                                    value="Print Table"
+                                    styleClass="ui-button-warning m-1"
+                                    icon="pi pi-print"
+                                    outcome="/opd/analytics/summary_reports/itemized_sale_summary_print_1.xhtml"/>
                                 <p:commandButton id="btnExcel" class="m-1 ui-button-success"
                                                  icon="fas fa-file-excel"
                                                  ajax="false" value="Export to Excel">
@@ -154,7 +152,7 @@
                                              rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,20"
-                                             rowKey="#{row.itemId}">
+                                             rowKey="#{row.itemId}_#{row.staffName}">
                                     <f:facet name="header" >
                                         <h:outputText value="Itemized Sales Summary (DTO - Optimized)" ></h:outputText>
                                     </f:facet>
@@ -189,6 +187,12 @@
                                             action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
                                             <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
                                         </p:commandLink>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Doctor / Technician" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.staffName}" />
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">

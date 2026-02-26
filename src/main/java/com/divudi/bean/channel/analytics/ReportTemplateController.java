@@ -20,6 +20,7 @@ import com.divudi.core.data.analytics.ReportTemplateColumn;
 import com.divudi.core.data.analytics.ReportTemplateFilter;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import static com.divudi.core.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.ReportTemplate;
@@ -28,6 +29,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ReportTemplateFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -513,6 +515,8 @@ public class ReportTemplateController implements Serializable {
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false "
                 + " and p.retired=false ";
 
@@ -546,7 +550,7 @@ public class ReportTemplateController implements Serializable {
             parameters.put("site", paramSite);
         }
 
-        jpql += " group by p";
+        // Note: Removed "group by p" as it's incompatible with fetch join clauses in JPQL
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -601,6 +605,8 @@ public class ReportTemplateController implements Serializable {
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false "
                 + " and p.retired=false ";
 
@@ -639,7 +645,7 @@ public class ReportTemplateController implements Serializable {
             parameters.put("site", paramSite);
         }
 
-        jpql += " group by p";
+        // Note: Removed "group by p" as it's incompatible with fetch join clauses in JPQL
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -675,6 +681,15 @@ public class ReportTemplateController implements Serializable {
         pb.setTotal(bundleTotal);
 
         return pb;
+    }
+    
+    @EJB
+    private ChannelService channelService;
+    
+    public ChannelServiceCategorywiseDetailsWrapperDTO generateChannelCategorywiseDetailsForShitEnd(Long shiftStartBillId){
+        
+        return channelService.fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(shiftStartBillId);
+        
     }
 
     public ReportTemplateRowBundle generateReport(
@@ -2885,7 +2900,7 @@ public class ReportTemplateController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

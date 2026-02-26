@@ -180,6 +180,14 @@
                                         <p:ajax process="@this" update="po" event="change" />
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
                                     </p:selectOneMenu>
+                                    
+                                    <p:outputLabel value="Department Type"
+                                                   class="form-label"></p:outputLabel>
+                                    <p:outputLabel
+                                        id="selDepartmentType"
+                                        value="#{purchaseOrderController.aprovedBill.departmentType}"
+                                        class="w-100" >
+                                    </p:outputLabel>
 
                                     <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration">
                                         <div class="d-flex mb-3">
@@ -276,15 +284,15 @@
                     <h:panelGroup  id="gpBillPreview" class="my-2">
 
                         <ph:po_custom_1
-                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format', true)}"
                             bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
 
                         <ph:po_custom_2
-                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', true)}"
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 2 Paper Format', true)}"
                             bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
 
                         <ph:po_custom_3_letter
-                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - Letter Paper Format', true)}"
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Letter Paper Format', true)}"
                             bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
 
 
@@ -356,17 +364,17 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
-                                        id="custom1Paper"
-                                        value="#{purchaseOrderConfigController.custom1Paper}" />
-                                    <p:outputLabel for="custom1Paper" value="A4 Paper Custom Format 1" class="ms-2" />
+                                        id="a4custom1paper"
+                                        value="#{purchaseOrderConfigController.a4custom1paper}" />
+                                    <p:outputLabel for="a4custom1paper" value="A4 Paper Custom Format 1" class="ms-2" />
                                     <small class="form-text text-muted d-block">A4 purchase order format - Custom 1</small>
                                 </div>
 
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
-                                        id="custom2Paper"
-                                        value="#{purchaseOrderConfigController.custom2Paper}" />
-                                    <p:outputLabel for="custom2Paper" value="A4 Paper Custom Format 2" class="ms-2" />
+                                        id="a4custom2paper"
+                                        value="#{purchaseOrderConfigController.a4custom2paper}" />
+                                    <p:outputLabel for="a4custom2paper" value="A4 Paper Custom Format 2" class="ms-2" />
                                     <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
                                 </div>
 

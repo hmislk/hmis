@@ -34,12 +34,13 @@
                                             itemLabel="#{option}"
                                             itemValue="#{option}"/>
                                     </p:selectOneMenu>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
-                                        value="Cancel Package Bill" 
+                                        value="Cancel Package Bill"
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" 
+                                        class="ui-button-danger"
+                                        onclick="if(!confirm('Are you sure you want to cancel this package bill?')){return false;}"
                                         action="#{billPackageController.cancelPackageBatchBill()}">
                                     </p:commandButton>
                                 </h:panelGrid>
@@ -264,10 +265,19 @@
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1 w-100"
-                                                    layout="block" 
-                                                    id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    layout="block"
+                                                    id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{billPackageController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
+                                                    <pa:multiple_payment_methods_view
+                                                        controller="#{billPackageController}"
+                                                        paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
+                                                        class="w-100"
+                                                        rendered="#{billPackageController.isInBatchCancellationDisplayMode()}"/>
+                                                    <pa:multiple_payment_methods
+                                                        controller="#{billPackageController}"
+                                                        paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
+                                                        class="w-100"
+                                                        rendered="#{not billPackageController.isInBatchCancellationDisplayMode()}"/>
 
                                                 </h:panelGroup>
                                                 </fieldset>

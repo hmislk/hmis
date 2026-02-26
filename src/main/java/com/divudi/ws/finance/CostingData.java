@@ -5,23 +5,30 @@ import com.divudi.core.data.dto.BillDetailsDTO;
 import com.divudi.core.data.dto.BillFinanceDetailsDTO;
 import com.divudi.core.data.dto.BillItemDetailsDTO;
 import com.divudi.core.data.dto.BillItemFinanceDetailsDTO;
+import com.divudi.core.data.dto.PaymentDTO;
 import com.divudi.core.data.dto.PharmaceuticalBillItemDTO;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -34,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.persistence.TemporalType;
 
 @Path("costing_data")
 @RequestScoped
@@ -50,6 +58,9 @@ public class CostingData {
 
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+
+    @EJB
+    private PaymentFacade paymentFacade;
 
     @Inject
     ApiKeyController apiKeyController;
@@ -294,6 +305,17 @@ public class CostingData {
             dto.setBillItems(billItemDTOs);
         }
 
+        // Convert Payments - always use explicit query to avoid LazyInitializationException
+        List<Payment> payments = findPaymentsFromBill(bill);
+
+        if (payments != null && !payments.isEmpty()) {
+            List<PaymentDTO> paymentDTOs = new ArrayList<>();
+            for (Payment payment : payments) {
+                paymentDTOs.add(convertPaymentToDTO(payment));
+            }
+            dto.setPayments(paymentDTOs);
+        }
+
         return dto;
     }
 
@@ -415,6 +437,181 @@ public class CostingData {
         Map<String, Object> params = new HashMap<>();
         params.put("billItem", billItem);
         return pharmaceuticalBillItemFacade.findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * Find Payments from Bill
+     */
+    private List<Payment> findPaymentsFromBill(Bill bill) {
+        if (bill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT p FROM Payment p WHERE p.bill.id = :billId AND p.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", bill.getId());
+        return paymentFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Convert Payment entity to PaymentDTO
+     */
+    private PaymentDTO convertPaymentToDTO(Payment payment) {
+        PaymentDTO dto = new PaymentDTO();
+        dto.setId(payment.getId());
+        dto.setBillId(payment.getBill() != null ? payment.getBill().getId() : null);
+        dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null);
+        dto.setPaidValue(payment.getPaidValue());
+        dto.setCreatedAt(payment.getCreatedAt());
+        dto.setPaymentDate(payment.getPaymentDate());
+
+        // Bank details
+        if (payment.getBank() != null) {
+            dto.setBankId(payment.getBank().getId());
+            dto.setBankName(payment.getBank().getName());
+        }
+
+        // Credit company
+        if (payment.getCreditCompany() != null) {
+            dto.setCreditCompanyId(payment.getCreditCompany().getId());
+            dto.setCreditCompanyName(payment.getCreditCompany().getName());
+        }
+
+        // Staff
+        if (payment.getToStaff() != null) {
+            dto.setToStaffId(payment.getToStaff().getId());
+            dto.setToStaffName(payment.getToStaff().getName());
+        }
+
+        // Other fields
+        dto.setReferenceNo(payment.getReferenceNo());
+        dto.setPolicyNo(payment.getPolicyNo());
+        dto.setChequeRefNo(payment.getChequeRefNo());
+        dto.setChequeDate(payment.getChequeDate());
+        dto.setComments(payment.getComments());
+        dto.setRetired(payment.isRetired());
+
+        return dto;
+    }
+
+    /**
+     * List bills by bill type for a date range and department.
+     * Used by AI agents to drill into specific transaction types when investigating
+     * F15 report discrepancies.
+     *
+     * Endpoint: GET /costing_data/bills_by_type
+     * Params:
+     *   fromDate     - start datetime, format: yyyy-MM-dd HH:mm:ss  (e.g. 2026-02-18 00:00:00)
+     *   toDate       - end datetime,   format: yyyy-MM-dd HH:mm:ss  (e.g. 2026-02-18 23:59:59)
+     *   departmentId - department ID (e.g. 485 for Main Pharmacy)
+     *   billTypeAtomic - bill type name (e.g. PHARMACY_RETAIL_SALE, PHARMACY_GRN)
+     *   limit        - max results (default 200, max 1000)
+     *
+     * Filters apply on Bill.createdAt to align with PharmacyService F15 logic.
+     *
+     * Returns lightweight bill summary list (not full bill details).
+     * Use /costing_data/by_bill_id/{id} to retrieve full details including bill items.
+     */
+    @GET
+    @Path("/bills_by_type")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBillsByType(
+            @QueryParam("fromDate") String fromDateStr,
+            @QueryParam("toDate") String toDateStr,
+            @QueryParam("departmentId") Long departmentId,
+            @QueryParam("billTypeAtomic") String billTypeAtomic,
+            @QueryParam("limit") Integer limit) {
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            return errorResponse("Not a valid key", 401);
+        }
+
+        if (fromDateStr == null || fromDateStr.trim().isEmpty()) {
+            return errorResponse("Parameter 'fromDate' is required (format: yyyy-MM-dd HH:mm:ss)", 400);
+        }
+        if (toDateStr == null || toDateStr.trim().isEmpty()) {
+            return errorResponse("Parameter 'toDate' is required (format: yyyy-MM-dd HH:mm:ss)", 400);
+        }
+        if (departmentId == null) {
+            return errorResponse("Parameter 'departmentId' is required", 400);
+        }
+        if (billTypeAtomic == null || billTypeAtomic.trim().isEmpty()) {
+            return errorResponse("Parameter 'billTypeAtomic' is required (e.g. PHARMACY_RETAIL_SALE)", 400);
+        }
+
+        int maxResults = (limit != null && limit > 0 && limit <= 1000) ? limit : 200;
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date fromDate;
+        Date toDate;
+        try {
+            fromDate = sdf.parse(fromDateStr.trim());
+            toDate = sdf.parse(toDateStr.trim());
+        } catch (ParseException e) {
+            return errorResponse("Invalid date format. Use yyyy-MM-dd HH:mm:ss (e.g. 2026-02-18 00:00:00)", 400);
+        }
+
+        try {
+            String jpql = "SELECT b FROM Bill b "
+                    + "WHERE b.retired = false "
+                    + "AND b.department.id = :departmentId "
+                    + "AND b.billTypeAtomic = :billTypeAtomic "
+                    + "AND b.createdAt >= :fromDate "
+                    + "AND b.createdAt <= :toDate "
+                    + "ORDER BY b.id ASC";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("departmentId", departmentId);
+            params.put("billTypeAtomic", com.divudi.core.data.BillTypeAtomic.valueOf(billTypeAtomic.trim()));
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResults);
+
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Bill b : bills) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("billId", b.getId());
+                row.put("billNumber", b.getDeptId());
+                row.put("billType", b.getBillType() != null ? b.getBillType().toString() : null);
+                row.put("billTypeAtomic", b.getBillTypeAtomic() != null ? b.getBillTypeAtomic().toString() : null);
+                row.put("createdAt", b.getCreatedAt());
+                row.put("billTime", b.getBillTime());
+                row.put("netTotal", b.getNetTotal());
+                row.put("grossTotal", b.getTotal());
+                row.put("retired", b.isRetired());
+                row.put("completed", b.isCompleted());
+
+                if (b.getBillFinanceDetails() != null) {
+                    BillFinanceDetails bfd = b.getBillFinanceDetails();
+                    row.put("stockValueAtRetailRate", toDouble(bfd.getTotalRetailSaleValue()));
+                    row.put("stockValueAtCostRate", toDouble(bfd.getTotalCostValue()));
+                    row.put("stockValueAtPurchaseRate", toDouble(bfd.getTotalPurchaseValue()));
+                }
+
+                result.add(row);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("code", 200);
+            response.put("count", result.size());
+            response.put("departmentId", departmentId);
+            response.put("billTypeAtomic", billTypeAtomic);
+            response.put("fromDate", fromDateStr);
+            response.put("toDate", toDateStr);
+            response.put("data", result);
+            return Response.status(200).entity(gson.toJson(response)).build();
+
+        } catch (IllegalArgumentException e) {
+            String validValues = Arrays.stream(com.divudi.core.data.BillTypeAtomic.values())
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", "));
+            return errorResponse("Unknown billTypeAtomic value: " + billTypeAtomic
+                    + ". Valid values (com.divudi.core.data.BillTypeAtomic): " + validValues, 400);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
     }
 
     /**
