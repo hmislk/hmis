@@ -22,42 +22,6 @@
                                     margin: 0mm!important;
                                 }
                                 
-                                .table-item {
-                                    width: 99.9%;
-                                    font-size: 8pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-
-                                .table-batch {
-                                    width: 99.9%;
-                                    font-size: 8pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-                                
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
                             }
                             
                             @media print {
@@ -66,7 +30,7 @@
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
-                                        font-size: 10pt;
+                                        font-size: 8pt;
                                     }
                                 }
 
@@ -79,21 +43,25 @@
                                     width: 297mm!important;
                                 }
                                 
+                            }
+
+                            @media screen, print {
+
                                 .header{
                                     line-height: 1.1;
                                     margin: 0mm!important;
                                 }
-                                
+
                                 .table-item {
                                     width: 99.9%;
-                                    font-size: 10px!important;
+                                    font-size: 8pt!important;
                                     margin-top: 3mm!important;
                                     border-collapse: collapse !important;
                                 }
 
                                 .table-batch {
                                     width: 99.9%;
-                                    font-size: 10px!important;
+                                    font-size: 8pt!important;
                                     margin-top: 3mm!important;
                                     border-collapse: collapse !important;
                                 }
@@ -120,7 +88,16 @@
                                     padding: 3px 8px;
                                     vertical-align: top;
                                 }
-                                
+
+                                /* Hide PrimeFaces sort icons in datatable headers */
+                                .ui-sortable-column .ui-sortable-column-icon,
+                                .ui-sortable-column .ui-sortable-icon,
+                                .ui-sortable-column .pi-sort,
+                                .ui-sortable-column .ui-sort-up,
+                                .ui-sortable-column .ui-sort-down,
+                                .ui-sortable-column .ui-column-title .pi-sort {
+                                    display: none !important;
+                                }
                             }
                             
                         </style>
@@ -200,7 +177,7 @@
                                                     <h:outputText value="#{pharmacyReportController.dosageForm != null ? pharmacyReportController.dosageForm.name : 'All'}"/>
 
                                                     <h:outputText value="Item:" styleClass="label"/>
-                                                    <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
+                                                    <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
 
                                                     <h:outputText value="Consignment:" styleClass="label"/>
                                                     <h:outputText value="#{pharmacyReportController.consignmentItem ? 'true' : 'false'}"/>

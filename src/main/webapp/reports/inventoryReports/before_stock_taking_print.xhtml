@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <style>
+                            @media screen{
+                                /* page background */
+                                .body {
+                                    background-color: #f0f0f0;
+                                }
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                    background-color: #ffffff;
+                                }
+
+                            }
+                            
+                            @media print {
+                                @page {
+                                    size: A4 landscape!important;
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+                                
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                }
+
+                            }
+
+                            @media screen, print {
+                                .table-detail .billNo{
+                                    font-size: 10px !important;
+                                }
+
+                                table {
+                                    width: 99.9%;
+                                    font-size: 9pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+
+                                .report-header-table {
+                                    border-collapse: collapse;
+                                    font-size: 8pt!important;
+                                }
+
+                                .report-header-table .label {
+                                    font-weight: 600;
+                                    padding-right: 5px;
+                                    white-space: nowrap;
+                                }
+
+                                .report-header-table td {
+                                    padding: 3px 8px;
+                                    vertical-align: top;
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+
+                                th, td {
+                                    border: 1pt solid #000000 !important;
+                                    padding: 1pt!important;
+                                    text-align: left;
+                                    overflow-wrap: break-word;
+                                    white-space: normal;
+                                }
+                            }
+                            
+                        </style>
+                        <h:panelGroup>
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Before Stock Taking" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="itemRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/inventoryReports/before_stock_taking?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="itemRp" class="d-flex justify-content-center body">
+                                <div class="paper">
+                                    <div class="header" >
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="Before Stock Taking"/>
+                                            </div>
+                                        <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="4" styleClass="report-header-table" style="font-size:10px; width:70%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="System Stock:" styleClass="label"/>
+                                                <h:outputText rendered="#{pharmacyController.transferType eq 'equal'}" value="Equal to"/>
+                                                <h:outputText rendered="#{pharmacyController.transferType eq 'notEqual'}" value="Not Equal to"/>
+                                                <h:outputText rendered="#{pharmacyController.transferType eq 'gThan'}" value="Greater than"/>
+                                                <h:outputText rendered="#{pharmacyController.transferType eq 'lThan'}" value="Less than"/>
+                                                <h:outputText rendered="#{pharmacyController.transferType eq 'gThanOrEqual'}" value="Greater than or Equal to"/>
+                                                <h:outputText rendered="#{pharmacyController.transferType eq 'lThanOrEqual'}" value="Less than or Equal to"/>
+
+                                                <h:outputText value="Stock Quantity:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.qty}"/>
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Department:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.dept != null ? pharmacyController.dept.name : 'All'}"/>
+
+                                                <h:outputText value="Item Category:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
+
+                                            </h:panelGrid>
+                                        </div>   
+                                    </div>
+                                    <p:dataTable id="tbl1" value="#{pharmacyController.stockList}" 
+                                         var="s" 
+                                         rowKey="#{s.id}"
+                                         styleClass="table-small">
+
+
+                                        <p:column 
+                                            headerText="Unique Id"
+                                            width="15mm">
+                                            <h:outputText value="#{s.id}" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Item Code"
+                                            width="15mm">
+                                            <h:outputText value="#{s.itemBatch.item.code}" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Item Name"
+                                            width="30mm">
+                                            <h:outputText value="#{s.itemBatch.item.name}" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Locator"
+                                            width="15mm">
+                                            <h:outputText value="#{s.stockLocator}" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Batch Code"
+                                            width="15mm">
+                                            <h:outputText value="#{s.itemBatch.batchNo}" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Expiry Date"
+                                            width="15mm">
+                                            <h:outputText value="#{s.itemBatch.dateOfExpire}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column 
+                                            headerText="System Stock"
+                                            width="20mm">
+                                            <h:outputText value="#{s.stock}" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Physical Stock"
+                                            width="20mm">
+                                            <h:outputText value="0.0" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Rate(LKR)"
+                                            width="15mm">
+                                            <h:outputText value="#{s.itemBatch.purcahseRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Mrp(LKR)"
+                                            width="15mm">
+                                            <h:outputText value="#{s.itemBatch.retailsaleRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column 
+                                            headerText="User"
+                                            width="15mm">
+                                            <h:outputText value="" />
+                                        </p:column>
+                                        <p:column  
+                                            headerText="Is Stock Adjust Required" 
+                                            width="15mm">
+                                            <h:outputText value="NO" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Remarks"
+                                            width="15mm">
+                                            <h:outputText value="" />
+                                        </p:column>
+                                        <p:column 
+                                            headerText="Status"
+                                            width="15mm">
+                                            <h:outputText value="" />
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </div>     
+                            </h:panelGroup>
+                        </h:panelGroup>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

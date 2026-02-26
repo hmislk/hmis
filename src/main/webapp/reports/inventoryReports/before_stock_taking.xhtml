@@ -101,11 +101,24 @@
                                              value="Process" 
                                              action="#{pharmacyController.createBeforeStockTakingReport()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            <p:commandButton 
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="before_stock_taking_print?faces-redirect=true"
+                                    value="To Print">
                             </p:commandButton>
+
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="before_stock_taking_report" postProcessor="#{pharmacyController.postProcessBeforeStockTakingReportExcel}"/>
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF"
+                                action="#{pharmacyController.exportBeforeStockTakingReportToPDF()}">
                             </p:commandButton>
                         </div>
 
@@ -128,8 +141,7 @@
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-
-                                <p:column headerText="Unique Id">
+                                <p:column headerText="Unique Id" class="ui-">
                                     <h:outputText value="#{s.id}" />
                                 </p:column>
                                 <p:column headerText="Item Code">

@@ -125,15 +125,26 @@
                                              value="Process"
                                              action="#{pharmacyController.generateGrnReturnVarianceReport()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-primary mx-1" icon="fas fa-print" ajax="false" value="Print">
-                                <p:printer target="varianceTable"/>
+                            <p:commandButton 
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="grn_return_variance_report_print?faces-redirect=true"
+                                    value="To Print">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                             value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="varianceTable" fileName="grn_return_variance_report"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false"
+                                value="Export to Excel"
+                                action="#{pharmacyController.exportGrnReturnVarianceReportToExcel()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="varianceTable" fileName="grn_return_variance_report"/>
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon="fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF" 
+                                action="#{pharmacyController.exportGrnReturnVarianceReportToPDF()}">
                             </p:commandButton>
                         </div>
 
