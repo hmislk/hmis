@@ -1948,9 +1948,15 @@
                         action="#{apiKeyController.toManageMyApiKeys()}" 
                         value="Manage My API Keys" icon="pi pi-key"  >
                     </p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{webUserController.hasPrivilege('AiChat')}"
+                        action="#{aiChatController.toAiChat()}"
+                        value="AI Assistant" icon="pi pi-comments" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}"
                         url="#{request.contextPath}/resources/swagger-ui/index.html"
                         target="_blank"
                         value="API Swagger Document" icon="fa fa-book"  >

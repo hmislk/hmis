@@ -173,6 +173,7 @@
                                             <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'ITEM_REFUND'}" value="#{r.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'EDIT_REQUEST'}" value="#{r.requestType.displayName}"></p:badge>
+                                            <p:badge rendered="#{r.requestType eq 'DRAWER_ADJUSTMENT'}" value="#{r.requestType.displayName}" severity="info" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                     </p:column>
 
@@ -188,7 +189,7 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
-                                                rendered="#{webUserController.hasPrivilege('BillCancelRequestApproval')}"
+                                                rendered="#{(r.requestType eq 'BILL_CANCELLATION' and webUserController.hasPrivilege('BillCancelRequestApproval')) or (r.requestType eq 'DRAWER_ADJUSTMENT' and webUserController.hasPrivilege('DrawerAdjustmentRequestApproval'))}"
                                                 disabled="#{r.status eq 'CANCELLED'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >
