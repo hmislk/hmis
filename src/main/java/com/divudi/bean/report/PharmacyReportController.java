@@ -7509,6 +7509,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportBatchWisePharmacyStockToPdf() {
+        if (rows == null || rows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -7607,7 +7612,6 @@ public class PharmacyReportController implements Serializable {
 
     // Info table for Closing_stock_report
     private PdfPTable createInfoTableClosingStockReport(SimpleDateFormat sdf) throws DocumentException {
-        System.out.println("infotable started = ");
         PdfPTable infoTable = new PdfPTable(11);
         infoTable.setWidthPercentage(100);
         infoTable.setSpacingAfter(10);
@@ -7660,6 +7664,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportItemWisePharmacyStockToPdf() {
+        if (rows == null || rows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -8185,6 +8194,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportExpiryItemReportToExcel() {
+        if (getItemStockMap() == null || getItemStockMap().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -8192,10 +8206,15 @@ public class PharmacyReportController implements Serializable {
         response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.xlsx");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+        Map<String, Object> filters = getFiltersForExpiryItemReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Report");
             int rowIndex = 0;
+
+            if (filters != null || !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiry Item Report", filters);
+            }
 
             Row headerRow = sheet.createRow(rowIndex++);
 
@@ -8280,6 +8299,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportExpiryItemReportToPdf() {
+        if (getItemStockMap() == null || getItemStockMap().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -8299,6 +8323,12 @@ public class PharmacyReportController implements Serializable {
             document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
                     FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
+
+            Map<String, Object> filters = getFiltersForExpiryItemReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
 
             PdfPTable table = new PdfPTable(20);
             table.setWidthPercentage(100);
@@ -10035,7 +10065,7 @@ public class PharmacyReportController implements Serializable {
     // DateRange to Label
     public String getDateRangeAsString() {
         if (dateRange == null) {
-            return "";
+            return "-";
         }
 
         switch (dateRange) {
@@ -10048,7 +10078,25 @@ public class PharmacyReportController implements Serializable {
             case "shortexpiry":
                 return "Expired Items";
             default:
-                return "";
+                return "-";
+        }
+    }
+
+    // expireReportType to Label
+    public String getExpiryReportTypeAsString() {
+        if (expiryReportType == null) {
+            return "-";
+        }
+
+        switch (expiryReportType) {
+            case EXPIRY_REPORT_TYPE_STOCK_LIST:
+                return "Stock List";
+            case EXPIRY_REPORT_TYPE_ITEM_LIST:
+                return "Item List";
+            case EXPIRY_REPORT_TYPE_DETAILED:
+                return "Detailed Report";
+            default:
+                return "-";
         }
     }
 
@@ -10067,7 +10115,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Receiving Department", toDepartment != null ? toDepartment.getName() : "All");
         filters.put("Item Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
-        filters.put("Item Name/Code", item != null ? item.getName() + " / " + item.getCode() : " ");
+        filters.put("Item Name/Code", item != null ? item.getName() + " / " + item.getCode() : "-");
         filters.put("Department Type", getSelectedDepartmentTypesString() != null ? getSelectedDepartmentTypesString() : "All");
 
         String docStatus;
@@ -10117,6 +10165,26 @@ public class PharmacyReportController implements Serializable {
         return filters;
     }
 
+    // Filters for expiry_item_report
+    public Map<String, Object> getFiltersForExpiryItemReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("Date Range", getDateRangeAsString());
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Report Type", getExpiryReportTypeAsString());
+        filters.put("Item Category", category != null ? category.getName() : "All");
+        filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : " ");
+        filters.put("Department Type", getSelectedDepartmentTypesString());
+
+        return filters;
+    }
+
     // Filters for slow_fast_none_movement_report
     public Map<String, Object> getFiltersForSlowFastNonMovementReport() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
@@ -10161,6 +10229,11 @@ public class PharmacyReportController implements Serializable {
 
     // PDF Export: good_in_transit
     public void exportGoodInTransitToPDF() {
+        if (pharmacyRows == null || pharmacyRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -10329,6 +10402,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportGoodInTransitReportToExcel() {
+        if (pharmacyRows == null || pharmacyRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -10470,6 +10548,13 @@ public class PharmacyReportController implements Serializable {
 
     // PDF Export: slow/fast movement report
     public void exportSlowFastMovementReportToPDF() {
+        List<StockReportRecord> records = "byvalue".equals(sortType) ? movementRecords : movementRecordsQty;
+
+        if (records == null || records.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -10526,15 +10611,6 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(cell);
             }
 
-            List<StockReportRecord> records = "byvalue".equals(sortType) ? movementRecords : movementRecordsQty;
-
-            if (records == null || records.isEmpty()) {
-                JsfUtil.addErrorMessage("No data available to export.");
-                document.close();
-                context.responseComplete();
-                return;
-            }
-
             int slNo = 1;
             for (StockReportRecord deptEntry : records) {
                 Item item =  deptEntry.getItem();
@@ -10562,6 +10638,11 @@ public class PharmacyReportController implements Serializable {
 
     // PDF Export: non movement report
     public void exportNonMovementReportToPDF() {
+        if (itemLastSuppliers == null || itemLastSuppliers.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -10632,6 +10713,13 @@ public class PharmacyReportController implements Serializable {
 
     // Excel Export: slow/fast movement report
     public void exportSlowFastMovementReportToExcel() {
+        List<StockReportRecord> records = "byvalue".equals(sortType) ? movementRecords : movementRecordsQty;
+
+        if (records == null || records.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -10675,13 +10763,7 @@ public class PharmacyReportController implements Serializable {
             headerRow.createCell(10).setCellValue("QIH");
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
-            DecimalFormat df = new DecimalFormat("#,##0.##");
-
-            List<StockReportRecord> records = "byvalue".equals(sortType) ? movementRecords : movementRecordsQty;
-
-            if (records == null) {
-                return;
-            }
+            DecimalFormat df = new DecimalFormat("#,##0.##");      
 
             int slNo = 1;
             for (StockReportRecord deptEntry : records) {
@@ -10712,6 +10794,11 @@ public class PharmacyReportController implements Serializable {
 
     // Excel Export: non movement report
     public void exportNonMovementReportToExcel() {
+        if (itemLastSuppliers == null || itemLastSuppliers.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -10772,6 +10859,11 @@ public class PharmacyReportController implements Serializable {
 
     // Excel Export: stock_ledger_dto
     public void exportStockLedgerDtoToExcel() {
+        if (stockLedgerDtos == null || stockLedgerDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 

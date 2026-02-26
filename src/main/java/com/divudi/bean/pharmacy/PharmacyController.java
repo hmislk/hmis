@@ -5317,6 +5317,11 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportStockTransferDetailReportToExcel() {
+        if (departmentWiseRows == null || departmentWiseRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export for the selected filters.");
+            return;
+        }
+        
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -5414,6 +5419,11 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportStockTransferDetailReportToPDF() {
+        if (departmentWiseRows == null || departmentWiseRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -10796,6 +10806,11 @@ public class PharmacyController implements Serializable {
 
     // PDF Export: stock_transfer_report_summaryReport
     public void exportStockTransferSummaryReportToPDF() {
+        if (departmentSummaries == null || departmentSummaries.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -10868,6 +10883,11 @@ public class PharmacyController implements Serializable {
 
     // Stock Transfer Summary Report By Bill PDF export
     public void exportStockTransferByBillToPDF() {
+        if (departmentWiseBillList == null || departmentWiseBillList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -11098,6 +11118,11 @@ public class PharmacyController implements Serializable {
 
     // Excel Export: stock_summary_report_summaryReport
     public void exportStockTransferSummaryReportToExcel() {
+        if (departmentSummaries == null || departmentSummaries.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -11312,6 +11337,11 @@ public class PharmacyController implements Serializable {
 
     // PDF export: grn_return_variable_report
     public void exportGrnReturnVarianceReportToPDF() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -11399,6 +11429,11 @@ public class PharmacyController implements Serializable {
     
     // Excel Export: Grn Return Variance Report
     public void exportGrnReturnVarianceReportToExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -11472,6 +11507,11 @@ public class PharmacyController implements Serializable {
 
     // PDF Export: Before Stock Taking Report
     public void exportBeforeStockTakingReportToPDF() {
+        if (stockList == null || stockList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
