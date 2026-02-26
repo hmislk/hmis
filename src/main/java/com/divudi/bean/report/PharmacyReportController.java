@@ -7485,23 +7485,262 @@ public class PharmacyReportController implements Serializable {
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         return cell;
     }
-
-    // For postProcessor of closing stock report
-    public String getSelectedDepartmentTypesString() {
-        if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
-            return "All";
+    
+    // Helper calculation methods
+    private double calculateCostValue(BillItemDTO item) {
+        if (item.getCostRate() != null && item.getQty() != null) {
+            return item.getCostRate() * item.getQty();
         }
-        return selectedDepartmentTypes.stream().map(dt -> {
-            try {
-                Method m = dt.getClass().getMethod("getLabel");
-                Object v = m.invoke(dt);
-                return v != null ? v.toString() : dt.toString();
-            } catch (Exception ex) {
-                return dt.toString();
-            }
-        }).collect(Collectors.joining(", "));
+        return 0.0;
     }
 
+    private double calculateItemValue(BillItemDTO item) {
+        if (item.getRetailRate() != null && item.getQty() != null) {
+            return item.getRetailRate() * item.getQty();
+        }
+        return 0.0;
+    }
+
+    private void addSummary(Document document, double grandTotal) throws DocumentException {
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph("Summary:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+        document.add(new Paragraph("Total Bills: " + (cogsBillDtos != null ? cogsBillDtos.size() : 0)));
+        document.add(new Paragraph("Grand Total: " + String.format("%.2f", grandTotal)));
+    }
+
+    public void exportBatchWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            document.add(new Paragraph(" "));
+
+            // Title
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            // Info table for filters and metadata 
+            PdfPTable infoTable = createInfoTableClosingStockReport(sdf);
+            document.add(infoTable);
+
+            PdfPTable table = new PdfPTable(14);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
+                "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+                table.addCell(f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-");
+                table.addCell(f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-");
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseRate() != null ? String.format("%.2f", f.getPurchaseRate()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getCostRate() != null ? String.format("%.2f", f.getCostRate()) : "0.00");
+                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
+                table.addCell(f.getRetailRate() != null ? String.format("%.2f", f.getRetailRate()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(7);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockCostValue()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+
+    // Helper method for spacer cells
+    private PdfPCell createSpacerCell() {
+        PdfPCell cell = new PdfPCell(new Phrase(""));
+        return cell;
+    }
+
+    // Info table for Closing_stock_report
+    private PdfPTable createInfoTableClosingStockReport(SimpleDateFormat sdf) throws DocumentException {
+        System.out.println("infotable started = ");
+        PdfPTable infoTable = new PdfPTable(11);
+        infoTable.setWidthPercentage(100);
+        infoTable.setSpacingAfter(10);
+
+        // Relative widths: data columns wider, spacer columns narrow
+        float[] colWidths = {1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f};
+        infoTable.setWidths(colWidths);
+
+        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+        infoTable.addCell(new PdfPCell(new Phrase("Date:", labelFont)));
+        if (reportController.getReportTemplateFileIndexName().equals("Opening Stock")) {
+            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(fromDate) : sdf.format(new Date())), dataFont)));
+        } else {
+            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(toDate) : sdf.format(new Date())), dataFont)));
+        }
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Report Type:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((reportType.equals("itemWise") ? "Item Wise" : "Batch Wise"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Institute:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((institution != null ? institution.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Site:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((site != null ? site.getName() : "All"), dataFont)));
+
+        infoTable.addCell(new PdfPCell(new Phrase("Department:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((department != null ? department.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Department Type:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((getSelectedDepartmentTypesString() != null ? getSelectedDepartmentTypesString() : "None"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Item Category:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((category != null ? category.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Dosage Forms:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((dosageForm != null ? dosageForm.getName() : "All"), dataFont)));
+
+        infoTable.addCell(new PdfPCell(new Phrase("Item Name:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((selectedAmpDto != null ? selectedAmpDto.getName() : "All"), dataFont)));
+        infoTable.addCell(createSpacerCell());
+        infoTable.addCell(new PdfPCell(new Phrase("Is Consignment:", labelFont)));
+        infoTable.addCell(new PdfPCell(new Phrase((consignmentItem != false ? "true" : "false"), dataFont)));
+        
+        for (int i = 0; i < 6; i++) {
+            infoTable.addCell(createSpacerCell());
+        }
+        return infoTable;
+    }
+
+    public void exportItemWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            document.add(new Paragraph(" "));
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            // Info table for filters and metadata 
+            PdfPTable infoTable = createInfoTableClosingStockReport(sdf);
+            document.add(infoTable);
+
+            PdfPTable table = new PdfPTable(9);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Closing Stock", "Purchase Value", "Cost Value", "Sale Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(5);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell(String.format("%.2f", getStockCostValue()));
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+    
     @Deprecated
     public void processClosingStockReport() {
         stockSaleValue = 0.0;
@@ -9638,6 +9877,22 @@ public class PharmacyReportController implements Serializable {
                 return "All Document Types";
         }
     }
+    
+    // For postProcessor of closing stock report
+    public String getSelectedDepartmentTypesString() {
+        if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
+            return "All";
+        }
+        return selectedDepartmentTypes.stream().map(dt -> {
+            try {
+                Method m = dt.getClass().getMethod("getLabel");
+                Object v = m.invoke(dt);
+                return v != null ? v.toString() : dt.toString();
+            } catch (Exception ex) {
+                return dt.toString();
+            }
+        }).collect(Collectors.joining(", "));
+    }
 
     // PostProcessor for closing stock report excel export, add filter data and title
     public void postProcessXLSClosingStockReport(Object document) {
@@ -9755,261 +10010,6 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception ex) {
             Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error in Excel preProcessor", ex);
-        }
-    }
-
-    // Helper calculation methods
-    private double calculateCostValue(BillItemDTO item) {
-        if (item.getCostRate() != null && item.getQty() != null) {
-            return item.getCostRate() * item.getQty();
-        }
-        return 0.0;
-    }
-
-    private double calculateItemValue(BillItemDTO item) {
-        if (item.getRetailRate() != null && item.getQty() != null) {
-            return item.getRetailRate() * item.getQty();
-        }
-        return 0.0;
-    }
-
-    private void addSummary(Document document, double grandTotal) throws DocumentException {
-        document.add(new Paragraph(" "));
-        document.add(new Paragraph("Summary:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-        document.add(new Paragraph("Total Bills: " + (cogsBillDtos != null ? cogsBillDtos.size() : 0)));
-        document.add(new Paragraph("Grand Total: " + String.format("%.2f", grandTotal)));
-    }
-
-    public void exportBatchWisePharmacyStockToPdf() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = context.getExternalContext();
-        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-
-        try (OutputStream out = response.getOutputStream()) {
-            Document document = new Document(PageSize.A4.rotate());
-            PdfWriter.getInstance(document, out);
-            document.open();
-
-            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                    FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph(" "));
-
-            // Title
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(10);
-            document.add(title);
-
-            // Info table for filters and metadata 
-            PdfPTable infoTable = createInfoTableClosingStockReport(sdf);
-            document.add(infoTable);
-
-            PdfPTable table = new PdfPTable(14);
-            table.setWidthPercentage(100);
-            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
-            table.setWidths(columnWidths);
-
-            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
-
-            for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
-            }
-
-            List<PharmacyRow> rows = getRows();
-
-            if (rows == null || rows.isEmpty()) {
-                JsfUtil.addErrorMessage("No data available to export");
-                context.responseComplete();
-                return;
-            }
-
-            int serial = 1;
-            for (PharmacyRow f : rows) {
-                table.addCell(String.valueOf(serial++));
-                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
-                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
-                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
-                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
-                table.addCell(f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-");
-                table.addCell(f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-");
-                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
-                table.addCell(f.getPurchaseRate() != null ? String.format("%.2f", f.getPurchaseRate()) : "0.00");
-                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
-                table.addCell(f.getCostRate() != null ? String.format("%.2f", f.getCostRate()) : "0.00");
-                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
-                table.addCell(f.getRetailRate() != null ? String.format("%.2f", f.getRetailRate()) : "0.00");
-                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
-            }
-
-            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-            footerCell.setColspan(7);
-            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(footerCell);
-            table.addCell(String.format("%.2f", getStockQty()));
-            table.addCell("");
-            table.addCell(String.format("%.2f", getStockPurchaseValue()));
-            table.addCell("");
-            table.addCell(String.format("%.2f", getStockCostValue()));
-            table.addCell("");
-            table.addCell(String.format("%.2f", getStockSaleValue()));
-
-            document.add(table);
-            document.close();
-            context.responseComplete();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
-        }
-    }
-
-    // Helper method for spacer cells
-    private PdfPCell createSpacerCell() {
-        PdfPCell cell = new PdfPCell(new Phrase(""));
-        return cell;
-    }
-
-    // Info table for Closing_stock_report
-    private PdfPTable createInfoTableClosingStockReport(SimpleDateFormat sdf) throws DocumentException {
-        System.out.println("infotable started = ");
-        PdfPTable infoTable = new PdfPTable(11);
-        infoTable.setWidthPercentage(100);
-        infoTable.setSpacingAfter(10);
-
-        // Relative widths: data columns wider, spacer columns narrow
-        float[] colWidths = {1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f};
-        infoTable.setWidths(colWidths);
-
-        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
-        Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
-
-        infoTable.addCell(new PdfPCell(new Phrase("Date:", labelFont)));
-        if (reportController.getReportTemplateFileIndexName().equals("Opening Stock")) {
-            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(fromDate) : sdf.format(new Date())), dataFont)));
-        } else {
-            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(toDate) : sdf.format(new Date())), dataFont)));
-        }
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Report Type:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((reportType.equals("itemWise") ? "Item Wise" : "Batch Wise"), dataFont)));
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Institute:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((institution != null ? institution.getName() : "All"), dataFont)));
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Site:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((site != null ? site.getName() : "All"), dataFont)));
-
-        infoTable.addCell(new PdfPCell(new Phrase("Department:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((department != null ? department.getName() : "All"), dataFont)));
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Department Type:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((getSelectedDepartmentTypesString() != null ? getSelectedDepartmentTypesString() : "None"), dataFont)));
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Item Category:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((category != null ? category.getName() : "All"), dataFont)));
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Dosage Forms:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((dosageForm != null ? dosageForm.getName() : "All"), dataFont)));
-
-        infoTable.addCell(new PdfPCell(new Phrase("Item Name:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((selectedAmpDto != null ? selectedAmpDto.getName() : "All"), dataFont)));
-        infoTable.addCell(createSpacerCell());
-        infoTable.addCell(new PdfPCell(new Phrase("Is Consignment:", labelFont)));
-        infoTable.addCell(new PdfPCell(new Phrase((consignmentItem != false ? "true" : "false"), dataFont)));
-        
-        for (int i = 0; i < 6; i++) {
-            infoTable.addCell(createSpacerCell());
-        }
-        return infoTable;
-    }
-
-    public void exportItemWisePharmacyStockToPdf() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = context.getExternalContext();
-        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-
-        try (OutputStream out = response.getOutputStream()) {
-            Document document = new Document(PageSize.A4.rotate());
-            PdfWriter.getInstance(document, out);
-            document.open();
-
-            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                    FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph(" "));
-
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(10);
-            document.add(title);
-
-            // Info table for filters and metadata 
-            PdfPTable infoTable = createInfoTableClosingStockReport(sdf);
-            document.add(infoTable);
-
-            PdfPTable table = new PdfPTable(9);
-            table.setWidthPercentage(100);
-            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2.5f, 2.5f, 2.5f, 2.5f};
-            table.setWidths(columnWidths);
-
-            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Closing Stock", "Purchase Value", "Cost Value", "Sale Value"};
-
-            for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
-            }
-
-            List<PharmacyRow> rows = getRows();
-
-            if (rows == null || rows.isEmpty()) {
-                JsfUtil.addErrorMessage("No data available to export");
-                context.responseComplete();
-                return;
-            }
-
-            int serial = 1;
-            for (PharmacyRow f : rows) {
-                table.addCell(String.valueOf(serial++));
-                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
-                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
-                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
-                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
-
-                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
-                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
-                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
-                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
-            }
-
-            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-            footerCell.setColspan(5);
-            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(footerCell);
-            table.addCell(String.format("%.2f", getStockQty()));
-            table.addCell(String.format("%.2f", getStockPurchaseValue()));
-            table.addCell(String.format("%.2f", getStockCostValue()));
-            table.addCell(String.format("%.2f", getStockSaleValue()));
-
-            document.add(table);
-            document.close();
-            context.responseComplete();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
         }
     }
 
