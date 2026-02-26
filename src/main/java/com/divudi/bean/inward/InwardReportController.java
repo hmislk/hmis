@@ -380,95 +380,95 @@ public class InwardReportController implements Serializable {
 
     public void processSurgeryCountSurgeryWiseReport() {
         surgeryCountSurgeryWiseList = new ArrayList<>();
+        if (fromYearStartDate == null || toYearEndDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append(" select i.id, ")
+                .append(" i.name, ")
+                .append(" c.name, ")
+                .append(" function('MONTH', b.createdAt) ")
+                .append(" from BilledBill b ")
+                .append(" join b.procedure p ") // INNER JOIN — procedure must exist
+                .append(" join p.item i ") // INNER JOIN — item must exist
+                .append(" left join i.category c ") // LEFT JOIN — category may be null
+                .append(" where b.retired = false ")
+                .append(" and b.cancelled = false ") // ← RESTORED missing condition
+                .append(" and b.billType = :bt ")
+                .append(" and b.createdAt between :fd and :td ")
+                .append(" and p is not null ")
+                .append(" and i is not null ");
 
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder();
-
-        jpql.append(" select b from BilledBill b ")
-                .append(" left join fetch b.procedure ")
-                .append(" where b.billType = :billType ")
-                .append(" and b.cancelled = false ")
-                .append(" and b.retired = false ")
-                .append(" and b.createdAt between :fromDate and :toDate ");
-
-        params.put("billType", BillType.SurgeryBill);
-        params.put("fromDate", fromYearStartDate);
-        params.put("toDate", toYearEndDate);
+        params.put("bt", BillType.SurgeryBill);
+        params.put("fd", fromYearStartDate);
+        params.put("td", toYearEndDate);
 
         if (institution != null) {
             jpql.append(" and b.institution = :inst ");
             params.put("inst", institution);
         }
-
         if (department != null) {
             jpql.append(" and b.department = :dept ");
             params.put("dept", department);
         }
-
         if (site != null) {
             jpql.append(" and b.department.site = :site ");
             params.put("site", site);
         }
-
         if (surgeryType != null) {
-            jpql.append(" and b.procedure is not null and b.procedure.item is not null and b.procedure.item.category = :stype ");
+            jpql.append(" and c = :stype ");
             params.put("stype", surgeryType);
         }
-
         if (surgeryItem != null) {
-            jpql.append(" and b.procedure is not null and b.procedure.item = :sitem ");
+            jpql.append(" and i = :sitem ");
             params.put("sitem", surgeryItem);
         }
 
-        jpql.append(" order by b.createdAt ");
+        jpql.append(" order by i.name ");
 
-        List<Bill> rawList = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        List<Object[]> results = billFacade.findObjectArrayByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        if (rawList == null || rawList.isEmpty()) {
+        if (results == null || results.isEmpty()) {
+            JsfUtil.addErrorMessage("No surgery records found for the selected period.");
             return;
         }
 
         Map<Long, SurgeryCountSurgeryWiseDTO> surgeryMap = new LinkedHashMap<>();
-        Calendar cal = Calendar.getInstance();
 
-        for (Bill bill : rawList) {
-            if (bill.getBillItems() == null) {
-                continue;
+        for (Object[] row : results) {
+            Long itemId = row[0] != null ? ((Number) row[0]).longValue() : 0L;
+            String surgeryName = row[1] != null ? row[1].toString() : "Unknown";
+            String categoryName = row[2] != null ? row[2].toString() : "N/A";
+            int month = row[3] != null ? ((Number) row[3]).intValue() : 0;
+
+            SurgeryCountSurgeryWiseDTO dto = surgeryMap.get(itemId);
+            if (dto == null) {
+                dto = new SurgeryCountSurgeryWiseDTO();
+                dto.setSurgeryName(surgeryName);
+                dto.setSurgeryCategory(categoryName);
+                surgeryMap.put(itemId, dto);
             }
 
-            Long itemId = bill.getProcedure().getItem().getId();
-            String itemName = bill.getProcedure().getItem().getName();
-            String categoryName = (bill.getProcedure().getItem().getCategory() != null)
-                    ? bill.getProcedure().getItem().getCategory().getName() : "N/A";
-
-            SurgeryCountSurgeryWiseDTO aggregated = surgeryMap.get(itemId);
-            if (aggregated == null) {
-                aggregated = new SurgeryCountSurgeryWiseDTO(
-                        itemId,
-                        itemName,
-                        categoryName,
-                        null
-                );
-                surgeryMap.put(itemId, aggregated);
+            // function('MONTH') returns 1–12; Calendar.MONTH is 0–11
+            int monthIndex = month - 1;
+            if (monthIndex >= 0 && monthIndex < 12) {
+                dto.addMonthCount(monthIndex, 1);
             }
-
-            if (bill.getCreatedAt() != null) {
-                cal.setTime(bill.getCreatedAt());
-                int month = cal.get(Calendar.MONTH);
-                aggregated.addMonthCount(month, 1);
-            }
-
         }
 
         SurgeryCountSurgeryWiseDTO grandTotal = new SurgeryCountSurgeryWiseDTO();
-        grandTotal.setGrandTotal(true);
         grandTotal.setSurgeryName("Grand Total");
         grandTotal.setSurgeryCategory("");
+        grandTotal.setGrandTotal(true);
 
-        for (SurgeryCountSurgeryWiseDTO surgery : surgeryMap.values()) {
-            surgery.calculateYearTotal();
-            surgeryCountSurgeryWiseList.add(surgery);
-            grandTotal.addAllCounts(surgery);
+        for (SurgeryCountSurgeryWiseDTO dto : surgeryMap.values()) {
+            dto.calculateYearTotal();
+            surgeryCountSurgeryWiseList.add(dto);
+            grandTotal.addAllCounts(dto);
         }
 
         grandTotal.calculateYearTotal();
