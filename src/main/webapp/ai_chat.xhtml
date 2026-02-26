@@ -198,7 +198,7 @@
                         </h:form>
                     </div>
 
-                    <div class="ai-sidebar-list" id="sidebarList">
+                    <h:panelGroup layout="block" id="sidebarList" styleClass="ai-sidebar-list">
                         <h:form id="convListForm">
                             <ui:repeat value="#{aiChatController.myConversations}" var="conv">
                                 <div class="ai-conv-item #{aiChatController.currentConversation != null and aiChatController.currentConversation.id == conv.id ? 'active' : ''}">
@@ -238,14 +238,14 @@
                                 </div>
                             </ui:repeat>
                         </h:form>
-                    </div>
+                    </h:panelGroup>
                 </div>
 
                 <!-- ---- MAIN CHAT AREA ---- -->
                 <div class="ai-main">
 
                     <!-- Header bar with conversation title and rename -->
-                    <div class="ai-main-header" id="headerPanel">
+                    <h:panelGroup layout="block" id="headerPanel" styleClass="ai-main-header">
                         <h:form id="titleForm">
                             <h:outputText
                                 value="#{aiChatController.currentConversation != null ? aiChatController.currentConversation.title : 'AI Assistant'}"
@@ -259,10 +259,10 @@
                                 onclick="PF('renameDialog').show()"
                                 type="button" />
                         </h:form>
-                    </div>
+                    </h:panelGroup>
 
                     <!-- Messages thread -->
-                    <div class="ai-messages" id="messagesPanel">
+                    <h:panelGroup layout="block" id="messagesPanel" styleClass="ai-messages">
                         <ui:fragment rendered="#{empty aiChatController.currentMessages}">
                             <div class="ai-empty-state">
                                 <span class="pi pi-comments" />
@@ -311,7 +311,7 @@
                                 </div>
                             </ui:fragment>
                         </ui:repeat>
-                    </div>
+                    </h:panelGroup>
 
                     <!-- Input area -->
                     <div class="ai-input-area">
