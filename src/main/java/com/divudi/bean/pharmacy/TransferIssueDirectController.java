@@ -87,6 +87,8 @@ public class TransferIssueDirectController implements Serializable {
     private List<BillItem> billItems;
     private BillItem billItem;
     private Double qty;
+    private Double billItemValue;
+    private Double transferRate;
     private Stock tmpStock;
     private StockDTO stockDto;
     UserStockContainer userStockContainer;
@@ -144,6 +146,8 @@ public class TransferIssueDirectController implements Serializable {
             return; // Don't add the item if validation fails
         }
 
+        billItem.setItem(getTmpStock().getItemBatch().getItem());
+
         if (billItem.getBillItemFinanceDetails().getUnitsPerPack() == null || billItem.getBillItemFinanceDetails().getUnitsPerPack() == BigDecimal.ZERO) {
             if (billItem.getItem() instanceof Ampp) {
                 billItem.getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.valueOf(billItem.getItem().getDblValue()));
@@ -169,14 +173,17 @@ public class TransferIssueDirectController implements Serializable {
         billItem.getPharmaceuticalBillItem().setRetailValue(billItem.getPharmaceuticalBillItem().getRetailRate() * billItem.getPharmaceuticalBillItem().getQty());
         billItem.getPharmaceuticalBillItem().setPurchaseValue(billItem.getPharmaceuticalBillItem().getPurchaseRate() * billItem.getPharmaceuticalBillItem().getQty());
 
-        billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
 
         billItem.setSearialNo(getBillItems().size());
 
         // Set the transfer rate based on configuration
-        BigDecimal transferRate = determineTransferRate(getTmpStock().getItemBatch());
-        billItem.getBillItemFinanceDetails().setLineGrossRate(transferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack()));
+        BigDecimal itemTransferRate = determineTransferRate(getTmpStock().getItemBatch());
+        BigDecimal lineGrossRate = itemTransferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
+        billItem.getBillItemFinanceDetails().setLineGrossRate(lineGrossRate);
+        BigDecimal lineGrossTotal = lineGrossRate.multiply(BigDecimal.valueOf(Math.abs(qty)));
+        billItem.getBillItemFinanceDetails().setLineGrossTotal(lineGrossTotal);
+        billItem.getBillItemFinanceDetails().setLineNetTotal(lineGrossTotal);
 
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
@@ -189,6 +196,8 @@ public class TransferIssueDirectController implements Serializable {
         qty = null;
         stockDto = null;
         tmpStock = null;
+        transferRate = null;
+        billItemValue = null;
     }
 
     private boolean isBatchAlreadyAdded(Stock stock) {
@@ -254,7 +263,6 @@ public class TransferIssueDirectController implements Serializable {
             pharmacyTransferIsByRetailRate = true;
         }
 
-        
         issuedBill.getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
 
         double calculatedNetTotal = calculateBillNetTotal();
@@ -403,6 +411,8 @@ public class TransferIssueDirectController implements Serializable {
         tmpStock = null;
         stockDto = null;
         qty = null;
+        transferRate = null;
+        billItemValue = null;
         toDepartment = null;
     }
 
@@ -455,6 +465,27 @@ public class TransferIssueDirectController implements Serializable {
         return recentToDepartments;
     }
 
+    public void calculateCurrentBillItemValue() {
+        if (stockDto == null || tmpStock == null || tmpStock.getItemBatch() == null) {
+            return;
+        }
+        BigDecimal unitRate = determineTransferRate(tmpStock.getItemBatch());
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        Item item = tmpStock.getItemBatch().getItem();
+        if (item instanceof Ampp && item.getDblValue() > 0) {
+            unitsPerPack = BigDecimal.valueOf(item.getDblValue());
+        }
+        BigDecimal effectiveRate = unitRate.multiply(unitsPerPack);
+        transferRate = effectiveRate.doubleValue();
+        if (qty == null) {
+            billItemValue = null;
+            return;
+        }
+        billItemValue = BigDecimal.valueOf(Math.abs(qty))
+                .multiply(effectiveRate)
+                .doubleValue();
+    }
+
     /**
      * Selects a department from recent departments and processes the transfer
      * issue
@@ -475,7 +506,7 @@ public class TransferIssueDirectController implements Serializable {
      * Calculates and updates bill totals for transfer issue
      */
     private void calculateBillTotalsForTransferIssue(Bill bill) {
-        if (bill == null || bill.getBillItems() == null) {
+        if (bill == null) {
             return;
         }
 
@@ -484,42 +515,44 @@ public class TransferIssueDirectController implements Serializable {
         BigDecimal lineGrossTotal = BigDecimal.ZERO;
         BigDecimal lineNetTotal = BigDecimal.ZERO;
 
-        int serialNo = 1;
-
-        for (BillItem bi : bill.getBillItems()) {
+        // Iterate over the controller's working list (not bill.getBillItems(), which is empty before settlement)
+        for (BillItem bi : getBillItems()) {
             if (bi.isRetired()) {
                 continue;
             }
 
-            bi.setSearialNo(serialNo++);
+            BigDecimal lineGrossRate = bi.getBillItemFinanceDetails().getLineGrossRate();
+            if (lineGrossRate == null) {
+                lineGrossRate = BigDecimal.ZERO;
+            }
+            BigDecimal unitsPerPack = bi.getBillItemFinanceDetails().getUnitsPerPack();
+            if (unitsPerPack == null || unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
 
-            // For transfer issue: stock goes out so qty is negative
-            double absQty = Math.abs(bi.getQty());
-            bi.setQty(-absQty);
+            // lineGrossRate is a pack rate; compute pack quantity from unit quantity
+            double absUnitQty = Math.abs(bi.getPharmaceuticalBillItem().getQty());
+            BigDecimal packQty = BigDecimal.valueOf(absUnitQty).divide(unitsPerPack, 10, java.math.RoundingMode.HALF_UP);
+            BigDecimal biGrossTotal = lineGrossRate.multiply(packQty);
 
-            // Revenue is positive (we receive money/value for stock going out)
-            double netValue = absQty * bi.getRate();
-            bi.setNetValue(netValue);
+            bi.getBillItemFinanceDetails().setLineGrossTotal(biGrossTotal);
+            bi.getBillItemFinanceDetails().setLineNetTotal(biGrossTotal);
 
-            grossTotal = grossTotal.add(BigDecimal.valueOf(netValue));
-            netTotal = netTotal.add(BigDecimal.valueOf(netValue));
-            lineGrossTotal = lineGrossTotal.add(BigDecimal.valueOf(netValue));
-            lineNetTotal = lineNetTotal.add(BigDecimal.valueOf(netValue));
+            grossTotal = grossTotal.add(biGrossTotal);
+            netTotal = netTotal.add(biGrossTotal);
+            lineGrossTotal = lineGrossTotal.add(biGrossTotal);
+            lineNetTotal = lineNetTotal.add(biGrossTotal);
         }
 
-        // Set bill totals as positive (revenue)
         bill.setTotal(grossTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
 
-        // Set bill finance details totals as positive (revenue)
         if (bill.getBillFinanceDetails() != null) {
             bill.getBillFinanceDetails().setGrossTotal(grossTotal);
             bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
             bill.getBillFinanceDetails().setNetTotal(netTotal);
             bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
         }
-
-//        getBillFacade().edit(bill);
     }
 
     /**
@@ -536,22 +569,21 @@ public class TransferIssueDirectController implements Serializable {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
 
-        // Set BillItem.qty to negative for stock out (matching PharmaceuticalBillItem.qty sign)
+        // Set BillItem.qty to negative for stock out
         if (b.getQty() > 0) {
             b.setQty(0 - b.getQty());
         }
 
         b.setRate(rate);
         b.setNetRate(rate);
-        // BillItem values should be positive (revenue) - use absolute quantity
+        // Revenue values are positive (issuing dept receives value for stock going out)
         b.setNetValue(rate * Math.abs(b.getQty()));
         b.setGrossValue(rate * Math.abs(b.getQty()));
 
-        BigDecimal qtyInUnits = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
-        BigDecimal qtyInPacks = BigDecimal.valueOf(b.getQty());
+        BigDecimal qtyInPacks = BigDecimal.valueOf(b.getQty());  // negative (stock out)
         BigDecimal rateBig = BigDecimal.valueOf(rate);
 
-        // Set unitsPerPack from the PharmaceuticalBillItem/DTO before computing pack rates
+        // Ensure unitsPerPack is set
         if (f.getUnitsPerPack() == null || f.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
             if (b.getItem() instanceof Ampp) {
                 f.setUnitsPerPack(BigDecimal.valueOf(b.getItem().getDblValue()));
@@ -560,30 +592,46 @@ public class TransferIssueDirectController implements Serializable {
             }
         }
 
-        // BillItemFinanceDetails quantities should be in packs; negative for stock out
+        BigDecimal unitsPerPack = f.getUnitsPerPack();
         BigDecimal absQtyInPacks = qtyInPacks.abs();
+        // For AMPP: absQtyByUnits = packs × unitsPerPack. For AMP: unitsPerPack = 1, same result.
+        BigDecimal absQtyByUnits = absQtyInPacks.multiply(unitsPerPack);
+
+        // Quantities: negative for stock out
         f.setQuantity(BigDecimal.ZERO.subtract(absQtyInPacks));
         f.setTotalQuantity(BigDecimal.ZERO.subtract(absQtyInPacks));
+        f.setQuantityByUnits(BigDecimal.ZERO.subtract(absQtyByUnits));
+        f.setTotalQuantityByUnits(BigDecimal.ZERO.subtract(absQtyByUnits));
+
+        // Rates: always positive (unit prices)
         f.setLineGrossRate(rateBig);
         f.setLineNetRate(rateBig);
-        // Calculate totals using pack quantities and pack rates (positive)
+        f.setGrossRate(rateBig);
+
+        // Revenue totals: positive (issuing dept receives this value)
         f.setLineGrossTotal(rateBig.multiply(absQtyInPacks));
         f.setLineNetTotal(rateBig.multiply(absQtyInPacks));
 
-        // Set cost rate to actual cost rate from ItemBatch
+        // Cost details from ItemBatch
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
             ItemBatch batch = b.getPharmaceuticalBillItem().getItemBatch();
             BigDecimal costRate = BigDecimal.valueOf(batch.getCostRate());
+            // Rates: positive
             f.setCostRate(costRate);
             f.setLineCostRate(costRate);
-            // Negative cost values for transfer out
-            BigDecimal absQtyInUnits = qtyInUnits.abs();
-            f.setLineCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyInUnits)));
-
-            // Add cost rate fields for transfer issue
-            f.setBillCostRate(BigDecimal.ZERO);
             f.setTotalCostRate(costRate);
-            f.setTotalCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyInUnits)));
+            f.setBillCostRate(BigDecimal.ZERO);
+            f.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
+            // Cost totals: negative (stock cost leaving the issuing department)
+            // Use absQtyByUnits so AMPP items are costed in units, not packs
+            f.setLineCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyByUnits)));
+            f.setTotalCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyByUnits)));
+        }
+
+        // For AMPP items: record pack quantity as negative (user's input in packs, stock going out)
+        // For AMP items: qtyPacks is not meaningful, leave as-is
+        if (b.getItem() instanceof Ampp && b.getPharmaceuticalBillItem() != null) {
+            b.getPharmaceuticalBillItem().setQtyPacks(-absQtyInPacks.doubleValue());
         }
     }
 
@@ -655,12 +703,17 @@ public class TransferIssueDirectController implements Serializable {
     }
 
     /**
-     * Validates if an item can be added to the direct issue based on department type restrictions
-     * Note: Direct issue validation is handled by stock filtering via stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments
-     * This additional validation ensures only allowed department types can be added
+     * Validates if an item can be added to the direct issue based on department
+     * type restrictions Note: Direct issue validation is handled by stock
+     * filtering via
+     * stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments
+     * This additional validation ensures only allowed department types can be
+     * added
      */
     private boolean validateItemForDirectIssue(Item item) {
-        if (item == null) return true;
+        if (item == null) {
+            return true;
+        }
 
         DepartmentType itemDeptType = item.getDepartmentType();
         // Treat items without department type as Pharmacy
@@ -670,8 +723,8 @@ public class TransferIssueDirectController implements Serializable {
 
         List allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
         if (allowedTypes == null || !allowedTypes.contains(itemDeptType)) {
-            JsfUtil.addErrorMessage("Items of type " + itemDeptType.getLabel() +
-                " are not allowed for this department");
+            JsfUtil.addErrorMessage("Items of type " + itemDeptType.getLabel()
+                    + " are not allowed for this department");
             return false;
         }
         return true;
@@ -787,6 +840,22 @@ public class TransferIssueDirectController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    public Double getTransferRate() {
+        return transferRate;
+    }
+
+    public void setTransferRate(Double transferRate) {
+        this.transferRate = transferRate;
+    }
+
+    public Double getBillItemValue() {
+        return billItemValue;
+    }
+
+    public void setBillItemValue(Double billItemValue) {
+        this.billItemValue = billItemValue;
     }
 
 }

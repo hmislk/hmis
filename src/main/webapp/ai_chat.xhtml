@@ -1,0 +1,427 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>AI Assistant</title>
+    <style type="text/css">
+        .ai-chat-layout {
+            display: flex;
+            height: calc(100vh - 120px);
+            gap: 0.5rem;
+        }
+        .ai-sidebar {
+            width: 260px;
+            min-width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        .ai-sidebar-header {
+            padding: 0.6rem 0.75rem;
+            background: #495057;
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ai-sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.25rem;
+        }
+        .ai-conv-item {
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .ai-conv-item:hover {
+            background: #e9ecef;
+        }
+        .ai-conv-item.active {
+            background: #0d6efd;
+            color: #fff;
+        }
+        .ai-conv-title {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ai-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .ai-main-header {
+            padding: 0.5rem 0.75rem;
+            background: #495057;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .ai-bubble {
+            max-width: 80%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .ai-bubble-user {
+            align-self: flex-end;
+            background: #0d6efd;
+            color: #fff;
+        }
+        .ai-bubble-assistant {
+            align-self: flex-start;
+            background: #f1f3f5;
+            color: #212529;
+            border: 1px solid #dee2e6;
+        }
+        .ai-bubble-meta {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        .ai-bubble-meta-user {
+            text-align: right;
+        }
+        .ai-attachment-badge {
+            font-size: 0.75rem;
+            padding: 0.1rem 0.4rem;
+            background: rgba(255,255,255,0.25);
+            border-radius: 3px;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+        .ai-input-area {
+            padding: 0.5rem;
+            border-top: 1px solid #dee2e6;
+            background: #f8f9fa;
+        }
+        .ai-input-row {
+            display: flex;
+            gap: 0.4rem;
+            align-items: flex-end;
+        }
+        .ai-input-row .ui-inputtextarea {
+            flex: 1;
+            resize: vertical;
+            min-height: 48px;
+            max-height: 120px;
+            font-size: 0.85rem;
+        }
+        .ai-attachment-info {
+            font-size: 0.78rem;
+            padding: 0.2rem 0.4rem;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 3px;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .ai-token-info {
+            font-size: 0.7rem;
+            color: #adb5bd;
+            text-align: right;
+        }
+        .ai-empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            gap: 0.5rem;
+        }
+        .ai-empty-state .pi {
+            font-size: 2.5rem;
+        }
+    </style>
+</h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <p:growl id="growl" showDetail="true" life="4000" />
+
+            <!-- ============================================================
+                 SIDEBAR + MAIN layout
+                 ============================================================ -->
+            <div class="ai-chat-layout">
+
+                <!-- LEFT SIDEBAR: Conversation list -->
+                <div class="ai-sidebar">
+                    <div class="ai-sidebar-header">
+                        <h:outputText value="Conversations" />
+                        <h:form id="newConvForm">
+                            <p:commandButton
+                                id="btnNewConv"
+                                icon="pi pi-plus"
+                                styleClass="ui-button-secondary"
+                                style="padding:0.2rem 0.5rem; font-size:0.8rem;"
+                                title="Start a new conversation"
+                                action="#{aiChatController.startNewConversation()}"
+                                update=":messagesPanel :headerPanel :sidebarList :growl"
+                                process="@this" />
+                        </h:form>
+                    </div>
+
+                    <h:panelGroup layout="block" id="sidebarList" styleClass="ai-sidebar-list">
+                        <h:form id="convListForm">
+                            <ui:repeat value="#{aiChatController.myConversations}" var="conv">
+                                <div class="ai-conv-item #{aiChatController.currentConversation != null and aiChatController.currentConversation.id == conv.id ? 'active' : ''}">
+                                    <h:outputText value="#{conv.title}" styleClass="ai-conv-title" title="#{conv.title}" />
+                                    <p:commandButton
+                                        icon="pi pi-chevron-right"
+                                        styleClass="ui-button-secondary"
+                                        style="padding:0.1rem 0.3rem; font-size:0.75rem; min-width:0;"
+                                        title="Open conversation"
+                                        action="#{aiChatController.selectConversation(conv)}"
+                                        update=":messagesPanel :headerPanel :inputForm :growl"
+                                        process="@this" />
+                                </div>
+                            </ui:repeat>
+                        </h:form>
+
+                        <!-- Admin: view all conversations -->
+                        <h:form id="adminConvForm" rendered="#{aiChatController.admin}">
+                            <p:separator />
+                            <div style="padding:0.3rem 0.5rem; font-size:0.75rem; color:#6c757d; font-weight:bold;">
+                                All Users
+                            </div>
+                            <ui:repeat value="#{aiChatController.allConversations}" var="conv">
+                                <div class="ai-conv-item">
+                                    <h:outputText
+                                        value="#{conv.webUser.name} — #{conv.title}"
+                                        styleClass="ai-conv-title"
+                                        title="#{conv.webUser.name}: #{conv.title}" />
+                                    <p:commandButton
+                                        icon="pi pi-chevron-right"
+                                        styleClass="ui-button-secondary"
+                                        style="padding:0.1rem 0.3rem; font-size:0.75rem; min-width:0;"
+                                        title="Open conversation"
+                                        action="#{aiChatController.selectConversation(conv)}"
+                                        update=":messagesPanel :headerPanel :inputForm :growl"
+                                        process="@this" />
+                                </div>
+                            </ui:repeat>
+                        </h:form>
+                    </h:panelGroup>
+                </div>
+
+                <!-- MAIN CHAT AREA -->
+                <div class="ai-main">
+
+                    <!-- Header bar with conversation title and rename -->
+                    <h:panelGroup layout="block" id="headerPanel" styleClass="ai-main-header">
+                        <h:form id="titleForm">
+                            <h:outputText
+                                value="#{aiChatController.currentConversation != null ? aiChatController.currentConversation.title : 'AI Assistant'}"
+                                style="font-weight:bold;" />
+                            <p:commandButton
+                                icon="pi pi-pencil"
+                                styleClass="ui-button-secondary"
+                                style="margin-left:0.5rem; padding:0.1rem 0.4rem; font-size:0.8rem;"
+                                title="Rename conversation"
+                                rendered="#{aiChatController.currentConversation != null}"
+                                onclick="PF('renameDialog').show()"
+                                type="button" />
+                        </h:form>
+                    </h:panelGroup>
+
+                    <!-- Messages thread -->
+                    <h:panelGroup layout="block" id="messagesPanel" styleClass="ai-messages">
+                        <ui:fragment rendered="#{empty aiChatController.currentMessages}">
+                            <div class="ai-empty-state">
+                                <span class="pi pi-comments" />
+                                <h:outputText value="Start a conversation with the AI Assistant." />
+                                <h:outputText
+                                    value="Claude can query your HMIS system via the REST API, analyse images, and answer questions about your hospital data."
+                                    style="font-size:0.8rem; text-align:center; max-width:340px;" />
+                            </div>
+                        </ui:fragment>
+
+                        <ui:repeat value="#{aiChatController.currentMessages}" var="msg">
+                            <ui:fragment rendered="#{msg.role == 'user'}">
+                                <div style="align-self:flex-end; max-width:80%;">
+                                    <ui:fragment rendered="#{not empty msg.attachmentName}">
+                                        <div class="ai-bubble ai-bubble-user" style="padding-bottom:0.2rem;">
+                                            <span class="ai-attachment-badge">
+                                                <span class="pi pi-paperclip" style="margin-right:3px;" />
+                                                <h:outputText value="#{msg.attachmentName}" />
+                                            </span>
+                                        </div>
+                                    </ui:fragment>
+                                    <div class="ai-bubble ai-bubble-user">
+                                        <h:outputText value="#{msg.content}" />
+                                    </div>
+                                    <div class="ai-bubble-meta ai-bubble-meta-user">
+                                        <h:outputText value="#{msg.createdAt}">
+                                            <f:convertDateTime pattern="HH:mm" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+
+                            <ui:fragment rendered="#{msg.role == 'assistant'}">
+                                <div style="align-self:flex-start; max-width:80%;">
+                                    <div class="ai-bubble ai-bubble-assistant">
+                                        <h:outputText value="#{msg.content}" />
+                                    </div>
+                                    <div class="ai-bubble-meta">
+                                        <h:outputText value="#{msg.createdAt}">
+                                            <f:convertDateTime pattern="HH:mm" />
+                                        </h:outputText>
+                                        <h:outputText
+                                            value=" · #{msg.inputTokens}↑ #{msg.outputTokens}↓ tokens"
+                                            rendered="#{msg.inputTokens != null and msg.inputTokens gt 0}" />
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                        </ui:repeat>
+                    </h:panelGroup>
+
+                    <!-- Input area -->
+                    <div class="ai-input-area">
+                        <h:form id="inputForm">
+                            <!-- Attachment badge -->
+                            <ui:fragment rendered="#{aiChatController.hasAttachment()}">
+                                <div class="ai-attachment-info">
+                                    <span class="pi pi-paperclip" />
+                                    <h:outputText value="#{aiChatController.pendingAttachmentName}" />
+                                    <p:commandButton
+                                        icon="pi pi-times"
+                                        styleClass="ui-button-danger"
+                                        style="padding:0.1rem 0.3rem; font-size:0.75rem; min-width:0;"
+                                        title="Remove attachment"
+                                        action="#{aiChatController.clearAttachment()}"
+                                        update="inputForm :growl"
+                                        process="@this" />
+                                </div>
+                            </ui:fragment>
+
+                            <div class="ai-input-row">
+                                <p:inputTextarea
+                                    id="userInput"
+                                    value="#{aiChatController.userInput}"
+                                    placeholder="Type your message... (Shift+Enter for new line)"
+                                    autoResize="true"
+                                    rows="2"
+                                    style="flex:1; font-size:0.85rem;" />
+
+                                <!-- File upload button -->
+                                <p:fileUpload
+                                    mode="simple"
+                                    auto="false"
+                                    skinSimple="true"
+                                    label=""
+                                    chooseIcon="pi pi-paperclip"
+                                    style="display:inline-flex; align-items:center;"
+                                    title="Attach image or document"
+                                    allowTypes="/(\.|\/)(gif|jpe?g|png|pdf|txt|csv|md)$/"
+                                    fileUploadListener="#{aiChatController.handleFileUpload}"
+                                    update="inputForm :growl"
+                                    process="@this" />
+
+                                <!-- Send button -->
+                                <p:commandButton
+                                    id="btnSend"
+                                    icon="pi pi-send"
+                                    styleClass="ui-button-success"
+                                    title="Send message"
+                                    disabled="#{aiChatController.sending}"
+                                    action="#{aiChatController.sendMessage()}"
+                                    update="inputForm :messagesPanel :growl"
+                                    process="inputForm"
+                                    oncomplete="scrollToBottom()" />
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 Rename Dialog
+                 ============================================================ -->
+            <p:dialog
+                id="renameDialog"
+                header="Rename Conversation"
+                widgetVar="renameDialog"
+                modal="true"
+                width="400"
+                resizable="false">
+                <h:form id="renameForm">
+                    <p:panelGrid columns="1" style="width:100%">
+                        <p:outputLabel for="newTitle" value="Conversation Title" />
+                        <p:inputText
+                            id="newTitle"
+                            value="#{aiChatController.editingTitle}"
+                            style="width:100%"
+                            required="true"
+                            requiredMessage="Please enter a title." />
+                        <div style="display:flex; gap:0.4rem; justify-content:flex-end; margin-top:0.4rem;">
+                            <p:commandButton
+                                value="Save"
+                                icon="pi pi-check"
+                                styleClass="ui-button-success"
+                                action="#{aiChatController.saveConversationTitle()}"
+                                update=":headerPanel :sidebarList renameForm :growl"
+                                process="renameForm"
+                                oncomplete="if(!args.validationFailed) PF('renameDialog').hide()" />
+                            <p:commandButton
+                                value="Cancel"
+                                icon="pi pi-times"
+                                styleClass="ui-button-secondary"
+                                onclick="PF('renameDialog').hide()"
+                                type="button" />
+                        </div>
+                    </p:panelGrid>
+                </h:form>
+            </p:dialog>
+
+            <!-- Auto-scroll to bottom of messages -->
+            <h:outputScript>
+                function scrollToBottom() {
+                    var el = document.getElementById('messagesPanel');
+                    if (el) { el.scrollTop = el.scrollHeight; }
+                }
+                // Scroll on page load too
+                document.addEventListener('DOMContentLoaded', scrollToBottom);
+            </h:outputScript>
+
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
