@@ -411,7 +411,7 @@ public class InwardReportController implements Serializable {
         }
 
         if (surgeryType != null) {
-            jpql.append(" and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item is not null and bi.item.category = :stype) ");
+            jpql.append(" and b.procedure is not null and b.procedure.item is not null and b.procedure.item.category = :stype ");
             params.put("stype", surgeryType);
         }
 
