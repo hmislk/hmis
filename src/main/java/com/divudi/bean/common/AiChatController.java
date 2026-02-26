@@ -173,87 +173,88 @@ public class AiChatController implements Serializable {
 
         sending = true;
 
-        // Save user message
-        AiMessage userMsg = new AiMessage();
-        userMsg.setConversation(currentConversation);
-        userMsg.setRole("user");
-        userMsg.setContent(userInput != null ? userInput.trim() : "");
-        userMsg.setAttachmentBase64(pendingAttachmentBase64);
-        userMsg.setAttachmentMimeType(pendingAttachmentMimeType);
-        userMsg.setAttachmentName(pendingAttachmentName);
-        userMsg.setWebUser(sessionController.getLoggedUser());
-        userMsg.setCreatedAt(new Date());
-        aiMessageFacade.create(userMsg);
-        currentMessages.add(userMsg);
+        try {
+            // Save user message
+            AiMessage userMsg = new AiMessage();
+            userMsg.setConversation(currentConversation);
+            userMsg.setRole("user");
+            userMsg.setContent(userInput != null ? userInput.trim() : "");
+            userMsg.setAttachmentBase64(pendingAttachmentBase64);
+            userMsg.setAttachmentMimeType(pendingAttachmentMimeType);
+            userMsg.setAttachmentName(pendingAttachmentName);
+            userMsg.setWebUser(sessionController.getLoggedUser());
+            userMsg.setCreatedAt(new Date());
+            aiMessageFacade.create(userMsg);
+            currentMessages.add(userMsg);
 
-        // Collect config values
-        String claudeApiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
-        String model = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude Model", "claude-opus-4-6");
-        Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
-        int maxTokens = (maxTokensConfig != null) ? maxTokensConfig : 4096;
-        String githubBranch = configOptionApplicationController.getShortTextValueByKey("AI Chat - GitHub Branch", "development");
+            // Collect config values
+            String claudeApiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
+            String model = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude Model", "claude-opus-4-6");
+            Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
+            int maxTokens = (maxTokensConfig != null) ? maxTokensConfig : 4096;
+            String githubBranch = configOptionApplicationController.getShortTextValueByKey("AI Chat - GitHub Branch", "development");
 
-        // Auto-detect HMIS base URL from the current request (same mechanism used for SMS links)
-        String hmisApiBaseUrl = resolveHmisBaseUrl();
+            // Auto-detect HMIS base URL from the current request (same mechanism used for SMS links)
+            String hmisApiBaseUrl = resolveHmisBaseUrl();
 
-        if (claudeApiKey == null || claudeApiKey.trim().isEmpty()) {
-            AiMessage errMsg = new AiMessage();
-            errMsg.setConversation(currentConversation);
-            errMsg.setRole("assistant");
-            errMsg.setContent("AI Chat is not configured. Please ask your administrator to set the Claude API Key in Application Configuration.");
-            errMsg.setCreatedAt(new Date());
-            aiMessageFacade.create(errMsg);
-            currentMessages.add(errMsg);
+            if (claudeApiKey == null || claudeApiKey.trim().isEmpty()) {
+                AiMessage errMsg = new AiMessage();
+                errMsg.setConversation(currentConversation);
+                errMsg.setRole("assistant");
+                errMsg.setContent("AI Chat is not configured. Please ask your administrator to set the Claude API Key in Application Configuration.");
+                errMsg.setCreatedAt(new Date());
+                aiMessageFacade.create(errMsg);
+                currentMessages.add(errMsg);
+                return;
+            }
+
+            // Resolve user's active HMIS API key
+            String userHmisApiKey = resolveUserHmisApiKey();
+
+            // Build system prompt with auto-fetched API docs from GitHub
+            String systemPrompt = anthropicApiService.buildSystemPrompt(hmisApiBaseUrl, userHmisApiKey, githubBranch);
+
+            // History = all messages except the one we just added (the service appends it)
+            List<AiMessage> history = new ArrayList<>(currentMessages);
+            history.remove(userMsg);
+
+            try {
+                AnthropicApiService.AnthropicResponse response = anthropicApiService.sendMessage(
+                        claudeApiKey,
+                        model,
+                        maxTokens,
+                        systemPrompt,
+                        history,
+                        userMsg.getContent(),
+                        pendingAttachmentBase64,
+                        pendingAttachmentMimeType
+                );
+
+                AiMessage assistantMsg = new AiMessage();
+                assistantMsg.setConversation(currentConversation);
+                assistantMsg.setRole("assistant");
+                assistantMsg.setContent(response.getContent());
+                assistantMsg.setInputTokens(response.getInputTokens());
+                assistantMsg.setOutputTokens(response.getOutputTokens());
+                assistantMsg.setCreatedAt(new Date());
+                aiMessageFacade.create(assistantMsg);
+                currentMessages.add(assistantMsg);
+
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Error getting AI response", e);
+                AiMessage errMsg = new AiMessage();
+                errMsg.setConversation(currentConversation);
+                errMsg.setRole("assistant");
+                errMsg.setContent("An unexpected error occurred: " + e.getMessage());
+                errMsg.setCreatedAt(new Date());
+                aiMessageFacade.create(errMsg);
+                currentMessages.add(errMsg);
+            }
+
+        } finally {
             clearInput();
             sending = false;
-            return;
         }
-
-        // Resolve user's active HMIS API key
-        String userHmisApiKey = resolveUserHmisApiKey();
-
-        // Build system prompt with auto-fetched API docs from GitHub
-        String systemPrompt = anthropicApiService.buildSystemPrompt(hmisApiBaseUrl, userHmisApiKey, githubBranch);
-
-        // History = all messages except the one we just added (the service appends it)
-        List<AiMessage> history = new ArrayList<>(currentMessages);
-        history.remove(userMsg);
-
-        try {
-            AnthropicApiService.AnthropicResponse response = anthropicApiService.sendMessage(
-                    claudeApiKey,
-                    model,
-                    maxTokens,
-                    systemPrompt,
-                    history,
-                    userMsg.getContent(),
-                    pendingAttachmentBase64,
-                    pendingAttachmentMimeType
-            );
-
-            AiMessage assistantMsg = new AiMessage();
-            assistantMsg.setConversation(currentConversation);
-            assistantMsg.setRole("assistant");
-            assistantMsg.setContent(response.getContent());
-            assistantMsg.setInputTokens(response.getInputTokens());
-            assistantMsg.setOutputTokens(response.getOutputTokens());
-            assistantMsg.setCreatedAt(new Date());
-            aiMessageFacade.create(assistantMsg);
-            currentMessages.add(assistantMsg);
-
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Error getting AI response", e);
-            AiMessage errMsg = new AiMessage();
-            errMsg.setConversation(currentConversation);
-            errMsg.setRole("assistant");
-            errMsg.setContent("An unexpected error occurred: " + e.getMessage());
-            errMsg.setCreatedAt(new Date());
-            aiMessageFacade.create(errMsg);
-            currentMessages.add(errMsg);
-        }
-
-        clearInput();
-        sending = false;
     }
 
     public void handleFileUpload(FileUploadEvent event) {
