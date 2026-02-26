@@ -391,11 +391,11 @@ public class InwardReportController implements Serializable {
                 .append(" c.name, ")
                 .append(" function('MONTH', b.createdAt) ")
                 .append(" from BilledBill b ")
-                .append(" join b.procedure p ") // INNER JOIN — procedure must exist
-                .append(" join p.item i ") // INNER JOIN — item must exist
-                .append(" left join i.category c ") // LEFT JOIN — category may be null
+                .append(" join b.procedure p ") 
+                .append(" join p.item i ") 
+                .append(" left join i.category c ") 
                 .append(" where b.retired = false ")
-                .append(" and b.cancelled = false ") // ← RESTORED missing condition
+                .append(" and b.cancelled = false ") 
                 .append(" and b.billType = :bt ")
                 .append(" and b.createdAt between :fd and :td ")
                 .append(" and p is not null ")
@@ -453,7 +453,6 @@ public class InwardReportController implements Serializable {
                 surgeryMap.put(itemId, dto);
             }
 
-            // function('MONTH') returns 1–12; Calendar.MONTH is 0–11
             int monthIndex = month - 1;
             if (monthIndex >= 0 && monthIndex < 12) {
                 dto.addMonthCount(monthIndex, 1);
