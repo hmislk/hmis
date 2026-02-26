@@ -34,6 +34,7 @@ import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Speciality;
@@ -197,6 +198,7 @@ public class InwardReportController implements Serializable {
     private RoomCategory roomCategory;
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
+    private Item surgeryItem;
 
     // for specialty/doctor wise income
     private List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList;
@@ -411,6 +413,11 @@ public class InwardReportController implements Serializable {
         if (surgeryType != null) {
             jpql.append(" and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item is not null and bi.item.category = :stype) ");
             params.put("stype", surgeryType);
+        }
+
+        if (surgeryItem != null) {
+            jpql.append(" and b.procedure is not null and b.procedure.item = :sitem ");
+            params.put("sitem", surgeryItem);
         }
 
         jpql.append(" order by b.createdAt ");
@@ -3295,6 +3302,14 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryCountSurgeryWiseList(List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList) {
         this.surgeryCountSurgeryWiseList = surgeryCountSurgeryWiseList;
+    }
+
+    public Item getSurgeryItem() {
+        return surgeryItem;
+    }
+
+    public void setSurgeryItem(Item surgeryItem) {
+        this.surgeryItem = surgeryItem;
     }
 
     public class IncomeByCategoryRecord {

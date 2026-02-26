@@ -40,36 +40,46 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
-                            <!--                            <h:panelGroup layout="block" styleClass="form-group">
-                                                            <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
-                                                            <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
-                                                        </h:panelGroup>
-                                                        <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
-                                                            <f:selectItem itemLabel="Select Name" itemValue="" />
-                                                        </p:selectOneMenu>
-                            
-                                                        <p:spacer width="40"/>
-                            
-                                                        <h:panelGroup layout="block" styleClass="form-group">
-                                                            <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
-                                                            <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
-                                                        </h:panelGroup>
-                                                        <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
-                                                            <f:selectItem itemLabel="All" itemValue="" />
-                            
-                                                        </p:selectOneMenu>
-                            
-                            
-                            
-                                                        <h:panelGroup layout="block" styleClass="form-group">
-                                                            <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
-                                                            <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
-                                                        </h:panelGroup>
-                                                        <p:selectOneMenu id="chartType" styleClass="w-100">
-                                                            <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
-                                                            <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
-                                                            <f:selectItem itemLabel="Line Chart" itemValue="line"/>
-                                                        </p:selectOneMenu>-->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Surgery Name" for="txtSurgeryName" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete id="txtSurgeryName"
+                                            value="#{inwardReportController.surgeryItem}"
+                                            completeMethod="#{itemController.completeItem}"
+                                            var="item"
+                                            itemLabel="#{item.name}"
+                                            itemValue="#{item}"
+                                            converter="#{itemConverter}"
+                                            forceSelection="true"
+                                            dropdown="true"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="All Surgeries"
+                                            />
+
+                            <p:spacer width="40"/>
+
+<!--                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All" itemValue="" />
+
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="chartType" styleClass="w-100">
+                                <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
+                                <f:selectItem itemLabel="Line Chart" itemValue="line"/>
+                            </p:selectOneMenu>-->
 
                         </h:panelGrid>
 
