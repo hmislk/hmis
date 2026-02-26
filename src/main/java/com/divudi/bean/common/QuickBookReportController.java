@@ -976,7 +976,8 @@ public class QuickBookReportController implements Serializable {
             Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate()
                     : (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
 
-            String supplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
+            String supplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName()
+                    : (b.getToInstitution() != null ? b.getToInstitution().getChequePrintingName() : "");
             String memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + supplierName;
 
             // Determine TRNSTYPE based on transaction type
@@ -1018,9 +1019,20 @@ public class QuickBookReportController implements Serializable {
             // Inventory SPL = netTotal (costing expenses already baked in, no deduction needed)
             double splInventoryAmount = isReturnTransaction ? (0 - inventoryValue) : inventoryValue;
 
+            Bill originalGrn = isReturnTransaction ? b.getReferenceBill() : null;
+            String splMemoText;
+            if (isReturnTransaction && originalGrn != null) {
+                String origDate = originalGrn.getApproveAt() != null ? sdf.format(originalGrn.getApproveAt()) : "";
+                String origSupplier = originalGrn.getFromInstitution() != null ? originalGrn.getFromInstitution().getChequePrintingName() : supplierName;
+                String origDeptId = originalGrn.getDeptId() != null ? originalGrn.getDeptId() : "";
+                splMemoText = origDate + " / " + origSupplier + " / " + origDeptId;
+            } else {
+                splMemoText = memoText;
+            }
+
             QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
                     "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
-                    b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+                    b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), splMemoText, "", "", "", "", "");
 
             // Add inventory SPL as the last SPL (before ENDTRNS)
             qbfs.add(inventorySpl);
@@ -1049,7 +1061,16 @@ public class QuickBookReportController implements Serializable {
                         + ", Balance: " + balance);
             }
 
-            qbf = new QuickBookFormat("TRNS", trnsType, sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), supplierName, "", "", transAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+            String trnsDocNum;
+            String trnsMemo;
+            if (isReturnTransaction) {
+                trnsDocNum = b.getDeptId();
+                trnsMemo = originalGrn != null ? originalGrn.getInvoiceNumber() : "";
+            } else {
+                trnsDocNum = b.getInvoiceNumber();
+                trnsMemo = b.getDeptId();
+            }
+            qbf = new QuickBookFormat("TRNS", trnsType, sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), supplierName, "", "", transAmount, trnsDocNum, b.getDeptId(), b.getDepartment().getName(), trnsMemo, "", "", "", "", "");
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
