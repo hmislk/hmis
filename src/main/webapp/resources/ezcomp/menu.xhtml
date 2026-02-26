@@ -1638,16 +1638,6 @@
                     </p:menuitem>
 
                     <p:menuitem  
-                        ajax="false"
-                        value="Request Manager"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
-                        action="#{requestController.navigateToSearchRequest()}"
-                        actionListener="#{requestController.makeNull()}"
-                        icon="fa-solid fa-envelope" 
-                        >
-                    </p:menuitem>
-
-                    <p:menuitem  
                         ajax="false"  
                         action="#{financialTransactionController.navigateToPaymentManagement()}"
                         value="Payment Management" 
@@ -1832,6 +1822,15 @@
 
                     </p:submenu>
                 </p:submenu>
+                
+                <p:menuitem
+                    ajax="false"
+                    value="Request Manager"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                    action="#{requestController.navigateToSearchRequest()}"
+                    actionListener="#{requestController.makeNull()}"
+                    icon="fa fa-inbox">
+                </p:menuitem>
 
                 <!--            HR Section-->
                 <p:submenu 
@@ -1925,35 +1924,48 @@
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
-                        rendered="#{webUserController.hasPrivilege('MyFinanacialTransactionManager')}" 
+                        rendered="#{webUserController.hasPrivilege('ChangeMyPassword')}" 
                         action="#{sessionController.navigateToChangePasswordByUser}" 
-                        value="Change My Password" icon="pi pi-lock"></p:menuitem>
+                        value="Change My Password" 
+                        icon="pi pi-lock">
+                    </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
                         rendered="#{webUserController.hasPrivilege('ChangeMyTheme')}" 
                         action="#{themeController.navigateToChangeOwnTheme()}"
-                        value="Change My Theme" icon="pi pi-palette" ></p:menuitem>
+                        value="Change My Theme" icon="pi pi-palette" >
+                    </p:menuitem>
                     <!--Can not correct the spelling mistake as the enum values are already in production databases-->
                     <p:menuitem 
                         ajax="false" 
                         rendered="#{webUserController.hasPrivilege('ChangePreferece')}" 
                         action="#{sessionController.navigateToManageOwnWebUserPreferences()}"
-                        value="Change My Preferences" icon="pi pi-sliders-h"  ></p:menuitem>
+                        value="Change My Preferences" icon="pi pi-sliders-h"  >
+                    </p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
                         action="#{apiKeyController.toManageMyApiKeys()}" 
-                        value="Manage My API Keys" icon="pi pi-key"  ></p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
+                        value="Manage My API Keys" icon="pi pi-key"  >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{webUserController.hasPrivilege('AiChat')}"
+                        action="#{aiChatController.toAiChat()}"
+                        value="AI Assistant" icon="pi pi-comments" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}"
                         url="#{request.contextPath}/resources/swagger-ui/index.html"
                         target="_blank"
-                        value="API Swagger Document" icon="fa fa-book"  ></p:menuitem>
+                        value="API Swagger Document" icon="fa fa-book"  >
+                    </p:menuitem>
                     <p:menuitem
                         ajax="false"
                         action="#{versionController.navigateToAboutSoftware()}"
-                        value="About Software" icon="pi pi-info-circle"  ></p:menuitem>
+                        value="About Software" icon="pi pi-info-circle"  >
+                    </p:menuitem>
 
                 </p:submenu>
 

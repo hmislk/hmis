@@ -9399,6 +9399,10 @@ public class SearchController implements Serializable {
     }
 
     public void addToStock() {
+        if (getSelectedBills().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a bill from the list to proceed.");
+            return;
+        }
         bill = new Bill();
         bill.setBillDate(new Date());
         bill.setBillTime(new Date());

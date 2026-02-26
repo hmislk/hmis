@@ -34,12 +34,13 @@
                                             itemLabel="#{option}"
                                             itemValue="#{option}"/>
                                     </p:selectOneMenu>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
-                                        value="Cancel Package Bill" 
+                                        value="Cancel Package Bill"
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" 
+                                        class="ui-button-danger"
+                                        onclick="if(!confirm('Are you sure you want to cancel this package bill?')){return false;}"
                                         action="#{billPackageController.cancelPackageBatchBill()}">
                                     </p:commandButton>
                                 </h:panelGrid>

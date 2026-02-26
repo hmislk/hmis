@@ -715,21 +715,15 @@ public class VtmController implements Serializable {
     }
 
     public void setSelectedVtmDto(VtmDto selectedVtmDto) {
-        System.out.println("setSelectedVtmDto called");
-        System.out.println("selectedVtmDto = " + selectedVtmDto);
         this.selectedVtmDto = selectedVtmDto;
 
         // Sync with entity if DTO is selected
         if (selectedVtmDto != null && selectedVtmDto.getId() != null) {
-            System.out.println("selectedVtmDto.getId() = " + selectedVtmDto.getId());
             this.current = getFacade().find(selectedVtmDto.getId());
-            System.out.println("Loaded entity: " + (this.current != null ? this.current.getName() : "null"));
         } else {
             // Clear current entity when no DTO is selected
-            System.out.println("Clearing current entity (selectedVtmDto is null or has null ID)");
             this.current = null;
         }
-        System.out.println("current = " + current);
     }
 
     // Audit Events Methods
@@ -764,7 +758,6 @@ public class VtmController implements Serializable {
                 ae.calculateDifference();
             }
 
-            System.out.println("VTM Audit Events loaded: " + vtmAuditEvents.size() + " events for VTM ID: " + current.getId());
         }
     }
 
@@ -1024,23 +1017,18 @@ public class VtmController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            System.out.println("VtmDtoConverter.getAsObject called with value: '" + value + "'");
-
             if (value == null || value.isEmpty()) {
-                System.out.println("Value is null or empty, returning null");
                 return null;
             }
 
             try {
                 Long id = Long.parseLong(value);
-                System.out.println("Parsed ID: " + id);
 
                 // Get controller instance
                 VtmController controller = (VtmController) facesContext.getApplication().getELResolver().
                         getValue(facesContext.getELContext(), null, "vtmController");
 
                 if (controller == null) {
-                    System.out.println("Controller not found!");
                     return null;
                 }
 
@@ -1048,19 +1036,14 @@ public class VtmController implements Serializable {
                 Vtm entity = controller.getFacade().find(id);
                 if (entity != null) {
                     VtmDto dto = controller.createVtmDto(entity);
-                    System.out.println("Created DTO from entity: " + dto.getName());
                     return dto;
                 } else {
-                    System.out.println("Entity not found for ID: " + id);
                     return null;
                 }
 
             } catch (NumberFormatException e) {
-                System.out.println("NumberFormatException: " + e.getMessage());
                 return null;
             } catch (Exception e) {
-                System.out.println("Exception in getAsObject: " + e.getMessage());
-                e.printStackTrace();
                 return null;
             }
         }
@@ -1074,7 +1057,6 @@ public class VtmController implements Serializable {
             if (object instanceof VtmDto) {
                 VtmDto dto = (VtmDto) object;
                 String result = dto.getId() != null ? dto.getId().toString() : null;
-                System.out.println("VtmDtoConverter.getAsString: " + dto.getName() + " -> " + result);
                 return result;
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "

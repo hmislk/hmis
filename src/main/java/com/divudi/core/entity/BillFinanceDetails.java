@@ -188,6 +188,11 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal netValueAdjustment;
 
+    // Total Bill Value = Net Total (abs) + Expenses NOT Considered for Costing
+    // Represents the actual total cash outflow to the supplier
+    @Column(precision = 20, scale = 4, nullable = true)
+    private BigDecimal totalBillValue;
+
 //    // Payment method totals
 //    private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
@@ -276,6 +281,7 @@ public class BillFinanceDetails implements Serializable {
         clone.setNetTotal(this.netTotal);
         clone.setActualNetValue(this.actualNetValue);
         clone.setNetValueAdjustment(this.netValueAdjustment);
+        clone.setTotalBillValue(this.totalBillValue);
 
 //        // ------------------ PAYMENT METHODS ------------------
 //        clone.setTotalPaidAsCash(this.totalPaidAsCash);
@@ -359,6 +365,7 @@ public class BillFinanceDetails implements Serializable {
         this.netTotal = negate(original.netTotal);
         this.actualNetValue = negate(original.actualNetValue);
         this.netValueAdjustment = negate(original.netValueAdjustment);
+        this.totalBillValue = negate(original.totalBillValue);
 
         return this;
     }
@@ -766,6 +773,14 @@ public class BillFinanceDetails implements Serializable {
 
     public void setNetValueAdjustment(BigDecimal netValueAdjustment) {
         this.netValueAdjustment = netValueAdjustment;
+    }
+
+    public BigDecimal getTotalBillValue() {
+        return totalBillValue;
+    }
+
+    public void setTotalBillValue(BigDecimal totalBillValue) {
+        this.totalBillValue = totalBillValue;
     }
 
 }

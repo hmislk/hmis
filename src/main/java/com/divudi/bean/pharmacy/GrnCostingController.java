@@ -1977,15 +1977,7 @@ public class GrnCostingController implements Serializable {
 
     @Deprecated // THis is NO longer Needed
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public BillItem getCurrentExpense() {
@@ -3884,6 +3876,9 @@ public class GrnCostingController implements Serializable {
 
         netTotal = lineNetTotal.abs().add(billTax.abs()).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting).abs()).subtract(billDiscount.abs());
 
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(bill.getExpensesTotalNotConsideredForCosting());
+        BigDecimal totalBillValue = netTotal.add(expensesNotForCosting);
+
         bill.setTotal(lineNetTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
@@ -3931,6 +3926,10 @@ public class GrnCostingController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
+
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(totalBillValue);
 
     }
 
