@@ -258,42 +258,16 @@ public class InwardReportControllerBht implements Serializable {
                 + "AND bi.bill.retired = FALSE "
                 + "AND bi.bill.cancelled = FALSE ";
 
-        // Removed department filter to show all pharmacy items for the patient encounter
-        // regardless of which department issued them
-        jpql += "ORDER BY bi.bill.createdAt, bi.id";
-
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
         params.put("patientEncounter", patientEncounter);
-        // Removed department parameter since we're not filtering by department anymore
 
-        // Debug query to check what's filtering out records
-        String debugJpql = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter";
-        Map<String, Object> debugParams = new HashMap<>();
-        debugParams.put("patientEncounter", patientEncounter);
-        Long debugCount = billItemFacade.countByJpql(debugJpql, debugParams);
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
 
-        String debugJpql2 = "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        Map<String, Object> debugParams2 = new HashMap<>();
-        debugParams2.put("patientEncounter", patientEncounter);
-        debugParams2.put("billTypeAtomics", billTypes);
-        Long debugCount2 = billItemFacade.countByJpql(debugJpql2, debugParams2);
-
-        // Test individual fields to find the problematic one
-        String testJpql1 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult1 = billItemFacade.findAggregates(testJpql1, debugParams2);
-
-        String testJpql2 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult2 = billItemFacade.findAggregates(testJpql2, debugParams2);
-
-        String testJpql3 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult3 = billItemFacade.findAggregates(testJpql3, debugParams2);
-
-        String testJpql4 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A') FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult4 = billItemFacade.findAggregates(testJpql4, debugParams2);
-
-        String testJpql5 = "SELECT bi.id, bi.item.name, bi.qty, bi.netValue, bi.bill.createdAt, bi.bill.billTypeAtomic, COALESCE(bi.bill.department.name, 'N/A'), bi.referanceBillItem.id FROM BillItem bi WHERE bi.bill.patientEncounter = :patientEncounter AND bi.bill.billTypeAtomic IN :billTypeAtomics";
-        List<Object[]> testResult5 = billItemFacade.findAggregates(testJpql5, debugParams2);
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
 
         List<InpatientPharmacyIssueDTO> result = (List<InpatientPharmacyIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
 
