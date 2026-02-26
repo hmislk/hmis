@@ -7621,9 +7621,9 @@ public class PharmacyReportController implements Serializable {
 
         infoTable.addCell(new PdfPCell(new Phrase("Date:", labelFont)));
         if (reportController.getReportTemplateFileIndexName().equals("Opening Stock")) {
-            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(fromDate) : sdf.format(new Date())), dataFont)));
+            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(fromDate) : ""), dataFont)));
         } else {
-            infoTable.addCell(new PdfPCell(new Phrase((fromDate != null ? sdf.format(toDate) : sdf.format(new Date())), dataFont)));
+            infoTable.addCell(new PdfPCell(new Phrase((toDate != null ? sdf.format(toDate) : ""), dataFont)));
         }
         infoTable.addCell(createSpacerCell());
         infoTable.addCell(new PdfPCell(new Phrase("Report Type:", labelFont)));
@@ -8085,7 +8085,6 @@ public class PharmacyReportController implements Serializable {
                 }
             }
         }
-        System.out.println("expiry returned records " + expiryStockListDtos.size());
     }
 
     /**
@@ -8183,7 +8182,6 @@ public class PharmacyReportController implements Serializable {
             }
         
         }
-        System.out.println("expiry item returned records " + expiryStockListDtos.size());
     }
 
     public void exportExpiryItemReportToExcel() {
@@ -10084,7 +10082,7 @@ public class PharmacyReportController implements Serializable {
                     docStatus = "Pending";
                     break;
                 case "accepted":
-                    docStatus = "Acccepted";
+                    docStatus = "Accepted";
                     break;
                 case "issueCancel":
                     docStatus = "Cancelled by Issuing";
@@ -10530,7 +10528,10 @@ public class PharmacyReportController implements Serializable {
 
             List<StockReportRecord> records = "byvalue".equals(sortType) ? movementRecords : movementRecordsQty;
 
-            if (records == null) {
+            if (records == null || records.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export.");
+                document.close();
+                context.responseComplete();
                 return;
             }
 

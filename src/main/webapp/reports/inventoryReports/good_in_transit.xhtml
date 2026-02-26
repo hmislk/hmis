@@ -508,7 +508,7 @@
                                 </f:facet>
                                 <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
                                     <!-- For pending and accepted items, show remaining/received retail value from maps -->
-                                    <h:outputLabel value="#{pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id] != null ? pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id] : 'Babushka'}">
+                                    <h:outputLabel value="#{pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id]}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
