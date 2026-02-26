@@ -702,6 +702,7 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
+    AiChat("AI Chat")
     ;
 
     private final String label;
