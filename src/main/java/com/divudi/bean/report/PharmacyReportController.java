@@ -8212,7 +8212,7 @@ public class PharmacyReportController implements Serializable {
             XSSFSheet sheet = workbook.createSheet("Report");
             int rowIndex = 0;
 
-            if (filters != null || !filters.isEmpty()) {
+            if (filters != null && !filters.isEmpty()) {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiry Item Report", filters);
             }
 
