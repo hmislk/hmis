@@ -43,6 +43,7 @@ public class AiChatController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = Logger.getLogger(AiChatController.class.getName());
+    private static final long MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024; // 5 MB
 
     @Inject
     private SessionController sessionController;
@@ -260,6 +261,10 @@ public class AiChatController implements Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile file = event.getFile();
         if (file == null) {
+            return;
+        }
+        if (file.getSize() > MAX_ATTACHMENT_BYTES) {
+            JsfUtil.addErrorMessage("Attachment is too large. Maximum allowed size is 5 MB.");
             return;
         }
         try (InputStream is = file.getInputStream()) {
