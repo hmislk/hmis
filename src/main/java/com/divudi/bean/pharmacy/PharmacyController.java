@@ -10845,8 +10845,6 @@ public class PharmacyController implements Serializable {
                 table.addCell(cell);
             }
 
-            PharmacySummery totalSummary = null;
-
             for (PharmacySummery deptEntry : departmentSummaries) {
 
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getIssuedDeptName() != null ? deptEntry.getIssuedDeptName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -10858,24 +10856,6 @@ public class PharmacyController implements Serializable {
 
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getTotalRetailSaleValue() != null ? String.valueOf(deptEntry.getTotalRetailSaleValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getGoodInTransistAmount()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-
-                if (deptEntry.getDepartmentName() != null && deptEntry.getDepartmentName().equals("Total")) {
-                    totalSummary = deptEntry;
-                }
-            }
-
-            if (totalSummary != null) {
-                PdfPCell totalLabelCell = new PdfPCell(new Phrase("Grant Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                totalLabelCell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                table.addCell(totalLabelCell);
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSummary.getTotalPurchaseValue()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
-
-                if (costingEnabled) {
-                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSummary.getTotalCostValue()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
-                }
-
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSummary.getTotalRetailSaleValue()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSummary.getGoodInTransistAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
             }
 
             document.add(table);
