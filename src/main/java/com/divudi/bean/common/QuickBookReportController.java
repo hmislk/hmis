@@ -826,8 +826,9 @@ public class QuickBookReportController implements Serializable {
                     qbfs.add(qbf);
                 }
             }
-            String returnSupplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
             Bill originalGrn = b.getReferenceBill();
+            String returnSupplierName = b.getToInstitution() != null ? b.getToInstitution().getChequePrintingName()
+                    : (originalGrn != null && originalGrn.getFromInstitution() != null ? originalGrn.getFromInstitution().getChequePrintingName() : "");
             String originalGrnDate = originalGrn != null && originalGrn.getApproveAt() != null ? sdf.format(originalGrn.getApproveAt()) : "";
             String originalGrnDeptId = originalGrn != null ? originalGrn.getDeptId() : "";
             String returnMemo = originalGrnDate + " / " + returnSupplierName + " / " + originalGrnDeptId;
