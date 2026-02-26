@@ -826,11 +826,12 @@ public class QuickBookReportController implements Serializable {
                     qbfs.add(qbf);
                 }
             }
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-            } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
-            }
+            String returnSupplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
+            Bill originalGrn = b.getReferenceBill();
+            String originalGrnDate = originalGrn != null && originalGrn.getApproveAt() != null ? sdf.format(originalGrn.getApproveAt()) : "";
+            String originalGrnDeptId = originalGrn != null ? originalGrn.getDeptId() : "";
+            String returnMemo = originalGrnDate + " / " + returnSupplierName + " / " + originalGrnDeptId;
+            qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), returnSupplierName, "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), returnMemo, "", "", "", "", "");
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);

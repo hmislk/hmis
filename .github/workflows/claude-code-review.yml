@@ -1,0 +1,15 @@
+# Automatic PR-triggered Claude code review is disabled to reduce API costs.
+# To re-enable, replace this file with the original workflow.
+# See: https://github.com/hmislk/hmis/issues/18849
+
+name: Claude Code Review
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Claude review disabled
+        run: echo "Automatic Claude code review is disabled. Use @claude in PR comments for on-demand review."

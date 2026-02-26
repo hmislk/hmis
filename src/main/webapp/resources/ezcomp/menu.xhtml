@@ -1638,16 +1638,6 @@
                     </p:menuitem>
 
                     <p:menuitem  
-                        ajax="false"
-                        value="Request Manager"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
-                        action="#{requestController.navigateToSearchRequest()}"
-                        actionListener="#{requestController.makeNull()}"
-                        icon="fa-solid fa-envelope" 
-                        >
-                    </p:menuitem>
-
-                    <p:menuitem  
                         ajax="false"  
                         action="#{financialTransactionController.navigateToPaymentManagement()}"
                         value="Payment Management" 
@@ -1832,6 +1822,15 @@
 
                     </p:submenu>
                 </p:submenu>
+                
+                <p:menuitem
+                    ajax="false"
+                    value="Request Manager"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                    action="#{requestController.navigateToSearchRequest()}"
+                    actionListener="#{requestController.makeNull()}"
+                    icon="fa fa-inbox">
+                </p:menuitem>
 
                 <!--            HR Section-->
                 <p:submenu 
@@ -1949,9 +1948,15 @@
                         action="#{apiKeyController.toManageMyApiKeys()}" 
                         value="Manage My API Keys" icon="pi pi-key"  >
                     </p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{webUserController.hasPrivilege('AiChat')}"
+                        action="#{aiChatController.toAiChat()}"
+                        value="AI Assistant" icon="pi pi-comments" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}"
                         url="#{request.contextPath}/resources/swagger-ui/index.html"
                         target="_blank"
                         value="API Swagger Document" icon="fa fa-book"  >
