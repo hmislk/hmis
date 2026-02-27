@@ -8041,43 +8041,36 @@ public class PharmacyReportController implements Serializable {
             jpql += " and d.institution = :ins ";
             parameters.put("ins", institution);
         }
-        System.out.println("institution filter applied: " + (institution != null ? institution.getName() : "None"));
 
         if (department != null) {
             jpql += " and d = :dep ";
             parameters.put("dep", department);
         }
-        System.out.println("department filter applied: " + (department != null ? department.getName() : "None"));
 
         if (site != null) {
             jpql += " and d.site = :sit ";
             parameters.put("sit", site);
         }
-        System.out.println("site filter applied: " + (site != null ? site.getName() : "None"));
 
         if (amp != null) {
             jpql += " and i = :itm ";
             parameters.put("itm", amp);
         }
-        System.out.println("item filter applied: " + (amp != null ? amp.getName() : "None"));
 
         if (category != null) {
             jpql += " and c = :cat ";
             parameters.put("cat", category);
         }
-        System.out.println("category filter applied: " + (category != null ? category.getName() : "None"));
 
         if (dosageForm != null) {
             jpql += " and i.dosageForm = :df ";
             parameters.put("df", dosageForm);
         }
-        System.out.println("dosage form filter applied: " + (dosageForm != null ? dosageForm.getName() : "None"));
 
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             jpql += " and i.departmentType IN :departmentTypes ";
             parameters.put("departmentTypes", selectedDepartmentTypes);
         }
-        System.out.println("department types filter applied: " + (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty() ? selectedDepartmentTypes.toString() : "None"));
 
         jpql += " order by coalesce(i.name, ''), ib.dateOfExpire ";
 
@@ -10350,7 +10343,7 @@ public class PharmacyReportController implements Serializable {
                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtRetailRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtRetailRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     }
                 } else {
-                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", ""), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 }
 
                 if (billItem != null) {
