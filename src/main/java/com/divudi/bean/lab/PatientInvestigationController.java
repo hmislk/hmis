@@ -661,11 +661,8 @@ public class PatientInvestigationController implements Serializable {
             patientReportController.createNewReport(current);
 
             PatientReport currentReport = patientReportController.getCurrentPatientReport();
-            System.out.println("currentReport = " + currentReport);
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                System.out.println("Start Lab History");
                 labTestHistoryController.addBypassBarcodeGeneratAndReportCreateHistory(current, currentReport);
-                System.out.println("Successfully Add Bypass Barcode Generat And Report Create History");
             }
 
         } else {
@@ -675,7 +672,6 @@ public class PatientInvestigationController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of issuing lab reports.", false)) {
                         labTestHistoryController.addReportViewHistory(currentReport.getPatientInvestigation(), currentReport);
-                        System.out.println("Successfully Add Report View History");
                     }
                 }
             }
@@ -4622,8 +4618,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientSampleComponant> getPatientSampleComponentsByBill(Bill bill) {
-        System.out.println("Start - getPatientSampleComponentsByBill");
-        System.out.println("bill = " + bill);
         String jpql = "SELECT psc "
                 + " FROM PatientSampleComponant psc "
                 + " WHERE psc.retired=:retired "
@@ -4634,8 +4628,6 @@ public class PatientInvestigationController implements Serializable {
         params.put("bill", bill);
         params.put("sept", false);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
-        System.out.println("pscs = " + pscs);
-        System.out.println("End - getPatientSampleComponentsByBill");
         return pscs;
     }
 
@@ -6627,21 +6619,15 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-
+            
             List<PatientSampleComponant> componants = getPatientSampleComponentsByBill(barcodeBill);
-
-            System.out.println("componants = " + componants);
-            System.out.println("Size = " + componants.size());
 
             if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
                 barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
-
                 for (PatientSampleComponant psc : componants) {
                     labTestHistoryController.addBarcodeGenerateHistory(psc.getPatientInvestigation(), psc.getPatientSample());
                 }
-
             } else {
-                System.out.println("Start - Else Part");
                 if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of Barcode View.", false)) {
                     for (PatientInvestigation pi : pis) {
                         for (PatientSampleComponant psc : componants) {
