@@ -86,6 +86,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfCell;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -10152,7 +10153,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Department", department != null ? department.getName() : "All");
         filters.put("Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
-        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : " ");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
         filters.put("Report Type", "byItem".equals(stockLedgerReportType) ? "By Item" : "By Batch");
         filters.put("Department Type", getSelectedDepartmentTypesString());
 
@@ -10173,7 +10174,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Report Type", getExpiryReportTypeAsString());
         filters.put("Item Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
-        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : " ");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
         filters.put("Department Type", getSelectedDepartmentTypesString());
 
         return filters;
@@ -10193,7 +10194,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Item Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
         filters.put("Department Type", getSelectedDepartmentTypesString());
-        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : " ");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
         
         String repType;
         if (reportType == null) {
@@ -11046,4 +11047,331 @@ public class PharmacyReportController implements Serializable {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Stock Ledger Report to Excel", e);
         }
     }
+
+    // Excel Export: expire_item_stockList
+    public void exportExpireItemStockListToExcel() {
+        if (expiryStockListDtos == null || expiryStockListDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.xlsx");
+
+        Map<String, Object> filters = getFiltersForExpiryItemReport();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Expiring Item Report");
+            int rowIndex = 0;
+
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiring Item Report", filters);
+            }
+
+            // Create header row 
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Department");
+            headerRow.createCell(1).setCellValue("Category Code");
+            headerRow.createCell(2).setCellValue("Category Name");
+            headerRow.createCell(3).setCellValue("Dosage Form");
+            headerRow.createCell(4).setCellValue("Item Code");
+            headerRow.createCell(5).setCellValue("Item Name");
+            headerRow.createCell(6).setCellValue("UOM");
+            headerRow.createCell(7).setCellValue("Item Type");
+            headerRow.createCell(8).setCellValue("Batch Number");
+            headerRow.createCell(9).setCellValue("Expiry Date");
+            headerRow.createCell(10).setCellValue("Cost Rate");
+            headerRow.createCell(11).setCellValue("Retail Rate");
+            headerRow.createCell(12).setCellValue("Quantity");
+            headerRow.createCell(13).setCellValue("Value at Cost Rate");
+            headerRow.createCell(14).setCellValue("Value at Retail Rate");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+            DecimalFormat df = new DecimalFormat("#,##0.##");
+
+            for (ExpiryItemStockListDto dto : expiryStockListDtos) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                int colIndex = 0;
+
+                dataRow.createCell(colIndex++).setCellValue(dto.getDepartmentName() != null ? dto.getDepartmentName() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getCategoryCode() != null ? dto.getCategoryCode() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+                dataRow.createCell(colIndex++).setCellValue((dto.getDosageFormName() != null) ? dto.getDosageFormName() : "");
+                dataRow.createCell(colIndex++).setCellValue((dto.getItemCode() != null) ? dto.getItemCode() : "");
+                dataRow.createCell(colIndex++).setCellValue((dto.getItemName() != null) ? dto.getItemName() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getUom() != null ? dto.getUom() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : "");    
+                dataRow.createCell(colIndex++).setCellValue(dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getCostRate() != null ? dto.getCostRate() : 0.0);
+                dataRow.createCell(colIndex++).setCellValue(dto.getRetailRate() != null ? dto.getRetailRate() : 0.0);
+                dataRow.createCell(colIndex++).setCellValue(dto.getStockQuantity() != null ? dto.getStockQuantity() : 0.0);
+                dataRow.createCell(colIndex++).setCellValue(dto.getValueAtCostRate() != null ? dto.getValueAtCostRate() : 0.0);
+                dataRow.createCell(colIndex++).setCellValue(dto.getValueAtRetailRate() != null ? dto.getValueAtRetailRate() : 0.0); 
+            }
+
+            Row footerRow = sheet.createRow(rowIndex++);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex-1, rowIndex-1, 0, 12));
+            footerRow.createCell(0).setCellValue("Total");
+            footerRow.createCell(13).setCellValue(totalValueAtCostRate != null ? totalValueAtCostRate : 0.0);
+            footerRow.createCell(14).setCellValue(totalValueAtRetailRate != null ? totalValueAtRetailRate : 0.0);
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiring Item Report to Excel", e);
+        }
+    }
+
+    // PDF Export: expiry_item_stockList
+    public void exportExpireItemStockListToPDF() {
+        if (expiryStockListDtos == null || expiryStockListDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Expiring Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            int columnCount = 15;
+
+            Map<String, Object> filters = getFiltersForExpiryItemReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {    
+                document.add(infoTable);
+            }
+
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            columnWidths = new float[]{4f, 3f, 3f, 2f, 3f, 4f, 2f, 3f, 3f, 3f, 4f, 4f, 4f, 4f, 4f};
+            headers = new String[]{"Department", "Category Code", "Category Name", "Dosage Form", "Item Code", "Item Name", "UOM", "Item Type", "Batch Number", "Expiry Date", "Cost Rate", "Retail Rate", "Quantity", "Value at Cost Rate", "Value at Retail Rate"};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            for (ExpiryItemStockListDto dto : expiryStockListDtos) {
+                table.addCell(new PdfPCell(new Phrase(dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCostRate() != null ? String.format("%.2f", dto.getCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getRetailRate() != null ? String.format("%.2f", dto.getRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getStockQuantity() != null ? String.format("%.2f", dto.getStockQuantity()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getValueAtCostRate() != null ? String.format("%.2f", dto.getValueAtCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getValueAtRetailRate() != null ? String.format("%.2f", dto.getValueAtRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+            }
+
+            PdfPCell totalCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalCell.setColspan(13);
+            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            totalCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalCell);
+            PdfPCell totalValueCost = new PdfPCell(new Phrase(totalValueAtCostRate != null ? String.format("%.2f", totalValueAtCostRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalValueCost.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalValueCost);
+            PdfPCell totalValueRetail = new PdfPCell(new Phrase(totalValueAtRetailRate != null ? String.format("%.2f", totalValueAtRetailRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalValueRetail.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalValueRetail);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
+        }            
+    }
+
+    // PDF Export: expiry_item_itemList
+    public void exportExpireItemItemListToPDF() {
+        if (expiryItemListDtos == null || expiryItemListDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Expiring Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            int columnCount = 12;
+
+            Map<String, Object> filters = getFiltersForExpiryItemReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {    
+                document.add(infoTable);
+            }
+
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            columnWidths = new float[]{5f, 3f, 3f, 3f, 3f, 5f, 2f, 3f, 3f, 4f, 4f, 4f};
+            headers = new String[]{"Department", "Category Code", "Category Name", "Dosage Form", "Item Code", "Item Name", "UOM", "Item Type", "Earliest Expiry Date", "Total Stock Quantity", "Total Cost Value", "Total Retail Value"};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            for (ExpiryItemListDto dto : expiryItemListDtos) {
+                table.addCell(new PdfPCell(new Phrase(dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getTotalStockQuantity() != null ? String.format("%.2f", dto.getTotalStockQuantity()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getTotalCostValue() != null ? String.format("%.2f", dto.getTotalCostValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getTotalRetailValue() != null ? String.format("%.2f", dto.getTotalRetailValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+            }
+
+            PdfPCell totalCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalCell.setColspan(10);
+            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            totalCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalCell);
+            PdfPCell totalValueCost = new PdfPCell(new Phrase(totalValueAtCostRate != null ? String.format("%.2f", totalValueAtCostRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalValueCost.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalValueCost);
+            PdfPCell totalValueRetail = new PdfPCell(new Phrase(totalValueAtRetailRate != null ? String.format("%.2f", totalValueAtRetailRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalValueRetail.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalValueRetail);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
+        }            
+    }
+
+    // Excel Export: expire_item_itemList
+    public void exportExpireItemItemListToExcel() {
+        if (expiryItemListDtos == null || expiryStockListDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.xlsx");
+
+        Map<String, Object> filters = getFiltersForExpiryItemReport();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Expiring Item Report");
+            int rowIndex = 0;
+
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiring Item Report", filters);
+            }
+
+            // Create header row 
+            Row headerRow = sheet.createRow(rowIndex++);
+            headerRow.createCell(0).setCellValue("Department");
+            headerRow.createCell(1).setCellValue("Category Code");
+            headerRow.createCell(2).setCellValue("Category Name");
+            headerRow.createCell(3).setCellValue("Dosage Form");
+            headerRow.createCell(4).setCellValue("Item Code");
+            headerRow.createCell(5).setCellValue("Item Name");
+            headerRow.createCell(6).setCellValue("UOM");
+            headerRow.createCell(7).setCellValue("Item Type");
+            headerRow.createCell(8).setCellValue("Earliest Expiry Date");
+            headerRow.createCell(9).setCellValue("Total Stock Quantity");
+            headerRow.createCell(10).setCellValue("Total Cost Value");
+            headerRow.createCell(11).setCellValue("Total Retail Value");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+
+            for (ExpiryItemListDto dto : expiryItemListDtos) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                int colIndex = 0;
+
+                dataRow.createCell(colIndex++).setCellValue(dto.getDepartmentName() != null ? dto.getDepartmentName() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getCategoryCode() != null ? dto.getCategoryCode() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+                dataRow.createCell(colIndex++).setCellValue((dto.getDosageFormName() != null) ? dto.getDosageFormName() : "");
+                dataRow.createCell(colIndex++).setCellValue((dto.getItemCode() != null) ? dto.getItemCode() : "");
+                dataRow.createCell(colIndex++).setCellValue((dto.getItemName() != null) ? dto.getItemName() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getUom() != null ? dto.getUom() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : ""); 
+                dataRow.createCell(colIndex++).setCellValue(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getTotalStockQuantity() != null ? dto.getTotalStockQuantity() : 0.0);
+                dataRow.createCell(colIndex++).setCellValue(dto.getTotalCostValue() != null ? dto.getTotalCostValue() : 0.0);
+                dataRow.createCell(colIndex++).setCellValue(dto.getTotalRetailValue() != null ? dto.getTotalRetailValue() : 0.0);
+            }
+
+            Row footerRow = sheet.createRow(rowIndex++);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex-1, rowIndex-1, 0, 9));
+            footerRow.createCell(0).setCellValue("Total");
+            footerRow.createCell(10).setCellValue(totalValueAtCostRate != null ? totalValueAtCostRate : 0.0);
+            footerRow.createCell(11).setCellValue(totalValueAtRetailRate != null ? totalValueAtRetailRate : 0.0);
+
+            workbook.write(out);
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiring Item Report to Excel", e);
+        }
+    }
+
 }
