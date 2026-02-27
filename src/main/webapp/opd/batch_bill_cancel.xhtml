@@ -45,7 +45,7 @@
                                             style="float: right"
                                             rendered="#{opdBatchBillCancellationController.batchBill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}"
                                             class="ui-button-danger"
-                                            onclick="if(!confirm('Are you sure you want to cancel this package bill?')){return false;}this.disabled=true;"
+                                            onclick="if(!confirm('Are you sure you want to cancel this package bill?')){return false;}"
                                             action="#{opdBatchBillCancellationController.cancelPackageBatchBill()}">
                                         </p:commandButton>
                                         <p:commandButton
@@ -55,7 +55,7 @@
                                             rendered="#{opdBatchBillCancellationController.batchBill.billTypeAtomic eq 'OPD_BATCH_BILL_WITH_PAYMENT'}"
                                             style="float: right"
                                             class="ui-button-danger"
-                                            onclick="if(!confirm('Are you sure you want to cancel this OPD batch bill?')){return false;}this.disabled=true;"
+                                            onclick="if(!confirm('Are you sure you want to cancel this OPD batch bill?')){return false;}"
                                             action="#{opdBatchBillCancellationController.cancelOpdBatchBill()}">
                                         </p:commandButton>
                                     </div>

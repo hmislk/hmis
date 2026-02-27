@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('DrawerAdjustmentRequestApproval')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('DrawerAdjustmentRequestApproval')}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <i class="pi pi-sliders-h"></i>
+                                        <h:outputLabel value=" Drawer Adjustment Request Approval" class="mx-2"/>
+                                    </div>
+                                    <div>
+                                        <p:commandButton
+                                            value="Back to Search"
+                                            icon="fa fa-arrow-left"
+                                            ajax="false"
+                                            class="ui-button-warning"
+                                            action="#{requestController.navigateToBackSearchRequest()}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <!-- Action Buttons Row -->
+                            <div class="row mt-2 mb-3">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <p:inputText
+                                        id="commentsInput"
+                                        value="#{requestController.comment}"
+                                        placeholder="Approval / Rejection Comment"
+                                        title="Enter a comment for the approval or rejection decision"
+                                        disabled="#{!(requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW')}"
+                                        style="float: right; width: 400px;">
+                                    </p:inputText>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Approve"
+                                        icon="fa fa-check"
+                                        title="Approve this drawer adjustment request"
+                                        rendered="#{requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW'}"
+                                        class="ui-button-success"
+                                        action="#{requestController.approveDrawerAdjustmentRequest()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Reject"
+                                        icon="fa fa-times"
+                                        title="Reject this drawer adjustment request"
+                                        rendered="#{requestController.currentRequest.status eq 'PENDING' or requestController.currentRequest.status eq 'UNDER_REVIEW'}"
+                                        class="ui-button-danger"
+                                        action="#{requestController.rejectRequest()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <!-- Request Details Panel -->
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-money-bill-wave"/>
+                                            <h:outputLabel value=" Request Details" class="mx-2"/>
+                                        </f:facet>
+
+                                        <p:panelGrid columns="3" style="line-height: 0.8; width: 100%;">
+                                            <h:outputLabel value="Request No"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.requestNo}"/>
+
+                                            <h:outputLabel value="Request Status"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <p:badge value="#{requestController.currentRequest.status.label}"/>
+
+                                            <h:outputLabel value="Bill No"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.bill.deptId}"/>
+
+                                            <h:outputLabel value="Requested By"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.requester.webUserPerson.nameWithTitle}"/>
+
+                                            <h:outputLabel value="Target User (Drawer)"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.targetWebUser.webUserPerson.nameWithTitle}"/>
+
+                                            <h:outputLabel value="Payment Method"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.paymentMethod}"/>
+
+                                            <h:outputLabel value="Adjustment Amount"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.bill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="Reason"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.requestReason}"/>
+
+                                            <h:outputLabel value="Requested At"/>
+                                            <h:outputLabel value=":" class="d-flex justify-content-center" style="width: 5em;"/>
+                                            <h:outputLabel value="#{requestController.currentRequest.requestAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

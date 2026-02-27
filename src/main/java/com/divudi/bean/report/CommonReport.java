@@ -294,6 +294,18 @@ public class CommonReport implements Serializable {
         return "/pharmacy/pharmacy_reprint_grn_return_bill?faces-redirect=true";
     }
 
+    public String navigateToViewGrnBillFromGRNBillItemReport(Long billId) {
+        previewBill = null;
+        previewBill = billFacade.find(billId);
+        return "/pharmacy/pharmacy_grn_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPOBillFromGRNBillItemReport(Long billId) {
+        previewBill = null;
+        previewBill = billFacade.find(billId);
+        return "/pharmacy/pharmacy_reprint_po_bill?faces-redirect=true";
+    }
+
     public String navigateBackToGRNSummary() {
 
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";

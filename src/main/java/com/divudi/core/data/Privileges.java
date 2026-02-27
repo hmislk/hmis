@@ -687,6 +687,8 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Approval">
     BillCancelRequestApproval("Bill Cancel Request Approval"),
     ItemRefundRequestApproval("Item Refund Request Approval"),
+    DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
+    DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -700,6 +702,7 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
+    AiChat("AI Chat")
     ;
 
     private final String label;
@@ -988,6 +991,8 @@ public enum Privileges {
             // Approval Privileges
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
+            case DrawerAdjustmentRequestApproval:
+            case DrawerAdjustmentDirect:
                 return "Approval";
             
             case NursingWorkBench:
