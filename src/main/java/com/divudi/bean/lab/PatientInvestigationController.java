@@ -667,7 +667,7 @@ public class PatientInvestigationController implements Serializable {
                 labTestHistoryController.addBypassBarcodeGeneratAndReportCreateHistory(current, currentReport);
                 System.out.println("Successfully Add Bypass Barcode Generat And Report Create History");
             }
-            
+
         } else {
             PatientReport currentReport = billReport.get(0);
             patientReportController.setCurrentPatientReport(currentReport);
@@ -6608,10 +6608,13 @@ public class PatientInvestigationController implements Serializable {
             }
         }
 
-        if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
-            barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            
+            
 
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
+                barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+
                 for (PatientInvestigation pi : pis) {
 
                     String jpql = "select ps from PatientSampleComponant ps "
@@ -6632,8 +6635,34 @@ public class PatientInvestigationController implements Serializable {
                     }
 
                 }
+                
+            }else {
+                System.out.println("Start - Else Part");
+            
+                for (PatientInvestigation pi : pis) {
+
+                    String jpql = "select ps from PatientSampleComponant ps "
+                            + " where ps.patientInvestigation=:ptix "
+                            + " and ps.retired=:ret";
+                    Map params = new HashMap();
+                    params.put("ret", false);
+                    params.put("ptix", pi);
+
+                    List<PatientSampleComponant> componants = patientSampleComponantFacade.findByJpql(jpql, params);
+                    
+                    System.out.println("componants = " + componants);
+                    System.out.println("Size = " + componants.size());
+
+                    if (componants == null) {
+                        continue;
+                    }
+
+                    for (PatientSampleComponant psc : componants) {
+                        labTestHistoryController.addBarcodeViewHistory(pi, psc.getPatientSample());
+                    }
+                }
             }
-        }
+        } 
 
         billFacade.edit(barcodeBill);
 
