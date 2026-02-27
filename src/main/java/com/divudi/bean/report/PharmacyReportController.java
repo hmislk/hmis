@@ -8312,6 +8312,7 @@ public class PharmacyReportController implements Serializable {
         response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+        Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -8354,43 +8355,43 @@ public class PharmacyReportController implements Serializable {
                     List<Stock> stockList = batchEntry.getValue();
 
                     for (Stock stock : stockList) {
-                        table.addCell(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle());
-                        table.addCell(item.getCategory() != null ? item.getCategory().getCode() : "-");
-                        table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
-                        table.addCell(item.getCode() != null ? item.getCode() : "-");
-                        table.addCell(item.getName() != null ? item.getName() : "-");
-                        table.addCell(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
-                        table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
-                        table.addCell(stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                        table.addCell(new Phrase(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle(), dataFont));
+                        table.addCell(new Phrase(item.getCategory() != null ? item.getCategory().getCode() : "-", dataFont));
+                        table.addCell(new Phrase(item.getCategory() != null ? item.getCategory().getName() : "-", dataFont));
+                        table.addCell(new Phrase(item.getCode() != null ? item.getCode() : "-", dataFont));
+                        table.addCell(new Phrase(item.getName() != null ? item.getName() : "-", dataFont));
+                        table.addCell(new Phrase(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-", dataFont));
+                        table.addCell(new Phrase(item.getCategory() != null ? item.getCategory().getName() : "-", dataFont));
+                        table.addCell(new Phrase(stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-", dataFont));
+                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
-                                ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
-                                ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-", dataFont));
+                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
+                                ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-", dataFont));
+                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
-                                ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
-                                ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0");
-                        table.addCell(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0));
-                        table.addCell(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0));
-                        table.addCell(String.valueOf(stock.getStock() != null ? stock.getStock() : 0));
+                                ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-", dataFont));
+                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
+                                ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0", dataFont));
+                        table.addCell(new Phrase(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0), dataFont));
+                        table.addCell(new Phrase(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0), dataFont));
+                        table.addCell(new Phrase(String.valueOf(stock.getStock() != null ? stock.getStock() : 0), dataFont));
 
                         double itemValue = stock.getItemBatch() != null && stock.getStock() != null
                                 ? stock.getItemBatch().getPurcahseRate() * stock.getStock() : 0;
-                        table.addCell(String.valueOf(itemValue));
-                        table.addCell("-");
-                        table.addCell("-");
-                        table.addCell("-");
-                        table.addCell("-");
+                        table.addCell(new Phrase(String.valueOf(itemValue), dataFont));
+                        table.addCell(new Phrase("-", dataFont));
+                        table.addCell(new Phrase("-", dataFont));
+                        table.addCell(new Phrase("-", dataFont));
+                        table.addCell(new Phrase("-", dataFont));
                     }
                     for (int i = 0; i < 16; i++) {
                         table.addCell(" ");
                     }
-                    table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
-                    table.addCell(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)));
+                    table.addCell(new Phrase(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), dataFont));
+                    table.addCell(new Phrase(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)), dataFont));
                     for (int i = 0; i < 2; i++) {
                         table.addCell(" ");
                     }
@@ -8398,16 +8399,16 @@ public class PharmacyReportController implements Serializable {
                 for (int i = 0; i < 18; i++) {
                     table.addCell(" ");
                 }
-                table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
-                table.addCell(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)));
+                table.addCell(new Phrase(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), dataFont));
+                table.addCell(new Phrase(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)), dataFont));
             }
             for (int i = 0; i < 16; i++) {
                 table.addCell(" ");
             }
-            table.addCell(String.format("%.2f", stockPurchaseValue));
-            table.addCell(String.format("%.2f", quantity));
-            table.addCell(String.format("%.2f", stockPurchaseValue));
-            table.addCell(String.format("%.2f", quantity));
+            table.addCell(new Phrase(String.format("%.2f", stockPurchaseValue), dataFont));
+            table.addCell(new Phrase(String.format("%.2f", quantity), dataFont));
+            table.addCell(new Phrase(String.format("%.2f", stockPurchaseValue), dataFont));
+            table.addCell(new Phrase(String.format("%.2f", quantity), dataFont));
 
             document.add(table);
             document.close();
