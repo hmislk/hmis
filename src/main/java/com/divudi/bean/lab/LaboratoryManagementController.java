@@ -2533,7 +2533,17 @@ public class LaboratoryManagementController implements Serializable {
     public void addPrintBarcodeHistory() {
 
         for (BillBarcode bCode : billBarcodes) {
-            for (PatientSampleComponant componant : patientInvestigationController.getPatientSampleComponentsByBill(bCode.getBill())) {
+            if(bCode == null || bCode.getBill() == null){
+                continue;
+            }
+            
+            List<PatientSampleComponant> list = patientInvestigationController.getPatientSampleComponentsByBill(bCode.getBill());
+            
+            if(list == null || list.isEmpty()){
+                continue;
+            }
+            
+            for (PatientSampleComponant componant : list) {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of Barcode Print.", false)) {
                         labTestHistoryController.addPrintBarcodeHistory(componant.getPatientInvestigation(), componant.getPatientSample());

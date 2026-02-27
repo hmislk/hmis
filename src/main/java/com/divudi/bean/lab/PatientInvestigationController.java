@@ -6619,9 +6619,9 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            
-            List<PatientSampleComponant> componants = getPatientSampleComponentsByBill(barcodeBill);
 
+            List<PatientSampleComponant> componants = getPatientSampleComponentsByBill(barcodeBill);
+            
             if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
                 barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
                 for (PatientSampleComponant psc : componants) {
@@ -6629,12 +6629,9 @@ public class PatientInvestigationController implements Serializable {
                 }
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of Barcode View.", false)) {
-                    for (PatientInvestigation pi : pis) {
-                        for (PatientSampleComponant psc : componants) {
-                            labTestHistoryController.addBarcodeViewHistory(pi, psc.getPatientSample());
-                        }
+                    for (PatientSampleComponant psc : componants) {
+                        labTestHistoryController.addBarcodeViewHistory(psc.getPatientInvestigation(), psc.getPatientSample());
                     }
-
                 }
             }
         }
