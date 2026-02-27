@@ -301,7 +301,7 @@
                                          rendered="#{pharmacyController.reportType eq 'summary'}">
                             <p:dataExporter type="xlsx"
                                             target="tbl1"
-                                            fileName="grn.xlsx"/>
+                                            fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}.xlsx"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-success mx-1"
                                          icon="fas fa-file-excel"
@@ -316,7 +316,7 @@
                                          rendered="#{pharmacyController.reportType eq 'summary'}">
                             <p:dataExporter type="pdf"
                                             target="tbl1"
-                                            fileName="grn.pdf"/>
+                                            fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}.pdf"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-danger mx-1"
                                          icon="fas fa-file-pdf"
@@ -334,9 +334,13 @@
                                      rowIndexVar="n"
                                      paginator="true"
                                      rows="10"
+                                     paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                            <f:facet name="header" >
+                                <h:outputText value="#{pharmacyController.GRNHeader()}" style="display:none !important; font-size:10px;" />
+                            </f:facet>
                             <p:column headerText="S No" width="3em">
                                 <h:outputText value="#{n+1}"/>
                             </p:column>
@@ -359,6 +363,9 @@
                             <p:column headerText="Supplier" width="5em">
                                 <h:outputText
                                         value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total" style="font-weight: bold;"/>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="PO Sub Total" width="5em">
                                 <h:outputText value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
@@ -366,6 +373,7 @@
                                                        -1 * bill.referenceBill.netTotal: bill.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
                                                   style="font-weight: bold;">
@@ -384,6 +392,31 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                             <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Total" colspan="6"
+                                              style="text-align: center; font-weight: bold;">
+                                        <h:outputText value="Total" style="font-weight: bold;"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                                    </p:column>
+                                    <p:column>
+                                            <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                                       
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
                         </p:dataTable>
 
                         <p:dataTable
@@ -632,9 +665,21 @@
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
+                                    <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
+                                    <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                                 </p:column>
                             </p:subTable>
                             <p:columnGroup type="footer">
@@ -645,21 +690,20 @@
                                     </p:column>
                                     <p:column>
                                         <f:facet name="footer">
-                                            <h:outputText
-                                                    value="#{pharmacyController.calculateTotalPOAmount()}"
-                                                    style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
+                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                                     </p:column>
                                     <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText
-                                                    value="#{pharmacyController.calculateTotalGrnAmount()}"
-                                                    style="font-weight: bold;">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
+                                            <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
+                                                  style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                                       
                                     </p:column>
                                 </p:row>
                             </p:columnGroup>
