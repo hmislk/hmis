@@ -5059,7 +5059,7 @@ public class CommonReport implements Serializable {
             getGrnCancelled().setSaleCredit(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Credit));
 
 // GRN Refunded Bills
-            getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+            getGrnReturn().setBills(getBills(new RefundBill(), BillType.PharmacyGrnReturn, getDepartment()));
             getGrnReturn().setCash(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Cash));
             getGrnReturn().setCredit(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Credit));
             getGrnReturn().setSaleCash(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Cash));
