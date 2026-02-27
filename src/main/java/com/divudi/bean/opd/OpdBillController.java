@@ -3893,6 +3893,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 currentPatientFamily = null;
                 if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
                     referredBy = null;
+                }
+                if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Institution on New Bill", false)) {
                     referredByInstitution = null;
                 }
                 collectingCentreBillController.setCollectingCentre(null);
@@ -3914,6 +3916,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             patientEncounter = null;
             if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
                 referredBy = null;
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Institution on New Bill", false)) {
                 referredByInstitution = null;
             }
             collectingCentreBillController.setCollectingCentre(null);
