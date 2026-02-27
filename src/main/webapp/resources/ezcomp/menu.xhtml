@@ -1638,16 +1638,6 @@
                     </p:menuitem>
 
                     <p:menuitem  
-                        ajax="false"
-                        value="Request Manager"
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
-                        action="#{requestController.navigateToSearchRequest()}"
-                        actionListener="#{requestController.makeNull()}"
-                        icon="fa-solid fa-envelope" 
-                        >
-                    </p:menuitem>
-
-                    <p:menuitem  
                         ajax="false"  
                         action="#{financialTransactionController.navigateToPaymentManagement()}"
                         value="Payment Management" 
@@ -1832,6 +1822,16 @@
 
                     </p:submenu>
                 </p:submenu>
+
+                <!--            Payment Manager-->
+                <p:menuitem  
+                    ajax="false"
+                    title="Request Manager"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                    action="#{requestController.navigateToSearchRequest()}"
+                    actionListener="#{requestController.makeNull()}"
+                    icon="fa-solid fa-envelope">
+                </p:menuitem>
 
                 <!--            HR Section-->
                 <p:submenu 
