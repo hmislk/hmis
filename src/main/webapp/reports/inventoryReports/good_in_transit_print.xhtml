@@ -1,0 +1,390 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <style>
+                            @media screen{
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 1.0;
+                                }
+                                
+                                
+                            }
+                            
+                            @media print {
+                                @page {
+                                    size: A4 landscape!important;
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 8pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+                                
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                }
+                                
+                            }
+
+                            @media screen, print {
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+                                
+                                table {
+                                    width: 99.9%;
+                                    font-size: 9pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+                                
+                                th, td {
+                                    border: 1pt solid #000000 !important;
+                                    padding: 1pt!important;
+                                    text-align: left;
+                                    overflow-wrap: break-word;
+                                    white-space: normal;
+                                }
+
+                                .report-header-table {
+                                    border-collapse: collapse;
+                                    font-size: 8pt!important;
+                                }
+
+                                .report-header-table .label {
+                                    font-weight: 600;
+                                    padding-right: 5px;
+                                    white-space: nowrap;
+                                }
+
+                                .report-header-table td {
+                                    padding: 3px 8px;
+                                    vertical-align: top;
+                                }
+
+                                /* Hide PrimeFaces sort icons in datatable headers */
+                                .ui-sortable-column .ui-sortable-column-icon,
+                                .ui-sortable-column .ui-sortable-icon,
+                                .ui-sortable-column .pi-sort,
+                                .ui-sortable-column .ui-sort-up,
+                                .ui-sortable-column .ui-sort-down,
+                                .ui-sortable-column .ui-column-title .pi-sort {
+                                    display: none !important;
+                                }
+                            }
+                            
+                        </style>
+                        <h:panelGroup>
+                            <p:panel header="Good In Transit" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Good In Transit" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="report" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/inventoryReports/good_in_transit?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="report" class="d-flex justify-content-center">
+                                <div class="paper">
+                                    <div class="header">
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="Good In Transit Report"/>
+                                            </div>
+
+                                            <div class="d-flex justify-content-center m-3 filter-panel">
+                                                <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:80%;" columnClasses="label,value,label,value,label,value">
+
+                                                    <!-- Row 1 -->
+                                                    <h:outputText value="From Date:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="To Date:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.toDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    </h:outputText>
+
+                                                    <h:outputText value="Issuing/Returning Doc.Status:" styleClass="label"/>
+                                                    <h:outputText value="Any" rendered="#{pharmacyReportController.reportType eq 'any'}"/>
+                                                    <h:outputText value="Pending" rendered="#{pharmacyReportController.reportType eq 'pending'}"/>
+                                                    <h:outputText value="Accepted" rendered="#{pharmacyReportController.reportType eq 'accepted'}"/>
+                                                    <h:outputText value="Cancelled by Issuing" rendered="#{pharmacyReportController.reportType eq 'issueCancel'}"/>
+
+
+                                                    <!-- Row 2 -->
+                                                    <h:outputText value="Issuing Institution:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.fromInstitution != null ? pharmacyReportController.fromInstitution.name : 'All'}"/>
+
+                                                    <h:outputText value="Issuing Site:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.fromSite != null ? pharmacyReportController.fromSite.name : 'All'}"/>
+
+                                                    <h:outputText value="Issuing Department:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.fromDepartment != null ? pharmacyReportController.fromDepartment.name : 'All'}"/>
+
+
+                                                    <!-- Row 3 -->
+                                                    <h:outputText value="Receiving Institution:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.toInstitution != null ? pharmacyReportController.toInstitution.name : 'All'}"/>
+
+                                                    <h:outputText value="Receiving Site:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.toSite != null ? pharmacyReportController.toSite.name : 'All'}"/>
+
+                                                    <h:outputText value="Receiving Department:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.toDepartment != null ? pharmacyReportController.toDepartment.name : 'All'}"/>
+
+
+                                                    <!-- Row 4 -->
+                                                    <h:outputText value="Item Name/Code:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.item != null ? pharmacyReportController.item.name : 'All'}"/>
+
+                                                    <h:outputText value="Item Category:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.category != null ? pharmacyReportController.category.name : 'All'}"/>
+
+                                                    <h:outputText value="Dosage Form:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.dosageForm != null ? pharmacyReportController.dosageForm.name : 'All'}"/>
+
+
+                                                    <!-- Row 5 -->
+                                                    <h:outputText value="Department Type:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.selectedDepartmentTypesString}"/>
+
+                                                    <h:outputText value="Transit Staff:" styleClass="label"/>
+                                                    <h:outputText value="#{pharmacyReportController.toStaff != null ? pharmacyReportController.toStaff.person.name : 'All'}"/>
+
+                                                </h:panelGrid>
+                                            </div>
+                                            
+                                    </div>
+                                    <p:dataTable id="tbl"
+                                                value="#{pharmacyReportController.pharmacyRows}" var="bi"
+                                                styleClass="table-small">
+                                        <p:column headerText="Bill No." width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Bill No."/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.bill.deptId}"/>
+                                        </p:column>
+                                        <p:column headerText="Staff" width="25mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Staff"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.bill.toStaff.person.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Item" width="35mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Item"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.item.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Code" width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Code"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.item.code}"/>
+                                        </p:column>
+                                        <p:column headerText="Dosage Form" width="12mm">
+                                            <h:outputLabel value="#{bi.billItem.item.dosageForm != null ? bi.billItem.item.dosageForm.name : ''}"/>
+                                        </p:column>
+                                        <p:column headerText="Stock"
+                                                sortBy="#{bi.billItem.pharmaceuticalBillItem.qty}"
+                                                styleClass="text-end"
+                                                width="14mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Stock"/>
+                                            </f:facet>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                                <!-- For pending and accepted items, show remaining/received quantity from maps -->
+                                                <h:outputText value="#{pharmacyReportController.billItemRemainingQuantities[bi.billItem.id]}">
+                                                    <f:convertNumber pattern="#,##0.##" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                                <!-- For other report types, show total issued quantity -->
+                                                <h:panelGroup rendered="#{bi.billItem.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                                    <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty * bi.billItem.billItemFinanceDetails.unitsPerPack)}">
+                                                        <f:convertNumber pattern="#,##0.##" />
+                                                    </h:outputText>
+                                                    <h:outputText value=" (" />
+                                                    <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.qty)}">
+                                                        <f:convertNumber pattern="#,##0.##" />
+                                                    </h:outputText>
+                                                    <h:outputText value=" pack x " />
+                                                    <h:outputText value="#{bi.billItem.billItemFinanceDetails.unitsPerPack}">
+                                                        <f:convertNumber pattern="#,##0.##" />
+                                                    </h:outputText>
+                                                    <h:outputText value=")" />
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{bi.billItem.item.class ne 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                                    <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.qty)}">
+                                                        <f:convertNumber pattern="#,##0.##" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </p:column>
+                                        <p:column headerText="Expiry"
+                                                sortBy="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}"
+                                                width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Expiry"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="From Department"
+                                                sortBy="#{bi.billItem.bill.fromDepartment.name}"
+                                                width="25mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="From Department"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.bill.fromDepartment.name}">
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column 
+                                                sortBy="#{bi.billItem.bill.toDepartment.name}"
+                                                width="25mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="To Department"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.bill.toDepartment.name}">
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Issued Date"
+                                                sortBy="#{bi.billItem.bill.createdAt}"
+                                                width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Issued Date"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.bill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Retail Sale Value"
+                                                styleClass="averageNumericColumn text-end"
+                                                width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Retail Sale Value"/>
+                                            </f:facet>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                                <!-- For pending and accepted items, show remaining/received retail value from maps -->
+                                                <h:outputLabel value="#{pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id]}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                                <!-- For other report types, show total issued retail value -->
+                                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtRetailRate)}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column headerText="Purchase Value"
+                                                styleClass="averageNumericColumn text-end"
+                                                width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Purchase Value"/>
+                                            </f:facet>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                                <!-- For pending and accepted items, show remaining/received purchase value from maps -->
+                                                <h:outputLabel value="#{pharmacyReportController.billItemRemainingPurchaseValues[bi.billItem.id]}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                                <!-- For other report types, show total issued purchase value -->
+                                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtPurchaseRate)}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column headerText="Cost Value"
+                                                styleClass="averageNumericColumn text-end"
+                                                width="15mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Cost Value"/>
+                                            </f:facet>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
+                                                <!-- For pending and accepted items, show remaining/received cost value from maps -->
+                                                <h:outputLabel value="#{pharmacyReportController.billItemRemainingCostValues[bi.billItem.id]}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
+                                                <!-- For other report types, show total issued cost value -->
+                                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtCostRate)}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="text-end">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column width="20mm">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Comments"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bi.billItem.bill.comments}">
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

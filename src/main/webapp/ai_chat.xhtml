@@ -5,423 +5,933 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-<h:head>
-    <title>AI Assistant</title>
-    <style type="text/css">
-        .ai-chat-layout {
-            display: flex;
-            height: calc(100vh - 120px);
-            gap: 0.5rem;
-        }
-        .ai-sidebar {
-            width: 260px;
-            min-width: 200px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            background: #f8f9fa;
-            overflow: hidden;
-        }
-        .ai-sidebar-header {
-            padding: 0.6rem 0.75rem;
-            background: #495057;
-            color: #fff;
-            font-weight: bold;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .ai-sidebar-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0.25rem;
-        }
-        .ai-conv-item {
-            padding: 0.4rem 0.6rem;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.82rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2px;
-        }
-        .ai-conv-item:hover {
-            background: #e9ecef;
-        }
-        .ai-conv-item.active {
-            background: #0d6efd;
-            color: #fff;
-        }
-        .ai-conv-title {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .ai-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            overflow: hidden;
-            background: #fff;
-        }
-        .ai-main-header {
-            padding: 0.5rem 0.75rem;
-            background: #495057;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.85rem;
-        }
-        .ai-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-        .ai-bubble {
-            max-width: 80%;
-            padding: 0.5rem 0.75rem;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .ai-bubble-user {
-            align-self: flex-end;
-            background: #0d6efd;
-            color: #fff;
-        }
-        .ai-bubble-assistant {
-            align-self: flex-start;
-            background: #f1f3f5;
-            color: #212529;
-            border: 1px solid #dee2e6;
-        }
-        .ai-bubble-meta {
-            font-size: 0.7rem;
-            color: #6c757d;
-            margin-top: 2px;
-        }
-        .ai-bubble-meta-user {
-            text-align: right;
-        }
-        .ai-attachment-badge {
-            font-size: 0.75rem;
-            padding: 0.1rem 0.4rem;
-            background: rgba(255,255,255,0.25);
-            border-radius: 3px;
-            margin-bottom: 0.25rem;
-            display: inline-block;
-        }
-        .ai-input-area {
-            padding: 0.5rem;
-            border-top: 1px solid #dee2e6;
-            background: #f8f9fa;
-        }
-        .ai-input-row {
-            display: flex;
-            gap: 0.4rem;
-            align-items: flex-end;
-        }
-        .ai-input-row .ui-inputtextarea {
-            flex: 1;
-            resize: vertical;
-            min-height: 48px;
-            max-height: 120px;
-            font-size: 0.85rem;
-        }
-        .ai-attachment-info {
-            font-size: 0.78rem;
-            padding: 0.2rem 0.4rem;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 3px;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .ai-token-info {
-            font-size: 0.7rem;
-            color: #adb5bd;
-            text-align: right;
-        }
-        .ai-empty-state {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #adb5bd;
-            gap: 0.5rem;
-        }
-        .ai-empty-state .pi {
-            font-size: 2.5rem;
-        }
-    </style>
-</h:head>
-<h:body>
-    <ui:composition template="/resources/template/template.xhtml">
-        <ui:define name="content">
-            <p:growl id="growl" showDetail="true" life="4000" />
+    <h:head>
+        <title>AI Assistant</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
 
-            <!-- ============================================================
-                 SIDEBAR + MAIN layout
-                 ============================================================ -->
-            <div class="ai-chat-layout">
+                <!-- Page-scoped CSS (inside content define so Facelets includes it) -->
+                <style type="text/css">
 
-                <!-- ---- LEFT SIDEBAR: Conversation list ---- -->
-                <div class="ai-sidebar">
-                    <div class="ai-sidebar-header">
-                        <h:outputText value="Conversations" />
-                        <h:form id="newConvForm">
-                            <p:commandButton
-                                id="btnNewConv"
-                                icon="pi pi-plus"
-                                styleClass="ui-button-secondary"
-                                style="padding:0.2rem 0.5rem; font-size:0.8rem;"
-                                title="Start a new conversation"
-                                action="#{aiChatController.startNewConversation()}"
-                                update=":messagesPanel :headerPanel :sidebarList :growl"
-                                process="@this" />
-                        </h:form>
+                    /* ── Outer wrapper ─────────────────────────────────── */
+                    .aic-wrap {
+                        display: flex;
+                        height: calc(100vh - 56px);
+                        overflow: hidden;
+                        background: #f0f2f5;
+                    }
+
+                    /* ── Sidebar ────────────────────────────────────────── */
+                    .aic-sidebar {
+                        width: 280px;
+                        min-width: 220px;
+                        flex-shrink: 0;
+                        display: flex;
+                        flex-direction: column;
+                        background: #1a1f2e;
+                        color: #c9d1d9;
+                        border-right: 1px solid #0d1117;
+                    }
+
+                    .aic-sidebar-hdr {
+                        padding: 0.9rem 1rem;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-bottom: 1px solid #2d3748;
+                        flex-shrink: 0;
+                    }
+
+                    .aic-sidebar-hdr-label {
+                        font-size: 0.78rem;
+                        font-weight: 700;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: #8b949e;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.4rem;
+                    }
+
+                    .aic-new-btn .ui-button {
+                        background: #238636 !important;
+                        border-color: #2ea043 !important;
+                        border-radius: 6px !important;
+                        padding: 0.3rem 0.6rem !important;
+                        font-size: 0.82rem !important;
+                        color: #fff !important;
+                    }
+                    .aic-new-btn .ui-button:hover {
+                        background: #2ea043 !important;
+                    }
+
+                    .aic-sidebar-body {
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 0.5rem;
+                    }
+                    .aic-sidebar-body::-webkit-scrollbar {
+                        width: 4px;
+                    }
+                    .aic-sidebar-body::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    .aic-sidebar-body::-webkit-scrollbar-thumb {
+                        background: #2d3748;
+                        border-radius: 4px;
+                    }
+
+                    .aic-section-lbl {
+                        font-size: 0.68rem;
+                        font-weight: 700;
+                        letter-spacing: 0.07em;
+                        text-transform: uppercase;
+                        color: #6b7280;
+                        padding: 0.55rem 0.55rem 0.25rem;
+                    }
+
+                    .aic-conv-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.45rem;
+                        padding: 0.45rem 0.55rem;
+                        border-radius: 7px;
+                        margin-bottom: 2px;
+                        cursor: pointer;
+                        transition: background 0.12s;
+                    }
+                    .aic-conv-row:hover {
+                        background: #2d3748;
+                    }
+                    .aic-conv-row.is-active {
+                        background: #1f6feb;
+                    }
+                    .aic-conv-row.is-active .aic-conv-name {
+                        color: #fff;
+                    }
+                    .aic-conv-row.is-active .aic-conv-icon {
+                        color: rgba(255,255,255,0.7);
+                    }
+
+                    .aic-conv-icon {
+                        font-size: 0.75rem;
+                        color: #6b7280;
+                        flex-shrink: 0;
+                    }
+
+                    .aic-conv-name {
+                        flex: 1;
+                        font-size: 0.82rem;
+                        color: #c9d1d9;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .aic-conv-sub {
+                        font-size: 0.68rem;
+                        color: #6b7280;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    .aic-conv-row.is-active .aic-conv-sub {
+                        color: rgba(255,255,255,0.6);
+                    }
+
+                    .aic-conv-row .ui-button {
+                        background: transparent !important;
+                        border: none !important;
+                        color: #6b7280 !important;
+                        padding: 0.15rem 0.3rem !important;
+                        min-width: 0 !important;
+                        font-size: 0.75rem !important;
+                        border-radius: 4px !important;
+                        flex-shrink: 0;
+                    }
+                    .aic-conv-row .ui-button:hover {
+                        background: rgba(255,255,255,0.12) !important;
+                        color: #fff !important;
+                    }
+                    .aic-conv-row.is-active .ui-button {
+                        color: rgba(255,255,255,0.75) !important;
+                    }
+
+                    /* ── Main panel ─────────────────────────────────────── */
+                    .aic-main {
+                        flex: 1;
+                        min-width: 0;
+                        display: flex;
+                        flex-direction: column;
+                        background: #ffffff;
+                    }
+
+                    .aic-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.75rem;
+                        padding: 0.65rem 1.25rem;
+                        border-bottom: 1px solid #e5e7eb;
+                        background: #fff;
+                        flex-shrink: 0;
+                        min-height: 56px;
+                    }
+
+                    .aic-header-avatar {
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #fff;
+                        font-size: 0.95rem;
+                        flex-shrink: 0;
+                    }
+
+                    .aic-header-title {
+                        font-size: 0.95rem;
+                        font-weight: 600;
+                        color: #111827;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .aic-header-sub {
+                        font-size: 0.72rem;
+                        color: #9ca3af;
+                        margin-top: 1px;
+                    }
+
+                    .aic-header-actions .ui-button {
+                        background: transparent !important;
+                        border: 1px solid #e5e7eb !important;
+                        color: #6b7280 !important;
+                        border-radius: 7px !important;
+                        padding: 0.3rem 0.65rem !important;
+                        font-size: 0.8rem !important;
+                    }
+                    .aic-header-actions .ui-button:hover {
+                        background: #f9fafb !important;
+                        color: #374151 !important;
+                    }
+
+                    /* ── Messages ────────────────────────────────────────── */
+                    .aic-messages {
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 1.5rem 2rem;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1.25rem;
+                    }
+                    .aic-messages::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .aic-messages::-webkit-scrollbar-track {
+                        background: #f9fafb;
+                    }
+                    .aic-messages::-webkit-scrollbar-thumb {
+                        background: #d1d5db;
+                        border-radius: 4px;
+                    }
+
+                    .aic-msg-row {
+                        display: flex;
+                        gap: 0.75rem;
+                        max-width: 860px;
+                        width: 100%;
+                    }
+                    .aic-msg-row.from-user {
+                        align-self: flex-end;
+                        flex-direction: row-reverse;
+                    }
+                    .aic-msg-row.from-ai  {
+                        align-self: flex-start;
+                    }
+
+                    .aic-msg-avatar {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.78rem;
+                        flex-shrink: 0;
+                        margin-top: 4px;
+                    }
+                    .aic-msg-avatar.user-av {
+                        background: #2563eb;
+                        color: #fff;
+                    }
+                    .aic-msg-avatar.ai-av  {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: #fff;
+                    }
+
+                    .aic-bubble-col {
+                        display: flex;
+                        flex-direction: column;
+                        max-width: calc(100% - 44px);
+                    }
+                    .aic-msg-row.from-user .aic-bubble-col {
+                        align-items: flex-end;
+                    }
+
+                    .aic-bubble {
+                        padding: 0.65rem 0.95rem;
+                        border-radius: 14px;
+                        font-size: 0.88rem;
+                        line-height: 1.65;
+                        white-space: pre-wrap;
+                        word-break: break-word;
+                    }
+                    .aic-bubble.user-bub {
+                        background: #2563eb;
+                        color: #fff;
+                        border-bottom-right-radius: 4px;
+                    }
+                    .aic-bubble.ai-bub {
+                        background: #f3f4f6;
+                        color: #111827;
+                        border: 1px solid #e5e7eb;
+                        border-bottom-left-radius: 4px;
+                    }
+                    /* Markdown rendered content inside AI bubbles */
+                    .ai-bub p { margin: 0.4em 0; }
+                    .ai-bub p:first-child { margin-top: 0; }
+                    .ai-bub p:last-child { margin-bottom: 0; }
+                    .ai-bub pre {
+                        background: #1f2937; color: #e5e7eb;
+                        padding: 0.75rem 1rem; border-radius: 6px;
+                        overflow-x: auto; font-size: 0.82rem;
+                        margin: 0.5em 0;
+                    }
+                    .ai-bub code {
+                        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+                        font-size: 0.88em;
+                    }
+                    .ai-bub :not(pre) > code {
+                        background: #e5e7eb; padding: 0.15em 0.35em;
+                        border-radius: 3px; color: #111827;
+                    }
+                    .ai-bub ul, .ai-bub ol {
+                        margin: 0.4em 0; padding-left: 1.5em;
+                    }
+                    .ai-bub li { margin: 0.2em 0; }
+                    .ai-bub table {
+                        border-collapse: collapse; margin: 0.5em 0;
+                        font-size: 0.88em; width: 100%;
+                    }
+                    .ai-bub th, .ai-bub td {
+                        border: 1px solid #d1d5db;
+                        padding: 0.35rem 0.6rem; text-align: left;
+                    }
+                    .ai-bub th { background: #e5e7eb; font-weight: 600; }
+                    .ai-bub blockquote {
+                        border-left: 3px solid #6366f1;
+                        margin: 0.5em 0; padding: 0.25em 0.75em;
+                        color: #4b5563;
+                    }
+                    .ai-bub h1, .ai-bub h2, .ai-bub h3,
+                    .ai-bub h4, .ai-bub h5, .ai-bub h6 {
+                        margin: 0.6em 0 0.3em; font-weight: 600;
+                    }
+                    .ai-bub h1 { font-size: 1.2em; }
+                    .ai-bub h2 { font-size: 1.1em; }
+                    .ai-bub h3 { font-size: 1.0em; }
+
+                    .aic-attach-pill {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.3rem;
+                        font-size: 0.75rem;
+                        padding: 0.2rem 0.55rem;
+                        background: rgba(255,255,255,0.22);
+                        border-radius: 5px;
+                        margin-bottom: 0.3rem;
+                    }
+
+                    .aic-bubble-meta {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.45rem;
+                        font-size: 0.69rem;
+                        color: #9ca3af;
+                        margin-top: 4px;
+                    }
+                    .aic-msg-row.from-user .aic-bubble-meta {
+                        justify-content: flex-end;
+                    }
+
+                    .aic-token-pill {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.2rem;
+                        font-size: 0.67rem;
+                        background: #f9fafb;
+                        border: 1px solid #e5e7eb;
+                        padding: 0.1rem 0.4rem;
+                        border-radius: 9999px;
+                        color: #9ca3af;
+                    }
+
+                    .aic-typing-bub {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.4rem;
+                        padding: 0.55rem 0.9rem;
+                        background: #f3f4f6;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 14px;
+                        border-bottom-left-radius: 4px;
+                        font-size: 0.85rem;
+                        color: #6b7280;
+                    }
+
+                    /* ── Empty state ─────────────────────────────────────── */
+                    .aic-empty {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 1rem;
+                        padding: 2rem;
+                        text-align: center;
+                    }
+
+                    .aic-empty-icon {
+                        width: 68px;
+                        height: 68px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #fff;
+                        font-size: 1.9rem;
+                        box-shadow: 0 6px 24px rgba(102,126,234,0.35);
+                    }
+
+                    .aic-empty-title {
+                        font-size: 1.2rem;
+                        font-weight: 700;
+                        color: #111827;
+                        margin: 0;
+                    }
+                    .aic-empty-desc  {
+                        font-size: 0.85rem;
+                        color: #6b7280;
+                        max-width: 380px;
+                        line-height: 1.6;
+                        margin: 0;
+                    }
+
+                    .aic-tip-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 0.6rem;
+                        max-width: 460px;
+                        width: 100%;
+                        margin-top: 0.25rem;
+                    }
+
+                    .aic-tip {
+                        background: #f9fafb;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 10px;
+                        padding: 0.8rem 0.9rem;
+                        text-align: left;
+                        font-size: 0.8rem;
+                        color: #374151;
+                        line-height: 1.4;
+                    }
+                    .aic-tip .pi {
+                        display: block;
+                        font-size: 1.1rem;
+                        color: #6366f1;
+                        margin-bottom: 0.4rem;
+                    }
+                    .aic-tip-heading {
+                        font-weight: 600;
+                        margin-bottom: 0.15rem;
+                    }
+
+                    /* ── Input area ──────────────────────────────────────── */
+                    .aic-input-wrap {
+                        padding: 0.75rem 2rem 1rem;
+                        border-top: 1px solid #e5e7eb;
+                        background: #fff;
+                        flex-shrink: 0;
+                    }
+
+                    .aic-attach-notice {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.45rem;
+                        font-size: 0.8rem;
+                        padding: 0.4rem 0.8rem;
+                        background: #fef9c3;
+                        border: 1px solid #fcd34d;
+                        border-radius: 7px;
+                        margin-bottom: 0.5rem;
+                        color: #854d0e;
+                    }
+
+                    .aic-input-shell {
+                        display: flex;
+                        align-items: flex-end;
+                        gap: 0.5rem;
+                        background: #f9fafb;
+                        border: 1.5px solid #d1d5db;
+                        border-radius: 14px;
+                        padding: 0.5rem 0.6rem 0.5rem 1rem;
+                        transition: border-color 0.15s, box-shadow 0.15s;
+                    }
+                    .aic-input-shell:focus-within {
+                        border-color: #6366f1;
+                        background: #fff;
+                        box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+                    }
+
+                    .aic-input-shell .ui-inputtextarea {
+                        flex: 1 !important;
+                        border: none !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
+                        outline: none !important;
+                        resize: none !important;
+                        font-size: 0.9rem !important;
+                        padding: 0.3rem 0 !important;
+                        min-height: 40px !important;
+                        max-height: 160px !important;
+                        line-height: 1.55 !important;
+                        color: #111827 !important;
+                    }
+
+                    .aic-input-btns {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.35rem;
+                        flex-shrink: 0;
+                        padding-bottom: 2px;
+                    }
+
+                    .aic-file-btn .ui-fileupload-buttonbar {
+                        border: none !important;
+                        background: transparent !important;
+                        padding: 0 !important;
+                    }
+                    .aic-file-btn .ui-button {
+                        background: transparent !important;
+                        border: 1px solid #e5e7eb !important;
+                        color: #6b7280 !important;
+                        border-radius: 8px !important;
+                        width: 36px !important;
+                        height: 36px !important;
+                        padding: 0 !important;
+                    }
+                    .aic-file-btn .ui-button:hover {
+                        background: #f3f4f6 !important;
+                        color: #374151 !important;
+                    }
+
+                    .aic-send-btn .ui-button {
+                        background: #6366f1 !important;
+                        border-color: #6366f1 !important;
+                        border-radius: 10px !important;
+                        width: 38px !important;
+                        height: 38px !important;
+                        padding: 0 !important;
+                    }
+                    .aic-send-btn .ui-button:hover {
+                        background: #4f46e5 !important;
+                        border-color: #4f46e5 !important;
+                    }
+                    .aic-send-btn .ui-button.ui-state-disabled {
+                        background: #d1d5db !important;
+                        border-color: #d1d5db !important;
+                    }
+
+                    .aic-hint {
+                        text-align: center;
+                        font-size: 0.69rem;
+                        color: #9ca3af;
+                        margin-top: 0.4rem;
+                    }
+
+                </style>
+
+                <!-- ══════════════════════════════════════════════════════
+                     LAYOUT
+                     ══════════════════════════════════════════════════════ -->
+                <div class="aic-wrap">
+
+                    <!-- SIDEBAR -->
+                    <div class="aic-sidebar">
+
+                        <div class="aic-sidebar-hdr">
+                            <span class="aic-sidebar-hdr-label">
+                                <span class="pi pi-comments"/>
+                                Conversations
+                            </span>
+                            <h:form id="newConvForm" styleClass="aic-new-btn">
+                                <p:commandButton
+                                    id="btnNewConv"
+                                    icon="pi pi-plus"
+                                    title="New conversation"
+                                    action="#{aiChatController.startNewConversation()}"
+                                    update=":messagesPanel :headerPanel :sidebarList :growl"
+                                    process="@this" />
+                            </h:form>
+                        </div>
+
+                        <h:panelGroup layout="block" id="sidebarList" styleClass="aic-sidebar-body">
+
+                            <div class="aic-section-lbl">My Chats</div>
+                            <h:form id="convListForm">
+                                <ui:repeat value="#{aiChatController.myConversations}" var="conv">
+                                    <div class="aic-conv-row #{aiChatController.currentConversation != null and aiChatController.currentConversation.id == conv.id ? 'is-active' : ''}">
+                                        <span class="pi pi-comment aic-conv-icon"/>
+                                        <span class="aic-conv-name" title="#{conv.title}">
+                                            <h:outputText value="#{conv.title}" />
+                                        </span>
+                                        <p:commandButton
+                                            icon="pi pi-angle-right"
+                                            title="Open"
+                                            action="#{aiChatController.selectConversation(conv)}"
+                                            update=":messagesPanel :headerPanel :inputForm :growl"
+                                            process="@this" />
+                                    </div>
+                                </ui:repeat>
+                            </h:form>
+
+                            <h:form id="adminConvForm" rendered="#{aiChatController.admin}">
+                                <p:separator style="margin:0.5rem 0; border-color:#2d3748;" />
+                                <div class="aic-section-lbl">All Users</div>
+                                <ui:repeat value="#{aiChatController.allConversations}" var="conv">
+                                    <div class="aic-conv-row">
+                                        <span class="pi pi-user aic-conv-icon"/>
+                                        <div style="flex:1; min-width:0;">
+                                            <div class="aic-conv-sub">
+                                                <h:outputText value="#{conv.webUser.name}" />
+                                            </div>
+                                            <div class="aic-conv-name">
+                                                <h:outputText value="#{conv.title}" />
+                                            </div>
+                                        </div>
+                                        <p:commandButton
+                                            icon="pi pi-angle-right"
+                                            title="Open"
+                                            action="#{aiChatController.selectConversation(conv)}"
+                                            update=":messagesPanel :headerPanel :inputForm :growl"
+                                            process="@this" />
+                                    </div>
+                                </ui:repeat>
+                            </h:form>
+
+                        </h:panelGroup>
                     </div>
 
-                    <h:panelGroup layout="block" id="sidebarList" styleClass="ai-sidebar-list">
-                        <h:form id="convListForm">
-                            <ui:repeat value="#{aiChatController.myConversations}" var="conv">
-                                <div class="ai-conv-item #{aiChatController.currentConversation != null and aiChatController.currentConversation.id == conv.id ? 'active' : ''}">
-                                    <h:outputText value="#{conv.title}" styleClass="ai-conv-title" title="#{conv.title}" />
-                                    <p:commandButton
-                                        icon="pi pi-chevron-right"
-                                        styleClass="ui-button-secondary"
-                                        style="padding:0.1rem 0.3rem; font-size:0.75rem; min-width:0;"
-                                        title="Open conversation"
-                                        action="#{aiChatController.selectConversation(conv)}"
-                                        update=":messagesPanel :headerPanel :inputForm :growl"
-                                        process="@this" />
-                                </div>
-                            </ui:repeat>
-                        </h:form>
+                    <!-- MAIN CHAT AREA -->
+                    <div class="aic-main">
 
-                        <!-- Admin: view all conversations -->
-                        <h:form id="adminConvForm" rendered="#{aiChatController.admin}">
-                            <p:separator />
-                            <div style="padding:0.3rem 0.5rem; font-size:0.75rem; color:#6c757d; font-weight:bold;">
-                                All Users
+                        <!-- Header -->
+                        <h:panelGroup layout="block" id="headerPanel" styleClass="aic-header">
+                            <div class="aic-header-avatar">
+                                <span class="pi pi-star-fill"/>
                             </div>
-                            <ui:repeat value="#{aiChatController.allConversations}" var="conv">
-                                <div class="ai-conv-item">
-                                    <h:outputText
-                                        value="#{conv.webUser.name} — #{conv.title}"
-                                        styleClass="ai-conv-title"
-                                        title="#{conv.webUser.name}: #{conv.title}" />
-                                    <p:commandButton
-                                        icon="pi pi-chevron-right"
-                                        styleClass="ui-button-secondary"
-                                        style="padding:0.1rem 0.3rem; font-size:0.75rem; min-width:0;"
-                                        title="Open conversation"
-                                        action="#{aiChatController.selectConversation(conv)}"
-                                        update=":messagesPanel :headerPanel :inputForm :growl"
-                                        process="@this" />
-                                </div>
-                            </ui:repeat>
-                        </h:form>
-                    </h:panelGroup>
-                </div>
-
-                <!-- ---- MAIN CHAT AREA ---- -->
-                <div class="ai-main">
-
-                    <!-- Header bar with conversation title and rename -->
-                    <h:panelGroup layout="block" id="headerPanel" styleClass="ai-main-header">
-                        <h:form id="titleForm">
-                            <h:outputText
-                                value="#{aiChatController.currentConversation != null ? aiChatController.currentConversation.title : 'AI Assistant'}"
-                                style="font-weight:bold;" />
-                            <p:commandButton
-                                icon="pi pi-pencil"
-                                styleClass="ui-button-secondary"
-                                style="margin-left:0.5rem; padding:0.1rem 0.4rem; font-size:0.8rem;"
-                                title="Rename conversation"
-                                rendered="#{aiChatController.currentConversation != null}"
-                                onclick="PF('renameDialog').show()"
-                                type="button" />
-                        </h:form>
-                    </h:panelGroup>
-
-                    <!-- Messages thread -->
-                    <h:panelGroup layout="block" id="messagesPanel" styleClass="ai-messages">
-                        <ui:fragment rendered="#{empty aiChatController.currentMessages}">
-                            <div class="ai-empty-state">
-                                <span class="pi pi-comments" />
-                                <h:outputText value="Start a conversation with the AI Assistant." />
-                                <h:outputText
-                                    value="Claude can query your HMIS system via the REST API, analyse images, and answer questions about your hospital data."
-                                    style="font-size:0.8rem; text-align:center; max-width:340px;" />
+                            <div style="flex:1; min-width:0;">
+                                <h:form id="titleForm">
+                                    <div class="aic-header-title">
+                                        <h:outputText value="#{aiChatController.currentConversation != null ? aiChatController.currentConversation.title : 'AI Assistant'}" />
+                                    </div>
+                                    <div class="aic-header-sub">Claude · HMIS AI Assistant</div>
+                                </h:form>
                             </div>
-                        </ui:fragment>
+                            <div class="aic-header-actions">
+                                <h:form id="renameFormHdr">
+                                    <p:commandButton
+                                        icon="pi pi-pencil"
+                                        value=" Rename"
+                                        title="Rename this conversation"
+                                        rendered="#{aiChatController.currentConversation != null}"
+                                        onclick="PF('renameDialog').show()"
+                                        type="button" />
+                                </h:form>
+                            </div>
+                        </h:panelGroup>
 
-                        <ui:repeat value="#{aiChatController.currentMessages}" var="msg">
-                            <ui:fragment rendered="#{msg.role == 'user'}">
-                                <div style="align-self:flex-end; max-width:80%;">
-                                    <ui:fragment rendered="#{not empty msg.attachmentName}">
-                                        <div class="ai-bubble ai-bubble-user" style="padding-bottom:0.2rem;">
-                                            <span class="ai-attachment-badge">
-                                                <span class="pi pi-paperclip" style="margin-right:3px;" />
-                                                <h:outputText value="#{msg.attachmentName}" />
+                        <!-- Messages -->
+                        <h:panelGroup layout="block" id="messagesPanel" styleClass="aic-messages">
+
+                            <!-- Empty state -->
+                            <h:panelGroup layout="block"
+                                          rendered="#{empty aiChatController.currentMessages}"
+                                          styleClass="aic-empty">
+                                <div class="aic-empty-icon">
+                                    <span class="pi pi-star-fill"/>
+                                </div>
+                                <p class="aic-empty-title">HMIS AI Assistant</p>
+                                <p class="aic-empty-desc">
+                                    Ask questions about hospital data, generate reports, or upload documents and images for analysis.
+                                </p>
+                                <div class="aic-tip-grid">
+                                    <div class="aic-tip">
+                                        <span class="pi pi-chart-bar"/>
+                                        <div class="aic-tip-heading">Query Reports</div>
+                                        Patient statistics, billing summaries
+                                    </div>
+                                    <div class="aic-tip">
+                                        <span class="pi pi-image"/>
+                                        <div class="aic-tip-heading">Analyse Files</div>
+                                        Images, PDFs, CSV exports
+                                    </div>
+                                    <div class="aic-tip">
+                                        <span class="pi pi-database"/>
+                                        <div class="aic-tip-heading">Explore Data</div>
+                                        Pharmacy, lab, and billing records
+                                    </div>
+                                    <div class="aic-tip">
+                                        <span class="pi pi-question-circle"/>
+                                        <div class="aic-tip-heading">Get Help</div>
+                                        HMIS workflows and guidance
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Message list -->
+                            <ui:repeat value="#{aiChatController.currentMessages}" var="aiMsg">
+
+                                <!-- User bubble -->
+                                <h:panelGroup layout="block"
+                                              rendered="#{aiMsg.role == 'user'}"
+                                              styleClass="aic-msg-row from-user">
+                                    <div class="aic-msg-avatar user-av">
+                                        <span class="pi pi-user"/>
+                                    </div>
+                                    <div class="aic-bubble-col">
+                                        <h:panelGroup layout="block"
+                                                      rendered="#{not empty aiMsg.attachmentName}"
+                                                      styleClass="aic-bubble user-bub"
+                                                      style="padding-bottom:0.35rem; margin-bottom:3px;">
+                                            <span class="aic-attach-pill">
+                                                <span class="pi pi-paperclip"/>
+                                                <h:outputText value="#{aiMsg.attachmentName}" />
                                             </span>
+                                        </h:panelGroup>
+                                        <div class="aic-bubble user-bub">
+                                            <h:outputText value="#{aiMsg.content}" />
                                         </div>
-                                    </ui:fragment>
-                                    <div class="ai-bubble ai-bubble-user">
-                                        <h:outputText value="#{msg.content}" />
+                                        <div class="aic-bubble-meta">
+                                            <h:outputText value="#{aiMsg.createdAt}">
+                                                <f:convertDateTime pattern="HH:mm" />
+                                            </h:outputText>
+                                        </div>
                                     </div>
-                                    <div class="ai-bubble-meta ai-bubble-meta-user">
-                                        <h:outputText value="#{msg.createdAt}">
-                                            <f:convertDateTime pattern="HH:mm" />
-                                        </h:outputText>
-                                    </div>
-                                </div>
-                            </ui:fragment>
+                                </h:panelGroup>
 
-                            <ui:fragment rendered="#{msg.role == 'assistant'}">
-                                <div style="align-self:flex-start; max-width:80%;">
-                                    <div class="ai-bubble ai-bubble-assistant">
-                                        <h:outputText value="#{msg.content}" />
+                                <!-- AI bubble -->
+                                <h:panelGroup layout="block"
+                                              rendered="#{aiMsg.role == 'assistant'}"
+                                              styleClass="aic-msg-row from-ai">
+                                    <div class="aic-msg-avatar ai-av">
+                                        <span class="pi pi-star-fill"/>
                                     </div>
-                                    <div class="ai-bubble-meta">
-                                        <h:outputText value="#{msg.createdAt}">
-                                            <f:convertDateTime pattern="HH:mm" />
-                                        </h:outputText>
-                                        <h:outputText
-                                            value=" · #{msg.inputTokens}↑ #{msg.outputTokens}↓ tokens"
-                                            rendered="#{msg.inputTokens != null and msg.inputTokens gt 0}" />
+                                    <div class="aic-bubble-col">
+                                        <div class="aic-bubble ai-bub">
+                                            <h:outputText value="#{aiMsg.content}" />
+                                        </div>
+                                        <div class="aic-bubble-meta">
+                                            <h:outputText value="#{aiMsg.createdAt}">
+                                                <f:convertDateTime pattern="HH:mm" />
+                                            </h:outputText>
+                                            <h:panelGroup rendered="#{aiMsg.inputTokens != null and aiMsg.inputTokens gt 0}">
+                                                <span class="aic-token-pill">
+                                                    <span class="pi pi-arrow-up" style="font-size:0.58rem;"/>
+                                                    <h:outputText value="#{aiMsg.inputTokens}" />
+                                                    <span class="pi pi-arrow-down" style="font-size:0.58rem;"/>
+                                                    <h:outputText value="#{aiMsg.outputTokens}" />
+                                                    tokens
+                                                </span>
+                                            </h:panelGroup>
+                                        </div>
                                     </div>
-                                </div>
-                            </ui:fragment>
-                        </ui:repeat>
-                    </h:panelGroup>
+                                </h:panelGroup>
 
-                    <!-- Input area -->
-                    <div class="ai-input-area">
-                        <h:form id="inputForm">
-                            <!-- Attachment badge -->
-                            <ui:fragment rendered="#{aiChatController.hasAttachment()}">
-                                <div class="ai-attachment-info">
-                                    <span class="pi pi-paperclip" />
-                                    <h:outputText value="#{aiChatController.pendingAttachmentName}" />
+                            </ui:repeat>
+
+                            <!-- Thinking indicator -->
+                            <h:panelGroup layout="block"
+                                          rendered="#{aiChatController.sending}"
+                                          styleClass="aic-msg-row from-ai">
+                                <div class="aic-msg-avatar ai-av">
+                                    <span class="pi pi-star-fill"/>
+                                </div>
+                                <div class="aic-typing-bub">
+                                    <span class="pi pi-spin pi-spinner" style="font-size:0.85rem;"/>
+                                    Thinking…
+                                </div>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+
+                        <!-- Input -->
+                        <div class="aic-input-wrap">
+                            <h:form id="inputForm">
+
+                                <h:panelGroup layout="block"
+                                              rendered="#{aiChatController.hasAttachment()}"
+                                              styleClass="aic-attach-notice">
+                                    <span class="pi pi-paperclip"/>
+                                    <span style="flex:1;">
+                                        <h:outputText value="#{aiChatController.pendingAttachmentName}" />
+                                    </span>
                                     <p:commandButton
                                         icon="pi pi-times"
                                         styleClass="ui-button-danger"
-                                        style="padding:0.1rem 0.3rem; font-size:0.75rem; min-width:0;"
+                                        style="min-width:0; padding:0.1rem 0.4rem; font-size:0.75rem; border-radius:5px;"
                                         title="Remove attachment"
                                         action="#{aiChatController.clearAttachment()}"
-                                        update="inputForm :growl"
+                                        update=":inputForm :growl"
                                         process="@this" />
+                                </h:panelGroup>
+
+                                <div class="aic-input-shell">
+                                    <p:inputTextarea
+                                        id="userInput"
+                                        value="#{aiChatController.userInput}"
+                                        placeholder="Message AI Assistant…"
+                                        autoResize="true"
+                                        rows="1" />
+                                    <div class="aic-input-btns">
+                                        <h:panelGroup styleClass="aic-file-btn">
+                                            <p:fileUpload
+                                                mode="simple"
+                                                auto="false"
+                                                skinSimple="true"
+                                                label=""
+                                                chooseIcon="pi pi-paperclip"
+                                                title="Attach image or document"
+                                                allowTypes="/(\.|\/)(gif|jpe?g|png|pdf|txt|csv|md)$/"
+                                                fileUploadListener="#{aiChatController.handleFileUpload}"
+                                                update="inputForm :growl"
+                                                process="@this" />
+                                        </h:panelGroup>
+                                        <h:panelGroup styleClass="aic-send-btn">
+                                            <p:commandButton
+                                                id="btnSend"
+                                                icon="pi pi-send"
+                                                title="Send (Enter)"
+                                                disabled="#{aiChatController.sending}"
+                                                action="#{aiChatController.sendMessage()}"
+                                                update=":messagesPanel :inputForm :growl"
+                                                process="inputForm" />
+                                        </h:panelGroup>
+                                    </div>
                                 </div>
-                            </ui:fragment>
 
-                            <div class="ai-input-row">
-                                <p:inputTextarea
-                                    id="userInput"
-                                    value="#{aiChatController.userInput}"
-                                    placeholder="Type your message... (Shift+Enter for new line)"
-                                    autoResize="true"
-                                    rows="2"
-                                    style="flex:1; font-size:0.85rem;" />
+                                <div class="aic-hint">
+                                    Enter to send &#183; Shift+Enter for new line &#183; <span class="pi pi-paperclip" style="font-size:0.65rem;"/> to attach files
+                                </div>
 
-                                <!-- File upload button -->
-                                <p:fileUpload
-                                    mode="simple"
-                                    auto="false"
-                                    skinSimple="true"
-                                    label=""
-                                    chooseIcon="pi pi-paperclip"
-                                    style="display:inline-flex; align-items:center;"
-                                    title="Attach image or document"
-                                    allowTypes="/(\.|\/)(gif|jpe?g|png|pdf|txt|csv|md)$/"
-                                    fileUploadListener="#{aiChatController.handleFileUpload}"
-                                    update="inputForm :growl"
-                                    process="@this" />
+                            </h:form>
+                        </div>
 
-                                <!-- Send button -->
-                                <p:commandButton
-                                    id="btnSend"
-                                    icon="pi pi-send"
-                                    styleClass="ui-button-success"
-                                    title="Send message"
-                                    disabled="#{aiChatController.sending}"
-                                    action="#{aiChatController.sendMessage()}"
-                                    update="inputForm :messagesPanel :growl"
-                                    process="inputForm"
-                                    oncomplete="scrollToBottom()" />
-                            </div>
-                        </h:form>
                     </div>
                 </div>
-            </div>
 
-            <!-- ============================================================
-                 Rename Dialog
-                 ============================================================ -->
-            <p:dialog
-                id="renameDialog"
-                header="Rename Conversation"
-                widgetVar="renameDialog"
-                modal="true"
-                width="400"
-                resizable="false">
-                <h:form id="renameForm">
-                    <p:panelGrid columns="1" style="width:100%">
-                        <p:outputLabel for="newTitle" value="Conversation Title" />
-                        <p:inputText
-                            id="newTitle"
-                            value="#{aiChatController.editingTitle}"
-                            style="width:100%"
-                            required="true"
-                            requiredMessage="Please enter a title." />
-                        <div style="display:flex; gap:0.4rem; justify-content:flex-end; margin-top:0.4rem;">
-                            <p:commandButton
-                                value="Save"
-                                icon="pi pi-check"
-                                styleClass="ui-button-success"
-                                action="#{aiChatController.saveConversationTitle()}"
-                                update=":headerPanel :sidebarList renameForm :growl"
-                                process="renameForm"
-                                oncomplete="if(!args.validationFailed) PF('renameDialog').hide()" />
-                            <p:commandButton
-                                value="Cancel"
-                                icon="pi pi-times"
-                                styleClass="ui-button-secondary"
-                                onclick="PF('renameDialog').hide()"
-                                type="button" />
-                        </div>
-                    </p:panelGrid>
-                </h:form>
-            </p:dialog>
+                <!-- ══ Rename Dialog ════════════════════════════════════ -->
+                <p:dialog
+                    id="renameDialog"
+                    header="Rename Conversation"
+                    widgetVar="renameDialog"
+                    modal="true"
+                    width="420"
+                    resizable="false">
+                    <h:form id="renameForm">
+                        <p:panelGrid columns="1" style="width:100%">
+                            <p:outputLabel for="newTitle" value="Conversation Title" />
+                            <p:inputText
+                                id="newTitle"
+                                value="#{aiChatController.editingTitle}"
+                                style="width:100%"
+                                required="true"
+                                requiredMessage="Please enter a title." />
+                            <div style="display:flex; gap:0.4rem; justify-content:flex-end; margin-top:0.5rem;">
+                                <p:commandButton
+                                    value="Save"
+                                    icon="pi pi-check"
+                                    styleClass="ui-button-success"
+                                    action="#{aiChatController.saveConversationTitle()}"
+                                    update=":headerPanel :sidebarList renameForm :growl"
+                                    process="renameForm"
+                                    oncomplete="if(!args.validationFailed) PF('renameDialog').hide()" />
+                                <p:commandButton
+                                    value="Cancel"
+                                    icon="pi pi-times"
+                                    styleClass="ui-button-secondary"
+                                    onclick="PF('renameDialog').hide()"
+                                    type="button" />
+                            </div>
+                        </p:panelGrid>
+                    </h:form>
+                </p:dialog>
 
-            <!-- Auto-scroll to bottom of messages -->
-            <h:outputScript>
-                function scrollToBottom() {
-                    var el = document.getElementById('messagesPanel');
-                    if (el) { el.scrollTop = el.scrollHeight; }
-                }
-                // Scroll on page load too
-                document.addEventListener('DOMContentLoaded', scrollToBottom);
-            </h:outputScript>
+                <!-- ══ Markdown renderer ═════════════════════════════════ -->
+                <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-        </ui:define>
-    </ui:composition>
-</h:body>
+                <!-- ══ Scripts ═══════════════════════════════════════════ -->
+                <h:outputScript>
+                    function renderMarkdown() {
+                        document.querySelectorAll('.ai-bub').forEach(function (el) {
+                            if (el.getAttribute('data-md-rendered')) return;
+                            var raw = el.textContent || '';
+                            if (!raw.trim()) return;
+                            el.innerHTML = marked.parse(raw);
+                            el.setAttribute('data-md-rendered', 'true');
+                        });
+                    }
+
+                    function scrollToBottom() {
+                        var el = document.getElementById('messagesPanel');
+                        if (el) { el.scrollTop = el.scrollHeight; }
+                    }
+
+                    function afterMessageUpdate() {
+                        renderMarkdown();
+                        scrollToBottom();
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function () {
+                        afterMessageUpdate();
+                        var ta = document.querySelector('[id$="userInput"]');
+                        if (ta) {
+                            ta.addEventListener('keydown', function (e) {
+                                if (e.key === 'Enter' &amp;&amp; !e.shiftKey) {
+                                    e.preventDefault();
+                                    var btn = document.querySelector('[id$="btnSend"]');
+                                    if (btn) { btn.click(); }
+                                }
+                            });
+                        }
+                    });
+
+                    // Re-render markdown after any AJAX update
+                    if (typeof $ !== 'undefined' &amp;&amp; $.fn) {
+                        $(document).on('pfAjaxComplete', function () {
+                            afterMessageUpdate();
+                        });
+                    }
+                </h:outputScript>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
 </html>

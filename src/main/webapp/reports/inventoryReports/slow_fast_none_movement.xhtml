@@ -341,38 +341,33 @@
                                 value="Process"
                                 action="#{pharmacyReportController.processSlowFastNonMovementReport()}">
                         </p:commandButton>
+                        
                     </div>
 
                     <p:panel
                             id="fastmovement"
                             rendered="#{pharmacyReportController.reportType eq 'fmovement'}">
                         <div class="mt-5">
-                            <p:commandButton
-                                    class="ui-button- mx-1"
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    value="Print All">
-                                <p:printer target="tbl1"/>
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="slow_fast_none_movement_print?faces-redirect=true"
+                                value="To Print">
                             </p:commandButton>
                             <p:commandButton
                                     class="ui-button-success mx-1"
                                     icon="fas fa-file-excel"
                                     ajax="false"
-                                    value="Download">
-                                <p:dataExporter
-                                        type="xlsx"
-                                        fileName="Fast Movement Report"
-                                        target="tbl1"/>
+                                    value="Download"
+                                    action="#{pharmacyReportController.exportSlowFastMovementReportToExcel()}">
                             </p:commandButton>
                             <p:commandButton
                                     class="ui-button-danger mx-1"
                                     icon="fas fa-file-pdf"
                                     ajax="false"
-                                    value="PDF">
-                                <p:dataExporter
-                                        type="pdf"
-                                        target="tbl1"
-                                        fileName="Fast Movement Report"/>
+                                    value="PDF"
+                                    action="#{pharmacyReportController.exportSlowFastMovementReportToPDF()}">
                             </p:commandButton>
                             <h5>Fast Moving</h5>
                             <h5>Pharmacy Movement Report</h5>
@@ -439,32 +434,26 @@
                             id="slowmovement"
                             rendered="#{pharmacyReportController.reportType eq 'smovement'}">
                         <div class="mt-5">
-                            <p:commandButton
-                                    class="ui-button- mx-1"
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    value="Print All">
-                                <p:printer target="tbl2"/>
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="slow_fast_none_movement_print?faces-redirect=true"
+                                value="To Print">
                             </p:commandButton>
                             <p:commandButton
                                     class="ui-button-success mx-1"
                                     icon="fas fa-file-excel"
                                     ajax="false"
-                                    value="Download">
-                                <p:dataExporter
-                                        type="xlsx"
-                                        fileName="Slow Movement Report"
-                                        target="tbl2"/>
+                                    value="Download"
+                                    action="#{pharmacyReportController.exportSlowFastMovementReportToExcel()}">
                             </p:commandButton>
                             <p:commandButton
                                     class="ui-button-danger mx-1"
                                     icon="fas fa-file-pdf"
                                     ajax="false"
-                                    value="PDF">
-                                <p:dataExporter
-                                        type="pdf"
-                                        target="tbl2"
-                                        fileName="Slow Movement Report"/>
+                                    value="PDF"
+                                    action="#{pharmacyReportController.exportSlowFastMovementReportToPDF()}">
                             </p:commandButton>
                             <h5>Slow Moving</h5>
                             <h5>Pharmacy Movement Report</h5>
@@ -533,32 +522,26 @@
                             id="nonmovement"
                             rendered="#{pharmacyReportController.reportType eq 'nmovement'}">
                         <div class="mt-5">
-                            <p:commandButton
-                                    class="ui-button- mx-1"
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    value="Print All">
-                                <p:printer target="tbl3"/>
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="slow_fast_none_movement_print?faces-redirect=true"
+                                value="To Print">
                             </p:commandButton>
                             <p:commandButton
                                     class="ui-button-success mx-1"
                                     icon="fas fa-file-excel"
                                     ajax="false"
-                                    value="Download">
-                                <p:dataExporter
-                                        type="xlsx"
-                                        fileName="Non Movement Report"
-                                        target="tbl3"/>
+                                    value="Download"
+                                    action="#{pharmacyReportController.exportNonMovementReportToExcel()}">
                             </p:commandButton>
                             <p:commandButton
                                     class="ui-button-danger mx-1"
                                     icon="fas fa-file-pdf"
                                     ajax="false"
-                                    value="PDF">
-                                <p:dataExporter
-                                        type="pdf"
-                                        target="tbl3"
-                                        fileName="Non Movement Report"/>
+                                    value="PDF"
+                                    action="#{pharmacyReportController.exportNonMovementReportToPDF()}">
                             </p:commandButton>
                             <h5>Non Moving</h5>
                             <h5>Pharmacy Movement Report</h5>

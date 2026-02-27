@@ -661,13 +661,10 @@ public class PatientInvestigationController implements Serializable {
             patientReportController.createNewReport(current);
 
             PatientReport currentReport = patientReportController.getCurrentPatientReport();
-            System.out.println("currentReport = " + currentReport);
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                System.out.println("Start Lab History");
                 labTestHistoryController.addBypassBarcodeGeneratAndReportCreateHistory(current, currentReport);
-                System.out.println("Successfully Add Bypass Barcode Generat And Report Create History");
             }
-            
+
         } else {
             PatientReport currentReport = billReport.get(0);
             patientReportController.setCurrentPatientReport(currentReport);
@@ -675,7 +672,6 @@ public class PatientInvestigationController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of issuing lab reports.", false)) {
                         labTestHistoryController.addReportViewHistory(currentReport.getPatientInvestigation(), currentReport);
-                        System.out.println("Successfully Add Report View History");
                     }
                 }
             }
@@ -4621,6 +4617,20 @@ public class PatientInvestigationController implements Serializable {
         return pscs;
     }
 
+    public List<PatientSampleComponant> getPatientSampleComponentsByBill(Bill bill) {
+        String jpql = "SELECT psc "
+                + " FROM PatientSampleComponant psc "
+                + " WHERE psc.retired=:retired "
+                + " AND psc.bill=:bill"
+                + " AND psc.separated =:sept";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("bill", bill);
+        params.put("sept", false);
+        List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
+        return pscs;
+    }
+
     public String getPatientSample() {
         List<PatientSampleComponant> pscs = getPatientSampleComponentsByInvestigation(current);
 
@@ -6608,29 +6618,20 @@ public class PatientInvestigationController implements Serializable {
             }
         }
 
-        if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
-            barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
 
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                for (PatientInvestigation pi : pis) {
-
-                    String jpql = "select ps from PatientSampleComponant ps "
-                            + " where ps.patientInvestigation=:ptix "
-                            + " and ps.retired=:ret";
-                    Map params = new HashMap();
-                    params.put("ret", false);
-                    params.put("ptix", pi);
-
-                    List<PatientSampleComponant> componants = patientSampleComponantFacade.findByJpql(jpql, params);
-
-                    if (componants == null) {
-                        continue;
-                    }
-
+            List<PatientSampleComponant> componants = getPatientSampleComponentsByBill(barcodeBill);
+            
+            if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
+                barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                for (PatientSampleComponant psc : componants) {
+                    labTestHistoryController.addBarcodeGenerateHistory(psc.getPatientInvestigation(), psc.getPatientSample());
+                }
+            } else {
+                if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of Barcode View.", false)) {
                     for (PatientSampleComponant psc : componants) {
-                        labTestHistoryController.addBarcodeGenerateHistory(pi, psc.getPatientSample());
+                        labTestHistoryController.addBarcodeViewHistory(psc.getPatientInvestigation(), psc.getPatientSample());
                     }
-
                 }
             }
         }

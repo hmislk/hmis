@@ -45,9 +45,16 @@
                         ajax="false" 
                         class="mb-4 mx-5 ui-button-info"
                         icon="fa fa-print"
+                        onclick="recordBarcodePrintHistory();"
                         value="Print All">
                         <p:printer target="batchBarcode"></p:printer>
                     </p:commandButton>
+
+                    <p:remoteCommand name="recordBarcodePrintHistory"
+                        actionListener="#{laboratoryManagementController.addPrintBarcodeHistory()}"
+                        async="true">
+                    </p:remoteCommand>
+                    
                     <h:panelGroup id="batchBarcode">
                         <ui:repeat value="#{laboratoryManagementController.selectedBillBarcodes}" var="smpIx">
                             <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">

@@ -1825,11 +1825,11 @@
                 
                 <p:menuitem
                     ajax="false"
-                    value="Request Manager"
+                    title="Request Manager"
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
-                    icon="fa fa-inbox">
+                    icon="fa-solid fa-envelope">
                 </p:menuitem>
 
                 <!--            HR Section-->
