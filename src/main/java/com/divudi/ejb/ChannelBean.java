@@ -654,12 +654,15 @@ public class ChannelBean {
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
-                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                int dateCompare = compareNullableDates(s1.getSessionDate(), s2.getSessionDate());
                 if (dateCompare != 0) {
                     return dateCompare;
                 } else {
                     // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
-                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                    return compareNullableStrings(
+                            s1.getOriginatingSession() != null ? s1.getOriginatingSession().getName() : null,
+                            s2.getOriginatingSession() != null ? s2.getOriginatingSession().getName() : null
+                    );
                 }
             }
         });
@@ -762,12 +765,15 @@ public class ChannelBean {
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
-                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                int dateCompare = compareNullableDates(s1.getSessionDate(), s2.getSessionDate());
                 if (dateCompare != 0) {
                     return dateCompare;
                 } else {
                     // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
-                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                    return compareNullableStrings(
+                            s1.getOriginatingSession() != null ? s1.getOriginatingSession().getName() : null,
+                            s2.getOriginatingSession() != null ? s2.getOriginatingSession().getName() : null
+                    );
                 }
             }
         });
@@ -869,15 +875,26 @@ public class ChannelBean {
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {
-                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                int dateCompare = compareNullableDates(s1.getSessionDate(), s2.getSessionDate());
                 if (dateCompare != 0) {
                     return dateCompare;
                 } else {
-                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                    return compareNullableStrings(
+                            s1.getOriginatingSession() != null ? s1.getOriginatingSession().getName() : null,
+                            s2.getOriginatingSession() != null ? s2.getOriginatingSession().getName() : null
+                    );
                 }
             }
         });
         return sessionInstances;
+    }
+
+    private int compareNullableDates(Date d1, Date d2) {
+        return Comparator.nullsLast(Date::compareTo).compare(d1, d2);
+    }
+
+    private int compareNullableStrings(String s1, String s2) {
+        return Comparator.nullsLast(String::compareTo).compare(s1, s2);
     }
 
     public List<SessionInstance> listSessionInstances(Date fromDate, Date toDate, Boolean ongoing, Boolean completed, Boolean pending) {
