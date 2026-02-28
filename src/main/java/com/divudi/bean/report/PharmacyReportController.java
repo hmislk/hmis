@@ -2445,7 +2445,7 @@ public class PharmacyReportController implements Serializable {
         if (billItems == null || billItems.isEmpty()) {
             return;
         }
-        System.out.println("Computing finance totals for " + billItems.size() + " bill items.");
+        
         for (BillItem billItem : billItems) {
             double resolvedCostValue = resolveFinanceValue(
                     billItem,
