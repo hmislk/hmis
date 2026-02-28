@@ -1727,6 +1727,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         setNetTotal(getPreBill().getNetTotal());
     }
 
+    public void calTotal() {
+        calculateBillItemsAndBillTotalsOfPreBill();
+    }
+
     public double addBillItemSingleItem() {
         editingQty = null;
         errorMessage = null;
