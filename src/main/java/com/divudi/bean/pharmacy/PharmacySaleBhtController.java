@@ -1124,14 +1124,10 @@ public class PharmacySaleBhtController implements Serializable {
         if (matrixByAdmissionDepartment) {
             if (getPatientEncounter() == null) {
                 matrixDept = getSessionController().getDepartment();
-            }
-            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 matrixDept = getSessionController().getDepartment();
-            }
-            if (getPatientEncounter().getCurrentPatientRoom() != null) {
-                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-                }
+            } else if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
             }
 
         } else if (matrixByIssuingDepartment) {
