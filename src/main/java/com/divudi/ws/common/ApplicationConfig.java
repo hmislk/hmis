@@ -42,6 +42,8 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.common.ApiMembership.class);
         resources.add(com.divudi.ws.common.CapabilityStatementResource.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
+        resources.add(com.divudi.ws.common.UserManagementApi.class);
+        resources.add(com.divudi.ws.common.UserRoleApi.class);
         resources.add(com.divudi.ws.fhir.Fhir.class);
         resources.add(com.divudi.ws.finance.BalanceHistoryApi.class);
         resources.add(com.divudi.ws.finance.BillDataCorrectionApi.class);
