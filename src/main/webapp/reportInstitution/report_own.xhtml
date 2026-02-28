@@ -20,10 +20,12 @@
                                 <p:ajax process="@this"></p:ajax>
 
                                     <p:tab title="Book Keeping Summary (With Professional)" >
-                                        <div class="d-grid gap-2">  
+                                        <div class="d-grid gap-2">
 
-                                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
-                                            <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>                             
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/>
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false" value="By Category Day End (DTO Optimized)" action="report_cash_category_with_pro_day_dto"
+                                                           title="Optimized version using DTO queries for better performance"/>
+                                            <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>
                                         </div>
                                     </p:tab>
 
