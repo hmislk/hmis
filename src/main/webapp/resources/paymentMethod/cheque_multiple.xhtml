@@ -16,14 +16,81 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
+        <style>
+            .cheque-multiple-bank-select-menu .ui-selectonemenu-label {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                padding-right: 2.5rem;
+            }
+
+            .cheque-multiple-input {
+                width: auto;
+                max-width: 200px;
+            }
+
+            .cheque-multiple-comment-input {
+                flex: 1 1 auto; 
+                max-width: 543px;
+            }
+
+            @media (min-width: 881px) {
+                .cheque-multiple-cal {
+                    width: 200px;
+                }
+            }
+
+            @media (max-width: 880px) {
+                .cheque-multiple-field-parent {
+                    flex-direction: column;
+                    align-items: stretch !important;
+                }
+                
+                .cheque-multiple-field {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    width: 100%;
+                }
+                
+                .cheque-multiple-field .ui-outputlabel {
+                    width: 100% !important;
+                    margin-bottom: 0.25rem;
+                }
+
+                .cheque-multiple-input, 
+                .cheque-multiple-cal input,
+                .cheque-multiple-comment-input,
+                .cheque-multiple-bank-select-menu {
+                    width: 100% !important;
+                    max-width: none !important;
+                }
+                
+                .cheque-multiple-bank-select-menu {
+                    width: 100% !important;
+                }
+                
+                .cheque-multiple-cal {
+                    width: 100% !important;
+                }
+                
+                .cheque-multiple-cal input {
+                    width: 100% !important;
+                }
+                
+                .cheque-multiple-comment-input {
+                    max-width: none !important;
+                    width: 100% !important;
+                }
+            }
+        </style>
+
+        <div class="d-flex flex-wrap align-items-center gap-3 cheque-multiple-field-parent">
+            <div class="col-auto d-flex align-items-center gap-2 cheque-multiple-field">
+                <p:outputLabel for="txtVal" value="Amount:" style="width: 120px;"/>
                 <p:inputText
                     id="txtVal"
                     value="#{cc.attrs.paymentMethodData.cheque.totalValue}"
-                    styleClass="form-control"
-                    style="width: 150px;"
+                    styleClass="form-control cheque-multiple-input"
                     autocomplete="off"
                     disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     required="true"
@@ -33,14 +100,13 @@
                 </p:inputText>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="chequeNo" value="Cheque No:" styleClass="form-label mb-0"/>
+            <div class="col-auto d-flex align-items-center gap-2 cheque-multiple-field">
+                <p:outputLabel for="chequeNo" value="Cheque No:" style="width: 120px;"/>
                 <p:inputText
                     id="chequeNo"
                     placeholder="Cheque Number"
                     value="#{cc.attrs.paymentMethodData.cheque.no}"
-                    styleClass="form-control"
-                    style="width: 150px;"
+                    styleClass="form-control cheque-multiple-input"
                     autocomplete="off"
                     disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
@@ -51,14 +117,14 @@
                 </p:inputText>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="bankSelect" value="Bank:" styleClass="form-label mb-0"/>
+            <div class="col-auto d-flex align-items-center gap-2 cheque-multiple-field">
+                <p:outputLabel for="bankSelect" value="Bank:" style="width: 120px;"/>
                 <p:selectOneMenu
                     id="bankSelect"
                     value="#{cc.attrs.paymentMethodData.cheque.institution}"
-                    styleClass="form-control"
-                    style="width: 180px;"
+                    styleClass="form-control cheque-multiple-bank-select-menu"
                     required="true"
+                    style="width: 200px;"
                     requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
@@ -68,15 +134,15 @@
                 </p:selectOneMenu>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="ChequeDate" value="Date:" styleClass="form-label mb-0"/>
+            <div class="col-auto d-flex align-items-center gap-2 cheque-multiple-field">
+                <p:outputLabel for="ChequeDate" value="Date:" style="width: 120px;"/>
                 <p:calendar
                     id="ChequeDate"
                     placeholder="Cheque Date"
                     value="#{cc.attrs.paymentMethodData.cheque.date}"
                     pattern="#{sessionController.applicationPreference.longDateFormat}"
-                    styleClass="form-control"
-                    style="width: 150px;"
+                    styleClass="cheque-multiple-cal"
+                    inputStyleClass="form-control"
                     required="true"
                     requiredMessage="Date is required">
                     <p:ajax
@@ -85,13 +151,13 @@
                 </p:calendar>
             </div>
 
-            <div class="d-flex align-items-center gap-2 flex-grow-1">
-                <p:outputLabel for="chequeComment" value="Comment:" styleClass="form-label mb-0"/>
+            <div class="col-auto d-flex align-items-center gap-2 flex-grow-1 cheque-multiple-field">
+                <p:outputLabel for="chequeComment" value="Comment:" style="min-width: 120px;"/>
                 <p:inputText
                     id="chequeComment"
                     value="#{cc.attrs.paymentMethodData.cheque.comment}"
                     placeholder="Enter comments"
-                    styleClass="form-control"
+                    styleClass="form-control cheque-multiple-comment-input"
                     required="true"
                     requiredMessage="Comment is required">
                     <p:ajax
