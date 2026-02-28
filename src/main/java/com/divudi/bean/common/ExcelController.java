@@ -129,8 +129,10 @@ public class ExcelController {
                 }
             }
 
-            // Add Net Collection summary at the end using the ROOT bundle
-            currentRow = addDataToExcelForTitleBundle(dataSheet, currentRow, rootBundle);
+            // Add Net Collection summary at the end using the ROOT bundle (not for daily return)
+            if (!"dailyReturn".equals(rootBundle.getBundleType())) {
+                currentRow = addDataToExcelForTitleBundle(dataSheet, currentRow, rootBundle);
+            }
         }
 
         // Write the output to a byte array
@@ -286,6 +288,9 @@ public class ExcelController {
                 return addDataToExcelForOpdPatientDepositPayments(dataSheet, startRow, addingBundle);
             case "inwardPatientDepositPayments":
                 return addDataToExcelForInwardPatientDepositPayments(dataSheet, startRow, addingBundle);
+            case "dailyReturnNetCash":
+            case "dailyReturnNetCashPlusCredit":
+                return addDataToExcelForDailyReturnNetCash(dataSheet, startRow, addingBundle);
         }
         return startRow++;
     }
@@ -2075,6 +2080,34 @@ public class ExcelController {
         Cell valueCell = row.createCell(1);
         valueCell.setCellValue(addingBundle.getTotal());
         valueCell.setCellStyle(boldNumberStyle);
+
+        return startRow;
+    }
+
+    private int addDataToExcelForDailyReturnNetCash(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        CellStyle boldStyle = dataSheet.getWorkbook().createCellStyle();
+        org.apache.poi.ss.usermodel.Font boldFont = dataSheet.getWorkbook().createFont();
+        boldFont.setBold(true);
+        boldStyle.setFont(boldFont);
+
+        CellStyle boldNumberStyle = dataSheet.getWorkbook().createCellStyle();
+        boldNumberStyle.setDataFormat(dataSheet.getWorkbook().getCreationHelper().createDataFormat().getFormat("#,##0.00"));
+        boldNumberStyle.setFont(boldFont);
+
+        // Separator row above
+        dataSheet.createRow(startRow++);
+
+        // Bold name + formatted total
+        Row row = dataSheet.createRow(startRow++);
+        Cell nameCell = row.createCell(0);
+        nameCell.setCellValue(addingBundle.getName());
+        nameCell.setCellStyle(boldStyle);
+        Cell valueCell = row.createCell(1);
+        valueCell.setCellValue(addingBundle.getTotal());
+        valueCell.setCellStyle(boldNumberStyle);
+
+        // Separator row below
+        dataSheet.createRow(startRow++);
 
         return startRow;
     }

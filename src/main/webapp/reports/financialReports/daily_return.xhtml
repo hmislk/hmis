@@ -241,7 +241,7 @@
                                 <ez:opdPatientDepositPayments id="pharmacyPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyPatientDepositPayments'}"/>
                                 <ez:inwardPatientDepositPayments id="inwardPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'inwardPatientDepositPayments'}"/>
 
-                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
+                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'dailyReturnNetCash'}"/>
 
                                 <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
 
@@ -259,7 +259,7 @@
                                     bundle="#{myBundle}"
                                     rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
-                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
+                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'dailyReturnNetCashPlusCredit'}"/>
 
                                 <!-- Patient Deposit Reconciliation Section -->
                                 <ez:patientDepositReceiptsSummary bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositReceiptsSummary'}"/>

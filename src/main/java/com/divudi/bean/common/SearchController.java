@@ -16743,10 +16743,10 @@ public class SearchController implements Serializable {
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
             netCashForTheDayBundle.setName("Net Cash");
-            netCashForTheDayBundle.setBundleType("netCash");
+            netCashForTheDayBundle.setBundleType("dailyReturnNetCash");
             netCashForTheDayBundle.setTotal(netCashCollection);
             bundle.getBundles().add(netCashForTheDayBundle);
-            
+
             ReportTemplateRowBundle opdServiceCollectionCredit;
             opdServiceCollectionCredit = generateCreditOpdServiceCollection();
             bundle.getBundles().add(opdServiceCollectionCredit);
@@ -16774,7 +16774,7 @@ public class SearchController implements Serializable {
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundlePlusCredits = new ReportTemplateRowBundle();
             netCashForTheDayBundlePlusCredits.setName("Net Cash Plus Credits");
-            netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
+            netCashForTheDayBundlePlusCredits.setBundleType("dailyReturnNetCashPlusCredit");
             netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
             bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
 
