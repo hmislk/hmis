@@ -148,6 +148,10 @@ public class CapabilityStatementResource {
                         "Stock movement history",
                         "API Key",
                         "GET"))
+                .add(resource("Login History", "/api/logins",
+                        "Login history query and last-login-per-user by department",
+                        "API Key",
+                        "GET"))
                 .add(resource("Users", "/api/users",
                         "User management operations",
                         "API Key",

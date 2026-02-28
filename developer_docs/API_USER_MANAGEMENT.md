@@ -457,6 +457,76 @@ curl -X POST "http://localhost:8080/api/user-roles/15/privileges" \
 
 ---
 
+## C. Login History API (`/api/logins`)
+
+Provides endpoints to query login history, useful for finding which users have recently logged into a specific department.
+
+### 1) List Logins
+
+**GET** `/api/logins?departmentId={id}&userId={id}&page={page}&size={size}`
+
+- `departmentId` (optional): filter by department
+- `userId` (optional): filter by user
+- `page` (optional): default `0`
+- `size` (optional): default `20`, min `1`, max `100`
+
+Returns login records ordered by most recent first.
+
+**Response items**:
+- `id`, `userId`, `userName`, `departmentId`, `departmentName`, `institutionId`, `logedAt`, `logoutAt`, `ipAddress`, `browser`
+
+**Example**
+```bash
+curl -X GET "http://localhost:8080/rh/api/logins?departmentId=485&size=10" \
+  -H "Finance: YOUR_API_KEY"
+```
+
+### 2) Last Login Per User
+
+**GET** `/api/logins/last-per-user?departmentId={id}&size={size}`
+
+Returns the most recent login for each unique user, deduplicated. Ideal for finding "who last logged into Main Pharmacy".
+
+- `departmentId` (optional): filter by department
+- `size` (optional): default `20`, max `100`
+
+**Response items**:
+- `userId`, `userName`, `departmentId`, `departmentName`, `lastLogin`
+
+**Example**
+```bash
+curl -X GET "http://localhost:8080/rh/api/logins/last-per-user?departmentId=485&size=20" \
+  -H "Finance: YOUR_API_KEY"
+```
+
+---
+
+## Common Workflow: Find Department Users and Assign Privileges
+
+### Step 1: Search for department
+```bash
+curl -X GET "http://localhost:8080/rh/api/departments/search?query=Main+Pharmacy" \
+  -H "Finance: YOUR_API_KEY"
+# Returns: id=485, name="Main Pharmacy"
+```
+
+### Step 2: Get last logged users for that department
+```bash
+curl -X GET "http://localhost:8080/rh/api/logins/last-per-user?departmentId=485&size=20" \
+  -H "Finance: YOUR_API_KEY"
+# Returns list of users with their last login timestamp
+```
+
+### Step 3: Assign privileges to each user
+```bash
+curl -X POST "http://localhost:8080/rh/api/users/{userId}/privileges" \
+  -H "Finance: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"privileges":["OpdEditPatientDetails"],"departmentId":485}'
+```
+
+---
+
 ## Related References
 
 - `developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md`
