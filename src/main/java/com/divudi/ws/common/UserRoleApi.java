@@ -97,7 +97,11 @@ public class UserRoleApi {
             if (r == null || r.isRetired()) return errorResponse("Role not found", 404);
             UserRoleUpsertRequestDTO req = gson.fromJson(body, UserRoleUpsertRequestDTO.class);
             if (req == null) return errorResponse("Request body is required", 400);
-            if (req.getName() != null) r.setName(req.getName());
+            if (req.getName() != null) {
+                String trimmedName = req.getName().trim();
+                if (trimmedName.isEmpty()) return errorResponse("name cannot be empty", 400);
+                r.setName(trimmedName);
+            }
             if (req.getDescription() != null) r.setDescription(req.getDescription());
             roleFacade.edit(r);
             return successResponse(toRoleMap(r));
@@ -157,11 +161,19 @@ public class UserRoleApi {
             if (req == null || req.getPrivileges() == null || req.getPrivileges().isEmpty()) return errorResponse("privileges are required", 400);
             Department d = req.getDepartmentId() != null ? departmentFacade.find(req.getDepartmentId()) : null;
             for (String pName : req.getPrivileges()) {
-                Privileges p = Privileges.valueOf(pName);
+                Privileges p;
+                try {
+                    p = Privileges.valueOf(pName);
+                } catch (IllegalArgumentException e) {
+                    return errorResponse("Invalid privilege: " + pName, 400);
+                }
                 Map<String, Object> m = new HashMap<>();
                 m.put("r", r);
                 m.put("p", p);
-                List<WebUserRolePrivilege> ex = rolePrivilegeFacade.findByJpql("select rp from WebUserRolePrivilege rp where rp.retired=false and rp.webUserRole=:r and rp.privilege=:p", m);
+                m.put("d", d);
+                List<WebUserRolePrivilege> ex = rolePrivilegeFacade.findByJpql(
+                        "select rp from WebUserRolePrivilege rp where rp.retired=false and rp.webUserRole=:r and rp.privilege=:p and ((:d is null and rp.department is null) or rp.department=:d)",
+                        m);
                 if (!ex.isEmpty()) continue;
                 WebUserRolePrivilege rp = new WebUserRolePrivilege();
                 rp.setWebUserRole(r);
@@ -173,7 +185,7 @@ public class UserRoleApi {
             }
             return listRolePrivileges(id);
         } catch (Exception e) {
-            return errorResponse(e.getMessage(), 400);
+            return errorResponse("Internal server error", 500);
         }
     }
 

@@ -65,8 +65,14 @@ public class UserManagementApi {
             if (apiUser == null) return errorResponse("Not a valid key", 401);
 
             String q = value("query");
-            int page = parseInt(value("page"), 0);
+            int page = Math.max(parseInt(value("page"), 0), 0);
             int size = Math.min(Math.max(parseInt(value("size"), 20), 1), 100);
+
+            long offsetLong = (long) page * size;
+            if (offsetLong > Integer.MAX_VALUE) {
+                return errorResponse("page is too large", 400);
+            }
+            int offset = (int) offsetLong;
 
             Map<String, Object> m = new HashMap<>();
             String jpql = "select w from WebUser w where w.retired=false ";
@@ -75,8 +81,8 @@ public class UserManagementApi {
                 m.put("q", "%" + q.trim().toUpperCase() + "%");
             }
             jpql += " order by w.name";
-            List<WebUser> users = webUserFacade.findByJpql(jpql, m, size + (page * size));
-            int from = Math.min(page * size, users.size());
+            List<WebUser> users = webUserFacade.findByJpql(jpql, m, size + offset);
+            int from = Math.min(offset, users.size());
             int to = Math.min(from + size, users.size());
             List<WebUserLight> out = new ArrayList<>();
             for (WebUser w : users.subList(from, to)) {
@@ -84,7 +90,7 @@ public class UserManagementApi {
             }
             return successResponse(out);
         } catch (Exception e) {
-            return errorResponse(e.getMessage(), 500);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -115,15 +121,20 @@ public class UserManagementApi {
             if (apiUser == null) return errorResponse("Not a valid key", 401);
             if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
             UserUpsertRequestDTO req = gson.fromJson(body, UserUpsertRequestDTO.class);
-            if (req == null || req.getName() == null || req.getName().trim().isEmpty() || req.getPassword() == null || req.getPassword().trim().isEmpty()) {
+            if (req == null || req.getPassword() == null || req.getPassword().trim().isEmpty()) {
                 return errorResponse("name and password are required", 400);
             }
-            if (!webUserFacade.findByJpql("select w from WebUser w where w.retired=false and lower(w.name)=:n", Collections.singletonMap("n", req.getName().toLowerCase())).isEmpty()) {
+            String normalizedName = req.getName() == null ? null : req.getName().trim();
+            if (normalizedName == null || normalizedName.isEmpty()) {
+                return errorResponse("name is required", 400);
+            }
+            req.setName(normalizedName);
+            if (!webUserFacade.findByJpql("select w from WebUser w where w.retired=false and lower(w.name)=:n", Collections.singletonMap("n", normalizedName.toLowerCase())).isEmpty()) {
                 return errorResponse("User name already exists", 400);
             }
             WebUser u = new WebUser();
             Person p = new Person();
-            p.setName(req.getPersonName() != null ? req.getPersonName() : req.getName());
+            p.setName(req.getPersonName() != null ? req.getPersonName() : normalizedName);
             p.setMobile(req.getPersonMobile());
             p.setCreatedAt(new Date());
             p.setCreater(apiUser);
@@ -135,7 +146,7 @@ public class UserManagementApi {
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);
         } catch (Exception e) {
-            return errorResponse(e.getMessage(), 500);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -152,13 +163,24 @@ public class UserManagementApi {
             if (u == null || u.isRetired()) return errorResponse("User not found", 404);
             UserUpsertRequestDTO req = gson.fromJson(body, UserUpsertRequestDTO.class);
             if (req == null) return errorResponse("Request body is required", 400);
+            if (req.getName() != null) {
+                String normalizedName = req.getName().trim();
+                if (normalizedName.isEmpty()) return errorResponse("name cannot be empty", 400);
+                Map<String, Object> dupCheck = new HashMap<>();
+                dupCheck.put("n", normalizedName.toLowerCase());
+                dupCheck.put("id", id);
+                if (!webUserFacade.findByJpql("select w from WebUser w where w.retired=false and lower(w.name)=:n and w.id<>:id", dupCheck).isEmpty()) {
+                    return errorResponse("User name already exists", 400);
+                }
+                req.setName(normalizedName);
+            }
             applyUserChanges(u, req, apiUser, false);
             webUserFacade.edit(u);
             return successResponse(toUserMap(u));
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);
         } catch (Exception e) {
-            return errorResponse(e.getMessage(), 500);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -263,11 +285,19 @@ public class UserManagementApi {
             if (req == null || req.getPrivileges() == null || req.getPrivileges().isEmpty()) return errorResponse("privileges are required", 400);
             Department d = req.getDepartmentId() != null ? departmentFacade.find(req.getDepartmentId()) : null;
             for (String pName : req.getPrivileges()) {
-                Privileges p = Privileges.valueOf(pName);
+                Privileges p;
+                try {
+                    p = Privileges.valueOf(pName);
+                } catch (IllegalArgumentException e) {
+                    return errorResponse("Invalid privilege: " + pName, 400);
+                }
                 Map<String, Object> m = new HashMap<>();
                 m.put("u", u);
                 m.put("p", p);
-                List<WebUserPrivilege> ex = webUserPrivilegeFacade.findByJpql("select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p", m);
+                m.put("d", d);
+                List<WebUserPrivilege> ex = webUserPrivilegeFacade.findByJpql(
+                        "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p and ((:d is null and wp.department is null) or wp.department=:d)",
+                        m);
                 if (!ex.isEmpty()) continue;
                 WebUserPrivilege wp = new WebUserPrivilege();
                 wp.setWebUser(u);
@@ -279,7 +309,7 @@ public class UserManagementApi {
             }
             return listUserPrivileges(id);
         } catch (Exception e) {
-            return errorResponse(e.getMessage(), 400);
+            return errorResponse("Internal server error", 500);
         }
     }
 
@@ -332,9 +362,13 @@ public class UserManagementApi {
             if (u == null || u.isRetired()) return errorResponse("User not found", 404);
             DepartmentAssignmentRequestDTO req = gson.fromJson(body, DepartmentAssignmentRequestDTO.class);
             if (req == null || req.getDepartmentIds() == null || req.getDepartmentIds().isEmpty()) return errorResponse("departmentIds are required", 400);
+            List<Long> invalidDepartmentIds = new ArrayList<>();
             for (Long did : req.getDepartmentIds()) {
                 Department d = departmentFacade.find(did);
-                if (d == null) continue;
+                if (d == null) {
+                    invalidDepartmentIds.add(did);
+                    continue;
+                }
                 Map<String, Object> m = new HashMap<>();
                 m.put("u", u);
                 m.put("d", d);
@@ -346,6 +380,9 @@ public class UserManagementApi {
                 ud.setCreater(apiUser);
                 ud.setCreatedAt(new Date());
                 webUserDepartmentFacade.create(ud);
+            }
+            if (!invalidDepartmentIds.isEmpty()) {
+                return errorResponse("Invalid departmentIds: " + invalidDepartmentIds, 400);
             }
             return listUserDepartments(id);
         } catch (JsonSyntaxException e) {
