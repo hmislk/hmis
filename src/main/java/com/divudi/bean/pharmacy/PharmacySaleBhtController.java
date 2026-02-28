@@ -2136,6 +2136,9 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getItem() == null) {
             return;
         }
+        if (getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() == null) {
+            return;
+        }
 
         getBillItem().setItem(getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         calculateRates(getBillItem());
@@ -2172,6 +2175,14 @@ public class PharmacySaleBhtController implements Serializable {
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
             System.out.println(">>> calculateRates: Stock is null");
+            return;
+        }
+        if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
+            System.out.println(">>> calculateRates: ItemBatch is null");
+            return;
+        }
+        if (bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() == null) {
+            System.out.println(">>> calculateRates: Retail sale rate is null");
             return;
         }
 
@@ -2216,11 +2227,16 @@ public class PharmacySaleBhtController implements Serializable {
         originalRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate * quantity;
 
+        PaymentMethod paymentMethod = null;
+        if (getPatientEncounter() != null) {
+            paymentMethod = getPatientEncounter().getPaymentMethod();
+        }
+
         PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(
                 bi,
                 estimatedValueBeforeAddingMarginToCalculateMatrix,
                 matrixDept,
-                getPatientEncounter().getPaymentMethod()
+                paymentMethod
         );
         if (priceMatrix != null) {
             marginPercentage = priceMatrix.getMargin() / 100; // Normalize margin rate
