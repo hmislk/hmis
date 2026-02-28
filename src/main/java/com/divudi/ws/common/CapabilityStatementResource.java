@@ -56,11 +56,11 @@ public class CapabilityStatementResource {
                         "Channeling and appointment operations",
                         "API Key",
                         "GET", "POST"))
-                .add(resource("Clinical", "/api/clinical",
-                        "Clinical APIs including favourites and medicine entities",
+                .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
+                        "Clinical favourite medicine management",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
-                .add(resource("Membership", "/api/membership",
+                .add(resource("Membership", "/api/apiMembership",
                         "Membership-related operations",
                         "API Key",
                         "GET", "POST"))
@@ -75,13 +75,23 @@ public class CapabilityStatementResource {
                 .add(resource("Finance", "/api/finance",
                         "Finance operations and billing endpoints",
                         "API Key",
-                        "GET", "POST",
-                        subResources(
-                                subResource("Balance History", "/api/finance/balance-history", "GET"),
-                                subResource("Bill Correction", "/api/finance/bill-correction", "POST"),
-                                subResource("Costing", "/api/finance/costing", "GET"),
-                                subResource("QuickBooks", "/api/finance/qb", "GET")
-                        )))
+                        "GET", "POST"))
+                .add(resource("Balance History", "/api/balance_history",
+                        "Financial balance history",
+                        "API Key",
+                        "GET"))
+                .add(resource("Bill Data Correction", "/api/bill_data_correction",
+                        "Bill data correction operations",
+                        "API Key",
+                        "POST"))
+                .add(resource("Costing Data", "/api/costing_data",
+                        "Cost accounting data",
+                        "API Key",
+                        "GET"))
+                .add(resource("QuickBooks", "/api/qb",
+                        "QuickBooks integration",
+                        "API Key",
+                        "GET"))
                 .add(resource("Departments", "/api/departments",
                         "Department management",
                         "API Key",
@@ -94,22 +104,23 @@ public class CapabilityStatementResource {
                         "Site management",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
-                .add(resource("Inward", "/api/inward",
+                .add(resource("Inward", "/api/apiInward",
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
-                        "GET", "POST",
-                        subResources(
-                                subResource("Middleware", "/api/lims/middleware", "GET", "POST")
-                        )))
+                        "GET", "POST"))
+                .add(resource("LIMS Middleware", "/api/limsmw",
+                        "LIMS middleware integration",
+                        "API Key",
+                        "GET", "POST"))
                 .add(resource("Middleware", "/api/middleware",
                         "General middleware endpoints",
                         "API Key",
                         "GET", "POST"))
-                .add(resource("Pharmaceutical Config", "/api/pharmaceutical/config",
+                .add(resource("Pharmaceutical Config", "/api/pharmaceutical_config",
                         "Pharmaceutical configuration management",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
@@ -117,16 +128,32 @@ public class CapabilityStatementResource {
                         "Pharmaceutical item master data",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
-                .add(resource("Pharmacy", "/api/pharmacy_adjustments",
+                .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
                         "Pharmacy stock and adjustment operations",
                         "API Key",
-                        "GET", "POST",
-                        subResources(
-                                subResource("Batches", "/api/pharmacy_batches", "GET", "POST"),
-                                subResource("F15 Report", "/api/pharmacy/f15", "GET")
-                        )))
+                        "GET", "POST"))
+                .add(resource("Pharmacy Search", "/api/pharmacy_adjustments/search",
+                        "Pharmacy stock search",
+                        "API Key",
+                        "GET"))
+                .add(resource("Pharmacy Batches", "/api/pharmacy_batches",
+                        "Pharmacy batch management",
+                        "API Key",
+                        "GET", "POST"))
+                .add(resource("Pharmacy F15 Report", "/api/pharmacy_f15_report",
+                        "Pharmacy F15 reporting",
+                        "API Key",
+                        "GET"))
+                .add(resource("Stock History", "/api/stock_history",
+                        "Stock movement history",
+                        "API Key",
+                        "GET"))
                 .add(resource("Users", "/api/users",
                         "User management operations",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("User Roles", "/api/user-roles",
+                        "User role management operations",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .build();
@@ -144,48 +171,6 @@ public class CapabilityStatementResource {
                 .add("description", description)
                 .add("operations", operationArray)
                 .add("authentication", authentication)
-                .build();
-    }
-
-    private JsonObject resource(String name, String path, String description, String authentication,
-            String[] operations, javax.json.JsonArray subResources) {
-        JsonArrayBuilder operationArray = Json.createArrayBuilder();
-        for (String operation : operations) {
-            operationArray.add(operation);
-        }
-        return Json.createObjectBuilder()
-                .add("name", name)
-                .add("path", path)
-                .add("description", description)
-                .add("operations", operationArray)
-                .add("authentication", authentication)
-                .add("subResources", subResources)
-                .build();
-    }
-
-    private JsonObject resource(String name, String path, String description, String authentication,
-            String operationOne, String operationTwo, javax.json.JsonArray subResources) {
-        return resource(name, path, description, authentication,
-                new String[]{operationOne, operationTwo}, subResources);
-    }
-
-    private javax.json.JsonArray subResources(JsonObject... subResources) {
-        JsonArrayBuilder builder = Json.createArrayBuilder();
-        for (JsonObject subResource : subResources) {
-            builder.add(subResource);
-        }
-        return builder.build();
-    }
-
-    private JsonObject subResource(String name, String path, String... operations) {
-        JsonArrayBuilder operationArray = Json.createArrayBuilder();
-        for (String operation : operations) {
-            operationArray.add(operation);
-        }
-        return Json.createObjectBuilder()
-                .add("name", name)
-                .add("path", path)
-                .add("operations", operationArray)
                 .build();
     }
 }
