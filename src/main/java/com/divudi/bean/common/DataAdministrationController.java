@@ -353,6 +353,13 @@ public class DataAdministrationController implements Serializable {
         return Paths.get(p.trim()).normalize();
     }
 
+    private String getExceptionMessage(Throwable throwable) {
+        if (throwable == null) {
+            return "Unknown exception";
+        }
+        return throwable.getMessage() != null ? throwable.getMessage() : throwable.getClass().getName();
+    }
+
     public void refresh() {
         try {
             String configuredPath = getPayaraLogLocation();
@@ -371,7 +378,7 @@ public class DataAdministrationController implements Serializable {
             }
         } catch (IOException e) {
             logs = Collections.emptyList();
-            JsfUtil.addErrorMessage("Error accessing log directory: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error accessing log directory: " + getExceptionMessage(e));
         }
     }
 
@@ -471,7 +478,7 @@ public class DataAdministrationController implements Serializable {
 
             billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
         } catch (Exception e) {
-            billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
+            billController.setOutput("Error updating PharmaceuticalItems: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -557,7 +564,7 @@ public class DataAdministrationController implements Serializable {
                     .append(paymentsCorrected).append(" payment value(s).");
             billController.setOutput(output.toString());
         } catch (Exception e) {
-            billController.setOutput("Error correcting payment values: " + e.getMessage());
+            billController.setOutput("Error correcting payment values: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -653,7 +660,7 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = output.toString();
 
         } catch (Exception e) {
-            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
+            executionFeedback = "Error correcting bill finance details signs: " + getExceptionMessage(e);
             e.printStackTrace();
         }
     }
@@ -761,7 +768,7 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = output.toString();
 
         } catch (Exception e) {
-            executionFeedback = "Error updating historical stock data: " + e.getMessage();
+            executionFeedback = "Error updating historical stock data: " + getExceptionMessage(e);
             e.printStackTrace();
         }
     }
@@ -969,7 +976,7 @@ public class DataAdministrationController implements Serializable {
             output.append("Updated ").append(billsUpdated).append(" bills to completed=true.");
             billController.setOutput(output.toString());
         } catch (Exception e) {
-            billController.setOutput("Error adding completed state to bills: " + e.getMessage());
+            billController.setOutput("Error adding completed state to bills: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -1167,7 +1174,7 @@ public class DataAdministrationController implements Serializable {
             out.append("Updated Bills: ").append(updatedBills).append("\n");
             out.append("Updated Bill Items: ").append(updatedItems).append("\n");
         } catch (Exception e) {
-            out.append("Error: ").append(e.getMessage());
+            out.append("Error: ").append(getExceptionMessage(e));
         }
         executionFeedback = out.toString();
     }
@@ -1184,8 +1191,8 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = result;
             JsfUtil.addSuccessMessage("Sign correction completed. Check feedback for details.");
         } catch (Exception e) {
-            executionFeedback = "Error: " + e.getMessage();
-            JsfUtil.addErrorMessage("Error correcting signs: " + e.getMessage());
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error correcting signs: " + getExceptionMessage(e));
         }
     }
 
@@ -1199,8 +1206,8 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = result;
             JsfUtil.addSuccessMessage("Preview complete. Check feedback for details.");
         } catch (Exception e) {
-            executionFeedback = "Error: " + e.getMessage();
-            JsfUtil.addErrorMessage("Error previewing: " + e.getMessage());
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error previewing: " + getExceptionMessage(e));
         }
     }
 
@@ -1279,8 +1286,8 @@ public class DataAdministrationController implements Serializable {
             JsfUtil.addSuccessMessage("Correction completed: " + billsCorrected + " bills corrected");
 
         } catch (Exception e) {
-            executionFeedback = "Error correcting Direct Issue Inward Medicine Cancellation stock values: " + e.getMessage();
-            JsfUtil.addErrorMessage("Error: " + e.getMessage());
+            executionFeedback = "Error correcting Direct Issue Inward Medicine Cancellation stock values: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
             e.printStackTrace();
         }
     }
@@ -1445,8 +1452,8 @@ public class DataAdministrationController implements Serializable {
             out.append("Skipped:   ").append(skippedBills).append(" bills (already had BFD or no items)\n");
 
         } catch (Exception e) {
-            out.append("Error: ").append(e.getMessage());
-            JsfUtil.addErrorMessage("Error during BFD backfill: " + e.getMessage());
+            out.append("Error: ").append(getExceptionMessage(e));
+            JsfUtil.addErrorMessage("Error during BFD backfill: " + getExceptionMessage(e));
             e.printStackTrace();
         }
 
@@ -1693,7 +1700,7 @@ public class DataAdministrationController implements Serializable {
 
                     } catch (Exception itemEx) {
                         result.append("Error processing bill ID ").append(fixingBill.getId())
-                                .append(": ").append(itemEx.getMessage()).append("\n");
+                                .append(": ").append(getExceptionMessage(itemEx)).append("\n");
                     }
                 }
 
@@ -1717,7 +1724,7 @@ public class DataAdministrationController implements Serializable {
             executionFeedback = result.toString();
 
         } catch (Exception e) {
-            String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
+            String errorMsg = "Error during transfer bill finance details migration: " + getExceptionMessage(e);
             executionFeedback = errorMsg;
             e.printStackTrace();
         }
@@ -2223,7 +2230,7 @@ public class DataAdministrationController implements Serializable {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(cause.getMessage());
+                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(getExceptionMessage(cause));
                     if (matcher.find()) {
                         String missingColumn = matcher.group(1);
                         errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
@@ -2283,7 +2290,7 @@ public class DataAdministrationController implements Serializable {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    String message = cause.getMessage();
+                    String message = getExceptionMessage(cause);
 
                     // Check for missing table
                     Pattern tablePattern = Pattern.compile("Table '.*?\\.(.*?)' doesn't exist");
@@ -2527,7 +2534,7 @@ public class DataAdministrationController implements Serializable {
                     facade.executeNativeSql(createStatement);
                     executionResults.append("<br/>Successfully executed: ").append(createStatement);
                 } catch (Exception e) {
-                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(e.getMessage());
+                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(getExceptionMessage(e));
                 }
 
                 // Proceed with ALTER logic
@@ -2555,12 +2562,12 @@ public class DataAdministrationController implements Serializable {
                         }
                     } catch (Exception e) {
                         executionResults.append("<br/>Failed to execute: ").append(sql);
-                        executionResults.append("<br/>Error: ").append(e.getMessage());
+                        executionResults.append("<br/>Error: ").append(getExceptionMessage(e));
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
+                executionResults.append("<br/>Error processing create statement: ").append(getExceptionMessage(e));
             }
         }
 
@@ -2630,7 +2637,7 @@ public class DataAdministrationController implements Serializable {
             } catch (Exception e) {
                 // Append error message with exception details
                 executionResults.append("<br/>Failed to execute: ").append(sqlStatement);
-                executionResults.append("<br/>Error: ").append(e.getMessage());
+                executionResults.append("<br/>Error: ").append(getExceptionMessage(e));
             }
         }
 
@@ -3968,7 +3975,7 @@ public class DataAdministrationController implements Serializable {
             }
             JsfUtil.addSuccessMessage("Cleared JPA shared caches.");
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Failed to clear caches: " + e.getMessage());
+            JsfUtil.addErrorMessage("Failed to clear caches: " + getExceptionMessage(e));
         }
     }
 
@@ -4383,7 +4390,7 @@ public class DataAdministrationController implements Serializable {
                     totalUpdated++;
                 } catch (Exception e) {
                     // Log error but continue processing other bills
-                    String errorMsg = "Error processing Return Without Tracing bill ID " + bill.getId() + ": " + e.getMessage();
+                    String errorMsg = "Error processing Return Without Tracing bill ID " + bill.getId() + ": " + getExceptionMessage(e);
                     System.err.println(errorMsg);
                     progressOutput.append("  ERROR: ").append(errorMsg).append("\n");
                     batchSkipped++;
