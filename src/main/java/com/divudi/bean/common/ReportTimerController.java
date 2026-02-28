@@ -6,6 +6,7 @@ import com.divudi.core.entity.report.ReportLog;
 import com.divudi.service.ReportLogAsyncService;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
 import java.io.Serializable;
 import java.util.Date;
@@ -37,6 +38,15 @@ public class ReportTimerController implements Serializable {
             savedLog = futureLog.get();
 
             reportGenerationLogic.run();
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", e);
+        } catch (EJBTransactionRolledbackException e) {
+            Throwable rootCause = e.getCause();
+            if (rootCause instanceof IllegalArgumentException) {
+                LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", rootCause);
+            } else {
+                LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
         }
