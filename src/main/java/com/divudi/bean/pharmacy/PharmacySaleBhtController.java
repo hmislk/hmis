@@ -2136,10 +2136,6 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getItem() == null) {
             return;
         }
-        if (getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() == null) {
-            return;
-        }
-
         getBillItem().setItem(getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         calculateRates(getBillItem());
     }
@@ -2181,10 +2177,7 @@ public class PharmacySaleBhtController implements Serializable {
             System.out.println(">>> calculateRates: ItemBatch is null");
             return;
         }
-        if (bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() == null) {
-            System.out.println(">>> calculateRates: Retail sale rate is null");
-            return;
-        }
+
 
         long validationTime = System.currentTimeMillis();
         System.out.println(">>> calculateRates: Validation complete: " + (validationTime - calcStartTime) + "ms");
@@ -2207,11 +2200,9 @@ public class PharmacySaleBhtController implements Serializable {
         if (matrixByAdmissionDepartment) {
             if (getPatientEncounter() == null) {
                 matrixDept = getSessionController().getDepartment();
-            }
-            if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
                 matrixDept = getPatientEncounter().getDepartment();
-            }
-            if (getPatientEncounter().getCurrentPatientRoom() != null) {
+            } else if (getPatientEncounter().getCurrentPatientRoom() != null) {
                 if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
                     matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
                 }
