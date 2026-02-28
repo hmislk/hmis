@@ -2021,13 +2021,10 @@ public class DataAdministrationController implements Serializable {
             JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
 
         } catch (Exception e) {
-            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            String errorMsg = "Error checking bills for correction: " + exceptionMessage;
-
-            // Provide specific guidance for table name issues
-            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
-                errorMsg += ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.";
-            }
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    e,
+                    "Error checking bills for correction: ",
+                    ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.");
 
             JsfUtil.addErrorMessage(errorMsg);
             System.err.println("OPD Billing Fee Correction Error: " + errorMsg);
@@ -2052,13 +2049,10 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            String errorMsg = "Error correcting historical bill fees: " + exceptionMessage;
-
-            // Provide specific guidance for table name issues
-            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
-                errorMsg += ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.";
-            }
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    e,
+                    "Error correcting historical bill fees: ",
+                    ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.");
 
             JsfUtil.addErrorMessage(errorMsg);
             System.err.println("OPD Billing Fee Correction Execution Error: " + errorMsg);
@@ -2088,13 +2082,10 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            String errorMsg = "Error checking bills in custom date range: " + exceptionMessage;
-
-            // Provide specific guidance for database issues
-            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
-                errorMsg += ". Database schema issue detected. Check table names and database connectivity.";
-            }
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    e,
+                    "Error checking bills in custom date range: ",
+                    ". Database schema issue detected. Check table names and database connectivity.");
 
             JsfUtil.addErrorMessage(errorMsg);
             System.err.println("Custom Date Range Check Error: " + errorMsg);
@@ -2122,18 +2113,29 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            String errorMsg = "Error correcting bills in custom date range: " + exceptionMessage;
-
-            // Provide specific guidance for database issues
-            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
-                errorMsg += ". Database execution failed due to schema issues. Verify table structure and permissions.";
-            }
+            String errorMsg = buildBillingFeeCorrectionErrorMessage(
+                    e,
+                    "Error correcting bills in custom date range: ",
+                    ". Database execution failed due to schema issues. Verify table structure and permissions.");
 
             JsfUtil.addErrorMessage(errorMsg);
             System.err.println("Custom Date Range Correction Error: " + errorMsg);
             e.printStackTrace();
         }
+    }
+
+    private String buildBillingFeeCorrectionErrorMessage(Exception e, String prefix, String schemaGuidance) {
+        String exceptionMessage = e.getMessage();
+        if (exceptionMessage == null || exceptionMessage.trim().isEmpty()) {
+            exceptionMessage = e.getClass().getName();
+        }
+
+        String errorMsg = prefix + exceptionMessage;
+        if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+            errorMsg += schemaGuidance;
+        }
+
+        return errorMsg;
     }
 
     public String navigateToCheckMissingFields() {
