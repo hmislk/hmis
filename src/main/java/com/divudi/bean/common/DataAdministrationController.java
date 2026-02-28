@@ -2028,8 +2028,9 @@ public class DataAdministrationController implements Serializable {
             JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
 
         } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
             String errorMsg = buildBillingFeeCorrectionErrorMessage(
-                    e,
+                    exceptionMessage,
                     "Error checking bills for correction: ",
                     ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.");
 
@@ -2056,8 +2057,9 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
             String errorMsg = buildBillingFeeCorrectionErrorMessage(
-                    e,
+                    exceptionMessage,
                     "Error correcting historical bill fees: ",
                     ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.");
 
@@ -2089,8 +2091,9 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
             String errorMsg = buildBillingFeeCorrectionErrorMessage(
-                    e,
+                    exceptionMessage,
                     "Error checking bills in custom date range: ",
                     ". Database schema issue detected. Check table names and database connectivity.");
 
@@ -2120,8 +2123,9 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
+            String exceptionMessage = getExceptionMessage(e);
             String errorMsg = buildBillingFeeCorrectionErrorMessage(
-                    e,
+                    exceptionMessage,
                     "Error correcting bills in custom date range: ",
                     ". Database execution failed due to schema issues. Verify table structure and permissions.");
 
@@ -2131,12 +2135,7 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
-    private String buildBillingFeeCorrectionErrorMessage(Exception e, String prefix, String schemaGuidance) {
-        String exceptionMessage = e.getMessage();
-        if (exceptionMessage == null || exceptionMessage.trim().isEmpty()) {
-            exceptionMessage = e.getClass().getName();
-        }
-
+    private String buildBillingFeeCorrectionErrorMessage(String exceptionMessage, String prefix, String schemaGuidance) {
         String errorMsg = prefix + exceptionMessage;
         if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
             errorMsg += schemaGuidance;
