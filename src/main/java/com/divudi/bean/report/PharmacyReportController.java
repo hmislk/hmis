@@ -2445,7 +2445,7 @@ public class PharmacyReportController implements Serializable {
         if (billItems == null || billItems.isEmpty()) {
             return;
         }
-
+        
         for (BillItem billItem : billItems) {
             double resolvedCostValue = resolveFinanceValue(
                     billItem,
@@ -8024,13 +8024,14 @@ public class PharmacyReportController implements Serializable {
                 + "ib.costRate, "                                           // costRate - using actual cost rate instead of purchase rate
                 + "ib.retailsaleRate, "                                     // retailRate
                 + "s.stock, "                                               // stockQuantity
-                + "coalesce(i.dosageForm.name, '')) "                       // dosageFormName - null-safe
+                + "coalesce(df.name, '')) "                       // dosageFormName - null-safe
                 + "from Stock s "
                 + "join s.itemBatch ib "
                 + "join ib.item i "
                 + "left join s.department d "
                 + "left join i.category c "
                 + "left join i.measurementUnit mu "
+                + "left join i.dosageForm df "
                 + "where ib.dateOfExpire between :fd and :td ";
 
         Map parameters = new HashMap();
@@ -8064,7 +8065,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         if (dosageForm != null) {
-            jpql += " and i.dosageForm = :df ";
+            jpql += " and df = :df ";
             parameters.put("df", dosageForm);
         }
 
@@ -8112,13 +8113,14 @@ public class PharmacyReportController implements Serializable {
                 + "sum(s.stock), "                                          // totalStockQuantity (across all batches)
                 + "sum(s.stock * ib.costRate), "                            // totalCostValue (across all batches) - using actual cost rate instead of purchase rate
                 + "sum(s.stock * ib.retailsaleRate), "                      // totalRetailValue (across all batches)
-                + "coalesce(i.dosageForm.name, '')) "                       // dosageFormName - null-safe
+                + "coalesce(df.name, '')) "                       // dosageFormName - null-safe
                 + "from Stock s "
                 + "join s.itemBatch ib "
                 + "join ib.item i "
                 + "left join s.department d "
                 + "left join i.category c "
                 + "left join i.measurementUnit mu "
+                + "left join i.dosageForm df "
                 + "where ib.dateOfExpire between :fd and :td ";
 
         Map parameters = new HashMap();
@@ -8152,7 +8154,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         if (dosageForm != null) {
-            jpql += " and i.dosageForm = :df ";
+            jpql += " and df = :df ";
             parameters.put("df", dosageForm);
         }
 
@@ -8168,7 +8170,7 @@ public class PharmacyReportController implements Serializable {
                 + "coalesce(i.code, ''), "
                 + "coalesce(i.name, ''), "
                 + "coalesce(mu.name, ''), "
-                + "coalesce(i.dosageForm.name, '') "
+                + "coalesce(df.name, '') "
                 + "order by coalesce(i.name, '') ";
 
         expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -11304,7 +11306,7 @@ public class PharmacyReportController implements Serializable {
 
     // Excel Export: expire_item_itemList
     public void exportExpireItemItemListToExcel() {
-        if (expiryItemListDtos == null || expiryStockListDtos.isEmpty()) {
+        if (expiryItemListDtos == null || expiryItemListDtos.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
         }
