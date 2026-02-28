@@ -10869,7 +10869,7 @@ public class PharmacyController implements Serializable {
                     table.addCell(new PdfPCell(new Phrase(deptEntry.getTotalCostValue() != null ? String.format("%.2f", deptEntry.getTotalCostValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 }
 
-                table.addCell(new PdfPCell(new Phrase(deptEntry.getTotalRetailSaleValue() != null ? String.valueOf(deptEntry.getTotalRetailSaleValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(deptEntry.getTotalRetailSaleValue() != null ? String.format("%.2f", deptEntry.getTotalRetailSaleValue().doubleValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getGoodInTransistAmount()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
             }
 
@@ -11479,7 +11479,7 @@ public class PharmacyController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue((b.getDepartment() != null && b.getDepartment().getName() != null) ? b.getDepartment().getName() : "-");
                 dataRow.createCell(colIndex++).setCellValue((rb != null && rb.getDeptId() != null) ? rb.getDeptId() : "-");
                 dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? b.getDeptId() : "-");
-                dataRow.createCell(colIndex++).setCellValue(rb != null ? rb.getNetTotal(): 0);
+                dataRow.createCell(colIndex++).setCellValue(rb != null ? Math.abs(rb.getNetTotal()): 0);
                 dataRow.createCell(colIndex++).setCellValue(rb != null && rb.getCreatedAt() != null ? sdf.format(rb.getCreatedAt()) : "-");
                 dataRow.createCell(colIndex++).setCellValue(b.getCreatedAt() != null ? sdf.format(b.getCreatedAt()) : "-");
                 dataRow.createCell(colIndex++).setCellValue(rb != null && rb.getPaymentMethod() != null ? rb.getPaymentMethod().getLabel() : "-");
