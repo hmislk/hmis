@@ -348,7 +348,7 @@
 
                         <p:menuitem
                             ajax="false"
-                            action="#{admissionController.navigateToEditAdmission()}"
+                            action="/inward/inward_edit_bht?faces-redirect=true"
                             value="Edit Admission Details" icon="fa fa-edit"
                             actionListener="#{bhtEditController.prepereForNew()}"
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
@@ -1824,6 +1824,16 @@
                 </p:submenu>
                 
                 <p:menuitem
+                    ajax="false"
+                    title="Request Manager"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                    action="#{requestController.navigateToSearchRequest()}"
+                    actionListener="#{requestController.makeNull()}"
+                    icon="fa-solid fa-envelope">
+                </p:menuitem>
+
+                <!--            Payment Manager-->
+                <p:menuitem  
                     ajax="false"
                     title="Request Manager"
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"

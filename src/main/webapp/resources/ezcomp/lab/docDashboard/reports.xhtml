@@ -174,24 +174,6 @@
 
                                 </div>
 
-                                <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
-                                    <div class="d-flex gap-2">
-                                        <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
-                                        <p:commandButton 
-                                            id="btnSave" 
-                                            value="Remove" 
-                                            ajax="false"
-                                            icon="fas fa-trash"
-                                            class="ui-button-danger"
-                                            rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
-                                            onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
-                                                        return false;"
-                                            action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
-                                            oncomplete="PF('dlg').hide();" >
-                                        </p:commandButton>
-                                    </div>
-                                </p:dialog>
-
                                 <div class="d-flex justify-content-end gap-2">
                                     <p:graphicImage 
                                         library="image" 
@@ -225,6 +207,25 @@
                                         style="height: 50px; width: 50px;" >
                                     </p:graphicImage>
 
+
+                                    <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
+                                        <div class="d-flex gap-2">
+                                            <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
+                                            <p:commandButton 
+                                                id="btnSave" 
+                                                value="Remove" 
+                                                ajax="false"
+                                                icon="fas fa-trash"
+                                                class="ui-button-danger"
+                                                rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
+                                                        return false;"
+                                                action="#{laboratoryManagementController.removePatientReport(dpr.id)}"
+                                                oncomplete="PF('dlg').hide();" >
+                                            </p:commandButton>
+                                        </div>
+                                    </p:dialog>
+
                                     <p:commandButton 
                                         title="To Remove Report" 
                                         id="btnRemove" 
@@ -236,9 +237,7 @@
                                         icon="fa fa-trash"
                                         oncomplete="PF('dlg').show()" >
                                     </p:commandButton>
-
                                 </div>
-                                
                             </div>
                         </ui:repeat>
                     </h:panelGroup>
