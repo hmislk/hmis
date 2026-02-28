@@ -213,7 +213,7 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tbl"
-                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton
                                 value="To Print"
@@ -228,7 +228,13 @@
                                 icon="pi pi-print">
                             <p:printer target="tbl"/>
                         </p:commandButton>
-
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillToPdf()}" />
+          
                         <p:dataTable
                                 id="tbl"
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
@@ -238,6 +244,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
+                            </f:facet>
                             <p:column headerText="Bill No" width="16em"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText value="#{row.bill.deptId}"
@@ -505,11 +515,11 @@
                             <p:column headerText="Actual Total" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;"
                                       rendered="#{userSettingsController.pharmacyIncomeReportActualTotalVisible}">
-                                <h:outputText value="#{row.netTotal}">
+                                <h:outputText value="#{row.actualTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}"
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                                   style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -683,15 +693,27 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblBillType"
-                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_type_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_bill_type_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblBillType"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeToPdf()}" />
 
                         <p:dataTable
                                 id="tblBillType"
@@ -702,6 +724,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
+                            </f:facet>
                             <p:column headerText="Bill Type" width="18em">
                                 <h:outputText value="#{row.billTypeAtomic}"/>
                             </p:column>
@@ -925,11 +951,11 @@
                             </p:column>
                             <p:column headerText="Actual Total" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.netTotal}">
+                                <h:outputText value="#{row.actualTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}"
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                                   style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -961,15 +987,27 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByDiscountAndAdmission"
-                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_discount_and_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_discount_admission_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByDiscountAndAdmission"/>
                         </p:commandButton>
+                        <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf()}" />
 
                         <p:dataTable
                                 id="tblGroupedByDiscountAndAdmission"
@@ -980,6 +1018,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:15px;" />
+                            </f:facet>
                             <p:column headerText="Group" width="24em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>
@@ -1200,11 +1242,11 @@
                             </p:column>
                             <p:column headerText="Actual Total" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.netTotal}">
+                                <h:outputText value="#{row.actualTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}"
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                                   style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -1236,15 +1278,27 @@
                             <p:dataExporter
                                     type="xlsx"
                                     target="tblGroupedByBillTypeAndDiscountAdmission"
-                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                    fileName="pharmacy_income_by_bill_type_and_discount_admission_#{pharmacySummaryReportController.getFromDateFormatted()}_to_#{pharmacySummaryReportController.getToDateFormatted()}"/>
                         </p:commandButton>
+                        <p:commandButton 
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_income_report_print_bill_type_discount_admission_view?faces-redirect=true"/>
                         <p:commandButton
                                 value="Print"
                                 ajax="false"
+                                rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
                             <p:printer target="tblGroupedByBillTypeAndDiscountAdmission"/>
                         </p:commandButton>
+                       <p:commandButton
+                            value="PDF"
+                            icon="pi pi-file-pdf"
+                            ajax="false"
+                            styleClass="ui-button-danger m-1"
+                            action="#{pharmacySummaryReportController.exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf()}" />
 
                         <p:dataTable
                                 id="tblGroupedByBillTypeAndDiscountAdmission"
@@ -1255,6 +1309,10 @@
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen},5,10,15,50,100"
                                 paginatorPosition="bottom">
+                            <!-- use for the add title for the excel-->
+                            <f:facet name="header" >
+                                     <h:outputText value="#{pharmacySummaryReportController.reportHeader}" style="display:none !important; font-size:18px;" />
+                            </f:facet>
                             <p:column headerText="Bill Type + Group" width="32em">
                                 <h:outputText value="#{row.rowType}"/>
                             </p:column>
