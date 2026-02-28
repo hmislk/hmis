@@ -41,9 +41,15 @@ public class ReportTimerController implements Serializable {
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", e);
         } catch (EJBTransactionRolledbackException e) {
-            Throwable rootCause = e.getCause();
-            if (rootCause instanceof IllegalArgumentException) {
-                LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", rootCause);
+            IllegalArgumentException foundCause = null;
+            for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+                if (cause instanceof IllegalArgumentException) {
+                    foundCause = (IllegalArgumentException) cause;
+                    break;
+                }
+            }
+            if (foundCause != null) {
+                LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", foundCause);
             } else {
                 LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
             }
