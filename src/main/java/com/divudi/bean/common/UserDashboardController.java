@@ -16,6 +16,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -307,8 +308,10 @@ public class UserDashboardController implements Serializable {
         }
 
         // Sort chronologically (most recent first)
-        transactions.sort((t1, t2)
-                -> t2.getTransactionDate().compareTo(t1.getTransactionDate()));
+        transactions.sort(Comparator.comparing(
+                UserTransactionDto::getTransactionDate,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ));
     }
 
     /**

@@ -22,7 +22,6 @@ public class ApplicationStartupTimeService {
     public void init() {
         // Capture the startup time immediately when the application starts
         startupTime = ZonedDateTime.now();
-        System.out.println("Application started at: " + startupTime);
     }
 
     /**
