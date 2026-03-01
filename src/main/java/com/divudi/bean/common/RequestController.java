@@ -86,6 +86,7 @@ public class RequestController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
@@ -173,12 +174,27 @@ public class RequestController implements Serializable {
             return "";
         }
 
-        // Handle DRAWER_ADJUSTMENT requests by bill type
-        if (currentRequest.getBill().getBillType() == BillType.DrawerAdjustment) {
-            if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
-                JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+        // Centralised privilege check per request type.
+        // Add a new case here whenever a new RequestType requiring approval is introduced.
+        switch (currentRequest.getRequestType()) {
+            case BILL_CANCELLATION:
+                if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve bill cancellation requests.");
+                    return "";
+                }
+                break;
+            case DRAWER_ADJUSTMENT:
+                if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+                    return "";
+                }
+                break;
+            default:
+                JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
-            }
+        }
+
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
             bills = new ArrayList<>();
             if (currentRequest.getStatus() == RequestStatus.PENDING) {
                 currentRequest.setReviewedBy(sessionController.getLoggedUser());
