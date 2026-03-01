@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
@@ -52,6 +53,129 @@ public class ExcelController {
     public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle) throws IOException{
         return createExcelForBundle(rootBundle,searchController.getFromDate(),searchController.getToDate());
     }
+
+    public StreamedContent createExcelForDailyReturnBundle(ReportTemplateRowBundle rootBundle) throws IOException {
+        if (rootBundle == null) {
+            return null;
+        }
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Styles
+        CellStyle centerBoldLargeStyle = workbook.createCellStyle();
+        centerBoldLargeStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerBoldLargeStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldLargeFont = workbook.createFont();
+        boldLargeFont.setBold(true);
+        boldLargeFont.setFontHeightInPoints((short) 14);
+        centerBoldLargeStyle.setFont(boldLargeFont);
+
+        CellStyle centerBoldStyle = workbook.createCellStyle();
+        centerBoldStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerBoldStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 12);
+        centerBoldStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setFontHeightInPoints((short) 11);
+        centerStyle.setFont(normalFont);
+
+        CellStyle leftSmallStyle = workbook.createCellStyle();
+        leftSmallStyle.setAlignment(HorizontalAlignment.LEFT);
+        leftSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 9);
+        leftSmallStyle.setFont(smallFont);
+
+        CellStyle rightSmallStyle = workbook.createCellStyle();
+        rightSmallStyle.setAlignment(HorizontalAlignment.RIGHT);
+        rightSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont2 = workbook.createFont();
+        smallFont2.setFontHeightInPoints((short) 9);
+        rightSmallStyle.setFont(smallFont2);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name (bold, large)
+        Row institutionRow = dataSheet.createRow(currentRow++);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(centerBoldLargeStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+        // Row 1: Report Name (bold)
+        Row reportNameRow = dataSheet.createRow(currentRow++);
+        Cell reportNameCell = reportNameRow.createCell(0);
+        String reportName = rootBundle.getName() != null ? rootBundle.getName() : "Daily Return";
+        reportNameCell.setCellValue(reportName);
+        reportNameCell.setCellStyle(centerBoldStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
+
+        // Row 2: Description / filter values (normal)
+        if (rootBundle.getDescription() != null && !rootBundle.getDescription().isEmpty()) {
+            Row descRow = dataSheet.createRow(currentRow++);
+            Cell descCell = descRow.createCell(0);
+            descCell.setCellValue(rootBundle.getDescription());
+            descCell.setCellStyle(centerStyle);
+            dataSheet.addMergedRegion(new CellRangeAddress(currentRow - 1, currentRow - 1, 0, 6));
+        }
+
+        // Blank row before data
+        currentRow++;
+
+        // Data rows — process child bundles (same logic as createExcelForBundle for dailyReturn)
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            currentRow = addDataToExcel(dataSheet, currentRow, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
+                if (childBundle.getBundleType() != null && !childBundle.getBundleType().equals("netCash")) {
+                    currentRow = addDataToExcel(dataSheet, currentRow, childBundle, childBundle.getBundleType());
+                    currentRow++;
+                }
+            }
+        }
+
+        // Blank row before footer
+        currentRow++;
+
+        // Footer row: "Printed by: X" left, "Printed on: Y" right
+        String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+        String printedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+        Row footerRow = dataSheet.createRow(currentRow);
+        Cell printedByCell = footerRow.createCell(0);
+        printedByCell.setCellValue("Printed by: " + userName);
+        printedByCell.setCellStyle(leftSmallStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 3));
+
+        Cell printedOnCell = footerRow.createCell(4);
+        printedOnCell.setCellValue("Printed on: " + printedTime);
+        printedOnCell.setCellStyle(rightSmallStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 4, 6));
+
+        // Write output
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        String filename = generateExcelFilename(rootBundle.getName(), searchController.getFromDate(), searchController.getToDate());
+        return DefaultStreamedContent.builder()
+                .name(filename)
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
     public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle, Date fromDate, Date toDate) throws IOException {
         if (rootBundle == null) {
             return null;
@@ -59,7 +183,8 @@ public class ExcelController {
         StreamedContent excelSc;
 
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+        String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
 
         // Create cell styles for headers
         CellStyle centerBoldStyle = workbook.createCellStyle();
@@ -3554,7 +3679,8 @@ public class ExcelController {
         StreamedContent excelSc;
 
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+        String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
 
         CellStyle style = workbook.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
