@@ -138,31 +138,21 @@
                                         <p:selectOneMenu class="w-100" autoWidth="false" id="cmbPs" value="#{inwardRefundController.current.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method"/>
                                             <f:selectItems value="#{inwardRefundController.paymentMethods}"/>
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip lblCreditCard lblCheque lblSlip lblCreditCardColon lblChequeColon lblSlipColon" event="change"/>
+                                            <p:ajax process="cmbPs" update="pnlPaymentMethodDetails" event="change"/>
                                         </p:selectOneMenu>
 
-                                        <h:outputLabel id="lblCreditCard" value=""
-                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Card' ? 'block' : 'none'};" />
-                                        <h:outputLabel id="lblCreditCardColon" value=""
-                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Card' ? 'block' : 'none'};" />
-                                        <h:panelGroup id="creditCard" style="display: #{inwardRefundController.current.paymentMethod eq 'Card' ? 'block' : 'none'};">
-                                            <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                        <h:panelGroup id="pnlPaymentMethodDetails" layout="block">
+                                            <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Card'}" layout="block">
+                                                <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                        <h:outputLabel id="lblCheque" value=""
-                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Cheque' ? 'block' : 'none'};" />
-                                        <h:outputLabel id="lblChequeColon" value=""
-                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Cheque' ? 'block' : 'none'};" />
-                                        <h:panelGroup id="cheque" style="display: #{inwardRefundController.current.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
-                                            <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                            <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Cheque'}" layout="block">
+                                                <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                        <h:outputLabel id="lblSlip" value=""
-                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Slip' ? 'block' : 'none'};" />
-                                        <h:outputLabel id="lblSlipColon" value=""
-                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Slip' ? 'block' : 'none'};" />
-                                        <h:panelGroup id="slip" style="display: #{inwardRefundController.current.paymentMethod eq 'Slip' ? 'block' : 'none'};">
-                                            <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                            <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Slip'}" layout="block">
+                                                <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                            </h:panelGroup>
                                         </h:panelGroup>
 
                                         <p:outputLabel class="mt-1" value="Amount"/>
