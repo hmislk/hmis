@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
@@ -59,7 +60,8 @@ public class ExcelController {
         }
 
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+        String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
 
         // Styles
         CellStyle centerBoldLargeStyle = workbook.createCellStyle();
@@ -181,7 +183,8 @@ public class ExcelController {
         StreamedContent excelSc;
 
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+        String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
 
         // Create cell styles for headers
         CellStyle centerBoldStyle = workbook.createCellStyle();
@@ -3676,7 +3679,8 @@ public class ExcelController {
         StreamedContent excelSc;
 
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+        String safeName = WorkbookUtil.createSafeSheetName(rootBundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
 
         CellStyle style = workbook.createCellStyle();
         style.setAlignment(HorizontalAlignment.CENTER);
