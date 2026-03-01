@@ -22425,7 +22425,9 @@ public class SearchController implements Serializable {
         try {
             pdfSc = pdfController.createPdfForBundle(bundle);
         } catch (IOException e) {
-            // Handle IOException
+            logger.error("getBundleAsPdf: Error creating pdfSc via pdfController.createPdfForBundle", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate PDF file. Please try again.");
         }
         return pdfSc;
     }
@@ -22435,7 +22437,9 @@ public class SearchController implements Serializable {
         try {
             pdfSc = pdfController.createA3PdfForBundle(bundle);
         } catch (IOException e) {
-            // Handle IOException
+            logger.error("getDailyReturnBundleAsPdf: Error creating pdfSc via pdfController.createA3PdfForBundle", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Daily Return PDF file. Please try again.");
         }
         return pdfSc;
     }
@@ -22455,7 +22459,9 @@ public class SearchController implements Serializable {
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
         } catch (IOException e) {
-            // Handle IOException
+            logger.error("getBundleAsExcel: Error creating downloadingExcel via excelController.createExcelForBundle", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Excel file. Please try again.");
         }
         return downloadingExcel;
     }

@@ -101,7 +101,7 @@ function Get-ProjectContext {
     if (-not $statusField) { Write-Warn "Status field not found on project v2." }
     $targetOption = $null
     if ($statusField -and $statusField.options) {
-      $targetOption = $statusField.options | Where-Object { $_.name -eq 'Reviewing & Merging' -or $_.name -eq 'Reviewing & Merging' } | Select-Object -First 1
+      $targetOption = $statusField.options | Where-Object { $_.name -eq 'Reviewing & Merging' -or $_.name -eq 'Reviewing and Merging' } | Select-Object -First 1
       if (-not $targetOption) {
         # try case-insensitive match variations
         $targetOption = $statusField.options | Where-Object { $_.name -match 'review(ing)?' -and $_.name -match 'merge' } | Select-Object -First 1
