@@ -2301,6 +2301,11 @@ public class PharmacyReportController implements Serializable {
                 addFilter(jpql, params, "b.completed", "completed", completedOnly);
             }
 
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 //            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
             netTotal = billItems.stream()
