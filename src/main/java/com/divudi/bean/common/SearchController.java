@@ -22444,7 +22444,9 @@ public class SearchController implements Serializable {
         try {
             downloadingExcel = excelController.createExcelForDailyReturnBundle(bundle);
         } catch (IOException e) {
-            // Handle IOException
+            logger.error("getDailyReturnBundleAsExcel: Error creating downloadingExcel via excelController.createExcelForDailyReturnBundle", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Daily Return Excel file. Please try again.");
         }
         return downloadingExcel;
     }
