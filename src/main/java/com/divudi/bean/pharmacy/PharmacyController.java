@@ -2291,6 +2291,11 @@ public class PharmacyController implements Serializable {
                 params.put("supplier", fromInstitution);
             }
 
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += " AND b.departmentType IN :departmentTypes";
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
             jpql += " order by b.id desc";
 
             try {
