@@ -6074,7 +6074,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh2.department", "dep", department);
             addFilter(jpql, params, "sh2.item", "itm", item);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh2.department.departmentType IN :departmentTypes ");
+                jpql.append("AND sh2.item.departmentType IN :departmentTypes ");
                 params.put("departmentTypes", selectedDepartmentTypes);
             }
 
@@ -6089,7 +6089,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh3.department", "dep2", department);
             addFilter(jpql, params, "sh3.item", "itm2", item);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh3.department.departmentType IN :departmentTypes ");
+                jpql.append("AND sh3.item.departmentType IN :departmentTypes ");
             }
 
             jpql.append("AND sh3.createdAt <= :et2)) ");
@@ -6101,7 +6101,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh.department", "dep3", department);
             addFilter(jpql, params, "sh.item", "itm3", item);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh.department.departmentType IN :departmentTypes ");
+                jpql.append("AND sh.item.departmentType IN :departmentTypes ");
             }
 
             // Group by item and filter positive quantities
@@ -6121,7 +6121,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh5.department", "dep4", department);
             addFilter(jpql, params, "sh5.item", "itm4", item);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh5.department.departmentType IN :departmentTypes ");
+                jpql.append("AND sh5.item.departmentType IN :departmentTypes ");
             }
 
             jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
@@ -6131,7 +6131,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh4.department", "dep5", department);
             addFilter(jpql, params, "sh4.item", "itm5", item);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND sh4.department.departmentType IN :departmentTypes ");
+                jpql.append("AND sh4.item.departmentType IN :departmentTypes ");
             }
 
             jpql.append("GROUP BY sh4.itemBatch.item.id ")
