@@ -1,5 +1,6 @@
 package com.divudi.core.entity;
 
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
 import java.io.Serializable;
@@ -101,6 +102,13 @@ public class Request implements Serializable {
     private String retireComments;
 
     private String referenceNumber;
+
+    // Drawer adjustment context (null for non-drawer-adjustment requests)
+    @ManyToOne
+    private WebUser targetWebUser;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
 
     @Override
     public int hashCode() {
@@ -365,6 +373,22 @@ public class Request implements Serializable {
 
     public void setRequestNo(String requestNo) {
         this.requestNo = requestNo;
+    }
+
+    public WebUser getTargetWebUser() {
+        return targetWebUser;
+    }
+
+    public void setTargetWebUser(WebUser targetWebUser) {
+        this.targetWebUser = targetWebUser;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

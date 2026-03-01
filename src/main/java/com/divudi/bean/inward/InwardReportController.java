@@ -1412,6 +1412,7 @@ public class InwardReportController implements Serializable {
 
         jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDTO(")
                 .append(" e.referringConsultant.id, ")
+                .append(" e.referringConsultant.person.title, ")
                 .append(" e.referringConsultant.person.name, ")
                 .append(" e.referringConsultant.speciality.name, ")
                 .append(" e.dateOfDischarge ")
@@ -1454,6 +1455,7 @@ public class InwardReportController implements Serializable {
             if (aggregated == null) {
                 aggregated = new InwardAdmissionDTO(
                         dto.getStaffId(),
+                        dto.getDoctorTitle(),
                         dto.getDoctorName(),
                         dto.getSpecialityName(),
                         null

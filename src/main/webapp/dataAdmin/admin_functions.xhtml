@@ -299,20 +299,12 @@
                                     <tr>
                                         <td><strong>Add Data to Bill Finance Details for GRNs</strong></td>
                                         <td>
-                                            Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy GRN bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all GRN types including returns, cancellations, and wholesale GRNs.
+                                            Deprecated. Use the REST API <code>POST /api/pharmacy/backfill_grn_bifd</code> or the SQL method described in
+                                            <code>developer_docs/data-correction/grn-bifd-sql-backfill.md</code> instead.
+                                            The admin function processes bills one at a time via JPA and is too slow for large backlogs.
                                         </td>
-
-                                        <td>
-                                            <p:commandButton
-                                                value="Calculate Finance Details"
-                                                ajax="false"
-                                                styleClass="ui-button-warning m-1"
-                                                icon="pi pi-cog"
-                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyGRNsFromBillItemData}">
-                                            </p:commandButton>
-                                        </td>
-                                        <td>
-                                            #{billController.output}
+                                        <td colspan="2">
+                                            <span class="ui-message ui-message-warn">Deprecated — see developer docs for the recommended approach.</span>
                                         </td>
                                     </tr>
 
@@ -381,6 +373,34 @@
                                                 icon="pi pi-calculator"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 onclick="return confirm('This will populate finance details for OPD and pharmacy retail sale bills in the selected period. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Backfill BFD for Pre-To-Settle Bills</strong></td>
+                                        <td>
+                                            Creates missing BillFinanceDetails and BillItemFinanceDetails for
+                                            PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bills that have no finance data.
+                                            Required for accurate F15 Daily Stock Values report when bills were created via
+                                            the settlePreBill() path before the Feb 2026 fix.
+                                            Use the date range filter above to limit scope.
+                                            Safe to re-run: skips bills already having BFD with non-zero retail value.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnBackfillBfdPreToSettle"
+                                                action="#{dataAdministrationController.backfillBfdForPreToSettleAtCashierBills()}"
+                                                ajax="false"
+                                                value="Backfill Pre-Bill BFDs"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-calculator"
+                                                title="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
+                                                aria-label="Backfill missing BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills in the selected period"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will create BillFinanceDetails for PRE_TO_SETTLE_AT_CASHIER bills missing BFD in the selected period. Proceed?');" />
                                         </td>
                                         <td>
                                             #{dataAdministrationController.executionFeedback}

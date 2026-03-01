@@ -1403,6 +1403,22 @@ public class PharmacyBean {
     }
 
     /**
+     * Returns all Stock records across every department for a given ItemBatch.
+     * Used by rate-adjustment workflows to record stock history in every
+     * department affected by the shared ItemBatch rate change.
+     */
+    public List<Stock> getStocksForItemBatch(ItemBatch itemBatch) {
+        if (itemBatch == null || itemBatch.getId() == null) {
+            return java.util.Collections.emptyList();
+        }
+        String jpql = "select s from Stock s where s.itemBatch.id = :batchId and s.stock > 0";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("batchId", itemBatch.getId());
+        List<Stock> result = getStockFacade().findByJpql(jpql, params);
+        return result != null ? result : java.util.Collections.emptyList();
+    }
+
+    /**
      * 🏥 CRITICAL AUDIT TRAIL METHOD - HANDLE WITH EXTREME CARE 🏥
      *
      * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨 This method creates

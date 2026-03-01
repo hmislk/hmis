@@ -596,6 +596,14 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
 
+                                <p:outputLabel value="Total Bill Value"/>
+                                <p:outputLabel
+                                    id="totalBillValue"
+                                    value="#{grnCostingController.grnBill.netTotal + grnCostingController.grnBill.expensesTotalNotConsideredForCosting}"
+                                    class="text-end w-100 ui-inputfield bg-dark text-white">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+
                             </p:panelGrid>
                             <p:panel  id="billFinanceDetails"  header="Financial Summary">
                                 <ph:bill_finance_details bill="#{grnCostingController.grnBill}" ></ph:bill_finance_details>
