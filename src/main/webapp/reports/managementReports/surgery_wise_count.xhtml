@@ -86,7 +86,7 @@
                                 <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="chartType" 
-                                             value="#{inwardReportController.surgeryWiseChartType}"
+                                             value="#{inwardReportController.reportType}"
                                              styleClass="w-100">
                                 <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
@@ -109,19 +109,25 @@
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All" />
+                                value="Print All">
+                                <p:printer target="tb" />
+                            </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download" />
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="tb" fileName="Surgery_Count_Surgery_Wise"/>
+                            </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF" />
+                                value="PDF">
+                                <p:dataExporter type="pdf" target="tb" fileName="Surgery_Count_Surgery_Wise"/>
+                            </p:commandButton>
 
                         </div>
 
@@ -234,13 +240,15 @@
                         <!-- Charts Section -->
                         <h:panelGroup id="chartPanel" layout="block">
                             <h:panelGroup layout="block" 
-                                          rendered="#{not empty inwardReportController.surgeryCountSurgeryWiseList and not empty inwardReportController.surgeryWiseChartType}">
+                                          rendered="#{not empty inwardReportController.surgeryCountSurgeryWiseList 
+                                                      and not empty inwardReportController.reportType}">
 
                                 <!-- Bar Chart -->
                                 <h:panelGroup layout="block" 
-                                              rendered="#{inwardReportController.surgeryWiseChartType eq 'bar' and inwardReportController.surgeryWiseBarChartModel ne null}"
+                                              rendered="#{inwardReportController.reportType eq 'bar' 
+                                                          and inwardReportController.surgeryWiseBarChartModel ne null}"
                                               styleClass="my-3">
-                                    <p:panel header="Surgery Wise Count - Bar Chart">
+                                    <p:panel header="Surgery Wise Count - Bar Chart (#{inwardReportController.selectedYear})">
                                         <h:panelGroup layout="block" style="width:100%; height:500px;">
                                             <p:chart value="#{inwardReportController.surgeryWiseBarChartModel}" 
                                                      widgetVar="surgeryWiseBarWV"
@@ -251,9 +259,10 @@
 
                                 <!-- Line Chart -->
                                 <h:panelGroup layout="block" 
-                                              rendered="#{inwardReportController.surgeryWiseChartType eq 'line' and inwardReportController.surgeryWiseLineChartModel ne null}"
+                                              rendered="#{inwardReportController.reportType eq 'line' 
+                                                          and inwardReportController.surgeryWiseLineChartModel ne null}"
                                               styleClass="my-3">
-                                    <p:panel header="Surgery Wise Count - Line Chart">
+                                    <p:panel header="Surgery Wise Count - Line Chart (#{inwardReportController.selectedYear})">
                                         <h:panelGroup layout="block" style="width:100%; height:500px;">
                                             <p:chart value="#{inwardReportController.surgeryWiseLineChartModel}" 
                                                      widgetVar="surgeryWiseLineWV"
@@ -262,6 +271,15 @@
                                     </p:panel>
                                 </h:panelGroup>
 
+                            </h:panelGroup>
+
+                            <!-- Message when no chart type selected but data exists -->
+                            <h:panelGroup layout="block" 
+                                          rendered="#{not empty inwardReportController.surgeryCountSurgeryWiseList 
+                                                      and empty inwardReportController.reportType}"
+                                          styleClass="my-3 text-center">
+                                <h:outputText value="Please select a Chart Type above to view the chart." 
+                                              styleClass="text-muted"/>
                             </h:panelGroup>
                         </h:panelGroup>
 
