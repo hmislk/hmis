@@ -180,7 +180,7 @@
                             icon="fas fa-download"
                             class="ui-button-warning mx-2"
                             onclick="PrimeFaces.monitorDownload(start, stop);" >
-                            <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                            <p:fileDownload value="#{searchController.dailyReturnBundleAsExcel}" />
                         </p:commandButton>
 
                         <p:commandButton 
@@ -209,7 +209,31 @@
                         </h:panelGroup>
                         <!--Do not remove the above part-->
 
-                        <h:panelGroup id="printPanel">        
+                        <h:panelGroup id="printPanel">
+
+                            <style type="text/css">
+                                .daily-return-print-header { display: none; }
+                                .daily-return-print-footer { display: none; }
+                                @media print {
+                                    .daily-return-print-header { display: block; text-align: center; margin-bottom: 10px; }
+                                    .daily-return-print-footer { display: block; margin-top: 20px; border-top: 1px solid #aaa; padding-top: 6px; overflow: hidden; }
+                                    .daily-return-print-footer .footer-left  { float: left;  font-size: 9pt; }
+                                    .daily-return-print-footer .footer-right { float: right; font-size: 9pt; }
+                                }
+                            </style>
+
+                            <!-- Print header: institution, report name, filter description -->
+                            <div class="daily-return-print-header">
+                                <div style="font-size: 16pt; font-weight: bold;">
+                                    <h:outputText value="#{sessionController.institution.name}" />
+                                </div>
+                                <div style="font-size: 13pt; font-weight: bold; margin-top: 4px;">
+                                    <h:outputText value="#{searchController.bundle.name}" />
+                                </div>
+                                <div style="font-size: 10pt; margin-top: 4px;">
+                                    <h:outputText value="#{searchController.bundle.description}" />
+                                </div>
+                            </div>
 
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
                                 <ez:opdServiceCollection bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollection'}"/>
@@ -267,6 +291,30 @@
                                 <ez:carriedOutPatientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'carriedOutPatientDeposit'}"/>
 
                             </ui:repeat>
+
+                            <!-- Print footer: printed by / printed on -->
+                            <div class="daily-return-print-footer">
+                                <span class="footer-left">
+                                    Printed by: <h:outputText value="#{sessionController.loggedUser.name}" />
+                                </span>
+                                <span class="footer-right">
+                                    Printed on: <span id="drPrintedOnTime"></span>
+                                </span>
+                            </div>
+                            <script type="text/javascript">
+                                (function() {
+                                    var el = document.getElementById('drPrintedOnTime');
+                                    if (el) {
+                                        var now = new Date();
+                                        el.textContent = now.getFullYear() + '-'
+                                            + String(now.getMonth()+1).padStart(2,'0') + '-'
+                                            + String(now.getDate()).padStart(2,'0') + ' '
+                                            + String(now.getHours()).padStart(2,'0') + ':'
+                                            + String(now.getMinutes()).padStart(2,'0') + ':'
+                                            + String(now.getSeconds()).padStart(2,'0');
+                                    }
+                                })();
+                            </script>
 
                         </h:panelGroup>
                     </p:panel>

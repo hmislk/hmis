@@ -22440,6 +22440,15 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    public StreamedContent getDailyReturnBundleAsExcel() {
+        try {
+            downloadingExcel = excelController.createExcelForDailyReturnBundle(bundle);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return downloadingExcel;
+    }
+
     public StreamedContent getBundleAsExcel() {
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
