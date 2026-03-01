@@ -132,36 +132,39 @@
                                         <h:outputText styleClass="fas fa-money-bill-wave"></h:outputText>
                                         <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="3" class="w-100" >
-                                        <h:outputLabel value="Payment Method"/>
-                                        <h:outputLabel value=":"/>
+
+                                    <h:panelGrid columns="3" class="w-100" columnClasses="col-label,col-colon,col-value" >
+                                        <p:outputLabel value="Payment Method"/>
+                                        <h:outputText value=":"/>
                                         <p:selectOneMenu class="w-100" autoWidth="false" id="cmbPs" value="#{inwardRefundController.current.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method"/>
                                             <f:selectItems value="#{inwardRefundController.paymentMethods}"/>
                                             <p:ajax process="cmbPs" update="pnlPaymentMethodDetails" event="change"/>
                                         </p:selectOneMenu>
 
-                                        <h:panelGroup id="pnlPaymentMethodDetails" layout="block">
-                                            <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Card'}" layout="block">
-                                                <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                                            </h:panelGroup>
+                                        <p:outputLabel value="Amount"/>
+                                        <h:outputText value=":"/>
+                                        <p:inputText 
+                                            class="w-100" 
+                                            autocomplete="off" 
+                                            onfocus="this.select()"
+                                            value="#{inwardRefundController.current.total}"/>
+                                    </h:panelGrid>
 
-                                            <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Cheque'}" layout="block">
-                                                <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Slip'}" layout="block">
-                                                <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
-                                            </h:panelGroup>
+                                    <h:panelGroup id="pnlPaymentMethodDetails" layout="block" class="mt-2">
+                                        <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Card'}" layout="block">
+                                            <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <p:outputLabel class="mt-1" value="Amount"/>
-                                        <h:outputLabel class="mt-1" value=":"/>
-                                        <p:inputText class="w-100 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}"/>
+                                        <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Cheque'}" layout="block">
+                                            <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                        </h:panelGroup>
 
-<!--                                    disabled="#{inwardRefundController.paidAmount gt 0 }"    -->
+                                        <h:panelGroup rendered="#{inwardRefundController.current.paymentMethod eq 'Slip'}" layout="block">
+                                            <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
 
-                                    </h:panelGrid>
                                 </p:panel>
 
                             </div>
