@@ -22430,6 +22430,16 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    public StreamedContent getDailyReturnBundleAsPdf() {
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createA3PdfForBundle(bundle);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return pdfSc;
+    }
+
     public StreamedContent getBundleAsExcel() {
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
