@@ -213,6 +213,9 @@ public class InwardReportController implements Serializable {
 
     private ReportKeyWord reportKeyWord;
 
+    private String surgeryWiseLineChartModel;
+    private String surgeryWiseBarChartModel;
+
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
     }
@@ -391,11 +394,11 @@ public class InwardReportController implements Serializable {
                 .append(" c.name, ")
                 .append(" function('MONTH', b.createdAt) ")
                 .append(" from BilledBill b ")
-                .append(" join b.procedure p ") 
-                .append(" join p.item i ") 
-                .append(" left join i.category c ") 
+                .append(" join b.procedure p ")
+                .append(" join p.item i ")
+                .append(" left join i.category c ")
                 .append(" where b.retired = false ")
-                .append(" and b.cancelled = false ") 
+                .append(" and b.cancelled = false ")
                 .append(" and b.billType = :bt ")
                 .append(" and b.createdAt between :fd and :td ")
                 .append(" and p is not null ")
@@ -472,6 +475,8 @@ public class InwardReportController implements Serializable {
 
         grandTotal.calculateYearTotal();
         surgeryCountSurgeryWiseList.add(grandTotal);
+        createSurgeryWiseChartModels();
+
     }
 
     public List<SurgeryCountSurgeryWiseDTO> getExportableSurgeryCountSurgeryWiseList() {
@@ -481,6 +486,135 @@ public class InwardReportController implements Serializable {
         return surgeryCountSurgeryWiseList.stream()
                 .filter(dto -> !dto.isGrandTotal())
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void createSurgeryWiseChartModels() {
+        createSurgeryWiseBarChart();
+        createSurgeryWiseLineChart();
+    }
+
+    private void createSurgeryWiseBarChart() {
+        if (surgeryCountSurgeryWiseList == null || surgeryCountSurgeryWiseList.isEmpty()) {
+            surgeryWiseBarChartModel = null;
+            return;
+        }
+
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+        };
+        int colorIndex = 0;
+
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        for (SurgeryCountSurgeryWiseDTO dto : surgeryCountSurgeryWiseList) {
+            if (dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 1);
+
+            BarDataset dataset = new BarDataset()
+                    .setLabel(dto.getSurgeryName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(1);
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        barChart.setData(barData);
+
+        BarOptions barOptionsObj = new BarOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Wise Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        barOptionsObj.setScales(scales);
+
+        barChart.setOptions(barOptionsObj);
+        surgeryWiseBarChartModel = barChart.toJson();
+    }
+
+    private void createSurgeryWiseLineChart() {
+        if (surgeryCountSurgeryWiseList == null || surgeryCountSurgeryWiseList.isEmpty()) {
+            surgeryWiseLineChartModel = null;
+            return;
+        }
+
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+        };
+        int colorIndex = 0;
+
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        for (SurgeryCountSurgeryWiseDTO dto : surgeryCountSurgeryWiseList) {
+            if (dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 1);
+
+            LineDataset dataset = new LineDataset()
+                    .setLabel(dto.getSurgeryName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBorderColor(borderColor)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        lineChart.setData(lineData);
+
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Wise Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        lineOptionsObj.setPlugins(plugins);
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        lineOptionsObj.setScales(scales);
+
+        lineChart.setOptions(lineOptionsObj);
+        surgeryWiseLineChartModel = lineChart.toJson();
     }
 
     public void processMonthlyWiseSurgerySurveyReport() {
@@ -3309,6 +3443,22 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryItem(Item surgeryItem) {
         this.surgeryItem = surgeryItem;
+    }
+
+    public String getSurgeryWiseLineChartModel() {
+        return surgeryWiseLineChartModel;
+    }
+
+    public void setSurgeryWiseLineChartModel(String surgeryWiseLineChartModel) {
+        this.surgeryWiseLineChartModel = surgeryWiseLineChartModel;
+    }
+
+    public String getSurgeryWiseBarChartModel() {
+        return surgeryWiseBarChartModel;
+    }
+
+    public void setSurgeryWiseBarChartModel(String surgeryWiseBarChartModel) {
+        this.surgeryWiseBarChartModel = surgeryWiseBarChartModel;
     }
 
     public class IncomeByCategoryRecord {
