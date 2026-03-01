@@ -2476,7 +2476,6 @@ public class ItemController implements Serializable {
                     + " and "
                     + " ((c.name) like :str or (c.code) like :str or (c.barcode) like :str ) "
                     + " order by c.name";
-            tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ret", false);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
