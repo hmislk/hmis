@@ -2055,6 +2055,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.department.site", "sit", site);
             addFilter(jpql, params, "bi.bill.department", "dep", department);
 
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND bi.bill.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
             stockCorrectionRows = (List<StockCorrectionRow>) billItemFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             positiveVarianceMap = new HashMap<>();
             negativeVarianceMap = new HashMap<>();
@@ -2240,6 +2245,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
 
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 //            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
             netTotal = billItems.stream()
@@ -2364,6 +2374,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
             netTotal = billItems.stream()
@@ -2648,6 +2663,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(billJpql, billParams, "b.institution", "ins", institution);
             addFilter(billJpql, billParams, "b.department.site", "sit", site);
             addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                billJpql.append("AND b.departmentType IN :departmentTypes ");
+                billParams.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
 
@@ -3206,6 +3226,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             billItemsDtos = (List<BillItemDTO>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -6048,6 +6073,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh2.department.site", "sit", site);
             addFilter(jpql, params, "sh2.department", "dep", department);
             addFilter(jpql, params, "sh2.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND sh2.department.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             jpql.append("GROUP BY sh2.department, sh2.itemBatch ")
                     .append("HAVING MAX(sh2.id) IN (")
@@ -6059,6 +6088,9 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh3.department.site", "sit2", site);
             addFilter(jpql, params, "sh3.department", "dep2", department);
             addFilter(jpql, params, "sh3.item", "itm2", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND sh3.department.departmentType IN :departmentTypes ");
+            }
 
             jpql.append("AND sh3.createdAt <= :et2)) ");
             params.put("et2", date);
@@ -6068,6 +6100,9 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh.department.site", "sit3", site);
             addFilter(jpql, params, "sh.department", "dep3", department);
             addFilter(jpql, params, "sh.item", "itm3", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND sh.department.departmentType IN :departmentTypes ");
+            }
 
             // Group by item and filter positive quantities
             jpql.append("AND sh.itemBatch.item.id IN (")
@@ -6085,6 +6120,9 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh5.department.site", "sit4", site);
             addFilter(jpql, params, "sh5.department", "dep4", department);
             addFilter(jpql, params, "sh5.item", "itm4", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND sh5.department.departmentType IN :departmentTypes ");
+            }
 
             jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
 
@@ -6092,6 +6130,9 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh4.department.site", "sit5", site);
             addFilter(jpql, params, "sh4.department", "dep5", department);
             addFilter(jpql, params, "sh4.item", "itm5", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND sh4.department.departmentType IN :departmentTypes ");
+            }
 
             jpql.append("GROUP BY sh4.itemBatch.item.id ")
                     .append("HAVING SUM(sh4.stockQty) > 0");
@@ -6160,6 +6201,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.department.site", "sit", site);
             addFilter(jpql, params, "bi.bill.department", "dep", department);
             addFilter(jpql, params, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND bi.bill.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             List<Object[]> results = facade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -6212,6 +6257,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.department.site", "sit", site);
             addFilter(jpql, params, "bi.bill.department", "dep", department);
             addFilter(jpql, params, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND bi.bill.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
             jpql.append(" GROUP BY bi.bill.paymentMethod");
 
             List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -6295,6 +6344,10 @@ public class PharmacyReportController implements Serializable {
             if (completed != null) {
                 addFilter(baseQuery, commonParams, "bi.bill.completed", "completed", completed);
             }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6346,6 +6399,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6403,6 +6460,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6460,6 +6521,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6509,6 +6574,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(preAddQuery, preAddParams, "bi.bill.department.site", "sit", site);
             addFilter(preAddQuery, preAddParams, "bi.bill.department", "dep", department);
             addFilter(preAddQuery, preAddParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                preAddQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                preAddParams.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             preAddQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> preAddResults = facade.findRawResultsByJpql(preAddQuery.toString(), preAddParams, TemporalType.TIMESTAMP);
@@ -6566,6 +6635,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6630,6 +6703,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(negativeQuery, negativeParams, "bi.bill.department.site", "sit", site);
             addFilter(negativeQuery, negativeParams, "bi.bill.department", "dep", department);
             addFilter(negativeQuery, negativeParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                negativeQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                negativeParams.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             negativeQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> negativeResults = facade.findRawResultsByJpql(negativeQuery.toString(), negativeParams, TemporalType.TIMESTAMP);
@@ -6685,6 +6762,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
             baseQuery.append(" ORDER BY bi.bill.createdAt");
             List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6839,6 +6920,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
             addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
             addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                baseQuery.append("AND bi.bill.departmentType IN :departmentTypes ");
+                commonParams.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             List<BillItem> billItems = billItemFacade.findByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
 
@@ -6926,6 +7011,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpqlIssue, paramsIssue, "bi.bill.department.site", "sit", site);
             addFilter(jpqlIssue, paramsIssue, "bi.bill.department", "dep", department);
             addFilter(jpqlIssue, paramsIssue, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpqlIssue.append("AND bi.bill.departmentType IN :departmentTypes ");
+                paramsIssue.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             // Query for Stock Adjustment Receives (positive quantities)
             Map<String, Object> paramsReceive = new HashMap<>();
@@ -6948,6 +7037,10 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpqlReceive, paramsReceive, "bi.bill.department.site", "sit", site);
             addFilter(jpqlReceive, paramsReceive, "bi.bill.department", "dep", department);
             addFilter(jpqlReceive, paramsReceive, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpqlReceive.append("AND bi.bill.departmentType IN :departmentTypes ");
+                paramsReceive.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             // Execute queries
             List<Object[]> resultsStockAdjustmentReceives = facade.findRawResultsByJpql(jpqlReceive.toString(), paramsReceive, TemporalType.TIMESTAMP);
