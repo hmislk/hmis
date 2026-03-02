@@ -8637,6 +8637,62 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public Map<Long, String> findLastPurchaseSuppliersBatch(List<Item> itemList, Institution ins, Department dept) {
+        Map<Long, String> result = new HashMap<>();
+        if (itemList == null || itemList.isEmpty()) {
+            return result;
+        }
+
+        String jpql = "SELECT bi.item.id, bi.bill.fromInstitution.name "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill.retired = false "
+                + " AND bi.bill.billTypeAtomic IN :bta "
+                + " AND bi.item IN :items "
+                + " AND bi.id IN ("
+                + "   SELECT MAX(bi2.id) FROM BillItem bi2 "
+                + "   WHERE bi2.bill.retired = false "
+                + "   AND bi2.bill.billTypeAtomic IN :bta "
+                + "   AND bi2.item IN :items ";
+
+        if (ins != null) {
+            jpql += " AND bi2.bill.institution = :institution ";
+        }
+        if (dept != null) {
+            jpql += " AND bi2.bill.department = :department ";
+        }
+
+        jpql += "   GROUP BY bi2.item"
+                + " )";
+
+        List<BillTypeAtomic> btaList = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+        );
+
+        Map parameters = new HashMap();
+        parameters.put("bta", btaList);
+        parameters.put("items", itemList);
+
+        if (ins != null) {
+            parameters.put("institution", ins);
+        }
+        if (dept != null) {
+            parameters.put("department", dept);
+        }
+
+        List<Object[]> rows = getBillItemFacade().findAggregates(jpql, parameters);
+        if (rows != null) {
+            for (Object[] row : rows) {
+                Long itemId = (Long) row[0];
+                String supplierName = (String) row[1];
+                if (itemId != null && supplierName != null) {
+                    result.put(itemId, supplierName);
+                }
+            }
+        }
+
+        return result;
+    }
+
     public void fillMoving(boolean fast) {
         String sql;
         Map m = new HashMap();
@@ -8701,6 +8757,16 @@ public class PharmacyReportController implements Serializable {
         if (objs == null) {
             return;
         }
+
+        List<Item> itemsForSupplier = new ArrayList<>();
+        for (Object[] obj : objs) {
+            Item itm = (Item) obj[0];
+            if (itm != null) {
+                itemsForSupplier.add(itm);
+            }
+        }
+        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(itemsForSupplier, institution, department);
+
         for (Object[] obj : objs) {
             Item itm = (Item) obj[0];
             MovementReportDto r = new MovementReportDto();
@@ -8709,8 +8775,8 @@ public class PharmacyReportController implements Serializable {
             r.setItemName(itm != null ? itm.getName() : "");
             r.setCategoryName(itm != null && itm.getCategory() != null ? itm.getCategory().getName() : "");
             r.setDosageFormName(itm != null && itm.getDosageForm() != null ? itm.getDosageForm().getName() : "");
-            Institution lastSupplier = findLastPurchaseSupplier(itm, institution, department);
-            r.setLastPurchaseSupplierName(lastSupplier != null ? lastSupplier.getName() : "");
+            String supplierName = itm != null ? supplierMap.getOrDefault(itm.getId(), "") : "";
+            r.setLastPurchaseSupplierName(supplierName);
             r.setQty((Double) obj[1]);
             r.setPurchaseValue((Double) obj[2]);
             r.setRetailsaleValue((Double) obj[3]);
@@ -8805,6 +8871,16 @@ public class PharmacyReportController implements Serializable {
         if (objs == null) {
             return;
         }
+
+        List<Item> itemsForSupplier = new ArrayList<>();
+        for (Object[] obj : objs) {
+            Item itm = (Item) obj[0];
+            if (itm != null) {
+                itemsForSupplier.add(itm);
+            }
+        }
+        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(itemsForSupplier, institution, department);
+
         for (Object[] obj : objs) {
             Item itm = (Item) obj[0];
             MovementReportDto r = new MovementReportDto();
@@ -8813,8 +8889,8 @@ public class PharmacyReportController implements Serializable {
             r.setItemName(itm != null ? itm.getName() : "");
             r.setCategoryName(itm != null && itm.getCategory() != null ? itm.getCategory().getName() : "");
             r.setDosageFormName(itm != null && itm.getDosageForm() != null ? itm.getDosageForm().getName() : "");
-            Institution lastSupplier = findLastPurchaseSupplier(itm, institution, department);
-            r.setLastPurchaseSupplierName(lastSupplier != null ? lastSupplier.getName() : "");
+            String supplierName = itm != null ? supplierMap.getOrDefault(itm.getId(), "") : "";
+            r.setLastPurchaseSupplierName(supplierName);
             r.setQty((Double) obj[1]);
             r.setPurchaseValue((Double) obj[2]);
             r.setRetailsaleValue((Double) obj[3]);
@@ -8927,6 +9003,7 @@ public class PharmacyReportController implements Serializable {
 
         sis.removeAll(bis);
         items = new ArrayList<>(sis);
+        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(items, institution, department);
         itemLastSuppliers = new ArrayList<>();
         for (Item itm : items) {
             NonMovementReportDto dto = new NonMovementReportDto();
@@ -8935,8 +9012,8 @@ public class PharmacyReportController implements Serializable {
             dto.setItemName(itm != null ? itm.getName() : "");
             dto.setCategoryName(itm != null && itm.getCategory() != null ? itm.getCategory().getName() : "");
             dto.setDosageFormName(itm != null && itm.getDosageForm() != null ? itm.getDosageForm().getName() : "");
-            Institution lastSupplier = findLastPurchaseSupplier(itm, institution, department);
-            dto.setLastSupplierName(lastSupplier != null ? lastSupplier.getName() : "");
+            String supplierName = itm != null ? supplierMap.getOrDefault(itm.getId(), "") : "";
+            dto.setLastSupplierName(supplierName);
             itemLastSuppliers.add(dto);
         }
 
