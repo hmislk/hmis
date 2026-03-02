@@ -10905,7 +10905,7 @@ public class PharmacyReportController implements Serializable {
             String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
             if (!institutionName.isEmpty()) {
                 CellStyle instStyle = workbook.createCellStyle();
-                Font instFont = workbook.createFont();
+                org.apache.poi.ss.usermodel.Font instFont = workbook.createFont();
                 instFont.setFontHeightInPoints((short) 16);
                 instFont.setBold(true);
                 instStyle.setFont(instFont);
@@ -10996,7 +10996,7 @@ public class PharmacyReportController implements Serializable {
             String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
             if (!institutionName.isEmpty()) {
                 CellStyle instStyle = workbook.createCellStyle();
-                Font instFont = workbook.createFont();
+                org.apache.poi.ss.usermodel.Font instFont = workbook.createFont();
                 instFont.setFontHeightInPoints((short) 16);
                 instFont.setBold(true);
                 instStyle.setFont(instFont);
