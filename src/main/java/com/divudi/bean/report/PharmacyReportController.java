@@ -8857,6 +8857,31 @@ public class PharmacyReportController implements Serializable {
             jpql += " AND bi.bill.department=:d ";
             m.put("d", department);
         }
+        if (institution != null) {
+            jpql += " AND bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " AND bi.bill.department.site=:sit ";
+            m.put("sit", site);
+        }
+        if (category != null) {
+            jpql += " AND bi.item.category=:ctgry ";
+            m.put("ctgry", category);
+        }
+        if (dosageForm != null) {
+            jpql += " AND bi.item.dosageForm=:df ";
+            m.put("df", dosageForm);
+        }
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            jpql += " AND bi.item.departmentType IN :departmentTypes ";
+            m.put("departmentTypes", selectedDepartmentTypes);
+        }
+        if (amp != null) {
+            item = amp;
+            jpql += " AND bi.item=:itm ";
+            m.put("itm", item);
+        }
 
         jpql += " GROUP BY bi.item";
 
@@ -8877,6 +8902,10 @@ public class PharmacyReportController implements Serializable {
         if (site != null) {
             jpql += " and s.department.site=:sit ";
             m.put("sit", site);
+        }
+        if (category != null) {
+            jpql += " and s.itemBatch.item.category=:ctgry ";
+            m.put("ctgry", category);
         }
         if (dosageForm != null) {
             jpql += " and s.itemBatch.item.dosageForm=:df ";
