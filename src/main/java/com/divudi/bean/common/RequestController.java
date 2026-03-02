@@ -115,9 +115,14 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("No bill selected.");
             return null;
         }
+        if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
+            return null;
+        }
         Map<String, Object> params = new java.util.HashMap<>();
         params.put("bill", billParam);
-        String jpql = "SELECT r FROM Request r WHERE r.bill = :bill ORDER BY r.id DESC";
+        params.put("type", RequestType.DRAWER_ADJUSTMENT);
+        String jpql = "SELECT r FROM Request r WHERE r.bill = :bill AND r.requestType = :type ORDER BY r.id DESC";
         List<Request> found = requestFacade.findByJpql(jpql, params);
         if (found == null || found.isEmpty()) {
             JsfUtil.addErrorMessage("No drawer adjustment request found for this bill.");
