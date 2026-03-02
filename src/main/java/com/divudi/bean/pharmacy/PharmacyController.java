@@ -9060,8 +9060,12 @@ public class PharmacyController implements Serializable {
         }
 
         if (fromInstitution != null) {
-            sql += " AND b.fromInstitution = :supplier";
+            sql += " AND (b.fromInstitution = :supplier OR (b.billTypeAtomic IN :refundBtas AND b.toInstitution = :supplier))";
             tmp.put("supplier", fromInstitution);
+            List<BillTypeAtomic> refundBtas = new ArrayList<>();
+            refundBtas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            refundBtas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            tmp.put("refundBtas", refundBtas);
         }
 
         if (amp != null) {

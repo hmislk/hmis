@@ -368,7 +368,7 @@
                             </p:column>
                             <p:column headerText="Supplier" width="5em">
                                 <h:outputText
-                                        value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
+                                        value="#{bill.fromInstitution ne null ? bill.fromInstitution.name : bill.toInstitution.name}"/>
                             </p:column>
                             <p:column headerText="PO Sub Total" width="5em">
                                 <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
@@ -543,7 +543,7 @@
                                         <p:column>
                                             <f:facet name="header">
                                                 <h:outputText
-                                                        value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' ? bill.toInstitution.name : bill.fromInstitution.name}"
+                                                        value="#{bill.fromInstitution ne null ? bill.fromInstitution.name : bill.toInstitution.name}"
                                                         style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
