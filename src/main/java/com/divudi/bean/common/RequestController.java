@@ -109,6 +109,23 @@ public class RequestController implements Serializable {
         return "/common/request/view_request?faces-redirect=true";
     }
 
+    public String navigateToDrawerAdjustmentApproveByBill(Bill billParam) {
+        if (billParam == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return null;
+        }
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("bill", billParam);
+        String jpql = "SELECT r FROM Request r WHERE r.bill = :bill ORDER BY r.id DESC";
+        List<Request> found = requestFacade.findByJpql(jpql, params);
+        if (found == null || found.isEmpty()) {
+            JsfUtil.addErrorMessage("No drawer adjustment request found for this bill.");
+            return null;
+        }
+        currentRequest = found.get(0);
+        return "/cashier/drawer_adjustment_approve?faces-redirect=true";
+    }
+
     public String navigateToCreateRequest(Bill bill) {
         if (bill == null || bill.getId() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");

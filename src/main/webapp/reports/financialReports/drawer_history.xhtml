@@ -5,10 +5,22 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Drawer History</title>
+        <style type="text/css">
+            .drawer-history-scroll-wrap {
+                overflow-x: auto;
+                width: 100%;
+            }
+            .drawer-history-scroll-wrap .ui-datatable {
+                min-width: max-content;
+            }
+        </style>
+    </h:head>
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
+                <h:form>
                     <p:panel>
                         <f:facet name="header">
                             <h:outputLabel value="Drawer History" />
@@ -18,29 +30,29 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date"  class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="From Date" class="mx-3" />
                             </h:panelGroup>
-                            <p:datePicker  showTime="true"
-                                           class="w-100"
-                                           inputStyleClass="w-100"
-                                           value="#{drawerEntryController.fromDate}" 
-                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:datePicker showTime="true"
+                                          class="w-100"
+                                          inputStyleClass="w-100"
+                                          value="#{drawerEntryController.fromDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" class="mx-3" ></p:outputLabel>
+                                <p:outputLabel value="To Date" class="mx-3" />
                             </h:panelGroup>
-                            <p:datePicker showTime="true" 
+                            <p:datePicker showTime="true"
                                           class="w-100"
                                           inputStyleClass="w-100"
-                                          value="#{drawerEntryController.toDate}" 
+                                          value="#{drawerEntryController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="User" class="mx-3"/>
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
+                                <h:outputLabel value="User" class="mx-3" />
                             </h:panelGroup>
                             <p:autoComplete
                                 value="#{drawerEntryController.webUser}"
@@ -49,111 +61,222 @@
                                 class="w-100 mt-1"
                                 inputStyleClass="form-control"
                                 itemLabel="#{w.webUserPerson.name}"
-                                itemValue="#{w}">
-                            </p:autoComplete>
+                                itemValue="#{w}" />
                         </h:panelGrid>
 
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" 
-                                             value="Process" 
+                            <p:commandButton ajax="false"
+                                             value="Process"
                                              action="#{drawerEntryController.prosessingCashierDrawerEntry()}"
-                                             icon="fas fa-cogs" 
-                                             class="ui-button-warning mx-1" >
+                                             icon="fas fa-cogs"
+                                             class="ui-button-warning mx-1" />
+                            <p:commandButton ajax="false"
+                                             value="Print"
+                                             icon="fas fa-print"
+                                             class="ui-button-info mx-1">
+                                <p:printer target="tbl" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" 
-                                             value="Print All" 
-                                             icon="fas fa-print" 
-                                             class="ui-button-info mx-1" >
-                                <p:printer target="tbl"/>
+                            <p:commandButton ajax="false"
+                                             value="Excel"
+                                             icon="fas fa-file-excel"
+                                             class="ui-button-success mx-1">
+                                <p:dataExporter fileName="Drawer History - #{drawerEntryController.webUser.webUserPerson.name} - (#{drawerEntryController.fromDate} - #{drawerEntryController.toDate})" type="xlsx" target="tbl" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" 
-                                             value="Download" 
-                                             icon="fas fa-file-excel" 
-                                             class="ui-button-success mx-1" >
-                                <p:dataExporter fileName="Drawer History - #{drawerEntryController.webUser.name} - (#{drawerEntryController.fromDate} - #{drawerEntryController.fromDate})" type="xlsx" target="tbl" />
+                            <p:commandButton ajax="false"
+                                             value="PDF"
+                                             icon="fas fa-file-pdf"
+                                             class="ui-button-danger mx-1">
+                                <p:dataExporter fileName="Drawer History - #{drawerEntryController.webUser.webUserPerson.name} - (#{drawerEntryController.fromDate} - #{drawerEntryController.toDate})" type="pdf" target="tbl" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" 
-                                             icon= "fas fa-file-pdf" 
-                                             ajax="false" 
-                                             value="PDF">
-                            </p:commandButton>
-
                         </h:panelGrid>
 
-                        <p:dataTable 
-                            class="mt-3"
-                            value="#{drawerEntryController.userDrawerEntry}" 
-                            var="drawerentry"
-                            id="tbl">
+                        <div class="drawer-history-scroll-wrap">
+                            <p:dataTable
+                                class="mt-3"
+                                value="#{drawerEntryController.userDrawerEntry}"
+                                var="drawerentry"
+                                id="tbl">
 
-                            <p:column headerText="Bill" style=" padding: 6px;">
-                                <p:commandLink 
-                                    value="#{drawerentry.bill.deptId}" 
-                                    ajax="false"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                    <f:setPropertyActionListener value="#{drawerentry.bill}" target="#{billSearch.bill}"/>
-                                </p:commandLink>
-                            </p:column>
+                                <!-- Navigate column -->
+                                <p:column headerText="Navigate" style="padding: 4px; text-align: center; white-space: nowrap;">
+                                    <p:commandButton
+                                        value="#{drawerentry.bill.deptId}"
+                                        ajax="false"
+                                        icon="fas fa-external-link-alt"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        <f:setPropertyActionListener value="#{drawerentry.bill}" target="#{billSearch.bill}" />
+                                    </p:commandButton>
+                                </p:column>
 
-                            <p:column headerText="Create" style=" padding: 6px;">
-                                <h:outputText value="#{drawerentry.bill.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputText>
-                            </p:column>
+                                <!-- Created -->
+                                <p:column headerText="Created" style="padding: 6px; white-space: nowrap;">
+                                    <h:outputText value="#{drawerentry.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="Payment" style=" padding: 6px;">
-                                <h:outputText value="#{drawerentry.payment}" />
-                            </p:column>
+                                <!-- Department -->
+                                <p:column headerText="Department" style="padding: 6px; white-space: nowrap;">
+                                    <h:outputText value="#{drawerentry.bill.fromDepartment.name}" />
+                                </p:column>
 
-                            <p:column headerText="Payment Method" style=" padding: 6px; text-align: center;">
-                                <div class="d-flex justify-content-center">
-                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"  value="#{drawerentry.paymentMethod}" severity="success" styleClass="mr-2"></p:badge>
-                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"  value="#{drawerentry.paymentMethod}" severity="warning" styleClass="mr-2"></p:badge>     
-                                    <p:badge rendered="#{not (drawerentry.paymentMethod eq 'Card' or drawerentry.paymentMethod eq 'Cash')}"  value="#{drawerentry.paymentMethod}" severity="info" styleClass="mr-2"></p:badge>    
+                                <!-- Payment Method badge -->
+                                <p:column headerText="Method" style="padding: 6px; text-align: center; white-space: nowrap;">
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"        value="#{drawerentry.paymentMethod.label}" severity="success"   styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"        value="#{drawerentry.paymentMethod.label}" severity="warning"   styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Cheque'}"      value="#{drawerentry.paymentMethod.label}" severity="info"      styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'ewallet'}"     value="#{drawerentry.paymentMethod.label}" severity="info"      styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Slip'}"        value="#{drawerentry.paymentMethod.label}" severity="info"      styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Agent'}"       value="#{drawerentry.paymentMethod.label}" severity="warning"   styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'IOU'}"         value="#{drawerentry.paymentMethod.label}" severity="danger"    styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Staff'}"       value="#{drawerentry.paymentMethod.label}" severity="danger"    styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Credit'}"      value="#{drawerentry.paymentMethod.label}" severity="danger"    styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}"   value="#{drawerentry.paymentMethod.label}" severity="warning" styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}"  value="#{drawerentry.paymentMethod.label}" severity="info"    styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}"   value="#{drawerentry.paymentMethod.label}" severity="info"    styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}" value="#{drawerentry.paymentMethod.label}" severity="info"   styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'MultiplePaymentMethods'}" value="#{drawerentry.paymentMethod.label}" severity="warning" styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Voucher'}"     value="#{drawerentry.paymentMethod.label}" severity="info"      styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'YouOweMe'}"    value="#{drawerentry.paymentMethod.label}" severity="danger"    styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'OnCall'}"      value="#{drawerentry.paymentMethod.label}" severity="secondary" styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'None'}"        value="#{drawerentry.paymentMethod.label}" severity="secondary" styleClass="mr-1" />
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'OnlineBookingAgent'}" value="#{drawerentry.paymentMethod.label}" severity="info" styleClass="mr-1" />
+                                </p:column>
 
-                                </div>
+                                <!-- Before In Hand -->
+                                <p:column headerText="Before In Hand" style="background-color: #c4fcff; text-align: right; padding: 6px; white-space: nowrap;">
+                                    <p:outputLabel value="#{drawerentry.beforeInHandValue}" styleClass="d-flex justify-content-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
 
-                            </p:column>
+                                <!-- After In Hand -->
+                                <p:column headerText="After In Hand" style="background-color: #c4fcff; text-align: right; padding: 6px; white-space: nowrap;">
+                                    <p:outputLabel value="#{drawerentry.afterInHandValue}" styleClass="d-flex justify-content-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
 
-                            <p:column headerText="Department" style=" padding: 6px;">
-                                <h:outputText value="#{drawerentry.bill.fromDepartment.name}" />
-                            </p:column>
+                                <!-- Per-payment-method value columns (pivot style) -->
+                                <p:column headerText="Cash" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Cash'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="Before in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;">
-                                <p:outputLabel value="#{drawerentry.beforeInHandValue}" class="d-flex justify-content-end">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                <p:column headerText="Card" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Card'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="After in Hand" style="background-color: c4fcff; text-align: right; padding: 6px;" >
-                                <p:outputLabel 
-                                    value="#{drawerentry.afterInHandValue}" class="d-flex justify-content-end">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                <p:column headerText="Cheque" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Cheque'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="Paid" style="text-align: right; padding: 6px;" >
-                                <p:outputLabel 
-                                    value="#{drawerentry.payment.paidValue}" class="d-flex justify-content-end" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                <p:column headerText="e-Wallet" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'ewallet'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="Before Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;" >
-                                <p:outputLabel 
-                                    value="#{drawerentry.beforeBalance}" class="d-flex justify-content-end" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                <p:column headerText="Slip" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Slip'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="After Balance" style="background-color: b8ffc7; text-align: right; padding: 6px;">
-                                <p:outputLabel 
-                                    value="#{drawerentry.afterBalance}" class="d-flex justify-content-end" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                <p:column headerText="Agent" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Agent'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
 
-                        </p:dataTable>
+                                <p:column headerText="IOU" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'IOU'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Staff Credit" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Staff'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Credit" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Credit'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Staff Welfare" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Staff_Welfare'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Patient Deposit" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'PatientDeposit'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Patient Points" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'PatientPoints'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Online Settlement" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnlineSettlement'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Multiple" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'MultiplePaymentMethods'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Voucher" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'Voucher'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="You Owe Me" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'YouOweMe'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Online Booking Agent" style="text-align: right; padding: 6px; white-space: nowrap;">
+                                    <h:outputText rendered="#{drawerentry.paymentMethod eq 'OnlineBookingAgent'}" value="#{drawerentry.payment.paidValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- Before Balance -->
+                                <p:column headerText="Before Balance" style="background-color: #b8ffc7; text-align: right; padding: 6px; white-space: nowrap;">
+                                    <p:outputLabel value="#{drawerentry.beforeBalance}" styleClass="d-flex justify-content-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <!-- After Balance -->
+                                <p:column headerText="After Balance" style="background-color: #b8ffc7; text-align: right; padding: 6px; white-space: nowrap;">
+                                    <p:outputLabel value="#{drawerentry.afterBalance}" styleClass="d-flex justify-content-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
 
                     </p:panel>
                 </h:form>
