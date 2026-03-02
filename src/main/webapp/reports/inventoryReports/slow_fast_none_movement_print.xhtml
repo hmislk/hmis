@@ -195,19 +195,19 @@
                                             <h:outputText value="#{n+1}"/>
                                         </p:column>
                                         <p:column headerText="Item Code" width="17mm">
-                                            <h:outputText value="#{f.item.code}"/>
+                                            <h:outputText value="#{f.itemCode}"/>
                                         </p:column>
                                         <p:column headerText="Item Name " width="40mm">
-                                            <h:outputText value="#{f.item.name}"/>
+                                            <h:outputText value="#{f.itemName}"/>
                                         </p:column>
                                         <p:column headerText="Drug Form" width="15mm">
-                                            <h:outputText value="#{f.item.category.name}"/>
+                                            <h:outputText value="#{f.categoryName}"/>
                                         </p:column>
                                         <p:column headerText="Dosage Form" width="15mm">
-                                            <h:outputText value="#{f.item.dosageForm ne null ? f.item.dosageForm.name : ''}"/>
+                                            <h:outputText value="#{f.dosageFormName}"/>
                                         </p:column>
                                         <p:column headerText="Supplier(Last Purchase)" width="40mm">
-                                            <h:outputText value="#{f.lastPurchaseSupplier.name}"/>
+                                            <h:outputText value="#{f.lastPurchaseSupplierName}"/>
                                         </p:column>
                                         <p:column headerText="Quantity" width="15mm">
                                             <h:outputText value="#{f.qty}">
@@ -342,19 +342,19 @@
                                             <h:outputText value="#{n+1}"/>
                                         </p:column>
                                         <p:column headerText="Item Code" width="17mm">
-                                            <h:outputText value="#{s.item.code}"/>
+                                            <h:outputText value="#{s.itemCode}"/>
                                         </p:column>
                                         <p:column headerText="Item Name " width="40mm">
-                                            <h:outputText value="#{s.item.name}"/>
+                                            <h:outputText value="#{s.itemName}"/>
                                         </p:column>
                                         <p:column headerText="Drug Form" width="15mm">
-                                            <h:outputText value="#{s.item.category.name}"/>
+                                            <h:outputText value="#{s.categoryName}"/>
                                         </p:column>
                                         <p:column headerText="Dosage Form" width="15mm">
-                                            <h:outputText value="#{s.item.dosageForm ne null ? s.item.dosageForm.name : ''}"/>
+                                            <h:outputText value="#{s.dosageFormName}"/>
                                         </p:column>
                                         <p:column headerText="Supplier(Last Purchase)" width="40mm">
-                                            <h:outputText value="#{s.lastPurchaseSupplier.name}"/>
+                                            <h:outputText value="#{s.lastPurchaseSupplierName}"/>
                                         </p:column>
                                         <p:column headerText="Quantity" width="15mm">
                                             <h:outputText value="#{s.qty}">
@@ -489,19 +489,19 @@
                                             <h:outputText value="#{n+1}"/>
                                         </p:column>
                                         <p:column headerText="Item Code" width="20mm">
-                                            <h:outputText value="#{no.item.code}"/>
+                                            <h:outputText value="#{no.itemCode}"/>
                                         </p:column>
                                         <p:column headerText="Item Name" width="50mm">
-                                            <h:outputText value="#{no.item.name}"/>
+                                            <h:outputText value="#{no.itemName}"/>
                                         </p:column>
                                         <p:column headerText="Drug Form" width="20mm">
-                                            <h:outputText value="#{no.item.category.name}"/>
+                                            <h:outputText value="#{no.categoryName}"/>
                                         </p:column>
                                         <p:column headerText="Dosage Form" width="15mm">
-                                            <h:outputText value="#{no.item.dosageForm ne null ? no.item.dosageForm.name : ''}"/>
+                                            <h:outputText value="#{no.dosageFormName}"/>
                                         </p:column>
                                         <p:column headerText="Supplier(Last Purchase)" width="50mm">
-                                            <h:outputText value="#{no.lastSupplier.name}"/>
+                                            <h:outputText value="#{no.lastSupplierName}"/>
                                         </p:column>
 
                                     </p:dataTable>                                

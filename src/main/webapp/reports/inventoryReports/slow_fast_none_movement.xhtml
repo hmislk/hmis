@@ -109,8 +109,7 @@
 
                             <!-- Component 1: Without Institution and Site -->
                             <p:selectOneMenu
-                                    required="true"
-                                    requiredMessage="Please select a Department"
+
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -126,8 +125,7 @@
 
                             <!-- Component 2: With Site Only -->
                             <p:selectOneMenu
-                                    required="true"
-                                    requiredMessage="Please select a Department"
+
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -143,8 +141,7 @@
 
                             <!-- Component 3: With Institution Only -->
                             <p:selectOneMenu
-                                    required="true"
-                                    requiredMessage="Please select a Department"
+
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -160,8 +157,7 @@
 
                             <!-- Component 4: With Both Institution and Site -->
                             <p:selectOneMenu
-                                    required="true"
-                                    requiredMessage="Please select a Department"
+
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{pharmacyReportController.department}"
@@ -386,19 +382,19 @@
                                     <h:outputText value="#{n+1}"/>
                                 </p:column>
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="#{f.item.code}"/>
+                                    <h:outputText value="#{f.itemCode}"/>
                                 </p:column>
                                 <p:column headerText="Item Name ">
-                                    <h:outputText value="#{f.item.name}"/>
+                                    <h:outputText value="#{f.itemName}"/>
                                 </p:column>
                                 <p:column headerText="Drug Form">
-                                    <h:outputText value="#{f.item.category.name}"/>
+                                    <h:outputText value="#{f.categoryName}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form">
-                                    <h:outputText value="#{f.item.dosageForm ne null ? f.item.dosageForm.name : ''}"/>
+                                    <h:outputText value="#{f.dosageFormName}"/>
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
-                                    <h:outputText value="#{f.lastPurchaseSupplier.name}"/>
+                                    <h:outputText value="#{f.lastPurchaseSupplierName}"/>
                                 </p:column>
                                 <p:column headerText="Quantity">
                                     <h:outputText value="#{f.qty}">
@@ -473,19 +469,19 @@
                                     <h:outputText value="#{n+1}"/>
                                 </p:column>
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="#{s.item.code}"/>
+                                    <h:outputText value="#{s.itemCode}"/>
                                 </p:column>
                                 <p:column headerText="Item Name ">
-                                    <h:outputText value="#{s.item.name}"/>
+                                    <h:outputText value="#{s.itemName}"/>
                                 </p:column>
                                 <p:column headerText="Drug Form">
-                                    <h:outputText value="#{s.item.category.name}"/>
+                                    <h:outputText value="#{s.categoryName}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form">
-                                    <h:outputText value="#{s.item.dosageForm ne null ? s.item.dosageForm.name : ''}"/>
+                                    <h:outputText value="#{s.dosageFormName}"/>
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
-                                    <h:outputText value="#{s.lastPurchaseSupplier.name}"/>
+                                    <h:outputText value="#{s.lastPurchaseSupplierName}"/>
                                 </p:column>
                                 <p:column headerText="Quantity">
                                     <h:outputText value="#{s.qty}">
@@ -561,19 +557,19 @@
                                     <h:outputText value="#{n+1}"/>
                                 </p:column>
                                 <p:column headerText="Item Code">
-                                    <h:outputText value="#{no.item.code}"/>
+                                    <h:outputText value="#{no.itemCode}"/>
                                 </p:column>
                                 <p:column headerText="Item Name">
-                                    <h:outputText value="#{no.item.name}"/>
+                                    <h:outputText value="#{no.itemName}"/>
                                 </p:column>
                                 <p:column headerText="Drug Form">
-                                    <h:outputText value="#{no.item.category.name}"/>
+                                    <h:outputText value="#{no.categoryName}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form">
-                                    <h:outputText value="#{no.item.dosageForm ne null ? no.item.dosageForm.name : ''}"/>
+                                    <h:outputText value="#{no.dosageFormName}"/>
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
-                                    <h:outputText value="#{no.lastSupplier.name}"/>
+                                    <h:outputText value="#{no.lastSupplierName}"/>
                                 </p:column>
 
                             </p:dataTable>
