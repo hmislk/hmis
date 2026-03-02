@@ -11,7 +11,7 @@
     <ui:composition template="/reports/index.xhtml">
         <ui:define name="subcontent">
             <h:form>
-                <p:panel header="GRN">
+                <p:panel header="GRN and Direct Purchase">
                     <p:panelGrid columns="6" class="w-100">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
@@ -347,30 +347,46 @@
                             <p:column headerText="S No" width="3em">
                                 <h:outputText value="#{n+1}"/>
                             </p:column>
-                            <p:column headerText="GRN No" width="10em">
+                            <p:column headerText="Bill No" width="10em">
                                 <h:outputText value="#{bill.deptId}"/>
                             </p:column>
                             <p:column headerText="PO No" width="10em">
-                                <h:outputText value="#{bill.referenceBill.deptId}"/>
+                                <h:outputText value="#{bill.referenceBill.deptId}" rendered="#{bill.referenceBill ne null}"/>
                             </p:column>
                             <p:column headerText="Invoice No" width="6em">
                                 <h:outputText
-                                        value="#{bill.invoiceNumber eq null ? bill.referenceBill.invoiceNumber : bill.invoiceNumber}"/>
+                                        value="#{bill.invoiceNumber ne null ? bill.invoiceNumber : (bill.referenceBill ne null ? bill.referenceBill.invoiceNumber : '')}"/>
+                            </p:column>
+                            <p:column headerText="Type" width="5em">
+                                <h:outputText value="#{bill.billTypeAtomic.label}"/>
                             </p:column>
                             <p:column headerText="Receiving Time" width="10em">
-                                <h:outputText value="#{bill.referenceBill.createdAt}">
+                                <h:outputText value="#{bill.referenceBill ne null ? bill.referenceBill.createdAt : bill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Supplier" width="5em">
                                 <h:outputText
-                                        value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
+                                        value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
                             </p:column>
                             <p:column headerText="PO Sub Total" width="5em">
-                                <h:outputText value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
-                                                       bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'?
-                                                       -1 * bill.referenceBill.netTotal: bill.referenceBill.netTotal}">
+                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
+                                                       bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
+                                              value="#{-1 * bill.referenceBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED' or
+                                                       bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"
+                                              value="#{-1 * bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"
+                                              value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN'}"
+                                              value="#{bill.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -409,9 +425,10 @@
                             <p:columnGroup type="header">
                                 <p:row>
                                     <p:column headerText="S No" width="3rem"/>
-                                    <p:column headerText="GRN No" width="10rem"/>
+                                    <p:column headerText="Bill No" width="10rem"/>
                                     <p:column headerText="PO No" width="10rem"/>
                                     <p:column headerText="Invoice No" width="5rem"/>
+                                    <p:column headerText="Type" width="5rem"/>
                                     <p:column headerText="Store Name" width="5rem"/>
                                     <p:column headerText="Item Category" width="5rem"/>
                                     <p:column headerText="Dosage Form" width="5rem"/>
@@ -448,20 +465,20 @@
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">
-                                                <h:outputText value="#{bill.referenceBill.deptId}"
+                                                <h:outputText value="#{bill.referenceBill ne null ? bill.referenceBill.deptId : ''}"
                                                               style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">
                                                 <h:outputText
-                                                        value="#{bill.invoiceNumber eq null ? bill.referenceBill.invoiceNumber : bill.invoiceNumber}"
+                                                        value="#{bill.invoiceNumber ne null ? bill.invoiceNumber : (bill.referenceBill ne null ? bill.referenceBill.invoiceNumber : '')}"
                                                         style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">
-                                                <h:outputText value="-" style="font-weight: bold;"/>
+                                                <h:outputText value="#{bill.billTypeAtomic.label}" style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
                                         <p:column>
@@ -486,7 +503,12 @@
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">
-                                                <h:outputText value="#{bill.referenceBill.createdAt}"
+                                                <h:outputText value="-" style="font-weight: bold;"/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputText value="#{bill.referenceBill ne null ? bill.referenceBill.createdAt : bill.createdAt}"
                                                               style="font-weight: bold;">
                                                     <f:convertDateTime
                                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -521,7 +543,7 @@
                                         <p:column>
                                             <f:facet name="header">
                                                 <h:outputText
-                                                        value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? bill.toInstitution.name : bill.fromInstitution.name}"
+                                                        value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' ? bill.toInstitution.name : bill.fromInstitution.name}"
                                                         style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
@@ -547,9 +569,23 @@
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">
-                                                <h:outputText value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
-                                                       bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'?
-                                                       -1 * bill.referenceBill.netTotal: bill.referenceBill.netTotal}"
+                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
+                                                              value="#{-1 * bill.referenceBill.netTotal}"
+                                                              style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"
+                                                              value="#{-1 * bill.netTotal}"
+                                                              style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"
+                                                              value="#{bill.netTotal}"
+                                                              style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN'}"
+                                                              value="#{bill.referenceBill.netTotal}"
                                                               style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
@@ -577,9 +613,12 @@
                                     <h:outputText value="-"/>
                                 </p:column>
                                 <p:column width="10em">
+                                    <h:outputText value="-"/>
+                                </p:column>
+                                <p:column width="10em">
                                     <h:outputText
                                             value="#{billItem.bill.toDepartment.name ne null?
-                                            billItem.bill.toDepartment.name: billItem.bill.referenceBill.toDepartment.name}"/>
+                                            billItem.bill.toDepartment.name: (billItem.bill.referenceBill ne null ? billItem.bill.referenceBill.toDepartment.name : '')}"/>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText value="#{billItem.item.category.name}"/>
@@ -650,7 +689,7 @@
                             </p:subTable>
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column footerText="Total" colspan="20"
+                                    <p:column footerText="Total" colspan="21"
                                               style="text-align: center; font-weight: bold;">
                                         <h:outputText value="Total" style="font-weight: bold;"/>
                                     </p:column>
