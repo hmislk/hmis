@@ -10191,6 +10191,10 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public Date getCurrentDateTime() {
+        return new Date();
+    }
+
     // expireReportType to Label
     public String getExpiryReportTypeAsString() {
         if (expiryReportType == null) {
@@ -10685,21 +10689,29 @@ public class PharmacyReportController implements Serializable {
             PdfWriter.getInstance(document, out);
             document.open();
 
+            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+            Paragraph instPara = new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16));
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            String reportTitle;
             if ("fmovement".equals(reportType)) {
-                document.add(new Paragraph("Fast Movement Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+                reportTitle = "Fast Movement Report";
             } else if ("smovement".equals(reportType)) {
-                document.add(new Paragraph("Slow Movement Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+                reportTitle = "Slow Movement Report";
             } else {
-                 document.add(new Paragraph("Movement Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+                reportTitle = "Movement Report";
             }
-            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            Paragraph titlePara = new Paragraph(reportTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(titlePara);
             document.add(new Paragraph(" "));
 
             int columnCount =  11;
 
             Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
-            if (infoTable != null) {    
+            if (infoTable != null) {
                 document.add(infoTable);
             }
 
@@ -10736,6 +10748,21 @@ public class PharmacyReportController implements Serializable {
             }
 
             document.add(table);
+            document.add(new Paragraph(" "));
+
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            PdfPTable footerTable = new PdfPTable(2);
+            footerTable.setWidthPercentage(100);
+            PdfPCell userCell = new PdfPCell(new Phrase("Reported by: " + userName, FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            userCell.setBorder(0);
+            userCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            PdfPCell timeCell = new PdfPCell(new Phrase("Printed on: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            timeCell.setBorder(0);
+            timeCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            footerTable.addCell(userCell);
+            footerTable.addCell(timeCell);
+            document.add(footerTable);
+
             document.close();
             context.responseComplete();
         } catch (Exception e) {
@@ -10769,15 +10796,21 @@ public class PharmacyReportController implements Serializable {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Non Movement Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+            Paragraph instPara = new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16));
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph titlePara = new Paragraph("Non Movement Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(titlePara);
             document.add(new Paragraph(" "));
 
             int columnCount =  6;
 
             Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
-            if (infoTable != null) {    
+            if (infoTable != null) {
                 document.add(infoTable);
             }
 
@@ -10809,6 +10842,21 @@ public class PharmacyReportController implements Serializable {
             }
 
             document.add(table);
+            document.add(new Paragraph(" "));
+
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            PdfPTable footerTable = new PdfPTable(2);
+            footerTable.setWidthPercentage(100);
+            PdfPCell userCell = new PdfPCell(new Phrase("Reported by: " + userName, FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            userCell.setBorder(0);
+            userCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            PdfPCell timeCell = new PdfPCell(new Phrase("Printed on: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            timeCell.setBorder(0);
+            timeCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            footerTable.addCell(userCell);
+            footerTable.addCell(timeCell);
+            document.add(footerTable);
+
             document.close();
             context.responseComplete();
         } catch (Exception e) {
@@ -10844,16 +10892,35 @@ public class PharmacyReportController implements Serializable {
             XSSFSheet sheet = workbook.createSheet("Movement Report");
             int rowIndex = 0;
 
-            if (filters != null && !filters.isEmpty()) {
-                if ("fmovement".equals(reportType)) {
-                    rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Fast Movement Report", filters);
-                } else if ("smovement".equals(reportType)) {
-                    rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Slow Movement Report", filters);
-                } else {
-                    rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Movement Report", filters);
-                }
+            String reportTitle;
+            if ("fmovement".equals(reportType)) {
+                reportTitle = "Fast Movement Report";
+            } else if ("smovement".equals(reportType)) {
+                reportTitle = "Slow Movement Report";
+            } else {
+                reportTitle = "Movement Report";
             }
-            // Create header row 
+
+            // Institution name row
+            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+            if (!institutionName.isEmpty()) {
+                CellStyle instStyle = workbook.createCellStyle();
+                Font instFont = workbook.createFont();
+                instFont.setFontHeightInPoints((short) 16);
+                instFont.setBold(true);
+                instStyle.setFont(instFont);
+                instStyle.setAlignment(HorizontalAlignment.CENTER);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
+                Row instRow = sheet.createRow(rowIndex++);
+                Cell instCell = instRow.createCell(0);
+                instCell.setCellValue(institutionName);
+                instCell.setCellStyle(instStyle);
+            }
+
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, reportTitle, filters);
+            }
+            // Create header row
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("Sl No");
             headerRow.createCell(1).setCellValue("Item Code");
@@ -10867,8 +10934,7 @@ public class PharmacyReportController implements Serializable {
             headerRow.createCell(9).setCellValue("Value of QIH");
             headerRow.createCell(10).setCellValue("QIH");
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
-            DecimalFormat df = new DecimalFormat("#,##0.##");      
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
 
             int slNo = 1;
             for (MovementReportDto deptEntry : records) {
@@ -10887,6 +10953,13 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getStockQty());
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getStockOnHand());
             }
+
+            // Footer: reported by and printed time
+            rowIndex++;
+            Row footerRow = sheet.createRow(rowIndex);
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            footerRow.createCell(0).setCellValue("Reported by: " + userName);
+            footerRow.createCell(5).setCellValue("Printed on: " + sdf.format(new Date()));
 
             workbook.write(out);
             context.responseComplete();
@@ -10919,14 +10992,26 @@ public class PharmacyReportController implements Serializable {
             XSSFSheet sheet = workbook.createSheet("Movement Report");
             int rowIndex = 0;
 
-            if (filters != null && !filters.isEmpty()) {
-                if ("nmovement".equals(reportType)) {
-                    rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Non Movement Report", filters);
-                }  else {
-                    rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Movement Report", filters);
-                }
+            // Institution name row
+            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+            if (!institutionName.isEmpty()) {
+                CellStyle instStyle = workbook.createCellStyle();
+                Font instFont = workbook.createFont();
+                instFont.setFontHeightInPoints((short) 16);
+                instFont.setBold(true);
+                instStyle.setFont(instFont);
+                instStyle.setAlignment(HorizontalAlignment.CENTER);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 5));
+                Row instRow = sheet.createRow(rowIndex++);
+                Cell instCell = instRow.createCell(0);
+                instCell.setCellValue(institutionName);
+                instCell.setCellStyle(instStyle);
             }
-            // Create header row 
+
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Non Movement Report", filters);
+            }
+            // Create header row
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("Sl No");
             headerRow.createCell(1).setCellValue("Item Code");
@@ -10935,8 +11020,7 @@ public class PharmacyReportController implements Serializable {
             headerRow.createCell(4).setCellValue("Dosage Form");
             headerRow.createCell(5).setCellValue("Supplier (Last Purchase)");
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
-            DecimalFormat df = new DecimalFormat("#,##0.##");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
 
             int slNo = 1;
             for (NonMovementReportDto deptEntry : itemLastSuppliers) {
@@ -10950,6 +11034,13 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getDosageFormName());
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getLastSupplierName());
             }
+
+            // Footer: reported by and printed time
+            rowIndex++;
+            Row footerRow = sheet.createRow(rowIndex);
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            footerRow.createCell(0).setCellValue("Reported by: " + userName);
+            footerRow.createCell(3).setCellValue("Printed on: " + sdf.format(new Date()));
 
             workbook.write(out);
             context.responseComplete();
