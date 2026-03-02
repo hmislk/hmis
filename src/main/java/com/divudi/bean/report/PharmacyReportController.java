@@ -8637,7 +8637,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    public Map<Long, String> findLastPurchaseSuppliersBatch(List<Item> itemList, Institution ins, Department dept) {
+    public Map<Long, String> findLastPurchaseSuppliersBatch(List<Item> itemList, Institution ins, Department dept, Institution site) {
         Map<Long, String> result = new HashMap<>();
         if (itemList == null || itemList.isEmpty()) {
             return result;
@@ -8660,6 +8660,9 @@ public class PharmacyReportController implements Serializable {
         if (dept != null) {
             jpql += " AND bi2.bill.department = :department ";
         }
+        if (site != null) {
+            jpql += " AND bi2.bill.department.site = :site ";
+        }
 
         jpql += "   GROUP BY bi2.item"
                 + " )";
@@ -8677,6 +8680,9 @@ public class PharmacyReportController implements Serializable {
         }
         if (dept != null) {
             parameters.put("department", dept);
+        }
+        if (site != null) {
+            parameters.put("site", site);
         }
 
         List<Object[]> rows = getBillItemFacade().findAggregates(jpql, parameters);
@@ -8765,7 +8771,7 @@ public class PharmacyReportController implements Serializable {
                 itemsForSupplier.add(itm);
             }
         }
-        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(itemsForSupplier, institution, department);
+        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(itemsForSupplier, institution, department, site);
 
         for (Object[] obj : objs) {
             Item itm = (Item) obj[0];
@@ -8879,7 +8885,7 @@ public class PharmacyReportController implements Serializable {
                 itemsForSupplier.add(itm);
             }
         }
-        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(itemsForSupplier, institution, department);
+        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(itemsForSupplier, institution, department, site);
 
         for (Object[] obj : objs) {
             Item itm = (Item) obj[0];
@@ -9003,7 +9009,7 @@ public class PharmacyReportController implements Serializable {
 
         sis.removeAll(bis);
         items = new ArrayList<>(sis);
-        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(items, institution, department);
+        Map<Long, String> supplierMap = findLastPurchaseSuppliersBatch(items, institution, department, site);
         itemLastSuppliers = new ArrayList<>();
         for (Item itm : items) {
             NonMovementReportDto dto = new NonMovementReportDto();
