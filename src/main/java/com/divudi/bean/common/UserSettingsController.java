@@ -2750,4 +2750,137 @@ public class UserSettingsController implements Serializable {
         settings.setColumnVisible("transferValue", visible);
         saveColumnVisibility("pharmacy_report_transfer_receive_bill_summery", settings);
     }
+
+    // All Users Drawer History Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the specific page
+
+    public boolean isAllUsersDrawerHistoryCashVisible() {
+        return isColumnVisible("all_users_drawer_history", "cash");
+    }
+
+    public void setAllUsersDrawerHistoryCashVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("cash", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryCardVisible() {
+        return isColumnVisible("all_users_drawer_history", "card");
+    }
+
+    public void setAllUsersDrawerHistoryCardVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("card", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryChequeVisible() {
+        return isColumnVisible("all_users_drawer_history", "cheque");
+    }
+
+    public void setAllUsersDrawerHistoryChequeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("cheque", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistorySlipVisible() {
+        return isColumnVisible("all_users_drawer_history", "slip");
+    }
+
+    public void setAllUsersDrawerHistorySlipVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("slip", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryIouVisible() {
+        return isColumnVisible("all_users_drawer_history", "iou");
+    }
+
+    public void setAllUsersDrawerHistoryIouVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("iou", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryCreditVisible() {
+        return isColumnVisible("all_users_drawer_history", "credit");
+    }
+
+    public void setAllUsersDrawerHistoryCreditVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("credit", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryEwalletVisible() {
+        return isColumnVisible("all_users_drawer_history", "ewallet");
+    }
+
+    public void setAllUsersDrawerHistoryEwalletVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("ewallet", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryAgentVisible() {
+        return isColumnVisible("all_users_drawer_history", "agent");
+    }
+
+    public void setAllUsersDrawerHistoryAgentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("agent", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryStaffWelfareVisible() {
+        return isColumnVisible("all_users_drawer_history", "staffWelfare");
+    }
+
+    public void setAllUsersDrawerHistoryStaffWelfareVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("staffWelfare", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryVoucherVisible() {
+        return isColumnVisible("all_users_drawer_history", "voucher");
+    }
+
+    public void setAllUsersDrawerHistoryVoucherVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("voucher", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryPatientDepositVisible() {
+        return isColumnVisible("all_users_drawer_history", "patientDeposit");
+    }
+
+    public void setAllUsersDrawerHistoryPatientDepositVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("patientDeposit", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryPatientPointsVisible() {
+        return isColumnVisible("all_users_drawer_history", "patientPoints");
+    }
+
+    public void setAllUsersDrawerHistoryPatientPointsVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("patientPoints", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
+
+    public boolean isAllUsersDrawerHistoryOnlineSettlementVisible() {
+        return isColumnVisible("all_users_drawer_history", "onlineSettlement");
+    }
+
+    public void setAllUsersDrawerHistoryOnlineSettlementVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("all_users_drawer_history");
+        settings.setColumnVisible("onlineSettlement", visible);
+        saveColumnVisibility("all_users_drawer_history", settings);
+    }
 }

@@ -23,7 +23,7 @@
                             <p:datePicker  showTime="true"
                                            class="w-100"
                                            inputStyleClass="w-100"
-                                           value="#{drawerEntryController.fromDate}" 
+                                           value="#{drawerEntryController.fromDate}"
                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                             <p:spacer width="20"></p:spacer>
@@ -32,14 +32,14 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <p:outputLabel value="To Date" class="mx-3" ></p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker showTime="true" 
+                            <p:datePicker showTime="true"
                                           class="w-100"
                                           inputStyleClass="w-100"
-                                          value="#{drawerEntryController.toDate}" 
+                                          value="#{drawerEntryController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
                                 <h:outputLabel value="User" class="mx-3"/>
                             </h:panelGroup>
                             <p:autoComplete
@@ -55,35 +55,35 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" 
-                                             value="Process" 
+                            <p:commandButton ajax="false"
+                                             value="Process"
                                              action="#{drawerEntryController.findAllUsersDrawerDetails()}"
-                                             icon="fas fa-cogs" 
+                                             icon="fas fa-cogs"
                                              class="ui-button-warning mx-1" >
                             </p:commandButton>
-                            <p:commandButton ajax="false" 
-                                             value="Print All" 
-                                             icon="fas fa-print" 
+                            <p:commandButton ajax="false"
+                                             value="Print All"
+                                             icon="fas fa-print"
                                              class="ui-button-info mx-1" >
                                 <p:printer target="tbl"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" 
-                                             value="Download" 
-                                             icon="fas fa-file-excel" 
+                            <p:commandButton ajax="false"
+                                             value="Download"
+                                             icon="fas fa-file-excel"
                                              class="ui-button-success mx-1" >
                                 <p:dataExporter fileName="Drawer History - #{drawerEntryController.webUser.name} - (#{drawerEntryController.fromDate} - #{drawerEntryController.fromDate})" type="xlsx" target="tbl" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" 
-                                             icon= "fas fa-file-pdf" 
-                                             ajax="false" 
+                            <p:commandButton class="ui-button-danger mx-1"
+                                             icon= "fas fa-file-pdf"
+                                             ajax="false"
                                              value="PDF">
                             </p:commandButton>
 
                         </h:panelGrid>
 
-                        <p:dataTable 
+                        <p:dataTable
                             class="mt-3"
-                            value="#{drawerEntryController.userDrawerEntry}" 
+                            value="#{drawerEntryController.userDrawerEntry}"
                             var="drawerentry"
                             rowIndexVar="n"
                             id="tbl">
@@ -97,44 +97,86 @@
                                     <p:column rowspan="2" headerText="From" style="padding: 1px;" width="6em"/>
                                     <p:column rowspan="2" headerText="To" style="padding: 1px;" width="6em"/>
                                     <p:column rowspan="2" headerText="Created At" style="padding: 6px;" width="8em"/>
-                                    <p:column colspan="3" headerText="Cash" width="12em"/>
-                                    <p:column colspan="3" headerText="Credit Card" width="12em"/>
-                                    <p:column colspan="3" headerText="Cheque" width="12em"/>
-                                    <p:column colspan="3" headerText="Slip" width="12em"/>
-                                    <p:column colspan="3" headerText="IOU" width="12em"/>
-                                    <p:column colspan="3" headerText="Credit" width="12em"/>
-                                    <p:column colspan="3" headerText="Short" width="12em"/>
+                                    <p:column colspan="3" headerText="Cash" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}"/>
+                                    <p:column colspan="3" headerText="Credit Card" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}"/>
+                                    <p:column colspan="3" headerText="Cheque" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}"/>
+                                    <p:column colspan="3" headerText="Slip" width="12em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}"/>
+                                    <p:column colspan="3" headerText="IOU" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}"/>
+                                    <p:column colspan="3" headerText="Credit" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}"/>
+                                    <p:column colspan="3" headerText="eWallet" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}"/>
+                                    <p:column colspan="3" headerText="Agent" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}"/>
+                                    <p:column colspan="3" headerText="Staff Welfare" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}"/>
+                                    <p:column colspan="3" headerText="Voucher" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}"/>
+                                    <p:column colspan="3" headerText="Patient Deposit" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}"/>
+                                    <p:column colspan="3" headerText="Patient Points" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}"/>
+                                    <p:column colspan="3" headerText="Online Settlement" width="12em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}"/>
                                     <p:column rowspan="2" headerText="Total Transaction Value" style="padding: 6px;" width="12em"/>
                                 </p:row>
                                 <p:row>
-                                    <!-- Sub-headers for each category -->
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for Cash -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}"/>
 
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for Credit Card -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}"/>
 
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for Cheque -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}"/>
 
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for Slip -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}"/>
 
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for IOU -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}"/>
 
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for Credit -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}"/>
 
-                                    <p:column headerText="Bef." width="4em"/>
-                                    <p:column headerText="Tra." width="4em"/>
-                                    <p:column headerText="Aft." width="4em"/>
+                                    <!-- Sub-headers for eWallet -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}"/>
+
+                                    <!-- Sub-headers for Agent -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}"/>
+
+                                    <!-- Sub-headers for Staff Welfare -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}"/>
+
+                                    <!-- Sub-headers for Voucher -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}"/>
+
+                                    <!-- Sub-headers for Patient Deposit -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}"/>
+
+                                    <!-- Sub-headers for Patient Points -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}"/>
+
+                                    <!-- Sub-headers for Online Settlement -->
+                                    <p:column headerText="Bef." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}"/>
+                                    <p:column headerText="Tra." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}"/>
+                                    <p:column headerText="Aft." width="4em" rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}"/>
                                 </p:row>
                             </p:columnGroup>
 
@@ -148,8 +190,8 @@
                             </p:column>
 
                             <p:column style="padding: 6px;">
-                                <p:commandLink 
-                                    value="#{drawerentry.bill.deptId}" 
+                                <p:commandLink
+                                    value="#{drawerentry.bill.deptId}"
                                     ajax="false"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                     <f:setPropertyActionListener value="#{drawerentry.bill}" target="#{billSearch.bill}"/>
@@ -173,72 +215,248 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
-                            
-                             
 
-                            <!-- Replace the following columns with appropriate data access expressions -->
-                            <!-- Example for Cash -->
-
-                            <p:column >
+                            <!-- Cash columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
                                 <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}" />
                             </p:column>
-                            <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}"/>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}"/>
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cash'}"/>
                             </p:column>
-                            
-                             <p:column >
+
+                            <!-- Credit Card columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
                                 <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}" />
                             </p:column>
-                            <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Card'}"/>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}"/>
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Card'}"/>
                             </p:column>
-                            
-                            <p:column >
+
+                            <!-- Cheque columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
                                 <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}" />
                             </p:column>
-                            <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}"/>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}"/>
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Cheque'}"/>
                             </p:column>
 
-                            <p:column >
+                            <!-- Slip columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
                                 <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}" />
                             </p:column>
-                            <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}"/>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}"/>
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Slip'}"/>
                             </p:column>
 
-                            <p:column >
+                            <!-- IOU columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
                                 <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}" />
                             </p:column>
-                            <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}"/>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}"/>
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'IOU'}"/>
                             </p:column>
-                            
-                            <p:column >
+
+                            <!-- Credit columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
                                 <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}" />
                             </p:column>
-                            <p:column>
-                                <h:outputText value="#{drawerentry.payment.paidValue}"  rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}"/>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}"/>
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
                                 <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Credit'}"/>
                             </p:column>
+
+                            <!-- eWallet columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'ewallet'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'ewallet'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'ewallet'}"/>
+                            </p:column>
+
+                            <!-- Agent columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Agent'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Agent'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Agent'}"/>
+                            </p:column>
+
+                            <!-- Staff Welfare columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Staff_Welfare'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Staff_Welfare'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Staff_Welfare'}"/>
+                            </p:column>
+
+                            <!-- Voucher columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Voucher'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'Voucher'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'Voucher'}"/>
+                            </p:column>
+
+                            <!-- Patient Deposit columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'PatientDeposit'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'PatientDeposit'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'PatientDeposit'}"/>
+                            </p:column>
+
+                            <!-- Patient Points columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'PatientPoints'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'PatientPoints'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'PatientPoints'}"/>
+                            </p:column>
+
+                            <!-- Online Settlement columns -->
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
+                                <h:outputText value="#{drawerentry.beforeBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'OnlineSettlement'}" />
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
+                                <h:outputText value="#{drawerentry.payment.paidValue}" rendered="#{drawerentry.payment.paymentMethod eq 'OnlineSettlement'}"/>
+                            </p:column>
+                            <p:column rendered="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
+                                <h:outputText value="#{drawerentry.afterBalance}" rendered="#{drawerentry.payment.paymentMethod eq 'OnlineSettlement'}"/>
+                            </p:column>
+
                         </p:dataTable>
+
+                        <!-- Customize Columns Panel -->
+                        <p:panel header="Customize Columns" toggleable="true" collapsed="true" class="mt-3">
+                            <h:panelGrid columns="4" cellpadding="5">
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="cashVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryCashVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="cashVisible" value=" Cash" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="cardVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryCardVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="cardVisible" value=" Credit Card" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="chequeVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryChequeVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="chequeVisible" value=" Cheque" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="slipVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistorySlipVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="slipVisible" value=" Slip" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="iouVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryIouVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="iouVisible" value=" IOU" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="creditVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryCreditVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="creditVisible" value=" Credit" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="ewalletVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryEwalletVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="ewalletVisible" value=" eWallet" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="agentVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryAgentVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="agentVisible" value=" Agent" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="staffWelfareVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryStaffWelfareVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="staffWelfareVisible" value=" Staff Welfare" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="voucherVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryVoucherVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="voucherVisible" value=" Voucher" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="patientDepositVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryPatientDepositVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="patientDepositVisible" value=" Patient Deposit" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="patientPointsVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryPatientPointsVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="patientPointsVisible" value=" Patient Points" />
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="onlineSettlementVisible"
+                                                             value="#{userSettingsController.allUsersDrawerHistoryOnlineSettlementVisible}">
+                                        <f:ajax render="tbl" execute="@this" />
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="onlineSettlementVisible" value=" Online Settlement" />
+                                </h:panelGroup>
+                            </h:panelGrid>
+                        </p:panel>
 
                     </p:panel>
                 </h:form>
