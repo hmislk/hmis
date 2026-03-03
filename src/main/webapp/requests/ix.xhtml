@@ -472,6 +472,7 @@
                                                     <td style="text-align: center;" class="d-flex justify-content-center">
                                                         <p:commandButton 
                                                             value="Download" 
+                                                            disabled="#{!patientReportController.currentPatientReport.approved}"
                                                             class="w-100 ui-button-danger" 
                                                             icon="fas fa-file-pdf" 
                                                             onclick="downloadPdf()" 
