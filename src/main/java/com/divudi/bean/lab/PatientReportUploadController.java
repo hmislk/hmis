@@ -144,10 +144,6 @@ public class PatientReportUploadController implements Serializable {
             patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-            
-            // Investigation approval audit event
-//            patientReportController.setInitialInvestigation(new HashMap<>(20));
-//            patientReportController.patientInvestigationToAuditMap(patientReportController.getInitialInvestigation(),patientReportController.getCurrentPatientReport());
 
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;

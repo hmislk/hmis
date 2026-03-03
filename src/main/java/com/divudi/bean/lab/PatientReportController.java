@@ -3621,15 +3621,19 @@ public class PatientReportController implements Serializable {
         m.put("ReportId", pr.getId());
         
         if (pr.getPatientReportItemValues() != null && !pr.getPatientReportItemValues().isEmpty()) {
-            Map<String, Object> Items = new HashMap<>();
+            Map<String, Object> items = new HashMap<>();
             
             for (PatientReportItemValue prv : pr.getPatientReportItemValues()) {
+                if (prv == null || prv.getInvestigationItem() == null) {
+                    continue;
+                }
+
                 InvestigationItemType itemType = prv.getInvestigationItem().getIxItemType();
                 if (itemType == InvestigationItemType.DynamicLabel || itemType == InvestigationItemType.Value || itemType == InvestigationItemType.Flag || itemType == InvestigationItemType.WorningFlag || itemType == InvestigationItemType.Calculation) {
-                    Items.put(prv.getInvestigationItem().getName(), prv.getValue());
+                    items.put(prv.getInvestigationItem().getName(), prv.getValue());
                 }    
             }
-            m.put("Result", Items);
+            m.put("Result", items);
         }
     }
 
