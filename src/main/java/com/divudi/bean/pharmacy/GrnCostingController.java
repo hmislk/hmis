@@ -60,6 +60,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.util.BigDecimalUtil;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -4234,6 +4235,10 @@ public class GrnCostingController implements Serializable {
         i.getBillItem().setPharmaceuticalBillItem(i);
 
         getBillItemFacade().edit(i.getBillItem());
+    }
+    
+    public String convertToWord(Double d) {
+        return d == null ? "" : CommonFunctions.convertToWord(d);
     }
 
 }
