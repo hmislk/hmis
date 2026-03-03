@@ -6911,9 +6911,7 @@ public class PharmacyReportController implements Serializable {
             deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
             deptTypeCell.setCellStyle(filterStyle);
 
-            sheet.addMergedRegion(
-                    new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1)
-            );
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             // Item (NEW)
             Row itemRow = sheet.createRow(rowIndex++);
@@ -7064,6 +7062,7 @@ public class PharmacyReportController implements Serializable {
             document.add(deptPara);
 
 //            document.add(new Paragraph(" "));
+        
             // Item + Date Filters
             Paragraph filterPara = new Paragraph(
                     "Item: " + (item != null ? item.getName() : "All Items")
@@ -7073,6 +7072,11 @@ public class PharmacyReportController implements Serializable {
             );
             filterPara.setAlignment(Element.ALIGN_CENTER);
             document.add(filterPara);
+            
+             Paragraph deptTypePara = new Paragraph(
+            "Department Types: " + getDepartmentTypeFilterValue(),filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
 
 //            document.add(new Paragraph(" "));
             // Report Title
