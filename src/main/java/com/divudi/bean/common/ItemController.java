@@ -1889,6 +1889,35 @@ public class ItemController implements Serializable {
         JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Priority for Billing");
     }
 
+    public void markSelectedItemsToAllowSnedSMS() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                i.setAllowToSendSMS(true);
+                itemFacade.edit(i);
+            }
+        }
+        JsfUtil.addSuccessMessage("All Items Marked for Allowed Send Report SMS");
+    }
+
+    public void unMarkSelectedItemsToAllowSnedSMS() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                i.setAllowToSendSMS(false);
+                itemFacade.edit(i);
+            }
+        }
+        JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Send Report SMS");
+    }
+
     public void addSessionNumberType() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
