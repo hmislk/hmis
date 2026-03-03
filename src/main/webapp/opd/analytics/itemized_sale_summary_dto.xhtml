@@ -167,6 +167,7 @@
                                     </p:column>
                                     <p:column exportable="false" headerText="" style="width: 2.5em; text-align: center;">
                                         <p:commandLink
+                                            title="View Category Details"
                                             rendered="#{row.categoryId ne null}"
                                             action="#{searchController.navigateToOpdBillItemListFromDto(row)}"
                                             ajax="false">
@@ -181,6 +182,7 @@
                                     </p:column>
                                     <p:column exportable="false" headerText="" style="width: 2.5em; text-align: center;">
                                         <p:commandLink
+                                            title="View Item Details"
                                             rendered="#{row.itemId ne null}"
                                             action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
                                             <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa" />
