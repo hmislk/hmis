@@ -201,8 +201,8 @@ public class PharmacyReportController implements Serializable {
     SearchController searchController;
     @Inject
     ReportController reportController;
-    @Inject 
-    PharmacyController pharmacyController;  
+    @Inject
+    PharmacyController pharmacyController;
     @EJB
     private ReportTimerController reportTimerController;
 
@@ -2469,7 +2469,7 @@ public class PharmacyReportController implements Serializable {
         if (billItems == null || billItems.isEmpty()) {
             return;
         }
-        
+
         for (BillItem billItem : billItems) {
             double resolvedCostValue = resolveFinanceValue(
                     billItem,
@@ -3344,6 +3344,13 @@ public class PharmacyReportController implements Serializable {
             dateCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
             rowIndex++;
 
             // Report Title
@@ -3464,7 +3471,7 @@ public class PharmacyReportController implements Serializable {
                     .log(Level.SEVERE, e.getMessage());
         }
     }
-    
+
     public void exportStockAdjustmentIssueToPDF() {
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -3529,6 +3536,11 @@ public class PharmacyReportController implements Serializable {
                     filterFont);
             filterPara.setAlignment(Element.ALIGN_CENTER);
             document.add(filterPara);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
 
             Paragraph reportTitle
                     = new Paragraph("Stock Adjustment Issue Report", subTitleFont);
@@ -3646,7 +3658,6 @@ public class PharmacyReportController implements Serializable {
                             "Error exporting Stock Adjustment Issue PDF", e);
         }
     }
-
 
     public void processStockConsumption() {
         List<BillTypeAtomic> btasToGetBillItems = new ArrayList<>();
@@ -7981,7 +7992,7 @@ public class PharmacyReportController implements Serializable {
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         return cell;
     }
-    
+
     // Helper calculation methods
     private double calculateCostValue(BillItemDTO item) {
         if (item.getCostRate() != null && item.getQty() != null) {
@@ -8152,7 +8163,7 @@ public class PharmacyReportController implements Serializable {
         infoTable.addCell(createSpacerCell());
         infoTable.addCell(new PdfPCell(new Phrase("Is Consignment:", labelFont)));
         infoTable.addCell(new PdfPCell(new Phrase((consignmentItem != false ? "true" : "false"), dataFont)));
-        
+
         for (int i = 0; i < 6; i++) {
             infoTable.addCell(createSpacerCell());
         }
@@ -8245,7 +8256,7 @@ public class PharmacyReportController implements Serializable {
             Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
         }
     }
-    
+
     @Deprecated
     public void processClosingStockReport() {
         stockSaleValue = 0.0;
@@ -8506,21 +8517,20 @@ public class PharmacyReportController implements Serializable {
         totalValueAtRetailRate = 0.0;
 
         String jpql = "select new com.divudi.core.data.dto.ExpiryItemStockListDto("
-
-                + "s.id, "                                                   // stockId
-                + "coalesce(d.name, 'Staff'), "                             // departmentName - null-safe
-                + "coalesce(c.code, ''), "                                  // categoryCode - null-safe
-                + "coalesce(c.name, ''), "                                  // categoryName - null-safe
-                + "coalesce(i.code, ''), "                                  // itemCode - null-safe
-                + "coalesce(i.name, ''), "                                  // itemName - null-safe
-                + "coalesce(mu.name, ''), "                                 // uom - null-safe
-                + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
-                + "ib.id, "                                                 // batchNumber
-                + "ib.dateOfExpire, "                                       // expiryDate
-                + "ib.costRate, "                                           // costRate - using actual cost rate instead of purchase rate
-                + "ib.retailsaleRate, "                                     // retailRate
-                + "s.stock, "                                               // stockQuantity
-                + "coalesce(df.name, '')) "                       // dosageFormName - null-safe
+                + "s.id, " // stockId
+                + "coalesce(d.name, 'Staff'), " // departmentName - null-safe
+                + "coalesce(c.code, ''), " // categoryCode - null-safe
+                + "coalesce(c.name, ''), " // categoryName - null-safe
+                + "coalesce(i.code, ''), " // itemCode - null-safe
+                + "coalesce(i.name, ''), " // itemName - null-safe
+                + "coalesce(mu.name, ''), " // uom - null-safe
+                + "coalesce(c.name, ''), " // itemType (using category name) - null-safe
+                + "ib.id, " // batchNumber
+                + "ib.dateOfExpire, " // expiryDate
+                + "ib.costRate, " // costRate - using actual cost rate instead of purchase rate
+                + "ib.retailsaleRate, " // retailRate
+                + "s.stock, " // stockQuantity
+                + "coalesce(df.name, '')) " // dosageFormName - null-safe
                 + "from Stock s "
                 + "join s.itemBatch ib "
                 + "join ib.item i "
@@ -8598,20 +8608,19 @@ public class PharmacyReportController implements Serializable {
         totalValueAtRetailRate = 0.0;
 
         String jpql = "select new com.divudi.core.data.dto.ExpiryItemListDto("
-
-                + "i.id, "                                                  // itemId
-                + "coalesce(d.name, 'Staff'), "                             // departmentName - null-safe
-                + "coalesce(c.code, ''), "                                  // categoryCode - null-safe
-                + "coalesce(c.name, ''), "                                  // categoryName - null-safe
-                + "coalesce(i.code, ''), "                                  // itemCode - null-safe
-                + "coalesce(i.name, ''), "                                  // itemName - null-safe
-                + "coalesce(mu.name, ''), "                                 // uom - null-safe
-                + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
-                + "min(ib.dateOfExpire), "                                  // earliestExpiryDate (across all batches)
-                + "sum(s.stock), "                                          // totalStockQuantity (across all batches)
-                + "sum(s.stock * ib.costRate), "                            // totalCostValue (across all batches) - using actual cost rate instead of purchase rate
-                + "sum(s.stock * ib.retailsaleRate), "                      // totalRetailValue (across all batches)
-                + "coalesce(df.name, '')) "                       // dosageFormName - null-safe
+                + "i.id, " // itemId
+                + "coalesce(d.name, 'Staff'), " // departmentName - null-safe
+                + "coalesce(c.code, ''), " // categoryCode - null-safe
+                + "coalesce(c.name, ''), " // categoryName - null-safe
+                + "coalesce(i.code, ''), " // itemCode - null-safe
+                + "coalesce(i.name, ''), " // itemName - null-safe
+                + "coalesce(mu.name, ''), " // uom - null-safe
+                + "coalesce(c.name, ''), " // itemType (using category name) - null-safe
+                + "min(ib.dateOfExpire), " // earliestExpiryDate (across all batches)
+                + "sum(s.stock), " // totalStockQuantity (across all batches)
+                + "sum(s.stock * ib.costRate), " // totalCostValue (across all batches) - using actual cost rate instead of purchase rate
+                + "sum(s.stock * ib.retailsaleRate), " // totalRetailValue (across all batches)
+                + "coalesce(df.name, '')) " // dosageFormName - null-safe
                 + "from Stock s "
                 + "join s.itemBatch ib "
                 + "join ib.item i "
@@ -8683,7 +8692,7 @@ public class PharmacyReportController implements Serializable {
                     totalValueAtRetailRate += dto.getTotalRetailValue();
                 }
             }
-        
+
         }
     }
 
@@ -10482,6 +10491,19 @@ public class PharmacyReportController implements Serializable {
         this.selectedDepartmentTypes = selectedDepartmentTypes;
     }
 
+    public String getDepartmentTypeFilterValue() {
+
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+
+            return selectedDepartmentTypes.stream()
+                    .map(dt -> dt.getLabel())
+                    .sorted()
+                    .collect(Collectors.joining(", "));
+        }
+
+        return "All";
+    }
+
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
                 DepartmentType.Pharmacy,
@@ -10526,7 +10548,7 @@ public class PharmacyReportController implements Serializable {
                 return "All Document Types";
         }
     }
-    
+
     // For postProcessor of closing stock report
     public String getSelectedDepartmentTypesString() {
         if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
@@ -10587,9 +10609,9 @@ public class PharmacyReportController implements Serializable {
             sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
             if (reportType != null && reportType.equals("batchWise")) {
                 sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
-            }  else {
+            } else {
                 sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 9));
-            }           
+            }
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
 
@@ -10614,7 +10636,7 @@ public class PharmacyReportController implements Serializable {
             String dateStr = "";
             if (reportController.getReportTemplateFileIndexName().equals("Opening Stock") && fromDate != null) {
                 dateStr = sdf.format(fromDate);
-            } else if (!reportController.getReportTemplateFileIndexName().equals("Opening Stock") && toDate != null){
+            } else if (!reportController.getReportTemplateFileIndexName().equals("Opening Stock") && toDate != null) {
                 dateStr = sdf.format(toDate);
             }
             metaRow.createCell(4).setCellValue(dateStr);
@@ -10655,7 +10677,6 @@ public class PharmacyReportController implements Serializable {
             deptRow.getCell(9).setCellStyle(metaStyleBold);
             deptRow.createCell(10).setCellValue(consignmentItem == true ? "true" : "false");
             deptRow.getCell(10).setCellStyle(metaStyle);
-
 
         } catch (Exception ex) {
             Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error in Excel preProcessor", ex);
@@ -10825,7 +10846,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
         filters.put("Department Type", getSelectedDepartmentTypesString());
         filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
-        
+
         String repType;
         if (reportType == null) {
             repType = "None";
@@ -10847,7 +10868,6 @@ public class PharmacyReportController implements Serializable {
         filters.put("Report Type", repType);
         filters.put("Sort Type", "byvalue".equals(sortType) ? "By Cost Value" : ("byquantity".equals(sortType) ? "By Quantity" : " "));
         filters.put("Bill Types", getBillTypesForMovementReportAsString());
-        
 
         return filters;
     }
@@ -10878,11 +10898,11 @@ public class PharmacyReportController implements Serializable {
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
-            int columnCount =  14;
+            int columnCount = 14;
 
             Map<String, Object> filters = getFiltersForGoodInTransitReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
-            if (infoTable != null) {    
+            if (infoTable != null) {
                 document.add(infoTable);
             }
 
@@ -10908,11 +10928,11 @@ public class PharmacyReportController implements Serializable {
                 Item item = billItem != null ? billItem.getItem() : null;
                 Bill bill = billItem != null ? billItem.getBill() : null;
 
-                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getDeptId() != null) ? bill.getDeptId()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getDeptId() != null) ? bill.getDeptId() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase((bill != null && bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null) ? billItem.getBill().getToStaff().getPerson().getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((item != null && item.getName() != null) ? item.getName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((item != null && item.getCode() != null) ? item.getCode()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((item != null && item.getDosageForm() != null &&  item.getDosageForm().getName() != null) ? item.getDosageForm().getName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase((item != null && item.getName() != null) ? item.getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase((item != null && item.getCode() != null) ? item.getCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase((item != null && item.getDosageForm() != null && item.getDosageForm().getName() != null) ? item.getDosageForm().getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
 
                 Paragraph p = new Paragraph();
                 p.setFont(FontFactory.getFont(FontFactory.HELVETICA, 8));
@@ -10930,7 +10950,7 @@ public class PharmacyReportController implements Serializable {
                         if (item instanceof Ampp) {
                             BigDecimal unitsPerPack = (billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getUnitsPerPack() != null) ? billItem.getBillItemFinanceDetails().getUnitsPerPack() : null;
 
-                            if (unitsPerPack != null ) {
+                            if (unitsPerPack != null) {
                                 double totalUnits = Math.abs(qty * unitsPerPack.doubleValue());
 
                                 p.add(new Chunk(df.format(totalUnits), FontFactory.getFont(FontFactory.HELVETICA, 8)));
@@ -10942,11 +10962,11 @@ public class PharmacyReportController implements Serializable {
                             } else {
                                 p.add(new Chunk("", FontFactory.getFont(FontFactory.HELVETICA, 8)));
                             }
-                            
+
                         } else {
                             if (billItem.getPharmaceuticalBillItem() != null) {
                                 p.add(new Chunk(df.format(Math.abs(billItem.getPharmaceuticalBillItem().getQty())), FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                        
+
                             } else {
                                 p.add(new Chunk("", FontFactory.getFont(FontFactory.HELVETICA, 8)));
                             }
@@ -10965,13 +10985,13 @@ public class PharmacyReportController implements Serializable {
                 if (billItem != null) {
                     if ("pending".equals(reportType) || "accepted".equals(reportType)) {
                         if (billItemRemainingRetailValues.get(billItem.getId()) != null) {
-                           table.addCell(new PdfPCell(new Phrase(String.format("%.2f", billItemRemainingRetailValues.get(billItem.getId())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", billItemRemainingRetailValues.get(billItem.getId())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                         } else {
                             table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                         }
-                        
-                    } else {     
-                       table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtRetailRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtRetailRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtRetailRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtRetailRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     }
                 } else {
                     table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -10984,9 +11004,9 @@ public class PharmacyReportController implements Serializable {
                         } else {
                             table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                         }
-                        
-                    } else {     
-                       table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtPurchaseRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtPurchaseRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     }
                 } else {
                     table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -10999,9 +11019,9 @@ public class PharmacyReportController implements Serializable {
                         } else {
                             table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                         }
-                        
-                    } else {     
-                       table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtCostRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtCostRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+
+                    } else {
+                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtCostRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtCostRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     }
                 } else {
                     table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -11031,7 +11051,7 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return;
         }
-        
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -11080,7 +11100,7 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue((bill != null && bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null) ? bill.getToStaff().getPerson().getName() : "");
                 dataRow.createCell(colIndex++).setCellValue((item != null && item.getName() != null) ? item.getName() : "");
                 dataRow.createCell(colIndex++).setCellValue((item != null && item.getCode() != null) ? item.getCode() : "");
-                dataRow.createCell(colIndex++).setCellValue((item != null && item.getDosageForm() != null &&  item.getDosageForm().getName() != null) ? item.getDosageForm().getName() : "");
+                dataRow.createCell(colIndex++).setCellValue((item != null && item.getDosageForm() != null && item.getDosageForm().getName() != null) ? item.getDosageForm().getName() : "");
 
                 // Stock / Quantity cell
                 String stockStr = "";
@@ -11219,7 +11239,7 @@ public class PharmacyReportController implements Serializable {
             document.add(titlePara);
             document.add(new Paragraph(" "));
 
-            int columnCount =  11;
+            int columnCount = 11;
 
             Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
@@ -11318,7 +11338,7 @@ public class PharmacyReportController implements Serializable {
             document.add(titlePara);
             document.add(new Paragraph(" "));
 
-            int columnCount =  6;
+            int columnCount = 6;
 
             Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
@@ -11630,7 +11650,7 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getDosageFormName() != null ? dto.getDosageFormName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getItemCode() != null ? dto.getItemCode() : "");
-                dataRow.createCell(colIndex++).setCellValue(dto.getItemName()!= null ? dto.getItemName() : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getItemName() != null ? dto.getItemName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getMeasurementUnitName() != null ? dto.getMeasurementUnitName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getTransThisIsStockIn() != null ? (dto.getTransThisIsStockIn() ? "Stock In" : "Stock Out") : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getBillDeptId() != null ? dto.getBillDeptId() : "");
@@ -11660,10 +11680,10 @@ public class PharmacyReportController implements Serializable {
                             dataRow.createCell(colIndex++).setCellValue(dto.getInstitutionItemStock() != null ? dto.getInstitutionItemStock() : 0.0);
                         } else {
                             dataRow.createCell(colIndex++).setCellValue(dto.getTotalItemStock() != null ? dto.getTotalItemStock() : 0.0);
-                        } 
+                        }
                     }
                 } else {
-                    dataRow.createCell(colIndex++).setCellValue( 0.0);
+                    dataRow.createCell(colIndex++).setCellValue(0.0);
                 }
 
                 dataRow.createCell(colIndex++).setCellValue(dto.getPurchaseRate() != null ? dto.getPurchaseRate() : 0.0);
@@ -11688,10 +11708,10 @@ public class PharmacyReportController implements Serializable {
                             dataRow.createCell(colIndex++).setCellValue(dto.getInstitutionItemStockValueAtPurchaseRate() != null ? dto.getInstitutionItemStockValueAtPurchaseRate() : 0.0);
                         } else {
                             dataRow.createCell(colIndex++).setCellValue(dto.getTotalItemStockValueAtPurchaseRate() != null ? dto.getTotalItemStockValueAtPurchaseRate() : 0.0);
-                        } 
+                        }
                     }
                 } else {
-                    dataRow.createCell(colIndex++).setCellValue( 0.0);
+                    dataRow.createCell(colIndex++).setCellValue(0.0);
                 }
 
                 // Closing Stock Value at Cost Rate
@@ -11713,10 +11733,10 @@ public class PharmacyReportController implements Serializable {
                             dataRow.createCell(colIndex++).setCellValue(dto.getInstitutionItemStockValueAtCostRate() != null ? dto.getInstitutionItemStockValueAtCostRate() : 0.0);
                         } else {
                             dataRow.createCell(colIndex++).setCellValue(dto.getTotalItemStockValueAtCostRate() != null ? dto.getTotalItemStockValueAtCostRate() : 0.0);
-                        } 
+                        }
                     }
                 } else {
-                    dataRow.createCell(colIndex++).setCellValue( 0.0);
+                    dataRow.createCell(colIndex++).setCellValue(0.0);
                 }
 
                 // Closing Stock Value at Retail Rate
@@ -11738,10 +11758,10 @@ public class PharmacyReportController implements Serializable {
                             dataRow.createCell(colIndex++).setCellValue(dto.getInstitutionItemStockValueAtSaleRate() != null ? dto.getInstitutionItemStockValueAtSaleRate() : 0.0);
                         } else {
                             dataRow.createCell(colIndex++).setCellValue(dto.getTotalItemStockValueAtSaleRate() != null ? dto.getTotalItemStockValueAtSaleRate() : 0.0);
-                        } 
+                        }
                     }
                 } else {
-                    dataRow.createCell(colIndex++).setCellValue( 0.0);
+                    dataRow.createCell(colIndex++).setCellValue(0.0);
                 }
 
                 dataRow.createCell(colIndex++).setCellValue(dto.getBatchNo() != null ? dto.getBatchNo() : "");
@@ -11813,18 +11833,18 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue((dto.getItemCode() != null) ? dto.getItemCode() : "");
                 dataRow.createCell(colIndex++).setCellValue((dto.getItemName() != null) ? dto.getItemName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getUom() != null ? dto.getUom() : "");
-                dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : "");    
+                dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getCostRate() != null ? dto.getCostRate() : 0.0);
                 dataRow.createCell(colIndex++).setCellValue(dto.getRetailRate() != null ? dto.getRetailRate() : 0.0);
                 dataRow.createCell(colIndex++).setCellValue(dto.getStockQuantity() != null ? dto.getStockQuantity() : 0.0);
                 dataRow.createCell(colIndex++).setCellValue(dto.getValueAtCostRate() != null ? dto.getValueAtCostRate() : 0.0);
-                dataRow.createCell(colIndex++).setCellValue(dto.getValueAtRetailRate() != null ? dto.getValueAtRetailRate() : 0.0); 
+                dataRow.createCell(colIndex++).setCellValue(dto.getValueAtRetailRate() != null ? dto.getValueAtRetailRate() : 0.0);
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
-            sheet.addMergedRegion(new CellRangeAddress(rowIndex-1, rowIndex-1, 0, 12));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 12));
             footerRow.createCell(0).setCellValue("Total");
             footerRow.createCell(13).setCellValue(totalValueAtCostRate != null ? totalValueAtCostRate : 0.0);
             footerRow.createCell(14).setCellValue(totalValueAtRetailRate != null ? totalValueAtRetailRate : 0.0);
@@ -11866,7 +11886,7 @@ public class PharmacyReportController implements Serializable {
 
             Map<String, Object> filters = getFiltersForExpiryItemReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
-            if (infoTable != null) {    
+            if (infoTable != null) {
                 document.add(infoTable);
             }
 
@@ -11890,9 +11910,9 @@ public class PharmacyReportController implements Serializable {
             for (ExpiryItemStockListDto dto : expiryStockListDtos) {
                 table.addCell(new PdfPCell(new Phrase(dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -11922,7 +11942,7 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
-        }            
+        }
     }
 
     // PDF Export: expiry_item_itemList
@@ -11955,7 +11975,7 @@ public class PharmacyReportController implements Serializable {
 
             Map<String, Object> filters = getFiltersForExpiryItemReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
-            if (infoTable != null) {    
+            if (infoTable != null) {
                 document.add(infoTable);
             }
 
@@ -11979,9 +11999,9 @@ public class PharmacyReportController implements Serializable {
             for (ExpiryItemListDto dto : expiryItemListDtos) {
                 table.addCell(new PdfPCell(new Phrase(dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode()  : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -12008,7 +12028,7 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
-        }            
+        }
     }
 
     // Excel Export: expire_item_itemList
@@ -12063,7 +12083,7 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue((dto.getItemCode() != null) ? dto.getItemCode() : "");
                 dataRow.createCell(colIndex++).setCellValue((dto.getItemName() != null) ? dto.getItemName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getUom() != null ? dto.getUom() : "");
-                dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : ""); 
+                dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getTotalStockQuantity() != null ? dto.getTotalStockQuantity() : 0.0);
                 dataRow.createCell(colIndex++).setCellValue(dto.getTotalCostValue() != null ? dto.getTotalCostValue() : 0.0);
@@ -12071,7 +12091,7 @@ public class PharmacyReportController implements Serializable {
             }
 
             Row footerRow = sheet.createRow(rowIndex++);
-            sheet.addMergedRegion(new CellRangeAddress(rowIndex-1, rowIndex-1, 0, 9));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 9));
             footerRow.createCell(0).setCellValue("Total");
             footerRow.createCell(10).setCellValue(totalValueAtCostRate != null ? totalValueAtCostRate : 0.0);
             footerRow.createCell(11).setCellValue(totalValueAtRetailRate != null ? totalValueAtRetailRate : 0.0);

@@ -149,9 +149,9 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
-                                       
+
                                         <h:outputText value=" | " style="margin-left: 1em; margin-right: 1em"/>
-                                        
+
                                         <div class="d-flex gap-3">
                                             <h:outputText value="To Date : " />
                                             <h:outputText value="#{pharmacyReportController.toDate}">
@@ -159,6 +159,11 @@
                                             </h:outputText>
                                         </div>
 
+                                    </div>
+
+                                    <div class="text-center mb-2" style="font-size:11px;">
+                                        Department Type :
+                                        <h:outputText value="#{pharmacyReportController.departmentTypeFilterValue}" />
                                     </div>
 
                                     <!-- Report Name -->
