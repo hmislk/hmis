@@ -553,8 +553,6 @@ public class BillBhtController implements Serializable {
                     .max(Comparator.comparingInt(Priority::getLevel))
                     .orElse(Priority.NORMAL);
 
-            System.out.println("IP highestPriority = " + highestPriority);
-
             b.setPriority(highestPriority);
             
             billFacade.edit(b);

@@ -2203,8 +2203,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     .max(Comparator.comparingInt(Priority::getLevel))
                     .orElse(Priority.NORMAL);
 
-            System.out.println("highestPriority = " + highestPriority);
-
             myBill.setPriority(highestPriority);
 
             getBillFacade().edit(myBill);
