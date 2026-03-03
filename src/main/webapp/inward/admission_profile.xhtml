@@ -497,21 +497,8 @@
                         <p:panel header="Reports" class="m-1">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
-                                    ajax="false"
-                                    value="Pharmacy Issue Summary (Entity)" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
-                                    icon="fa fa-prescription-bottle-alt"
-                                    class="w-100"
-                                    title="Traditional entity-based report">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{inwardReportControllerBht.patientEncounter}" />
-                                    <f:setPropertyActionListener 
-                                        value="#{null}" 
-                                        target="#{inwardReportControllerBht.department}" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="Pharmacy Issue Summary (DTO - Fast)" 
+                                    id="btnPharmacyIssues"
+                                    value="Pharmacy Issue Summary" 
                                     action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}" 
                                     icon="fa fa-rocket"
                                     ajax="false"
@@ -543,6 +530,22 @@
                                     ajax="false"
                                     icon="pi pi-chart-line"
                                     class="ui-button-success mx-1 mb-2">
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnLegacy"
+                                    ajax="false"
+                                    value="Pharmacy Issue Summary (Legacy)"
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}"
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100 ui-button-secondary"
+                                    title="Traditional entity-based report"
+                                    onclick="return confirm('Warning: This is the legacy report and may be slow to load. Use the Pharmacy Issue Summary button above for better performance. Continue anyway?')">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener 
+                                        value="#{null}" 
+                                        target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
                             </div>
                         </p:panel>

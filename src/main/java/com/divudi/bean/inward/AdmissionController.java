@@ -968,16 +968,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
                 return bhtSummeryController.navigateToInpatientProfile();
             } else {
-                if (current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
-                    JsfUtil.addErrorMessage("Selected Room no has a department.");
-                    return "";
-                }
-
-                if (!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-                    JsfUtil.addErrorMessage("Patient is not in your department. Please transfer to the correct department.");
-                    return "";
-                }
-
                 roomChangeController.setCurrent(current);
                 roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
                 return "/inward/admit_room?faces-redirect=true";
@@ -2106,6 +2096,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             patient = new Patient();
             patientDetailsEditable = true;
             patient.setPerson(p);
+            if (current != null) {
+                current.setPatient(patient);
+            }
         }
         return patient;
     }

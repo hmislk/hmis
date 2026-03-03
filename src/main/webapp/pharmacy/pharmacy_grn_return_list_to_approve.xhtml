@@ -188,9 +188,10 @@
                                 emptyMessage="No GRN return requests found matching your criteria"
                                 filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToApprove}"
                                 sortMode="multiple"
-                                resizableColumns="true"
-                                reflow="true">
-                            <p:column id="colRequestedAt" headerText="Requested At" toggleable="true">
+                                scrollable="true"
+                                scrollWidth="100%"
+                                tableStyle="min-width: 1500px;">
+                            <p:column id="colRequestedAt" headerText="Requested At" toggleable="true" style="min-width: 140px;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     <h:outputLabel value="#{b.createdAt}">
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -207,7 +208,7 @@
                                 </h:panelGroup>                       
                             </p:column> 
 
-                            <p:column id="colRequestedBy" headerText="Requested By" toggleable="true">
+                            <p:column id="colRequestedBy" headerText="Requested By" toggleable="true" style="min-width: 130px;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}">                                      
                                     </h:outputLabel>
@@ -222,29 +223,29 @@
                                 </h:panelGroup>
                             </p:column>    
 
-                            <p:column id="colSupplier" headerText="Supplier" toggleable="true">
+                            <p:column id="colSupplier" headerText="Supplier" toggleable="true" style="min-width: 130px;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column id="colReturnNo" headerText="Return No" toggleable="true">
+                            <p:column id="colReturnNo" headerText="Return No" toggleable="true" style="min-width: 110px;">
                                 <h:outputText value="#{b.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column id="colOriginalGrn" headerText="Original GRN" toggleable="true">
+                            <p:column id="colOriginalGrn" headerText="Original GRN" toggleable="true" style="min-width: 120px;">
                                 <h:outputText value="#{b.referenceBill.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column id="colRequestedDept" headerText="Requested Department" toggleable="true">
+                            <p:column id="colRequestedDept" headerText="Requested Department" toggleable="true" style="min-width: 160px;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     #{b.department.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column id="colRequestedValue" headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true">
+                            <p:column id="colRequestedValue" headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true" style="min-width: 140px;">
                                 <div class="d-flex align-items-center justify-content-end">
                                     <i class="fas fa-coins text-success me-2"></i>
                                     <span class="fw-bold text-success fs-6">
@@ -255,7 +256,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column id="colApprovedPerson" headerText="Approved Person" toggleable="true">
+                            <p:column id="colApprovedPerson" headerText="Approved Person" toggleable="true" style="min-width: 140px;">
                                 <h:commandLink 
                                     action="pharmacy_reprint_grn_return_request" 
                                     value="#{b.completedBy.webUserPerson.nameWithTitle}"
@@ -264,7 +265,7 @@
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column id="colApprovedValue" headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true">
+                            <p:column id="colApprovedValue" headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true" style="min-width: 130px;">
                                 <div class="d-flex align-items-center justify-content-end" rendered="#{b.completed eq true}">
                                     <i class="fas fa-coins text-info me-2"></i>
                                     <span class="fw-bold text-info fs-6">
@@ -316,7 +317,6 @@
                                 </div>
                             </p:column>
                         </p:dataTable>
-                            
                         <!-- Column Visibility Settings -->
                         <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
                             <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">

@@ -27,6 +27,13 @@ public class PharmacyF15ReportDTO {
     private BundleDTO adjustments;
     private StockValueDTO closingStock;
     private BalanceCheckDTO balanceCheck;
+    /**
+     * Informational section: pre-bill retail sales (PRE_TO_SETTLE_AT_CASHIER) and
+     * their cancellations (CANCELLED_PRE) created within the report period.
+     * Stock moved on these bills but financial settlement may be on a different day.
+     * Use the stock values here to understand any closing-stock discrepancy.
+     */
+    private BundleDTO preBillStockMovements;
 
     // -------------------------------------------------------------------------
     // Inner DTOs
@@ -142,4 +149,6 @@ public class PharmacyF15ReportDTO {
     public void setClosingStock(StockValueDTO closingStock) { this.closingStock = closingStock; }
     public BalanceCheckDTO getBalanceCheck() { return balanceCheck; }
     public void setBalanceCheck(BalanceCheckDTO balanceCheck) { this.balanceCheck = balanceCheck; }
+    public BundleDTO getPreBillStockMovements() { return preBillStockMovements; }
+    public void setPreBillStockMovements(BundleDTO preBillStockMovements) { this.preBillStockMovements = preBillStockMovements; }
 }
