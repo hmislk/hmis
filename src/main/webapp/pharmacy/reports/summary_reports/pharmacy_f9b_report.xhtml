@@ -140,15 +140,13 @@
                         <p:spacer/>
                     </h:panelGrid>
 
-                    <div class="d-flex justify-content-end mt-3 mb-3">
-                        <p:commandButton
-                                value="Process"
-                                icon="pi pi-cog"
-                                styleClass="ui-button-primary"
-                                action="#{pharmacySummaryReportController.processF9bReport()}"
-                                update="@form"
-                                ajax="true"/>
-                    </div>
+                    <p:commandButton
+                            value="Process"
+                            ajax="false"
+                            action="#{pharmacySummaryReportController.processF9bReport()}"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog"/>
+
 
                     <!-- Section 1: Income Summary -->
                     <h:panelGroup rendered="#{not empty pharmacySummaryReportController.bundle and not empty pharmacySummaryReportController.bundle.rows}">
@@ -188,7 +186,7 @@
                                     <p:column headerText="Group" width="24em">
                                         <h:outputText value="#{row.rowType}"/>
                                     </p:column>
-                                    <p:column headerText="Cash" width="10em" class="text-end">
+                                    <p:column headerText="Cash" width="7em" class="text-end">
                                         <h:outputText value="#{row.cashValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -199,7 +197,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Card" width="10em" class="text-end">
+                                    <p:column headerText="Card" width="7em" class="text-end">
                                         <h:outputText value="#{row.cardValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -210,7 +208,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Cheque" width="10em" class="text-end">
+                                    <p:column headerText="Cheque" width="7em" class="text-end">
                                         <h:outputText value="#{row.chequeValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -221,7 +219,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Slip" width="10em" class="text-end">
+                                    <p:column headerText="Slip" width="7em" class="text-end">
                                         <h:outputText value="#{row.slipValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -232,7 +230,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Staff Welfare" width="10em" class="text-end">
+                                    <p:column headerText="Staff Welfare" width="7em" class="text-end">
                                         <h:outputText value="#{row.staffWelfareValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -243,7 +241,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="eWallet" width="10em" class="text-end">
+                                    <p:column headerText="eWallet" width="7em" class="text-end">
                                         <h:outputText value="#{row.eWalletValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -254,7 +252,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Voucher" width="10em" class="text-end">
+                                    <p:column headerText="Voucher" width="7em" class="text-end">
                                         <h:outputText value="#{row.voucherValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -265,7 +263,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="IOU" width="10em" class="text-end">
+                                    <p:column headerText="IOU" width="7em" class="text-end">
                                         <h:outputText value="#{row.iouValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -276,7 +274,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Patient Deposit" width="10em" class="text-end">
+                                    <p:column headerText="Patient Deposit" width="7em" class="text-end">
                                         <h:outputText value="#{row.patientDepositValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -287,7 +285,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Inpatient Credit" width="10em" class="text-end light-grey-background">
+                                    <p:column headerText="Inpatient Credit" width="7em" class="text-end light-grey-background">
                                         <h:outputText value="#{row.inpatientCreditValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -298,7 +296,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Outpatient Credit" width="10em" class="text-end light-grey-background">
+                                    <p:column headerText="Outpatient Credit" width="7em" class="text-end light-grey-background">
                                         <h:outputText value="#{row.opdCreditValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -309,7 +307,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Staff Credit" width="10em" class="text-end light-grey-background">
+                                    <p:column headerText="Staff Credit" width="7em" class="text-end light-grey-background">
                                         <h:outputText value="#{row.staffValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -320,7 +318,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Agent Credit" width="10em" class="text-end light-grey-background">
+                                    <p:column headerText="Agent Credit" width="7em" class="text-end light-grey-background">
                                         <h:outputText value="#{row.agentValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -331,7 +329,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Total" width="10em" class="text-end">
+                                    <p:column headerText="Total" width="7em" class="text-end">
                                         <h:outputText value="#{row.grossTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -355,219 +353,171 @@
                                 <h:outputText value="Section 2 - Transfer Transactions" styleClass="fw-bold"/>
                             </div>
                             <div class="card-body p-0">
-                                <table class="table table-sm table-hover mb-0">
-                                    <thead class="table-info">
-                                        <tr>
-                                            <th class="type-column">Transfer Type</th>
-                                            <th class="text-end value-column">Gross Value</th>
-                                            <th class="text-end value-column">Net Value</th>
-                                            <th class="text-end value-column">Stock Value (Cost)</th>
-                                            <th class="text-end value-column">Stock Value (Retail)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <ui:repeat value="#{pharmacySummaryReportController.pharmacyTransferBundle.rows}" var="transfer">
-                                            <tr>
-                                                <td class="type-column">
-                                                    <h:outputText value="#{transfer.rowType}"/>
-                                                </td>
-                                                <td class="text-end value-column">
-                                                    <h:outputText value="#{transfer.grossTotal}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </td>
-                                                <td class="text-end value-column">
-                                                    <h:outputText value="#{transfer.netTotal}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </td>
-                                                <td class="text-end value-column">
-                                                    <h:outputText value="#{transfer.valueOfStocksAtCostRate}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </td>
-                                                <td class="text-end value-column">
-                                                    <h:outputText value="#{transfer.valueOfStocksAtRetailSaleRate}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </td>
-                                            </tr>
-                                        </ui:repeat>
-                                    </tbody>
-                                    <tfoot class="bg-info text-white fw-bold">
-                                        <tr>
-                                            <td class="type-column">Total Transfers</td>
-                                            <td class="text-end value-column">
-                                                <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.grossTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end value-column">
-                                                <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end value-column">
-                                                <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.valueOfStocksAtCostRate}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end value-column">
-                                                <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                                <p:commandButton
+                                        value="Download"
+                                        ajax="false"
+                                        styleClass="ui-button-info m-1"
+                                        icon="pi pi-download">
+                                    <p:dataExporter
+                                            type="xlsx"
+                                            target="tblF9bTransfer"
+                                            fileName="f9b_transfers_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        styleClass="ui-button-warning m-1"
+                                        icon="pi pi-print">
+                                    <p:printer target="tblF9bTransfer"/>
+                                </p:commandButton>
+
+                                <p:dataTable
+                                        id="tblF9bTransfer"
+                                        style="padding: 0px!important; margin: 0px!important; font-size: small!important;"
+                                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                        value="#{pharmacySummaryReportController.pharmacyTransferBundle.rows}" var="transfer">
+                                    <p:column headerText="Transfer Type" width="24em">
+                                        <h:outputText value="#{transfer.rowType}"/>
+                                    </p:column>
+                                    <p:column headerText="Gross Value" width="10em" class="text-end">
+                                        <h:outputText value="#{transfer.grossTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.grossTotal}"
+                                                          style="font-weight: bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Value" width="10em" class="text-end">
+                                        <h:outputText value="#{transfer.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.netTotal}"
+                                                          style="font-weight: bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Stock Value (Cost)" width="10em" class="text-end">
+                                        <h:outputText value="#{transfer.valueOfStocksAtCostRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.valueOfStocksAtCostRate}"
+                                                          style="font-weight: bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Stock Value (Retail)" width="10em" class="text-end">
+                                        <h:outputText value="#{transfer.valueOfStocksAtRetailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacySummaryReportController.pharmacyTransferBundle.summaryRow.valueOfStocksAtRetailSaleRate}"
+                                                          style="font-weight: bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                </p:dataTable>
                             </div>
                         </div>
                     </h:panelGroup>
 
                     <!-- Section 3: Float Transfers Summary -->
-                    <h:panelGroup rendered="#{pharmacySummaryReportController.floatInRow ne null or pharmacySummaryReportController.floatOutRow ne null}">
+                    <h:panelGroup rendered="#{not empty pharmacySummaryReportController.floatRows}">
                         <div class="card mb-3">
                             <div class="card-header bg-warning">
                                 <h:outputText value="&#xf0ec;" styleClass="fas me-2"/>
                                 <h:outputText value="Section 3 - Float Transfers Summary" styleClass="fw-bold"/>
                             </div>
                             <div class="card-body p-0">
-                                <table class="table table-sm table-hover mb-0">
-                                    <thead class="table-warning">
-                                        <tr>
-                                            <th>Type</th>
-                                            <th class="text-end">Cash</th>
-                                            <th class="text-end">Card</th>
-                                            <th class="text-end">Cheque</th>
-                                            <th class="text-end">Slip</th>
-                                            <th class="text-end">Staff Welfare</th>
-                                            <th class="text-end">eWallet</th>
-                                            <th class="text-end">Voucher</th>
-                                            <th class="text-end">IOU</th>
-                                            <th class="text-end">Patient Deposit</th>
-                                            <th class="text-end">Agent</th>
-                                            <th class="text-end">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Float In</td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.cashValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.cardValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.chequeValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.slipValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.staffWelfareValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.eWalletValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.voucherValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.iouValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.patientDepositValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.agentValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end fw-bold">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatInRow.total}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Float Out</td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.cashValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.cardValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.chequeValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.slipValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.staffWelfareValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.eWalletValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.voucherValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.iouValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.patientDepositValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.agentValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end fw-bold">
-                                                <h:outputText value="#{pharmacySummaryReportController.floatOutRow.total}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <p:commandButton
+                                        value="Download"
+                                        ajax="false"
+                                        styleClass="ui-button-info m-1"
+                                        icon="pi pi-download">
+                                    <p:dataExporter
+                                            type="xlsx"
+                                            target="tblF9bFloat"
+                                            fileName="f9b_float_#{pharmacySummaryReportController.fromDate}_to_#{pharmacySummaryReportController.toDate}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        styleClass="ui-button-warning m-1"
+                                        icon="pi pi-print">
+                                    <p:printer target="tblF9bFloat"/>
+                                </p:commandButton>
+
+                                <p:dataTable
+                                        id="tblF9bFloat"
+                                        style="padding: 0px!important; margin: 0px!important; font-size: small!important;"
+                                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                        value="#{pharmacySummaryReportController.floatRows}" var="row">
+                                    <p:column headerText="Type" width="24em">
+                                        <h:outputText value="#{row.rowType}"/>
+                                    </p:column>
+                                    <p:column headerText="Cash" width="7em" class="text-end">
+                                        <h:outputText value="#{row.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Card" width="7em" class="text-end">
+                                        <h:outputText value="#{row.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Cheque" width="7em" class="text-end">
+                                        <h:outputText value="#{row.chequeValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Slip" width="7em" class="text-end">
+                                        <h:outputText value="#{row.slipValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Staff Welfare" width="7em" class="text-end">
+                                        <h:outputText value="#{row.staffWelfareValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="eWallet" width="7em" class="text-end">
+                                        <h:outputText value="#{row.eWalletValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Voucher" width="7em" class="text-end">
+                                        <h:outputText value="#{row.voucherValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="IOU" width="7em" class="text-end">
+                                        <h:outputText value="#{row.iouValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient Deposit" width="7em" class="text-end">
+                                        <h:outputText value="#{row.patientDepositValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Agent" width="7em" class="text-end">
+                                        <h:outputText value="#{row.agentValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Total" width="7em" class="text-end">
+                                        <h:outputText value="#{row.total}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                             </div>
                         </div>
                     </h:panelGroup>

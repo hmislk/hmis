@@ -275,6 +275,7 @@ public class PharmacySummaryReportController implements Serializable {
     private PharmacyBundle pharmacyTransferBundle;
     private IncomeRow floatInRow;
     private IncomeRow floatOutRow;
+    private List<IncomeRow> floatRows;
     private ReportTemplateRowBundle bundleReport;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
@@ -1038,7 +1039,12 @@ public class PharmacySummaryReportController implements Serializable {
         );
 
         floatInRow = fetchFloatSummaryRow(floatInTypes);
+        floatInRow.setRowType("Float In");
         floatOutRow = fetchFloatSummaryRow(floatOutTypes);
+        floatOutRow.setRowType("Float Out");
+        floatRows = new ArrayList<>();
+        floatRows.add(floatInRow);
+        floatRows.add(floatOutRow);
     }
 
     private IncomeRow fetchFloatSummaryRow(List<BillTypeAtomic> billTypeAtomics) {
@@ -3317,6 +3323,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setFloatOutRow(IncomeRow floatOutRow) {
         this.floatOutRow = floatOutRow;
+    }
+
+    public List<IncomeRow> getFloatRows() {
+        return floatRows;
+    }
+
+    public void setFloatRows(List<IncomeRow> floatRows) {
+        this.floatRows = floatRows;
     }
 
     public void retireHistoricalRecord(HistoricalRecord hr) {
