@@ -272,6 +272,9 @@ public class PharmacySummaryReportController implements Serializable {
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
     private PharmacyBundle pharmacyBundle;
+    private PharmacyBundle pharmacyTransferBundle;
+    private IncomeRow floatInRow;
+    private IncomeRow floatOutRow;
     private ReportTemplateRowBundle bundleReport;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
@@ -342,6 +345,10 @@ public class PharmacySummaryReportController implements Serializable {
 
     public String navigateToAllItemMovementSummary() {
         return "/pharmacy/reports/summary_reports/all_item_movement_summary?faces-redirect=true";
+    }
+
+    public String navigateToF9bReport() {
+        return "/pharmacy/reports/summary_reports/pharmacy_f9b_report?faces-redirect=true";
     }
 
     public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
@@ -987,6 +994,126 @@ public class PharmacySummaryReportController implements Serializable {
             }
         }
         bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
+    }
+
+    public void processF9bReport() {
+        reportTimerController.trackReportExecution(() -> {
+            processF9bIncomeSection();
+            processF9bTransferSection();
+            processF9bFloatSection();
+        }, SummaryReports.PHARMACY_F9B_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void processF9bIncomeSection() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
+        bundle = new IncomeBundle(dtos);
+        bundle.fixDiscountsAndMarginsInRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
+        bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
+    }
+
+    private void processF9bTransferSection() {
+        pharmacyTransferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(
+                fromDate, toDate, institution, site, department, webUser, admissionType, paymentScheme);
+    }
+
+    private void processF9bFloatSection() {
+        List<BillTypeAtomic> floatInTypes = Arrays.asList(
+                BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+        );
+        List<BillTypeAtomic> floatOutTypes = Arrays.asList(
+                BillTypeAtomic.FUND_TRANSFER_BILL
+        );
+
+        floatInRow = fetchFloatSummaryRow(floatInTypes);
+        floatOutRow = fetchFloatSummaryRow(floatOutTypes);
+    }
+
+    private IncomeRow fetchFloatSummaryRow(List<BillTypeAtomic> billTypeAtomics) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :cash THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :card THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :cheque THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :slip THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :staffWelfare THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :ewallet THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :voucher THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :iou THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :patientDeposit THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :agent THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(p.paidValue) ");
+        jpql.append("FROM Payment p ");
+        jpql.append("WHERE p.bill.billTypeAtomic IN :btas ");
+        jpql.append("AND p.bill.createdAt BETWEEN :fd AND :td ");
+        jpql.append("AND p.retired = :ret ");
+        jpql.append("AND p.bill.retired = :ret ");
+
+        if (department != null) {
+            jpql.append("AND p.bill.department = :dept ");
+        }
+        if (institution != null) {
+            jpql.append("AND p.bill.department.institution = :ins ");
+        }
+        if (site != null) {
+            jpql.append("AND p.bill.department.site = :site ");
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btas", billTypeAtomics);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("ret", false);
+        params.put("cash", PaymentMethod.Cash);
+        params.put("card", PaymentMethod.Card);
+        params.put("cheque", PaymentMethod.Cheque);
+        params.put("slip", PaymentMethod.Slip);
+        params.put("staffWelfare", PaymentMethod.Staff_Welfare);
+        params.put("ewallet", PaymentMethod.ewallet);
+        params.put("voucher", PaymentMethod.Voucher);
+        params.put("iou", PaymentMethod.IOU);
+        params.put("patientDeposit", PaymentMethod.PatientDeposit);
+        params.put("agent", PaymentMethod.Agent);
+
+        if (department != null) {
+            params.put("dept", department);
+        }
+        if (institution != null) {
+            params.put("ins", institution);
+        }
+        if (site != null) {
+            params.put("site", site);
+        }
+
+        IncomeRow row = new IncomeRow();
+        List<Object[]> results = paymentFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (results != null && !results.isEmpty()) {
+            Object[] r = results.get(0);
+            row.setCashValue(r[0] != null ? ((Number) r[0]).doubleValue() : 0);
+            row.setCardValue(r[1] != null ? ((Number) r[1]).doubleValue() : 0);
+            row.setChequeValue(r[2] != null ? ((Number) r[2]).doubleValue() : 0);
+            row.setSlipValue(r[3] != null ? ((Number) r[3]).doubleValue() : 0);
+            row.setStaffWelfareValue(r[4] != null ? ((Number) r[4]).doubleValue() : 0);
+            row.seteWalletValue(r[5] != null ? ((Number) r[5]).doubleValue() : 0);
+            row.setVoucherValue(r[6] != null ? ((Number) r[6]).doubleValue() : 0);
+            row.setIouValue(r[7] != null ? ((Number) r[7]).doubleValue() : 0);
+            row.setPatientDepositValue(r[8] != null ? ((Number) r[8]).doubleValue() : 0);
+            row.setAgentValue(r[9] != null ? ((Number) r[9]).doubleValue() : 0);
+            row.setTotal(r[10] != null ? ((Number) r[10]).doubleValue() : 0);
+        }
+        return row;
     }
 
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
@@ -3160,6 +3287,36 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setHistoricalRecords(List<HistoricalRecord> historicalRecords) {
         this.historicalRecords = historicalRecords;
+    }
+
+    public PharmacyBundle getPharmacyTransferBundle() {
+        return pharmacyTransferBundle;
+    }
+
+    public void setPharmacyTransferBundle(PharmacyBundle pharmacyTransferBundle) {
+        this.pharmacyTransferBundle = pharmacyTransferBundle;
+    }
+
+    public IncomeRow getFloatInRow() {
+        if (floatInRow == null) {
+            floatInRow = new IncomeRow();
+        }
+        return floatInRow;
+    }
+
+    public void setFloatInRow(IncomeRow floatInRow) {
+        this.floatInRow = floatInRow;
+    }
+
+    public IncomeRow getFloatOutRow() {
+        if (floatOutRow == null) {
+            floatOutRow = new IncomeRow();
+        }
+        return floatOutRow;
+    }
+
+    public void setFloatOutRow(IncomeRow floatOutRow) {
+        this.floatOutRow = floatOutRow;
     }
 
     public void retireHistoricalRecord(HistoricalRecord hr) {

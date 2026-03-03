@@ -70,7 +70,15 @@
                                                 value="Daily Stock Values (F-15)"
                                                 action="#{pharmacyDailyStockReportOptimizedController.navigateToDailyStockReport()}"
                                                 title="High-performance optimized report - Faster execution"/>
-                                            <p:commandButton 
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show F 9B Report')}"
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                icon="fa fa-file-invoice"
+                                                value="F 9B"
+                                                action="#{pharmacySummaryReportController.navigateToF9bReport()}"/>
+                                            <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
                                                 class="w-100 ui-button-warning"
                                                 ajax="false"
