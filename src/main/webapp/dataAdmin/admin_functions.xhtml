@@ -426,6 +426,27 @@
                                     </tr>
 
                                     <tr>
+                                        <td><strong>Fill Bill Department Type from Bill Items</strong></td>
+                                        <td>
+                                            Finds all bills where department type is null and assigns the department type
+                                            from the first bill item's item. Fixes bills (GRNs, etc.) that were saved
+                                            without a department type, which causes them to be excluded from department
+                                            type filtered reports such as the Stock Ledger.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.fillBillDepartmentTypeFromBillItems()}"
+                                                ajax="false"
+                                                value="Fill Bill Department Type"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-tag" />
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td><strong>Migrate Transfer Bill Finance Details</strong></td>
                                         <td>
                                             Fixes issue #13419: Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal from BillItem.netValue. This ensures disbursement reports show correct transfer rates when "Pharmacy Transfer is by Retail Rate" option is enabled. Only affects bills missing proper financial details - safe to run multiple times.
