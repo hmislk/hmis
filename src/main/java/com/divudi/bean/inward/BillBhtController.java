@@ -67,9 +67,12 @@ import com.divudi.core.entity.UserPreference;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -540,6 +543,20 @@ public class BillBhtController implements Serializable {
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
+            
+            Priority highestPriority = Optional
+                    .ofNullable(list)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
+
+            System.out.println("IP highestPriority = " + highestPriority);
+
+            b.setPriority(highestPriority);
+            
             billFacade.edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
