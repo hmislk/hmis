@@ -415,19 +415,19 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             // =========================
             Row instRow = sheet.createRow(rowIndex++);
             Cell instCell = instRow.createCell(0);
-            instCell.setCellValue(institution != null ? institution.getName() : "");
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
             instCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             Row siteRow = sheet.createRow(rowIndex++);
             Cell siteCell = siteRow.createCell(0);
-            siteCell.setCellValue(site != null ? site.getName() : "");
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
             siteCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             Row deptRow = sheet.createRow(rowIndex++);
             Cell deptCell = deptRow.createCell(0);
-            deptCell.setCellValue(department != null ? department.getName() : "");
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
             deptCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
