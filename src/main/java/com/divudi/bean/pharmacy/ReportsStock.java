@@ -570,15 +570,15 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             // =========================
             // HEADER (Institution, Site, Department)
             // =========================
-            Paragraph instPara = new Paragraph(institution != null ? institution.getName() : "", titleFont);
+            Paragraph instPara = new Paragraph(institution != null ? institution.getName() : "All Institutions", titleFont);
             instPara.setAlignment(Element.ALIGN_CENTER);
             document.add(instPara);
 
-            Paragraph sitePara = new Paragraph(site != null ? site.getName() : "", titleFont);
+            Paragraph sitePara = new Paragraph(site != null ? site.getName() : "All Sites", titleFont);
             sitePara.setAlignment(Element.ALIGN_CENTER);
             document.add(sitePara);
 
-            Paragraph deptPara = new Paragraph(department != null ? department.getName() : "", titleFont);
+            Paragraph deptPara = new Paragraph(department != null ? department.getName() : "All Departments", titleFont);
             deptPara.setAlignment(Element.ALIGN_CENTER);
             document.add(deptPara);
 
