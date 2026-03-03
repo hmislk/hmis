@@ -70,12 +70,15 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -2190,6 +2193,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
             }
+
+            Priority highestPriority = Optional
+                    .ofNullable(myBill.getBillItems())
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
+
+            myBill.setPriority(highestPriority);
+
             getBillFacade().edit(myBill);
             getBillBean().calculateBillItemsForOpdBill(myBill, tmp, getBillFeeBundleEntrys());
             getBillBean().checkBillItemFeesInitiated(myBill);
@@ -2227,7 +2242,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         tmp.add(billEntry);
                     }
                 }
+                
+                Priority highestPriority = Optional
+                    .ofNullable(newlyCreatedIndividualBill.getBillItems())
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
 
+                newlyCreatedIndividualBill.setPriority(highestPriority);
+                
                 // Handling partial payments if allowed
                 if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                     newlyCreatedIndividualBill.setCashPaid(cashPaid);
@@ -2356,6 +2382,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 list.add(getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser()));
             }
             newSingleBill.setBillItems(list);
+            
+            Priority highestPriority = Optional
+                    .ofNullable(list)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
+
+            newSingleBill.setPriority(highestPriority);
+            
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
             if (patientEncounter != null) {
                 newSingleBill.setIpOpOrCc("IP");
@@ -3443,15 +3481,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
-        
+
         if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
             if (currentBillItemPriority == null) {
                 currentBillItemPriority = Priority.NORMAL;
             }
-        }else{
+        } else {
             currentBillItemPriority = null;
         }
-        
+
         if (getCurrentBillItem().getItem().isRequestForQuentity()) {
             if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
                 setCurrentBillItemQty(null);
@@ -3476,7 +3514,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         bi.setTmpQty(getCurrentBillItemQty());
         if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
             bi.setPriority(currentBillItemPriority);
-        }else{
+        } else {
             bi.setPriority(null);
         }
         bi.setSessionDate(sessionDate);
@@ -3536,7 +3574,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             setItemLight(itemLight);
         }
-        
+
         setCurrentBillItemQty(null);
         currentBillItemPriority = null;
         JsfUtil.addSuccessMessage("Added");
@@ -3894,6 +3932,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 currentPatientFamily = null;
                 if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
                     referredBy = null;
+                }
+                if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Institution on New Bill", false)) {
                     referredByInstitution = null;
                 }
                 collectingCentreBillController.setCollectingCentre(null);
@@ -3915,6 +3955,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             patientEncounter = null;
             if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
                 referredBy = null;
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Institution on New Bill", false)) {
                 referredByInstitution = null;
             }
             collectingCentreBillController.setCollectingCentre(null);
@@ -5443,7 +5485,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public Priority getCurrentBillItemPriority() {
-        if(currentBillItemPriority == null){
+        if (currentBillItemPriority == null) {
             currentBillItemPriority = Priority.NORMAL;
         }
         return currentBillItemPriority;

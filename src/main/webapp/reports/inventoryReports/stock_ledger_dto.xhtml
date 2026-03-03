@@ -301,16 +301,20 @@
                                 action="#{pharmacyReportController.processStockLedgerDtoReport()}" >
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                             onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tbl" />
+                            <p:commandButton 
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="stock_ledger_dto_print?faces-redirect=true"
+                                    value="To Print">
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter
-                                    type="xlsx"
-                                    fileName="Stock Ledger DTO Report"
-                                    target="tbl"  />
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false" 
+                                value="Download"
+                                action="#{pharmacyReportController.exportStockLedgerDtoToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton
@@ -320,6 +324,8 @@
                                 value="PDF"
                                 action="#{pharmacyReportController.exportStockLedgerDtoToPdf()}">
                             </p:commandButton>
+
+                            
 
                         </div>
                         <h:outputScript>
