@@ -103,6 +103,7 @@ public class GrnReturnApprovalController implements Serializable {
         }
         b.setApproveUser(sessionController.getLoggedUser());
         b.setApproveAt(Calendar.getInstance().getTime());
+        b.setCompleted(true);
         b.setPaid(true);
         b.setPaidAmount(b.getNetTotal());
         b.setBalance(0d);

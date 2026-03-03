@@ -294,6 +294,18 @@ public class CommonReport implements Serializable {
         return "/pharmacy/pharmacy_reprint_grn_return_bill?faces-redirect=true";
     }
 
+    public String navigateToViewGrnBillFromGRNBillItemReport(Long billId) {
+        previewBill = null;
+        previewBill = billFacade.find(billId);
+        return "/pharmacy/pharmacy_grn_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPOBillFromGRNBillItemReport(Long billId) {
+        previewBill = null;
+        previewBill = billFacade.find(billId);
+        return "/pharmacy/pharmacy_reprint_po_bill?faces-redirect=true";
+    }
+
     public String navigateBackToGRNSummary() {
 
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
@@ -5047,7 +5059,7 @@ public class CommonReport implements Serializable {
             getGrnCancelled().setSaleCredit(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Credit));
 
 // GRN Refunded Bills
-            getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
+            getGrnReturn().setBills(getBills(new RefundBill(), BillType.PharmacyGrnReturn, getDepartment()));
             getGrnReturn().setCash(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Cash));
             getGrnReturn().setCredit(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Credit));
             getGrnReturn().setSaleCash(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Cash));

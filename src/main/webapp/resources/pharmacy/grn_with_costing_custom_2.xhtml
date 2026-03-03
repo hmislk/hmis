@@ -161,6 +161,11 @@
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
                                     <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>

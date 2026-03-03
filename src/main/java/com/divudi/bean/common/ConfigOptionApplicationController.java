@@ -112,6 +112,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadOpdBillingConfigurationDefaults();
             loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
+            loadAiChatConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -1515,6 +1516,14 @@ public class ConfigOptionApplicationController implements Serializable {
         }
 
         throw new IllegalArgumentException("Unsupported type conversion requested: " + type.getSimpleName() + " for value type " + valueType);
+    }
+
+    private void loadAiChatConfigurationDefaults() {
+        getBooleanValueByKey("AI Chat - Enabled", true);
+        getShortTextValueByKey("AI Chat - Claude API Key", "");
+        getShortTextValueByKey("AI Chat - Claude Model", "claude-opus-4-6");
+        getShortTextValueByKey("AI Chat - GitHub Branch", "development");
+        getIntegerValueByKey("AI Chat - Max Tokens", 4096);
     }
 
     public List<ConfigOption> getOptions() {

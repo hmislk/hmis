@@ -3229,8 +3229,14 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
+                sql += " and (b.netTotal = :netTotal)";
+                m.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Net Total value. Please enter a valid number.");
+                return;
+            }
         }
 
         sql += " order by b.createdAt desc  ";
@@ -6933,7 +6939,7 @@ public class SearchController implements Serializable {
      * Does NOT include GRN details (nested table) for maximum performance.
      */
     public void createPoTablePharmacyDto() {
-        System.out.println("createPoTablePharmacyDto: START");
+        logger.info("createPoTablePharmacyDto: START");
         pharmacyPurchaseOrderDtos = null;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -6954,15 +6960,15 @@ public class SearchController implements Serializable {
         countParams.put("dept", sessionController.getDepartment());
         countParams.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
-        System.out.println("createPoTablePharmacyDto: Count JPQL = " + countJpql);
-        System.out.println("createPoTablePharmacyDto: fromDate = " + getFromDate());
-        System.out.println("createPoTablePharmacyDto: toDate = " + getToDate());
-        System.out.println("createPoTablePharmacyDto: institution = " + getSessionController().getInstitution());
-        System.out.println("createPoTablePharmacyDto: department = " + sessionController.getDepartment());
-        System.out.println("createPoTablePharmacyDto: billTypeAtomic = " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+        logger.debug("createPoTablePharmacyDto: Count JPQL = {}", countJpql);
+        logger.debug("createPoTablePharmacyDto: fromDate = {}", getFromDate());
+        logger.debug("createPoTablePharmacyDto: toDate = {}", getToDate());
+        logger.debug("createPoTablePharmacyDto: institution = {}", getSessionController().getInstitution());
+        logger.debug("createPoTablePharmacyDto: department = {}", sessionController.getDepartment());
+        logger.debug("createPoTablePharmacyDto: billTypeAtomic = {}", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         Long count = getBillFacade().countByJpql(countJpql, countParams, TemporalType.TIMESTAMP);
-        System.out.println("createPoTablePharmacyDto: COUNT = " + count);
+        logger.info("createPoTablePharmacyDto: COUNT = {}", count);
 
         // First test with a simple query to check exact types returned by JPQL
         String testJpql = "SELECT b.id, b.deptId, b.createdAt, b.netTotal, b.consignment, b.cancelled, b.billClosed, b.fullyIssued FROM Bill b "
@@ -6973,17 +6979,17 @@ public class SearchController implements Serializable {
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         List testResult = getBillFacade().findByJpql(testJpql, countParams, TemporalType.TIMESTAMP);
-        System.out.println("createPoTablePharmacyDto: TEST QUERY Result size = " + (testResult != null ? testResult.size() : "null"));
+        logger.debug("createPoTablePharmacyDto: TEST QUERY Result size = {}", (testResult != null ? testResult.size() : "null"));
         if (testResult != null && !testResult.isEmpty()) {
             Object[] firstRow = (Object[]) testResult.get(0);
-            System.out.println("createPoTablePharmacyDto: TEST Row - id type: " + (firstRow[0] != null ? firstRow[0].getClass().getName() : "null"));
-            System.out.println("createPoTablePharmacyDto: TEST Row - deptId type: " + (firstRow[1] != null ? firstRow[1].getClass().getName() : "null"));
-            System.out.println("createPoTablePharmacyDto: TEST Row - createdAt type: " + (firstRow[2] != null ? firstRow[2].getClass().getName() : "null"));
-            System.out.println("createPoTablePharmacyDto: TEST Row - netTotal type: " + (firstRow[3] != null ? firstRow[3].getClass().getName() : "null"));
-            System.out.println("createPoTablePharmacyDto: TEST Row - consignment type: " + (firstRow[4] != null ? firstRow[4].getClass().getName() : "null") + " value: " + firstRow[4]);
-            System.out.println("createPoTablePharmacyDto: TEST Row - cancelled type: " + (firstRow[5] != null ? firstRow[5].getClass().getName() : "null") + " value: " + firstRow[5]);
-            System.out.println("createPoTablePharmacyDto: TEST Row - billClosed type: " + (firstRow[6] != null ? firstRow[6].getClass().getName() : "null") + " value: " + firstRow[6]);
-            System.out.println("createPoTablePharmacyDto: TEST Row - fullyIssued type: " + (firstRow[7] != null ? firstRow[7].getClass().getName() : "null") + " value: " + firstRow[7]);
+            logger.debug("createPoTablePharmacyDto: TEST Row - id type: {}", (firstRow[0] != null ? firstRow[0].getClass().getName() : "null"));
+            logger.debug("createPoTablePharmacyDto: TEST Row - deptId type: {}", (firstRow[1] != null ? firstRow[1].getClass().getName() : "null"));
+            logger.debug("createPoTablePharmacyDto: TEST Row - createdAt type: {}", (firstRow[2] != null ? firstRow[2].getClass().getName() : "null"));
+            logger.debug("createPoTablePharmacyDto: TEST Row - netTotal type: {}", (firstRow[3] != null ? firstRow[3].getClass().getName() : "null"));
+            logger.debug("createPoTablePharmacyDto: TEST Row - consignment type: {} value: {}", (firstRow[4] != null ? firstRow[4].getClass().getName() : "null"), firstRow[4]);
+            logger.debug("createPoTablePharmacyDto: TEST Row - cancelled type: {} value: {}", (firstRow[5] != null ? firstRow[5].getClass().getName() : "null"), firstRow[5]);
+            logger.debug("createPoTablePharmacyDto: TEST Row - billClosed type: {} value: {}", (firstRow[6] != null ? firstRow[6].getClass().getName() : "null"), firstRow[6]);
+            logger.debug("createPoTablePharmacyDto: TEST Row - fullyIssued type: {} value: {}", (firstRow[7] != null ? firstRow[7].getClass().getName() : "null"), firstRow[7]);
         }
 
         // Use the working minimal DTO approach - just use the minimal constructor and set rest to null
@@ -7006,7 +7012,7 @@ public class SearchController implements Serializable {
                 + "AND b.department = :dept "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
-        System.out.println("createPoTablePharmacyDto: DTO JPQL = " + jpql);
+        logger.debug("createPoTablePharmacyDto: DTO JPQL = {}", jpql);
 
         if (getSearchKeyword() != null) {
             if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
@@ -7046,7 +7052,7 @@ public class SearchController implements Serializable {
         params.put("dept", sessionController.getDepartment());
         params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
-        System.out.println("createPoTablePharmacyDto: Executing DTO query...");
+        logger.info("createPoTablePharmacyDto: Executing DTO query...");
         try {
             if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
                 pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
@@ -7055,16 +7061,15 @@ public class SearchController implements Serializable {
                 pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
                         .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
             }
-            System.out.println("createPoTablePharmacyDto: Query executed successfully");
-            System.out.println("createPoTablePharmacyDto: Result size = " + (pharmacyPurchaseOrderDtos != null ? pharmacyPurchaseOrderDtos.size() : "null"));
+            logger.info("createPoTablePharmacyDto: Query executed successfully");
+            logger.info("createPoTablePharmacyDto: Result size = {}", (pharmacyPurchaseOrderDtos != null ? pharmacyPurchaseOrderDtos.size() : "null"));
             if (pharmacyPurchaseOrderDtos != null && !pharmacyPurchaseOrderDtos.isEmpty()) {
-                System.out.println("createPoTablePharmacyDto: First DTO = " + pharmacyPurchaseOrderDtos.get(0));
+                logger.debug("createPoTablePharmacyDto: First DTO = {}", pharmacyPurchaseOrderDtos.get(0));
             }
         } catch (Exception e) {
-            System.out.println("createPoTablePharmacyDto: ERROR = " + e.getMessage());
-            e.printStackTrace();
+            logger.error("createPoTablePharmacyDto: ERROR while executing DTO query", e);
         }
-        System.out.println("createPoTablePharmacyDto: END");
+        logger.info("createPoTablePharmacyDto: END");
     }
 
     public void createPoTableStore() {
@@ -16737,10 +16742,10 @@ public class SearchController implements Serializable {
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
             netCashForTheDayBundle.setName("Net Cash");
-            netCashForTheDayBundle.setBundleType("netCash");
+            netCashForTheDayBundle.setBundleType("dailyReturnNetCash");
             netCashForTheDayBundle.setTotal(netCashCollection);
             bundle.getBundles().add(netCashForTheDayBundle);
-            
+
             ReportTemplateRowBundle opdServiceCollectionCredit;
             opdServiceCollectionCredit = generateCreditOpdServiceCollection();
             bundle.getBundles().add(opdServiceCollectionCredit);
@@ -16768,7 +16773,7 @@ public class SearchController implements Serializable {
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundlePlusCredits = new ReportTemplateRowBundle();
             netCashForTheDayBundlePlusCredits.setName("Net Cash Plus Credits");
-            netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
+            netCashForTheDayBundlePlusCredits.setBundleType("dailyReturnNetCashPlusCredit");
             netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
             bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
 
@@ -22420,16 +22425,43 @@ public class SearchController implements Serializable {
         try {
             pdfSc = pdfController.createPdfForBundle(bundle);
         } catch (IOException e) {
-            // Handle IOException
+            logger.error("getBundleAsPdf: Error creating pdfSc via pdfController.createPdfForBundle", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate PDF file. Please try again.");
         }
         return pdfSc;
+    }
+
+    public StreamedContent getDailyReturnBundleAsPdf() {
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createA3PdfForBundle(bundle);
+        } catch (IOException e) {
+            logger.error("getDailyReturnBundleAsPdf: Error creating pdfSc via pdfController.createA3PdfForBundle", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Daily Return PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    public StreamedContent getDailyReturnBundleAsExcel() {
+        try {
+            downloadingExcel = excelController.createExcelForDailyReturnBundle(bundle);
+        } catch (IOException e) {
+            logger.error("getDailyReturnBundleAsExcel: Error creating downloadingExcel via excelController.createExcelForDailyReturnBundle", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Daily Return Excel file. Please try again.");
+        }
+        return downloadingExcel;
     }
 
     public StreamedContent getBundleAsExcel() {
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
         } catch (IOException e) {
-            // Handle IOException
+            logger.error("getBundleAsExcel: Error creating downloadingExcel via excelController.createExcelForBundle", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Excel file. Please try again.");
         }
         return downloadingExcel;
     }

@@ -25,6 +25,7 @@ import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientReportFacade;
@@ -141,6 +142,7 @@ public class LaboratoryManagementController implements Serializable {
     private Priority priority;
 
     private Staff reportHandoverStaff;
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -344,7 +346,7 @@ public class LaboratoryManagementController implements Serializable {
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
-                case INTERFACE :
+                case INTERFACE:
                     addViewReportHistory(currentPatientReport.getId());
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     return "/lab/report_print?faces-redirect=true";
@@ -2353,7 +2355,7 @@ public class LaboratoryManagementController implements Serializable {
             params.put("ret", false);
 
             investigationDTO = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
- 
+
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsDTOWithoutSampleId", sessionController.getLoggedUser());
     }
 
@@ -2506,15 +2508,15 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
         }
-        
+
         PatientReport currentReport = patientReportFacade.findWithoutCache(reportID);
-        
+
         if (currentReport == null) {
             JsfUtil.addErrorMessage("Report not found");
             return;
         }
-        
-        if(!currentReport.getPrintComplete()){
+
+        if (!currentReport.getPrintComplete()) {
             currentReport.setPrintComplete(true);
             patientReportFacade.edit(currentReport);
         }
@@ -2525,7 +2527,31 @@ public class LaboratoryManagementController implements Serializable {
                     labTestHistoryController.addReportPrintHistory(currentReport.getPatientInvestigation(), currentReport);
                 }
             }
-        } 
+        }
+    }
+
+    public void addPrintBarcodeHistory() {
+
+        for (BillBarcode bCode : billBarcodes) {
+            if(bCode == null || bCode.getBill() == null){
+                continue;
+            }
+            
+            List<PatientSampleComponant> list = patientInvestigationController.getPatientSampleComponentsByBill(bCode.getBill());
+            
+            if(list == null || list.isEmpty()){
+                continue;
+            }
+            
+            for (PatientSampleComponant componant : list) {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of Barcode Print.", false)) {
+                        labTestHistoryController.addPrintBarcodeHistory(componant.getPatientInvestigation(), componant.getPatientSample());
+                    }
+                }
+            }
+
+        }
     }
 
     public void addIssueHistory() {
@@ -2534,8 +2560,8 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
         }
-        
-        if(!pt.getHandoverComplete()){
+
+        if (!pt.getHandoverComplete()) {
             pt.setHandoverComplete(true);
             patientReportFacade.edit(pt);
         }
