@@ -156,36 +156,34 @@
                                     <f:facet name="header" >
                                         <h:outputText value="Itemized Sales Summary (DTO - Optimized)" ></h:outputText>
                                     </f:facet>
-                                    <f:facet name="footer" >
-                                        <h:outputText value="Total" ></h:outputText>
-                                        <p:spacer width="50" ></p:spacer>
-                                        <h:outputText value="#{searchController.opdSaleSummaryTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </f:facet>
                                     <p:column>
                                         <f:facet name="header">
                                             <h:outputText value="Category" />
                                         </f:facet>
-                                        <h:outputText value="#{row.categoryName}"  />
+                                        <f:facet name="footer">
+                                            <h:outputText value="Grand Total" style="font-weight: bold;" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.categoryName}" />
+                                    </p:column>
+                                    <p:column exportable="false" headerText="" style="width: 2.5em; text-align: center;">
                                         <p:commandLink
-                                            class="mx-2"
                                             rendered="#{row.categoryId ne null}"
                                             action="#{searchController.navigateToOpdBillItemListFromDto(row)}"
                                             ajax="false">
-                                            <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                                            <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa" />
                                         </p:commandLink>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
                                             <h:outputText value="Item / Service" />
                                         </f:facet>
-                                        <h:outputText value="#{row.itemName}"  />
+                                        <h:outputText value="#{row.itemName}" />
+                                    </p:column>
+                                    <p:column exportable="false" headerText="" style="width: 2.5em; text-align: center;">
                                         <p:commandLink
-                                            class="mx-2"
                                             rendered="#{row.itemId ne null}"
                                             action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
-                                            <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                            <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa" />
                                         </p:commandLink>
                                     </p:column>
                                     <p:column>
@@ -237,6 +235,11 @@
                                     <p:column class="text-end">
                                         <f:facet name="header">
                                             <h:outputText value="Net Amount" />
+                                        </f:facet>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{searchController.opdSaleSummaryTotal}" style="font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
                                         </f:facet>
                                         <h:outputText value="#{row.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
