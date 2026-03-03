@@ -258,8 +258,8 @@
                             <p:column headerText="DATE" />
                             <p:column headerText="ACCNT" />
                             <p:column headerText="NAME" />
-                            <p:column headerText="INVITEMTYPE" rendered="#{quickBookReportController.report ne '9'}"/>
-                            <p:column headerText="INVITEM" rendered="#{quickBookReportController.report ne '9'}"/>
+                            <p:column headerText="INVITEMTYPE" rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}"/>
+                            <p:column headerText="INVITEM" rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}"/>
                             <p:column headerText="AMOUNT" />
                             <p:column headerText="DOCNUM" />
                             <!--<p:column headerText="PONUM"/>-->
@@ -279,8 +279,8 @@
                             <p:column headerText="DATE" />
                             <p:column headerText="ACCNT" />
                             <p:column headerText="NAME" />
-                            <p:column headerText="INVITEMTYPE" rendered="#{quickBookReportController.report ne '9'}"/>
-                            <p:column headerText="INVITEM" rendered="#{quickBookReportController.report ne '9'}"/>
+                            <p:column headerText="INVITEMTYPE" rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}"/>
+                            <p:column headerText="INVITEM" rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}"/>
                             <p:column headerText="AMOUNT" />
                             <p:column headerText="DOCNUM" />
                             <!--<p:column headerText="PONUM"/>-->
@@ -300,8 +300,8 @@
                             <p:column headerText="" />
                             <p:column headerText="" />
                             <p:column headerText="" />
-                            <p:column headerText="" rendered="#{quickBookReportController.report ne '9'}"/>
-                            <p:column headerText="" rendered="#{quickBookReportController.report ne '9'}"/>
+                            <p:column headerText="" rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}"/>
+                            <p:column headerText="" rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}"/>
                             <p:column headerText=""/>
                             <p:column headerText="" />
                             <p:column headerText=""/>
@@ -332,10 +332,10 @@
                     <p:column>
                         <p:outputLabel value="#{qbf.name}" />
                     </p:column>
-                    <p:column rendered="#{quickBookReportController.report ne '9'}">
+                    <p:column rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}">
                         <p:outputLabel value="#{qbf.invItemType}" />
                     </p:column>
-                    <p:column rendered="#{quickBookReportController.report ne '9'}">
+                    <p:column rendered="#{quickBookReportController.report ne '9' and quickBookReportController.report ne '3'}">
                         <p:outputLabel value="#{qbf.invItem}" />
                     </p:column>
                     <p:column styleClass="numberCol" >

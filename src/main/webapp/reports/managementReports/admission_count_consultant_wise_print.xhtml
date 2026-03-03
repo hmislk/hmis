@@ -1,0 +1,274 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <p:panel header="Doctor Wise Admission Count" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Doctor Wise Admission Count Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="admission_count_consultant_wise?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 13px!important;
+                                    margin-top: 3mm!important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+
+                                .toinsdept{
+                                    font-size: 16px!important;
+                                }
+
+                            }
+
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    size: A4 landscape!important;
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 13px!important;
+                                    margin-top: 3mm!important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+
+                                th {
+
+                                }
+
+                                .toinsdept{
+                                    font-size: 14px!important;
+                                }
+
+                            }
+
+                        </style>
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="Doctor Wise Admission Count Report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-1" style=" font-size: 12px;">
+                                        <div class="d-flex gap-3">
+                                            <h:outputText value="From Date :" style="width: 6em!important; font-weight: 600;"/>
+                                            <h:outputText value="#{inwardReportController.fromYearStartDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <h:outputText value="" style="width: 5mm!important;"/>
+                                        <div class="d-flex gap-3">
+                                            <h:outputText value="To Date :" style="width: 4em!important; font-weight: 600;"/>
+                                            <h:outputText value="#{inwardReportController.toYearEndDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <div></div>
+                                    </div>
+                                    
+                                        <div class="d-flex justify-content-between mt-2 w-100 gap-2" id="toinsdept">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th style="font-weight: 700; text-align: center; height: 25px;">
+                                                            <h:outputText value="Doctor Name" />
+                                                        </th>
+                                                        <th style="font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Speciality" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Jan" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Feb" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Mar" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Apr" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="May" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Jun" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Jul" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Aug" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Sep" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Oct" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Nov" />
+                                                        </th>
+                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Dec" />
+                                                        </th>
+                                                        <th style="width: 25mm; font-weight: 700; text-align: center;">
+                                                            <h:outputText value="Total" />
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{inwardReportController.list}" var="item">
+                                                        <tr>
+                                                            <ui:fragment rendered="#{!item.subtotal and !item.grandTotal}">
+                                                                <td>
+                                                                    <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm;" />
+                                                                </td>
+                                                                <td>
+                                                                    <h:outputText value="#{item.specialityName}" style="margin-left: 1mm;" />
+                                                                </td>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{item.subtotal and !item.grandTotal}">
+                                                                <td colspan="2" style="font-weight:bold; background-color: #ebebef;">
+                                                                    <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm; font-weight:bold;" />
+                                                                </td>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{!item.subtotal and item.grandTotal}">
+                                                                <td colspan="2" style="font-weight:bold; text-align: center; background-color: #ebebef; height: 30px;">
+                                                                    <h:outputText value="#{item.nameWithTitle}" style="font-weight:bold; font-size: 15px;" />
+                                                                </td>
+                                                            </ui:fragment>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.january}" rendered="#{item.january > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.february}" rendered="#{item.february > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.march}" rendered="#{item.march > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.april}" rendered="#{item.april > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.may}" rendered="#{item.may > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.june}" rendered="#{item.june > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.july}" rendered="#{item.july > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.august}" rendered="#{item.august > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.september}" rendered="#{item.september > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.october}" rendered="#{item.october > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.november}" rendered="#{item.november > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                                <h:outputText value="#{item.december}" rendered="#{item.december > 0}"/>
+                                                            </td>
+                                                            <td style="text-align: center; background-color: #ebebef; color: black; font-weight: bold;">
+                                                                <h:outputText value="#{item.totalAdmissions}" style="text-align: center; #{item.grandTotal ? 'font-size: 15px;' : ''}" />
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat> 
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
