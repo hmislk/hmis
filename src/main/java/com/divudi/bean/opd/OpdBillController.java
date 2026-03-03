@@ -2242,7 +2242,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         tmp.add(billEntry);
                     }
                 }
+                
+                Priority highestPriority = Optional
+                    .ofNullable(newlyCreatedIndividualBill.getBillItems())
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
 
+                newlyCreatedIndividualBill.setPriority(highestPriority);
+                
                 // Handling partial payments if allowed
                 if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                     newlyCreatedIndividualBill.setCashPaid(cashPaid);
@@ -2371,6 +2382,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 list.add(getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser()));
             }
             newSingleBill.setBillItems(list);
+            
+            Priority highestPriority = Optional
+                    .ofNullable(list)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
+
+            newSingleBill.setPriority(highestPriority);
+            
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
             if (patientEncounter != null) {
                 newSingleBill.setIpOpOrCc("IP");
