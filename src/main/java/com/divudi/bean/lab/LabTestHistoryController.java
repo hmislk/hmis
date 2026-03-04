@@ -15,6 +15,7 @@ import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.facade.lab.LabTestHistoryFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.LabTestHistoryService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -48,6 +49,8 @@ public class LabTestHistoryController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private LabTestHistoryFacade labTestHistoryFacade;
+    @EJB
+    private LabTestHistoryService labTestHistoryService;
     @Inject
     EnumController enumController;
     // </editor-fold>
@@ -65,269 +68,203 @@ public class LabTestHistoryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
-    
     // <editor-fold defaultstate="collapsed" desc="Billing">
     public void addBillingHistory(PatientInvestigation patientInvestigation, Department department) {
-        addNewHistory(TestHistoryType.ORDERED, department, null, patientInvestigation, null, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addBillingHistory(patientInvestigation, department, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Cancel">
     public void addCancelHistory(PatientInvestigation patientInvestigation, Department department, String comment) {
-        addNewHistory(TestHistoryType.CANCELED, department, null, patientInvestigation, null, null, null, null, null, null, null, null, comment);
+        labTestHistoryService.addCancelHistory(patientInvestigation, department, comment, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Refund">
     public void addRefundHistory(PatientInvestigation patientInvestigation, Department department, String comment) {
-        addNewHistory(TestHistoryType.REFUNDED, department, null, patientInvestigation, null, null, null, null, null, null, null, null, comment);
+        labTestHistoryService.addRefundHistory(patientInvestigation, department, comment, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Sample History">
     public void addBarcodeGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addBarcodeGenerateHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addBarcodeViewHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.VIEW_BARCODE, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addBarcodeViewHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addPrintBarcodeHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.PRINT_BARCODE, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addPrintBarcodeHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addSampleSeparateAndCreateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SEPARATE_AND_BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addSampleSeparateAndCreateHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
-    public void addSampleSeparate(PatientInvestigation patientInvestigation, PatientSample patientSample,String separateReason) {
-        addNewHistory(TestHistoryType.SAMPLE_SEPARATE, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, separateReason);
+
+    public void addSampleSeparate(PatientInvestigation patientInvestigation, PatientSample patientSample, String separateReason) {
+        labTestHistoryService.addSampleSeparate(patientInvestigation, patientSample, separateReason, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleReGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.BARCODE_REGENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addSampleReGenerateHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleCollectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_COLLECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addSampleCollectHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleReCollectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_RECOLLECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addSampleReCollectHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter) {
-        if (sampleTransporter == null) {
-            addNewHistory(TestHistoryType.SAMPLE_SENT, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
-        } else {
-            addNewHistory(TestHistoryType.SAMPLE_SENT, null, null, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null, null, null);
-        }
+        labTestHistoryService.addSampleSentHistory(patientInvestigation, patientSample, sampleTransporter, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleOutLabSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter, Department fromDepartment, Department toDepartment) {
-        addNewHistory(TestHistoryType.SAMPLE_SENT_OUT_LAB, fromDepartment, toDepartment, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null, null, null);
+        labTestHistoryService.addSampleOutLabSentHistory(patientInvestigation, patientSample, sampleTransporter, fromDepartment, toDepartment, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addSampleInternalLabSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter, Department fromDepartment, Department toDepartment) {
-        addNewHistory(TestHistoryType.SAMPLE_SENT_INTERNAL_LAB, fromDepartment, toDepartment, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null, null, null);
+        labTestHistoryService.addSampleInternalLabSentHistory(patientInvestigation, patientSample, sampleTransporter, fromDepartment, toDepartment, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addSampleRetrievingHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, String comment) {
-        addNewHistory(TestHistoryType.SAMPLE_RETRIEVING, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, comment);
+        labTestHistoryService.addSampleRetrievingHistory(patientInvestigation, patientSample, comment, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleReceiveHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_RECEIVED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+        labTestHistoryService.addSampleReceiveHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleRejectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, String comment) {
-        addNewHistory(TestHistoryType.SAMPLE_REJECTED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null,comment);
+        labTestHistoryService.addSampleRejectHistory(patientInvestigation, patientSample, comment, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addSampleReCollectRequestHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
-        addNewHistory(TestHistoryType.SAMPLE_RECOLLECT_REQUEST, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
-    }
-    
-    public void addBypassBarcodeGeneratAndReportCreateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addSampleReCollectRequestHistory(patientInvestigation, patientSample, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
+    public void addBypassBarcodeGeneratAndReportCreateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        labTestHistoryService.addBypassBarcodeGeneratAndReportCreateHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Report History">
     public void addCreateReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addCreateReportHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addDataEnterHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.DATA_ENTERED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addDataEnterHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addCalculateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_CALCULATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addCalculateHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addApprovalHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_APPROVED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addApprovalHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
 
     public void addApprovalCancelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_APPROVED_CANCEL, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addApprovalCancelHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addReportRemoveHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, String reason) {
-        addNewHistory(TestHistoryType.REPORT_REMOVE, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, reason);
+        labTestHistoryService.addReportRemoveHistory(patientInvestigation, patientReport, reason, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent">
-    
     // <editor-fold defaultstate="collapsed" desc="SMS">
-
     public void addReportCreateSentSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.CREATE_SMS_AUTO, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
+        labTestHistoryService.addReportCreateSentSMSHistory(patientInvestigation, patientReport, sms);
     }
-    
-    public void addReportSentSMSToPatientHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.SENT_SMS_AUTO, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
-    }
-    
-    public void addReportCreateSentManualSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.CREATE_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
-    }
-    
-    public void addReportSentManualSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
-    }
-    
-    public void addSentSMSFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms, String failureReason) {
-        addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, failureReason);
-    }
-    
-    public void addResentFailureSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.RESENT_FAIL_SMS, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
-    }
-    
-    // </editor-fold>
-    
-    // <editor-fold defaultstate="collapsed" desc="Email">
 
+    public void addReportSentSMSToPatientHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        labTestHistoryService.addReportSentSMSToPatientHistory(patientInvestigation, patientReport, sms);
+    }
+
+    public void addReportCreateSentManualSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        labTestHistoryService.addReportCreateSentManualSMSHistory(patientInvestigation, patientReport, sms, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
+
+    public void addReportSentManualSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        labTestHistoryService.addReportSentManualSMSHistory(patientInvestigation, patientReport, sms, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
+
+    public void addSentSMSFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms, String failureReason) {
+        labTestHistoryService.addSentSMSFailureHistory(patientInvestigation, patientReport, sms, failureReason);
+    }
+
+    public void addResentFailureSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        labTestHistoryService.addResentFailureSMSHistory(patientInvestigation, patientReport, sms, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Email">
     public void addReportCreateEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
-        addNewHistory(TestHistoryType.CREATE_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
+        labTestHistoryService.addReportCreateEmailHistory(patientInvestigation, patientReport, email);
     }
-    
+
     public void addReportSentEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
-        addNewHistory(TestHistoryType.SENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
+        labTestHistoryService.addReportSentEmailHistory(patientInvestigation, patientReport, email);
     }
-    
+
     public void addSentEmailFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email, String failureReason) {
-        addNewHistory(TestHistoryType.SENT_EMAIL_FAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, failureReason);
+        labTestHistoryService.addSentEmailFailureHistory(patientInvestigation, patientReport, email, failureReason);
     }
+
     public void addResentFailureEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
-        addNewHistory(TestHistoryType.RESENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
+        labTestHistoryService.addResentFailureEmailHistory(patientInvestigation, patientReport, email, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
     // </editor-fold>
-    
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Report View & Print">
     public void addReportViewHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_VIEWED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addReportViewHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addReportPrintHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_PRINTED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addReportPrintHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Report Issue">
     public void addReportIssueToPatientHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_ISSUE_PATIENT, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addReportIssueToPatientHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
-    public void addReportIssuetoStaffHistory(PatientInvestigation patientInvestigation, PatientReport patientReport,Staff issueToStaff) {
-        addNewHistory(TestHistoryType.REPORT_ISSUE_STAFF, null, null, patientInvestigation, patientReport, null, issueToStaff, null, null, null, null, null, null);
+
+    public void addReportIssuetoStaffHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Staff issueToStaff) {
+        labTestHistoryService.addReportIssuetoStaffHistory(patientInvestigation, patientReport, issueToStaff, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-    
+
     public void addExportPDFReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.REPORT_EXPORT_AS_PDF, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+        labTestHistoryService.addExportPDFReportHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Data Recive from Analyzer">
     public void addDataReciveFromAnalyzerHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Category analyzer, String analyzerMessage) {
-        addNewHistory(TestHistoryType.RESULT_RECEIVED_FROM_ANALYZER, null, null, patientInvestigation, patientReport, null, null, null, null, null, analyzer, analyzerMessage, null);
+        labTestHistoryService.addDataReciveFromAnalyzerHistory(patientInvestigation, patientReport, analyzer, analyzerMessage, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
-
     // </editor-fold>
-    
-    public void addNewHistory(
-            TestHistoryType testHistoryType,
-            Department fromDepartment,
-            Department toDepartment,
-            PatientInvestigation patientInvestigation,
-            PatientReport patientReport,
-            PatientSample patientSample,
-            Staff staff,
-            Sms sms,
-            AppEmail email,
-            PatientSampleComponant sampleComponant,
-            Category analyzer,
-            String analyzerMessage,
-            String comment
-    ) {
-        current = new LabTestHistory();
-        current.setTestHistoryType(testHistoryType);
-        current.setFromDepartment(fromDepartment);
-        current.setToDepartment(toDepartment);
-        current.setPatientInvestigation(patientInvestigation);
-        current.setPatientReport(patientReport);
-        current.setPatientSample(patientSample);
-        current.setStaff(staff);
-        current.setSms(sms);
-        current.setEmail(email);
-        current.setSampleComponant(sampleComponant);
-        current.setAnalyzer(analyzer);
-        current.setAnalyzerReceiveMessage(analyzerMessage);
-        current.setComment(comment);
 
-        save();
-
-    }
-
-    public void save() {
-        if (current == null) {
-            return;
-        }
-        try {
-            if (current.getId() != null) {
-                getLabTestHistoryFacade().edit(current);
-                //JsfUtil.addSuccessMessage("Updated Successfully.");
-            } else {
-                current.setInstitution(sessionController.getInstitution());
-                current.setDepartment(sessionController.getDepartment());
-                current.setCreatedAt(new Date());
-                current.setCreatedBy(getSessionController().getLoggedUser());
-                getLabTestHistoryFacade().create(current);
-                //JsfUtil.addSuccessMessage("Saved Successfully");
-            }
-            items = null;
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error saving: " + e.getMessage());
-        }
-    }
-
+    // <editor-fold defaultstate="collapsed" desc="Query Methods">
     public List<LabTestHistoryLight> getCreatedLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, inst.name, dept.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
+                + " LEFT JOIN his.institution inst"
+                + " LEFT JOIN his.department dept"
                 + " WHERE his.retired=:retired "
                 + " AND his.patientInvestigation =:patientInvestigation"
                 + " AND his.testHistoryType =:type"
@@ -339,14 +276,16 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
-    
+
     public List<LabTestHistoryLight> getCanceledLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, inst.name, dept.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
+                + " LEFT JOIN his.institution inst"
+                + " LEFT JOIN his.department dept"
                 + " WHERE his.retired=:retired "
                 + " AND his.patientInvestigation =:patientInvestigation"
                 + " AND his.testHistoryType =:type"
@@ -358,14 +297,16 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
-    
+
     public List<LabTestHistoryLight> getRefundedLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, inst.name, dept.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
+                + " LEFT JOIN his.institution inst"
+                + " LEFT JOIN his.department dept"
                 + " WHERE his.retired=:retired "
                 + " AND his.patientInvestigation =:patientInvestigation"
                 + " AND his.testHistoryType =:type"
@@ -377,21 +318,22 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
-    
 
     public List<LabTestHistoryLight> getReportLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, inst.name, dept.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
+                + " LEFT JOIN his.institution inst"
+                + " LEFT JOIN his.department dept"
                 + " WHERE his.retired=:retired "
                 + " AND his.patientInvestigation=:patientInvestigation"
                 + " AND his.testHistoryType In :types"
                 + " order by his.createdAt asc";
         Map<String, Object> params = new HashMap<>();
-        
+
         List<TestHistoryType> reportedTypes = new ArrayList<>();
         reportedTypes.add(TestHistoryType.REPORT_CREATED);
         reportedTypes.add(TestHistoryType.DATA_ENTERED);
@@ -412,8 +354,6 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
-    
-    
 
     public List<LabTestHistoryLight> getLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation, PatientSample patientSample) {
 
@@ -424,8 +364,10 @@ public class LabTestHistoryController implements Serializable {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, inst.name, dept.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
+                + " LEFT JOIN his.institution inst"
+                + " LEFT JOIN his.department dept"
                 + " WHERE his.retired=:retired "
                 + " AND his.patientInvestigation=:patientInvestigation"
                 + " AND his.patientSample =:ps"
@@ -467,8 +409,10 @@ public class LabTestHistoryController implements Serializable {
             return null;
         }
 
-        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, inst.name, dept.name, his.staff, his.createdBy, his.comment) "
                 + " FROM LabTestHistory his "
+                + " LEFT JOIN his.institution inst"
+                + " LEFT JOIN his.department dept"
                 + " WHERE his.retired=:retired "
                 + " AND his.patientReport=:pReport"
                 + " AND his.testHistoryType In :types"
@@ -481,9 +425,8 @@ public class LabTestHistoryController implements Serializable {
         List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) labTestHistoryFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return labHistory;
     }
-    
-    
-//  All Report Data (All in One)
+
+    //  All Report Data (All in One)
     public List<LabTestHistoryLight> getAllPatientReportHistorys(PatientReport report) {
         List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED);
@@ -495,34 +438,24 @@ public class LabTestHistoryController implements Serializable {
         types.add(TestHistoryType.REPORT_APPROVED_CANCEL);
         types.add(TestHistoryType.REPORT_REMOVE);
         types.add(TestHistoryType.REPORT_VIEWED);
+        types.add(TestHistoryType.CREATE_SMS_AUTO);
         types.add(TestHistoryType.SENT_SMS_AUTO);
+        types.add(TestHistoryType.SENT_SMS_FAIL);
+        types.add(TestHistoryType.RESENT_FAIL_SMS);
+        types.add(TestHistoryType.CREATE_SMS_MANUAL);
         types.add(TestHistoryType.SENT_SMS_MANUAL);
+        types.add(TestHistoryType.CREATE_EMAIL);
         types.add(TestHistoryType.SENT_EMAIL);
+        types.add(TestHistoryType.SENT_EMAIL_FAIL);
+        types.add(TestHistoryType.RESENT_EMAIL);
         types.add(TestHistoryType.REPORT_PRINTED);
         types.add(TestHistoryType.REPORT_EXPORT_AS_PDF);
         types.add(TestHistoryType.REPORT_ISSUE_STAFF);
         types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
-        
-        return getReportLabTestHistorys(report,types);
+
+        return getReportLabTestHistorys(report, types);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    // </editor-fold>
 
     @FacesConverter(forClass = LabTestHistory.class)
     public static class LabTestHistoryConverter implements Converter {
@@ -550,7 +483,6 @@ public class LabTestHistoryController implements Serializable {
             }
         }
     }
-    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public LabTestHistory getCurrent() {
@@ -577,6 +509,26 @@ public class LabTestHistoryController implements Serializable {
 
     public SessionController getSessionController() {
         return sessionController;
+    }
+
+    public void save() {
+        if (current == null) {
+            return;
+        }
+        try {
+            if (current.getId() != null) {
+                getLabTestHistoryFacade().edit(current);
+            } else {
+                current.setInstitution(sessionController.getInstitution());
+                current.setDepartment(sessionController.getDepartment());
+                current.setCreatedAt(new Date());
+                current.setCreatedBy(getSessionController().getLoggedUser());
+                getLabTestHistoryFacade().create(current);
+            }
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving: " + e.getMessage());
+        }
     }
     // </editor-fold>
 
