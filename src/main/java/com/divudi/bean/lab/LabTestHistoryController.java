@@ -185,14 +185,49 @@ public class LabTestHistoryController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent">
-    public void addReportSentSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+    
+    // <editor-fold defaultstate="collapsed" desc="SMS">
+
+    public void addReportCreateSentSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        addNewHistory(TestHistoryType.CREATE_SMS_AUTO, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
+    }
+    
+    public void addReportSentSMSToPatientHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        addNewHistory(TestHistoryType.SENT_SMS_AUTO, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
+    }
+    
+    public void addReportCreateSentManualSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        addNewHistory(TestHistoryType.CREATE_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
+    }
+    
+    public void addReportSentManualSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
         addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
     }
+    
+    public void addSentSMSFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms, String failureReason) {
+        addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, failureReason);
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Email">
 
+    public void addReportCreateEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
+        addNewHistory(TestHistoryType.CREATE_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
+    }
+    
     public void addReportSentEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
         addNewHistory(TestHistoryType.SENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
     }
-
+    
+    public void addSentEmailFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email, String failureReason) {
+        addNewHistory(TestHistoryType.SENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, failureReason);
+    }
+    
+    public void addResentFailureSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        addNewHistory(TestHistoryType.RESENT_FAIL_SMS, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
+    }
+    // </editor-fold>
+    
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Report View & Print">
