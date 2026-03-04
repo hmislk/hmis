@@ -2142,9 +2142,6 @@ public class PatientReportController implements Serializable {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
-
-        System.out.println(currentPtIx.getInvestigation().getName() + " Allow to Send SMS ------> " + currentPtIx.getInvestigation().isAllowToSendSMS());
-        
         
         if (currentPtIx.getInvestigation().isAllowToSendSMS()) {
 
@@ -2176,12 +2173,14 @@ public class PatientReportController implements Serializable {
 
                 if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
                     Sms e = new Sms();
+                    e.setPending(true);
                     e.setCreatedAt(new Date());
                     e.setCreater(sessionController.getLoggedUser());
                     e.setBill(currentPtIx.getBillItem().getBill());
                     e.setPatientReport(currentPatientReport);
                     e.setPatientInvestigation(currentPtIx);
                     e.setCreatedAt(new Date());
+                    e.setSmsType(MessageType.LabReport);
                     e.setCreater(sessionController.getLoggedUser());
                     e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
                     e.setSendingMessage(smsBody(currentPatientReport));
