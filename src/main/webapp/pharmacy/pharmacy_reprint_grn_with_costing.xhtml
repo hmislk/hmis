@@ -77,11 +77,12 @@
 
                         <div style="width: 100%;">
                             <!-- Information message when GRN cannot be cancelled due to returns -->
-                            <h:panelGroup rendered="#{not pharmacyBillSearch.bill.cancelled and pharmacyBillSearch.hasGrnReturnsOrPendingReturns()}">
-                                <p:messages id="grnCancelInfo" closable="false" autoUpdate="false">
-                                    <p:message severity="info" summary="Cancellation Not Available"
-                                               detail="This GRN cannot be cancelled because it has return processes (completed or in progress). Please check the Returns and Cancellations section." />
-                                </p:messages>
+                            <h:panelGroup class="d-flex align-items-center justify-content-center" rendered="#{not pharmacyBillSearch.bill.cancelled and pharmacyBillSearch.hasGrnReturnsOrPendingReturns()}">
+                                <p style="font-weight: bold; color: red">Cancellation Not Available.</p>
+                                <p style="font-weight: bold; color: red" class="mx-2">
+                                    This GRN cannot be cancelled because it has return processes (completed or in progress).
+                                    Please check the Returns and Cancellations section.
+                                </p>
                             </h:panelGroup>
 
                             <!--                            <h:panelGroup id="gpBillPreview" >

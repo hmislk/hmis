@@ -106,6 +106,9 @@
                         <h:outputText value="#{sh.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="Total" styleClass="fw-bold"/>
+                        </f:facet>
                     </p:column>
 
                     <p:column headerText="Transaction Type" width="15rem">
@@ -128,6 +131,11 @@
                                       styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{pharmacyErrorChecking.binCardTotalIn}" styleClass="text-success fw-bold">
+                                <f:convertNumber pattern="#,##0.#"/>
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <p:column headerText="Quantity Out" class="text-end">
@@ -136,12 +144,24 @@
                                       styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{pharmacyErrorChecking.binCardTotalOut}" styleClass="text-danger fw-bold">
+                                <f:convertNumber pattern="#,##0.#"/>
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <p:column headerText="Stock Before (Item)" class="text-end">
                         <h:outputText value="#{sh.transThisIsStockIn ? sh.itemStock - sh.transAbsoluteQtyPlusFreeQty : sh.itemStock + sh.transAbsoluteQtyPlusFreeQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="Net: " styleClass="fw-bold"/>
+                            <h:outputText value="#{pharmacyErrorChecking.binCardNetTotal}"
+                                          styleClass="fw-bold #{pharmacyErrorChecking.binCardNetTotal ge 0 ? 'text-success' : 'text-danger'}">
+                                <f:convertNumber pattern="#,##0.#"/>
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <p:column headerText="Stock After (Item)" class="text-end">

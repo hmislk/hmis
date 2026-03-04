@@ -137,6 +137,23 @@
                                 icon="pi pi-times-circle"  
                                 styleClass="ui-button-danger">
                             </p:commandButton>
+                            
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark selected items allow to Send SMS."
+                                action="#{itemController.markSelectedItemsToAllowSnedSMS()}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark selected items allow to Send SMS"
+                                action="#{itemController.unMarkSelectedItemsToAllowSnedSMS()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
+                            </p:commandButton>
+
 
                             <p:commandButton 
                                 ajax="false" 
@@ -371,6 +388,20 @@
                                     <h:outputLabel value="#{i.allowedForBillingPriority ?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
+                                
+                                <p:column 
+                                    width="4em;"
+                                    sortBy="#{i.allowToSendSMS}"
+                                    filterMatchMode="contains" 
+                                    filterBy="#{i.allowToSendSMS}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Allow to Send SMS" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.allowToSendSMS ?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
+
 
                             </p:dataTable>
                         </p:panel>
