@@ -49,11 +49,17 @@ public enum TestHistoryType {
     REPORT_REMOVE,
     REPORT_ISSUE_PATIENT,
     REPORT_ISSUE_STAFF,
+    CREATE_SMS_MANUAL,
     SENT_SMS_MANUAL,
+    CREATE_SMS_AUTO,
     SENT_SMS_AUTO,
-    SENT_EMAIL;
+    SENT_SMS_FAIL,
+    RESENT_FAIL_SMS,
+    CREATE_EMAIL,
+    SENT_EMAIL,
+    SENT_EMAIL_FAIL;
     
-    
+     
     // <editor-fold defaultstate="collapsed" desc="Extra Need to Add Enum">
     
 //    1. Bill Request (Cancel/Refund)
@@ -142,12 +148,24 @@ public enum TestHistoryType {
                 return "Report Issue to Patient";
             case REPORT_ISSUE_STAFF:
                 return "Report Issue to Staff";    
+            case CREATE_SMS_MANUAL:
+                return "Create SMS (Manual)";
             case SENT_SMS_MANUAL:
-                return "SMS Sent (Manual)";
+                return "Sent SMS (Manual)";
+            case CREATE_SMS_AUTO:
+                return "Create SMS (Auto)";
             case SENT_SMS_AUTO:
-                return "SMS Sent (Auto)";
+                return "Sent SMS (Auto)";
+            case SENT_SMS_FAIL:
+                return "Failed - SMS Send";
+            case RESENT_FAIL_SMS:
+                return "Failed SMS Resent";
+            case CREATE_EMAIL:
+                return "Create E-mail";
             case SENT_EMAIL:
                 return "Email Sent";
+            case SENT_EMAIL_FAIL:
+                return "Failed - Email Sent";
             default:
                 return this.toString();
         }
