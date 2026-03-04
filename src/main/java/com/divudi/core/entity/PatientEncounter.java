@@ -563,9 +563,6 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patient == null) {
-            patient = new Patient();
-        }
         return patient;
     }
 

@@ -111,6 +111,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToDoctorDashboard() {
+        items = null;
         return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
     }
 

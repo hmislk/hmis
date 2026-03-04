@@ -11,6 +11,7 @@ import com.divudi.service.DrawerService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -228,6 +229,15 @@ public class DrawerEntryController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public String getExportFileName() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String from = fromDate != null ? sdf.format(fromDate) : "unknown";
+        String to = toDate != null ? sdf.format(toDate) : "unknown";
+        String user = (webUser != null && webUser.getWebUserPerson() != null)
+                ? webUser.getWebUserPerson().getName() : "All";
+        return "Drawer History - " + user + " - " + from + " to " + to;
     }
 
     public WebUser getWebUser() {

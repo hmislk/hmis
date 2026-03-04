@@ -256,6 +256,42 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags ml-5"/>
+                                <p:outputLabel value="Category" for="phmCategory" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmCategory"
+                                value="#{pharmacyController.category}"
+                                filter="true"
+                                class="w-100">
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                               var="category"
+                                               itemLabel="#{category.name}"
+                                               itemValue="#{category}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-capsules ml-5"/>
+                                <p:outputLabel value="Dosage Form" for="phmDf" class="mx-2">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDf"
+                                value="#{pharmacyController.dosageForm}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Dosage Forms"/>
+                                <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-tag ml-5"/>
                                 <p:outputLabel value="Item Name/Code" class="mx-2">
                                 </p:outputLabel>
@@ -273,8 +309,6 @@
                                     <h:outputLabel value="#{item.code}"/>
                                 </p:column>
                             </p:autoComplete>
-
-                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-exchange-alt ml-5"/>
@@ -299,6 +333,8 @@
                                 <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
                                 <f:selectItem itemLabel="Bill" itemValue="byBill"/>
                             </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building ml-5"/>
@@ -333,7 +369,7 @@
                                              action="#{pharmacyController.createStockTransferReport()}">
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+<!--                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                                 <p:printer target="tbl1"/>
                             </p:commandButton>
@@ -344,12 +380,21 @@
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              rendered="#{pharmacyController.reportType eq 'byBill'}">
                                 <p:printer target="tbl3"/>
+                            </p:commandButton>-->
+                            <p:commandButton 
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="stock_transfer_report_print?faces-redirect=true"
+                                    value="To Print"
+                                    rendered="#{pharmacyController.reportType ne 'breakdownSummary'}">
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download"
-                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:dataExporter type="xlsx" target="tbl1" fileName="stock_trnsfer_summery"/>
+                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}"
+                                             action="#{pharmacyController.exportStockTransferSummaryReportToExcel()}">
+                                <!-- <p:dataExporter type="xlsx" target="tbl1" fileName="stock_trnsfer_summery" /> -->
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'detailReport'}"
@@ -358,12 +403,12 @@
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="stock_trnsfer_bill"/>
+                                <p:dataExporter type="xlsx" target="tbl3" fileName="stock_trnsfer_bill" postProcessor="#{pharmacyController.postProcessStockTransferByBillExcel}"/>
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:dataExporter type="pdf" target="tbl1" fileName="stock_trnsfer_summery"/>
+                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}"
+                                             action="#{pharmacyController.exportStockTransferSummaryReportToPDF()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'detailReport'}"
@@ -371,8 +416,9 @@
                                 <!--                            <p:dataExporter type="pdf" target="tbl2" fileName="stock_trnsfer_detail"/>-->
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                             rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="pdf" target="tbl3" fileName="stock_trnsfer_bill"/>
+                                             rendered="#{pharmacyController.reportType eq 'byBill'}"
+                                             action="#{pharmacyController.exportStockTransferByBillToPDF()}">
+                                <!-- <p:dataExporter type="pdf" target="tbl3" fileName="stock_trnsfer_bill"/> -->
                             </p:commandButton>
                         </div>
 
@@ -745,6 +791,14 @@
 
                                     <p:column headerText="Item Code" width="5em" style="text-align: right; padding-right: 10px;">
                                         <p:outputLabel value="#{i.billItem.item.code}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Category" width="8em">
+                                        <p:outputLabel value="#{i.billItem.item.category.name}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Dosage Form" width="8em">
+                                        <p:outputLabel value="#{i.billItem.item.dosageForm.name}"/>
                                     </p:column>
 
                                     <p:column headerText="Quantity" width="5em" style="text-align: right; padding-right: 10px;">

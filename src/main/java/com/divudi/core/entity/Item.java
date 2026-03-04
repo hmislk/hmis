@@ -319,6 +319,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private boolean consumptionAllowed = true;
 
     private boolean allowedForBillingPriority;
+    private boolean allowToSendSMS;
+
 
     public double getVatPercentage() {
         return 0;
@@ -882,7 +884,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public SessionNumberType getSessionNumberType() {
         if (sessionNumberType == null) {
-            sessionNumberType = SessionNumberType.ByBill;
+            sessionNumberType = SessionNumberType.None;
         }
         return sessionNumberType;
     }
@@ -1689,6 +1691,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setExpired(Boolean expired) {
         this.expired = expired;
+    }
+
+    public boolean isAllowToSendSMS() {
+        return allowToSendSMS;
+    }
+
+    public void setAllowToSendSMS(boolean allowToSendSMS) {
+        this.allowToSendSMS = allowToSendSMS;
     }
     
     static class ReportItemComparator implements Comparator<ReportItem> {

@@ -7,7 +7,8 @@ public enum InventoryReports implements IReportType {
     CONSUMPTION_REPORT("Consumption Report"),
     GRN_REPORT("GRN Report"),
     GRN_RETURN_VARIANCE_REPORT("GRN Return Variance Report"),
-    STOCK_LEDGER_REPORT("Stock Ledger Report");
+    STOCK_LEDGER_REPORT("Stock Ledger Report"),
+    STOCK_LEDGER_DTO_REPORT("Stock Ledger Report (DTO)");
 
     private final String displayName;
 

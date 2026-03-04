@@ -64,13 +64,21 @@
                                         action="#{financialTransactionController.navigateToMyDrawer()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary" 
-                                        value="My Drawer History" 
-                                        icon="pi pi-folder-open" 
-                                        style="background-color: #11633a; color: #ffffff;" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="My Drawer History"
+                                        icon="pi pi-folder-open"
+                                        style="background-color: #11633a; color: #ffffff;"
+                                        ajax="false"
                                         action="#{drawerEntryController.navigateToMyDrawerEntry()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Request Drawer Adjustment"
+                                        icon="pi pi-sliders-h"
+                                        ajax="false"
+                                        action="#{drawerAdjustmentController.navigateToRequestAdjustment()}">
                                     </p:commandButton>
 
 
@@ -382,6 +390,15 @@
                                             </p:commandButton>
                                         </h:panelGroup>
                                     </div>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Adjust Drawer Balance"
+                                        icon="pi pi-wallet"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('DrawerAdjustmentDirect')}"
+                                        action="#{drawerAdjustmentController.navigateToAdminAdjustment()}">
+                                    </p:commandButton>
                                 </p:tab>
 
                             </p:accordionPanel>

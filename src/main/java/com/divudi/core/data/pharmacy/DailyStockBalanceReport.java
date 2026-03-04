@@ -26,6 +26,11 @@ public class DailyStockBalanceReport {
     private PharmacyBundle pharmacyPurchaseByBillTypeBundle;
     private PharmacyBundle pharmacyTransferByBillTypeBundle;
     private PharmacyBundle pharmacyAdjustmentsByBillTypeBundle;
+    /** Pre-bill retail sales and their cancellations (informational section).
+     *  Covers PRE_TO_SETTLE_AT_CASHIER and CANCELLED_PRE — stock that moved
+     *  within the report period but whose financial settlement is not yet
+     *  recorded. Use this to explain any closing-stock discrepancy. */
+    private PharmacyBundle preBillStockMovementsBundle;
     
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
@@ -694,7 +699,12 @@ public class DailyStockBalanceReport {
         this.pharmacyAdjustmentsByBillTypeBundle = pharmacyAdjustmentsByBillTypeBundle;
     }
 
-    
-    
+    public PharmacyBundle getPreBillStockMovementsBundle() {
+        return preBillStockMovementsBundle;
+    }
+
+    public void setPreBillStockMovementsBundle(PharmacyBundle preBillStockMovementsBundle) {
+        this.preBillStockMovementsBundle = preBillStockMovementsBundle;
+    }
 
 }

@@ -1,0 +1,305 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <style>
+                            @media screen{
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+                                
+                                
+                            }
+                            
+                            @media print {
+                                @page {
+                                    size: A4 landscape!important;
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 8pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+                                
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                }
+                                
+                            }
+
+                            @media screen, print {
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+
+                                table {
+                                    width: 99.9%;
+                                    font-size: 9pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+                                
+                                th, td {
+                                    border: 1pt solid #000000 !important;
+                                    padding: 1pt!important;
+                                    text-align: left;
+                                    overflow-wrap: break-word;
+                                    white-space: normal;
+                                }
+
+                                .report-header-table {
+                                    border-collapse: collapse;
+                                }
+
+                                .report-header-table .label {
+                                    font-weight: 600;
+                                    padding-right: 5px;
+                                    white-space: nowrap;
+                                }
+
+                                .report-header-table td {
+                                    padding: 3px 8px;
+                                    vertical-align: top;
+                                }
+
+                                /* Hide PrimeFaces sort icons in datatable headers */
+                                .ui-sortable-column .ui-sortable-column-icon,
+                                .ui-sortable-column .ui-sortable-icon,
+                                .ui-sortable-column .pi-sort,
+                                .ui-sortable-column .ui-sort-up,
+                                .ui-sortable-column .ui-sort-down,
+                                .ui-sortable-column .ui-column-title .pi-sort {
+                                    display: none !important;
+                                }
+                            }
+                            
+                        </style>
+                        <h:panelGroup>
+                            <p:panel header="Grn Return Variance Report" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Grn Return Variance Report" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="report" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/inventoryReports/grn_return_variance_report?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="report" class="d-flex justify-content-center">
+                                <div class="paper">
+                                    <div class="header" >
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="GRN Return Variance Report"/>
+                                            </div>
+                                        <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="Supplier:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Institution:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.institution != null ? pharmacyController.institution.name : 'All'}"/>
+
+                                                <h:outputText value="Site:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.site != null ? pharmacyController.site.name : 'All'}"/>
+
+                                                <h:outputText value="Department:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.dept != null ? pharmacyController.dept.name : 'All'}"/>
+
+                                                <!-- Row 3 -->
+                                                <h:outputText value="Payment Mode:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.paymentMethod != null ? pharmacyController.paymentMethod.label : 'All'}"/>
+
+                                            </h:panelGrid>
+                                        </div>   
+                                    </div>
+                                    <p:dataTable id="varianceTable"
+                                                value="#{pharmacyController.bills}"
+                                                var="b"
+                                                rendered="#{pharmacyController.bills != null and not empty pharmacyController.bills}"
+                                                styleClass="table-small"
+                                                class="w-100">
+
+                                        <p:column 
+                                            headerText="Supplier" 
+                                            sortBy="#{b.toInstitution.name}"
+                                            width="20mm">
+                                            <h:outputText value="#{b.toInstitution != null ? b.toInstitution.name : (b.fromInstitution != null ? b.fromInstitution.name : '')}"/>
+                                            <f:facet name="footer">
+                                                <h:outputText value="Total" styleClass="fw-bold"/>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                        <p:column 
+                                            headerText="Department" 
+                                            sortBy="#{b.department.name}"
+                                            width="20mm">
+                                            <h:outputText value="#{b.department.name}"/>
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="GRN Bill No" 
+                                            sortBy="#{b.referenceBill.deptId}"
+                                            width="20mm">
+                                            <h:outputText value="#{b.referenceBill != null ? b.referenceBill.deptId : ''}"/>
+                                        </p:column>
+                                        <p:column 
+                                            headerText="GRN Return Bill No" 
+                                            sortBy="#{b.referenceBill.deptId}"
+                                            width="20mm">
+                                            <h:outputText value="#{b.deptId}"/>
+                                        </p:column>
+
+                                        <p:column
+                                            id="colGrnNetTotal"
+                                            headerText="GRN Net Total"
+                                            sortBy="#{b.referenceBill.netTotal}"
+                                            styleClass="text-end"
+                                            width="15mm">
+                                            <h:outputText value="#{b.referenceBill != null ? (b.referenceBill.netTotal lt 0 ? -b.referenceBill.netTotal : b.referenceBill.netTotal) : 0.0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.totalGrnNetTotalAbsolute}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="GRN Date" 
+                                            sortBy="#{b.referenceBill.createdAt}"
+                                            width="15mm">
+                                            <h:outputText value="#{b.referenceBill != null ? b.referenceBill.createdAt : ''}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        
+                                        <p:column 
+                                            headerText="Return Date" 
+                                            sortBy="#{b.createdAt}"
+                                            width="15mm">
+                                            <h:outputText value="#{b.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="GRN Payment Method" 
+                                            sortBy="#{b.referenceBill.paymentMethod}"
+                                            width="13mm">
+                                            <h:outputText value="#{b.referenceBill != null ? b.referenceBill.paymentMethod : ''}"/>
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="Return Amount" 
+                                            sortBy="#{b.billFinanceDetails.netTotal}" 
+                                            styleClass="text-end"
+                                            width="15mm">
+                                            <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netTotal != null ? b.billFinanceDetails.netTotal : (b.netTotal != null ? b.netTotal : 0.0)}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.totalReturnAmount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="Actual Net Value" 
+                                            sortBy="#{b.billFinanceDetails.actualNetValue}" 
+                                            styleClass="text-end"
+                                            width="15mm">
+                                            <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.actualNetValue != null ? b.billFinanceDetails.actualNetValue : 0.0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.totalActualNetValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column 
+                                            id="colNetValueAdjustment"
+                                            headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}"
+                                            styleClass="text-end"
+                                            width="15mm">
+                                            <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netValueAdjustment != null ? b.billFinanceDetails.netValueAdjustment : 0.0}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.totalNetValueAdjustment}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column headerText="Return Comments" width="15mm">
+                                            <h:outputText value="#{b.comments != null ? b.comments : ''}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Return Payment Method" sortBy="#{b.paymentMethod}" width="12mm">
+                                            <h:outputText value="#{b.paymentMethod != null ? b.paymentMethod : ''}"/>
+                                        </p:column>
+
+                                    </p:dataTable>                                
+                                </div>     
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

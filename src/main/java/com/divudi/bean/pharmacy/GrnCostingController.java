@@ -11,6 +11,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
@@ -60,6 +61,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.util.BigDecimalUtil;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1977,15 +1979,7 @@ public class GrnCostingController implements Serializable {
 
     @Deprecated // THis is NO longer Needed
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        // BillFeePayment is deprecated and no longer used
     }
 
     public BillItem getCurrentExpense() {
@@ -2546,9 +2540,10 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
         getCurrentGrnBillPre().setCreditDuration(getApproveBill().getCreditDuration());
 
-        // Copy discount from the approved purchase order to GRN
+        // Copy discount and departmentType from the approved purchase order to GRN
         if (getApproveBill() != null) {
             getCurrentGrnBillPre().setDiscount(getApproveBill().getDiscount());
+            getCurrentGrnBillPre().setDepartmentType(getApproveBill().getDepartmentType());
         }
 
         // Ensure calculations are done after setup
@@ -2786,6 +2781,23 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return;
+        }
+
+        // Validate department type consistency across all bill items
+        if (!getBillItems().isEmpty()) {
+            DepartmentType billDeptType = getCurrentGrnBillPre().getDepartmentType();
+            if (billDeptType == null && getBillItems().get(0).getItem() != null) {
+                billDeptType = getBillItems().get(0).getItem().getDepartmentType();
+                getCurrentGrnBillPre().setDepartmentType(billDeptType);
+            }
+            for (BillItem bi : getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(billDeptType)) {
+                        JsfUtil.addErrorMessage("Items belong to more than one department type. GRN cannot be finalized.");
+                        return;
+                    }
+                }
+            }
         }
 
         // Validate batch details and sale prices for finalization
@@ -3884,6 +3896,9 @@ public class GrnCostingController implements Serializable {
 
         netTotal = lineNetTotal.abs().add(billTax.abs()).add(BigDecimal.valueOf(currentBillExpensesConsideredForCosting).abs()).subtract(billDiscount.abs());
 
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(bill.getExpensesTotalNotConsideredForCosting());
+        BigDecimal totalBillValue = netTotal.add(expensesNotForCosting);
+
         bill.setTotal(lineNetTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
@@ -3931,6 +3946,10 @@ public class GrnCostingController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
+
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(totalBillValue);
 
     }
 
@@ -4235,6 +4254,10 @@ public class GrnCostingController implements Serializable {
         i.getBillItem().setPharmaceuticalBillItem(i);
 
         getBillItemFacade().edit(i.getBillItem());
+    }
+    
+    public String convertToWord(Double d) {
+        return d == null ? "" : CommonFunctions.convertToWord(d);
     }
 
 }
