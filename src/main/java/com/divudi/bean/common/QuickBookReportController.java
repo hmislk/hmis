@@ -1774,12 +1774,9 @@ public class QuickBookReportController implements Serializable {
         if (!withProfessionalFee) {
             jpql += " and bf.fee.feeType!=:ft ";
             params.put("ft", FeeType.Staff);
-        } else {
-            jpql += " and bf.fee.feeType!=:ft ";
-            params.put("ft", FeeType.Staff);
         }
         if (institution != null) {
-            jpql += " and bi.bill.institution=:ins ";
+            jpql += " and bi.bill.department.institution=:ins ";
             params.put("ins", institution);
         }
         if (department != null) {
@@ -2003,7 +2000,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("ft", FeeType.Staff);
 
         if (institution != null) {
-            jpql += " and bi.bill.institution = :ins ";
+            jpql += " and bi.bill.department.institution = :ins ";
             temMap.put("ins", institution);
         }
         if (department != null) {
@@ -2074,7 +2071,7 @@ public class QuickBookReportController implements Serializable {
 
         jpql = "select sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
+                + " where bi.bill.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
@@ -2086,8 +2083,6 @@ public class QuickBookReportController implements Serializable {
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";
             temMap.put("cd", creditCompany);
-        } else {
-            jpql += " and bf.department.institution=:ins ";
         }
 
         temMap.put("ft", FeeType.Staff);
@@ -2279,8 +2274,6 @@ public class QuickBookReportController implements Serializable {
         if (!withProfessionalFee) {
             jpql += " and bf.fee.feeType!=:ft ";
             temMap.put("ft", FeeType.Staff);
-        } else {
-
         }
 
         if (pe != null) {
