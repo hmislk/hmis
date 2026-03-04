@@ -1008,7 +1008,7 @@ public class PharmacySummaryReportController implements Serializable {
     private void processF9bIncomeSection() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
-                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
+                fromDate, toDate, institution, site, department, null, billTypeAtomics, null, null);
         bundle = new IncomeBundle(dtos);
         bundle.fixDiscountsAndMarginsInRows();
         for (IncomeRow r : bundle.getRows()) {
@@ -1027,15 +1027,17 @@ public class PharmacySummaryReportController implements Serializable {
 
     private void processF9bTransferSection() {
         pharmacyTransferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(
-                fromDate, toDate, institution, site, department, webUser, admissionType, paymentScheme);
+                fromDate, toDate, institution, site, department, null, null, null);
     }
 
     private void processF9bFloatSection() {
         List<BillTypeAtomic> floatInTypes = Arrays.asList(
-                BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+                BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL,
+                BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED
         );
         List<BillTypeAtomic> floatOutTypes = Arrays.asList(
-                BillTypeAtomic.FUND_TRANSFER_BILL
+                BillTypeAtomic.FUND_TRANSFER_BILL,
+                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
         );
 
         floatInRow = fetchFloatSummaryRow(floatInTypes);
@@ -3304,9 +3306,6 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public IncomeRow getFloatInRow() {
-        if (floatInRow == null) {
-            floatInRow = new IncomeRow();
-        }
         return floatInRow;
     }
 
@@ -3315,9 +3314,6 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public IncomeRow getFloatOutRow() {
-        if (floatOutRow == null) {
-            floatOutRow = new IncomeRow();
-        }
         return floatOutRow;
     }
 
