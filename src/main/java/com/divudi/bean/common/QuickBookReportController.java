@@ -1809,6 +1809,9 @@ public class QuickBookReportController implements Serializable {
         System.out.println("params = " + params);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, params, TemporalType.TIMESTAMP);
+        if (lobjs == null) {
+            return qbfs;
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         Item itemBefore = null;
