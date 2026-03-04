@@ -3,7 +3,6 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.lab.TestHistoryType;
-import static com.divudi.core.data.lab.TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
@@ -207,6 +206,11 @@ public class LabTestHistoryController implements Serializable {
     public void addSentSMSFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms, String failureReason) {
         addNewHistory(TestHistoryType.SENT_SMS_MANUAL, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, failureReason);
     }
+    
+    public void addResentFailureSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
+        addNewHistory(TestHistoryType.RESENT_FAIL_SMS, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
+    }
+    
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Email">
@@ -220,12 +224,12 @@ public class LabTestHistoryController implements Serializable {
     }
     
     public void addSentEmailFailureHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email, String failureReason) {
-        addNewHistory(TestHistoryType.SENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, failureReason);
+        addNewHistory(TestHistoryType.SENT_EMAIL_FAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, failureReason);
+    }
+    public void addResentFailureEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
+        addNewHistory(TestHistoryType.RESENT_EMAIL, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
     }
     
-    public void addResentFailureSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, Sms sms) {
-        addNewHistory(TestHistoryType.RESENT_FAIL_SMS, null, null, patientInvestigation, patientReport, null, null, sms, null, null, null, null, null);
-    }
     // </editor-fold>
     
     // </editor-fold>

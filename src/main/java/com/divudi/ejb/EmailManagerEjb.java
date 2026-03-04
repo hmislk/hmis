@@ -6,10 +6,13 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.facade.EmailFacade;
+import com.divudi.core.facade.PatientReportFacade;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -50,9 +53,13 @@ public class EmailManagerEjb {
 
     @EJB
     private EmailFacade emailFacade;
+    @EJB
+    PatientReportFacade patientReportFacade;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void processPendingLabReportApprovalEmailQueue() {
@@ -123,12 +130,29 @@ public class EmailManagerEjb {
                         true
                 );
 
-                email.setSentSuccessfully(success);
-                email.setPending(!success);
+                
                 if (success) {
+                    email.setSentSuccessfully(success);
+                    email.setPending(!success);
                     email.setSentAt(new Date());
+                    
+                    emailFacade.edit(email);
+                    
+                    PatientReport courrentPr = email.getPatientReport();
+                    
+                    courrentPr.setSendEmailComplete(true);
+                    patientReportFacade.edit(courrentPr);
+                    
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryController.addResentFailureEmailHistory(email.getPatientInvestigation(), email.getPatientReport(), email);
+                    }
+                    
+                }else{
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryController.addSentEmailFailureHistory(email.getPatientInvestigation(), email.getPatientReport(), email, "");
+                    }
                 }
-                emailFacade.edit(email);
+                
             } catch (Exception e) {
                 Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
                         "Failed to process Email ID: " + (email != null ? email.getId() : "unknown"), e);
