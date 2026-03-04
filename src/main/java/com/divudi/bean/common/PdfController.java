@@ -2776,8 +2776,8 @@ public class PdfController {
                     continue;
                 }
 
-                table.addCell(new Cell().add(new Paragraph(bill.getBillDate() != null ? new SimpleDateFormat("dd MMM yyyy").format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
-                table.addCell(new Cell().add(new Paragraph(bill.getBillTime() != null ? new SimpleDateFormat("hh:mm a").format(bill.getBillTime()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillTime() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(bill.getBillTime()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
