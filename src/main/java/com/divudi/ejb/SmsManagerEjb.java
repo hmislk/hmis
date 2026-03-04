@@ -7,12 +7,10 @@ package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.channel.SessionInstance;
-import com.divudi.core.entity.lab.LabTestHistory;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
@@ -67,9 +65,9 @@ public class SmsManagerEjb {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
-    @Inject
-    LabTestHistoryController labTestHistoryController;
-            
+    @EJB
+    LabTestHistoryService labTestHistoryService;
+
 
     private static final boolean doNotSendAnySms = false;
 
@@ -150,34 +148,33 @@ public class SmsManagerEjb {
                 if (bill == null || bill.getBalance() > 0.99) {
                     continue;
                 }
-                
+
                 boolean success = sendSms(sms);
-                
+
                 if (success) {
                     sms.setSentSuccessfully(success);
                     sms.setPending(false);
                     sms.setSentAt(new Date());
-                    
+
                     smsFacade.edit(sms);
-                    
+
                     PatientReport courrentPr = sms.getPatientReport();
-                    
+
                     courrentPr.setSendEmailComplete(true);
                     patientReportFacade.edit(courrentPr);
-                    
+
                     if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                        labTestHistoryController.addReportSentSMSToPatientHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms);
+                        labTestHistoryService.addReportSentSMSToPatientHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms);
                     }
-                    
+
                 }else{
                     if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                        labTestHistoryController.addSentSMSFailureHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms, sms.getReceivedMessage());
+                        labTestHistoryService.addSentSMSFailureHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms, sms.getReceivedMessage());
                     }
                 }
-                
+
             } catch (Exception e) {
-                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
-                        "Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,"Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
             }
         }
     }
