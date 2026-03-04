@@ -7,10 +7,14 @@ package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.lab.LabTestHistory;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -56,11 +60,16 @@ public class SmsManagerEjb {
     private SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ChannelBean channelBean;
+    @EJB 
+    PatientReportFacade patientReportFacade;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
+            
 
     private static final boolean doNotSendAnySms = false;
 
@@ -141,14 +150,31 @@ public class SmsManagerEjb {
                 if (bill == null || bill.getBalance() > 0.99) {
                     continue;
                 }
-
+                
                 boolean success = sendSms(sms);
-                sms.setSentSuccessfully(success);
-                sms.setPending(!success);
+                
                 if (success) {
+                    sms.setSentSuccessfully(success);
+                    sms.setPending(false);
                     sms.setSentAt(new Date());
+                    
+                    smsFacade.edit(sms);
+                    
+                    PatientReport courrentPr = sms.getPatientReport();
+                    
+                    courrentPr.setSendEmailComplete(true);
+                    patientReportFacade.edit(courrentPr);
+                    
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryController.addReportSentSMSToPatientHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms);
+                    }
+                    
+                }else{
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryController.addSentSMSFailureHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms, sms.getReceivedMessage());
+                    }
                 }
-                smsFacade.edit(sms);
+                
             } catch (Exception e) {
                 Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
                         "Failed to process SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
