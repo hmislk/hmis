@@ -12,15 +12,19 @@ import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.data.ReportTemplateRowBundle;
+
 import javax.inject.Inject;
 import com.divudi.core.data.InvestigationItemType;
 import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.ReportItemType;
 import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.lab.CommonReportItem;
 import com.divudi.core.entity.lab.InvestigationItem;
@@ -56,6 +60,8 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.text.DocumentException;
+
 import java.util.function.Supplier;
 
 /**
@@ -77,6 +83,8 @@ public class PdfController {
     SearchController searchController;
     @Inject
     SessionController sessionController;
+    @Inject
+    WebUserController webUserController;
 
     /**
      * Creates a new instance of PdfController
@@ -2602,5 +2610,313 @@ public class PdfController {
         }
     }
 
+    // Export: WHT report
+    public StreamedContent createPdfForWHTReport(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters) throws IOException, DocumentException {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document;
+        if (pageSize != null) {
+            document = new Document(pdf, pageSize);
+        } else {
+            document = new Document(pdf);
+        }
+
+        if (withHeaderFooter) {
+            String institutionName = "";
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getInstitution() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+
+            if (!institutionName.isEmpty()) {
+                Paragraph instPara = new Paragraph(institutionName)
+                        .setBold()
+                        .setFontSize(16)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(2);
+                document.add(instPara);
+            }
+
+            Paragraph titlePara = new Paragraph(bundle.getName())
+                    .setBold()
+                    .setFontSize(14)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(2);
+            document.add(titlePara);
+
+            if (filters != null && !filters.isEmpty()) {
+                Table infoTable = createInfoTablePdfExport(filters);
+                document.add(infoTable);
+            }
+
+            SolidLine headerLine = new SolidLine(1.5f);
+            LineSeparator headerSeparator = new LineSeparator(headerLine);
+            headerSeparator.setStrokeColor(ColorConstants.BLACK);
+            document.add(headerSeparator);
+            document.add(new Paragraph("").setMarginBottom(5));
+        }
+
+        
+
+        if (bundle.getBundleType() != null) {
+            switch (bundle.getBundleType()) {
+                case "whtIndividualReceipts":
+                    if (bundle.getReportTemplateRows() != null && !bundle.getReportTemplateRows().isEmpty()) {
+                        populateTableForWhtIndividualReceipts(document, bundle);
+                    } else {
+                        document.add(new Paragraph("No Data for " + bundle.getName()));
+                    }
+                    break;
+                case "whtMonthlySummary":
+                case "whtConsultantSummary":
+                    if (bundle.getReportTemplateRows() != null && !bundle.getReportTemplateRows().isEmpty()) {
+                        populateTableForWhtSummary(document, bundle);
+                    } else {
+                        document.add(new Paragraph("No Data for " + bundle.getName()));
+                    }
+                    break;
+                default:
+                    document.add(new Paragraph("Unsupported bundle type: " + bundle.getBundleType()));
+            }
+        } else {
+            document.add(new Paragraph("No bundle type specified for " + bundle.getName()));
+        }
+
+        if (withHeaderFooter) {
+            addReportFooter(document);
+        }
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        return DefaultStreamedContent.builder()
+                .name((bundle.getName() != null ? bundle.getName() : "WHT Report") + ".pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    private void populateTableForWhtIndividualReceipts(Document document, ReportTemplateRowBundle bundle) {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + bundle.getName()));
+            return;
+        }
+
+        if (webUserController.hasPrivilege("Developers")) {
+            Table table = new Table(new float[]{2f, 5.5f, 3f, 2.5f, 4f, 4f, 4f, 4f, 3.5f, 3.5f, 3.5f}).useAllAvailableWidth().setFixedLayout();
+            String[] headers = {"Id", "Type", "Date", "Time", "Receipt No", "Cashier", "Speciality", "Staff", "Gross", "WHT", "Value"};
+
+            for (String header : headers) {
+                Cell headerCell = new Cell()
+                        .add(new Paragraph(header).setBold())
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setFontSize(8)
+                        .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                table.addCell(headerCell);
+            }
+
+            for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+                Bill bill = r.getBill();
+
+                if (bill == null) {
+                    table.addCell(new Cell().add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
+                    continue;
+                }
+
+                table.addCell(new Cell().add(new Paragraph(bill.getId() != null ? String.valueOf(bill.getId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillDate() != null ? new SimpleDateFormat("dd MMM yyyy").format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillTime() != null ? new SimpleDateFormat("hh:mm a").format(bill.getBillTime()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTax())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+            } 
+            
+            table.addCell(new Cell(1, 8).add(new Paragraph("")));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+
+            document.add(table);
+
+            return;
+
+        } else {
+            Table table = new Table(new float[]{ 3f, 2.5f, 4f, 4f, 4f, 4f, 4f, 4f, 4f}).useAllAvailableWidth().setFixedLayout();
+            String[] headers = {"Date", "Time", "Receipt No", "Cashier", "Speciality", "Staff", "Gross", "WHT", "Value"};
+
+            for (String header : headers) {
+                Cell headerCell = new Cell()
+                        .add(new Paragraph(header).setBold())
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setFontSize(8)
+                        .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                table.addCell(headerCell);
+            }
+
+            for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+                Bill bill = r.getBill();
+
+                if (bill == null) {
+                    table.addCell(new Cell().add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
+                    continue;
+                }
+
+                table.addCell(new Cell().add(new Paragraph(bill.getBillDate() != null ? new SimpleDateFormat("dd MMM yyyy").format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillTime() != null ? new SimpleDateFormat("hh:mm a").format(bill.getBillTime()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTax())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+            } 
+            
+            table.addCell(new Cell(1, 6).add(new Paragraph("")));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+
+
+            document.add(table);
+
+            return;
+        }
+        
+    }
+
+    private void populateTableForWhtSummary(Document document, ReportTemplateRowBundle bundle) {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + bundle.getName()));
+            return;
+        }
+
+        Table table;
+        String[] headers;
+
+        if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtConsultantSummary")) {
+            headers = new String[]{"Consultant Name", "Total Amount", "Holding Tax", "Net Amount"};
+            table = new Table(new float[]{6f, 4f, 4f, 4f}).useAllAvailableWidth().setFixedLayout();
+        } else {
+            headers = new String[]{"Month", "Total Amount", "Holding Tax", "Net Amount"};
+            table = new Table(new float[]{4f, 4f, 4f, 4f}).useAllAvailableWidth().setFixedLayout();
+        }
+
+        if (table == null || headers == null) {
+            document.add(new Paragraph("Invalid table configuration for " + bundle.getName()));
+            return;
+        }
+
+        for (String header : headers) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header).setBold())
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(8)
+                    .setBackgroundColor(new DeviceRgb(240, 240, 240));
+            table.addCell(headerCell);
+        }
+
+        for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+
+            if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtConsultantSummary")) {
+                table.addCell(new Cell().add(new Paragraph(r.getStaff() != null && r.getStaff().getPerson() != null && r.getStaff().getPerson().getNameWithTitle() != null ? r.getStaff().getPerson().getNameWithTitle() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            } else if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtMonthlySummary")) {
+                table.addCell(new Cell().add(new Paragraph(r.getDate() != null ? new SimpleDateFormat("yyyy MMMM").format(r.getDate()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            } else {
+                table.addCell(new Cell().add(new Paragraph("Unknown Type").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            }        
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getGrossTotal() != null ? r.getGrossTotal() : 0.0)).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getTax() != null ? r.getTax() : 0.0)).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getTotal() != null ? r.getTotal() : 0.0)).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+        } 
+
+        table.addCell(new Cell().add(new Paragraph("")));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+
+        document.add(table);
+
+        return;
+        
+    }
+
+    // Info Taable using filters
+    public Table createInfoTablePdfExport(Map<String, Object> filters)
+            throws DocumentException {
+
+        if (filters == null || filters.isEmpty()) {
+            return null; // or return an empty table if you prefer
+        }
+        float[] colWidths = {1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f, 0.1f, 1.5f, 2f};
+        Table infoTable = new Table(colWidths).useAllAvailableWidth().setFixedLayout();
+        infoTable.setMarginBottom(10);
+
+        int pairsInRow = 0;  
+
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+
+            // LABEL
+            Cell labelCell = new Cell().add(new Paragraph(entry.getKey()).setFontSize(8).setBold().setTextAlignment(TextAlignment.LEFT));
+            infoTable.addCell(labelCell);
+
+            // VALUE
+            String valueText = "";
+            Object value = entry.getValue();
+
+            if (value != null) {
+                valueText = value.toString();
+            }
+
+            Cell valueCell = new Cell().add(new Paragraph(valueText).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+            infoTable.addCell(valueCell);
+
+            pairsInRow++;
+
+            // Add spacer only if NOT the 4th pair
+            if (pairsInRow < 4) {
+                Cell spacer = new Cell().add(new Paragraph(" "));
+                infoTable.addCell(spacer);
+            }
+
+            // Reset after 4 pairs
+            if (pairsInRow == 4) {
+                pairsInRow = 0;
+            }
+        }
+
+        // Fill remaining cells in last row 
+        if (pairsInRow > 0) {
+            int remainingPairs = 4 - pairsInRow;
+
+            for (int i = 0; i < remainingPairs; i++) {
+                Cell emptyLabel = new Cell().add(new Paragraph(" "));
+                infoTable.addCell(emptyLabel);
+
+                Cell emptyValue = new Cell().add(new Paragraph(" "));
+                infoTable.addCell(emptyValue);
+
+                if (i < remainingPairs - 1) {
+                    Cell spacer = new Cell().add(new Paragraph(" "));
+                    infoTable.addCell(spacer);
+                }
+            }
+        }
+
+        return infoTable;
+
+    }
 
 }

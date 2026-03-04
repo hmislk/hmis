@@ -101,6 +101,7 @@ import com.divudi.core.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientInvestigationService;
+import com.itextpdf.kernel.geom.PageSize;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -10623,6 +10624,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle.setName("Individual Receipts Wise WHT Report");
+        bundle.setBundleType("whtIndividualReceipts");
         bundle.calculateTotalNetTotalTaxByBills();
     }
 
@@ -10655,6 +10658,8 @@ public class SearchController implements Serializable {
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle = bundle.createBundleByAggregatingMonthlyTotalsFromBills();
+        bundle.setName("Monthly Wise Summary - WHT Report");
+        bundle.setBundleType("whtMonthlySummary");
         bundle.calculateTotalByRowTotals();
     }
 
@@ -10687,6 +10692,8 @@ public class SearchController implements Serializable {
         }
         bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle = bundle.createBundleByAggregatingConsultantTotalsFromBills();
+        bundle.setName("Consultant Wise Summary - WHT Report");
+        bundle.setBundleType("whtConsultantSummary");
         bundle.calculateTotalByRowTotals();
     }
 
@@ -22444,6 +22451,35 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    // PDF Export: wht Report
+    public StreamedContent getWhtReportAsPdf() {
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createPdfForWHTReport(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport());
+        } catch (IOException e) {
+            logger.error("getWHTReportAsPdf: Error creating pdfSc via pdfController.createA4LandscapePdfForReportTemplateRows", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate WHT Report PDF file. Please try again.");
+        } catch (Exception e) {
+            logger.error("getWHTReportAsPdf: Unexpected error", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("An unexpected error occurred while generating the WHT Report PDF file. Please try again.");
+        }
+        return pdfSc;
+    }
+
+    // Excel Export: wht Report
+    public StreamedContent getWhtReportAsExcel() {
+        try {
+            downloadingExcel = excelController.createExcelForWhtReport(bundle, getFiltersForWhtReport());
+        } catch (IOException e) {
+            logger.error("getWHTReportAsExcel: Error creating downloadingExcel via excelController.createExcelForReportTemplateRows", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate WHT Individual Receipts Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     public StreamedContent getDailyReturnBundleAsExcel() {
         try {
             downloadingExcel = excelController.createExcelForDailyReturnBundle(bundle);
@@ -22599,4 +22635,41 @@ public class SearchController implements Serializable {
     }
 
     // </editor-fold>
+
+    // wht report, searchType as String
+    public String getSearchTypeAsString() {
+        if (searchType == null) {
+            return "All";
+        }
+
+        switch (searchType) {
+            case "op":
+                return "Outpatients";
+            case "ip":
+                return "In Patients";
+            case "ch":
+                return "Channelling";
+            default:
+                return "All";
+        }
+    }
+
+    // Filters for wht report
+    public Map<String, Object> getFiltersForWhtReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not availbale";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not availbale";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Site", site != null ? site.getName() : "All Sites");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Speciality", speciality != null && speciality.getName() != null ? speciality.getName() : "All Specialities");
+        params.put("Staff", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All Staff");
+        params.put("Visit Type", getSearchTypeAsString());
+
+        return params; 
+    }
 }

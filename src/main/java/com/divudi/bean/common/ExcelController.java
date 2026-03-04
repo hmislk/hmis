@@ -2,12 +2,15 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.entity.Bill;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,6 +20,8 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -44,6 +49,9 @@ public class ExcelController {
 
     @Inject
     SessionController sessionController;
+
+    @Inject
+    WebUserController webUserController;
 
     /**
      * Creates a new instance of ExcelController
@@ -4054,6 +4062,272 @@ public class ExcelController {
     }
 
 
+    // Excel export: wht report/ ReportTemplateRow
+    public StreamedContent createExcelForWhtReport(ReportTemplateRowBundle bundle, Map<String, Object> filters) throws IOException {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return null;
+        }
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String safeName = WorkbookUtil.createSafeSheetName(bundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Create cell styles for headers
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setBold(true);
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        CellStyle centerSmallStyle = workbook.createCellStyle();
+        centerSmallStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 10);
+        centerSmallStyle.setFont(smallFont);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow++);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+        // Row 1: Report Title
+        Row titleRow = dataSheet.createRow(currentRow++);
+        Cell titleCell = titleRow.createCell(0);
+        if (bundle.getName() != null) {
+            titleCell.setCellValue(bundle.getName());
+        } else {
+            titleCell.setCellValue("Report");
+        }
+        titleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7));
+
+        // Row 2: Search Criteria
+        if (filters != null && !filters.isEmpty()) {
+            currentRow = addMetaDataToExcelSheet(workbook, dataSheet, currentRow, filters);
+        } else {
+            Row criteriaRow = dataSheet.createRow(currentRow++);
+            Cell criteriaCell = criteriaRow.createCell(0);
+            criteriaCell.setCellValue("Search Criteria: N/A");
+            criteriaCell.setCellStyle(centerSmallStyle);
+            dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 7));
+            currentRow++;
+        }
+
+        switch (bundle.getBundleType()) {
+            case "whtIndividualReceipts":
+                addDataToWhtIndividualReceipts(dataSheet, currentRow, bundle);
+                break;
+            case "whtMonthlySummary":
+            case "whtConsultantSummary":
+                addDataToWhtSummary(dataSheet, currentRow, bundle);
+                break;
+            default:
+                break;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        excelSc = DefaultStreamedContent.builder()
+                .name((bundle.getName() != null ? bundle.getName() : "Wht_Report") + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
+    }
+
+    // Excel export: wht_individualReceipts
+    private void addDataToWhtIndividualReceipts(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+             Row noDataRow = dataSheet.createRow(startRow++);
+             Cell noDataCell = noDataRow.createCell(0);
+             noDataCell.setCellValue("No Data for " + bundle.getName());
+             dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 7));
+             return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+        int colIndex = 0;
+
+        if (webUserController.hasPrivilege("Developers")) {
+             headerRow.createCell(colIndex++).setCellValue("ID");
+             headerRow.createCell(colIndex++).setCellValue("Type");
+        }
+        headerRow.createCell(colIndex++).setCellValue("Date");
+        headerRow.createCell(colIndex++).setCellValue("Time");
+        headerRow.createCell(colIndex++).setCellValue("Receipt No");
+        headerRow.createCell(colIndex++).setCellValue("Cashier");
+        headerRow.createCell(colIndex++).setCellValue("Speciality");
+        headerRow.createCell(colIndex++).setCellValue("Staff");
+        headerRow.createCell(colIndex++).setCellValue("Gross");
+        headerRow.createCell(colIndex++).setCellValue("WHT");
+        headerRow.createCell(colIndex++).setCellValue("Value");
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+            int cellIndex = 0;
+            Bill bill = row.getBill();
+
+            if (bill == null) {
+                excelRow.createCell(cellIndex++).setCellValue("");
+                continue;
+            }
+            if (webUserController.hasPrivilege("Developers")) {
+                excelRow.createCell(cellIndex++).setCellValue(bill.getId() != null ? String.valueOf(bill.getId()) : "");
+                excelRow.createCell(cellIndex++).setCellValue(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().toString() : "");
+            }
+            excelRow.createCell(cellIndex++).setCellValue(bill.getBillDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(bill.getBillDate()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getBillTime() != null ? new SimpleDateFormat("HH:mm:ss").format(bill.getBillTime()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null  ? bill.getStaff().getPerson().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getTotal());
+            excelRow.createCell(cellIndex++).setCellValue(bill.getTax());
+            excelRow.createCell(cellIndex++).setCellValue(bill.getNetTotal());
+        }
+
+        Row totalRow = dataSheet.createRow(startRow++);
+        int totalCellIndex;
+        if (webUserController.hasPrivilege("Developers")) {
+            totalCellIndex = 8;
+        } else {
+            totalCellIndex = 6;
+        }
+        totalRow.createCell(totalCellIndex++).setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
+        totalRow.createCell(totalCellIndex++).setCellValue(bundle.getTax() != null ? bundle.getTax() : 0.0);
+        totalRow.createCell(totalCellIndex++).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
 
 
+        return;
+    }
+
+    private void addDataToWhtSummary(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }   
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + bundle.getName());
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+            return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+
+        if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtMonthlySummary")) {
+            headerRow.createCell(0).setCellValue("Month");
+        } else if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtConsultantSummary")) {
+            headerRow.createCell(0).setCellValue("Consultant Name");
+        } else {
+            headerRow.createCell(0).setCellValue("Unknown Type");
+        }
+        headerRow.createCell(1).setCellValue("Total Amount");
+        headerRow.createCell(2).setCellValue("Holding Tax");
+        headerRow.createCell(3).setCellValue("Net Amount");
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+
+            if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtMonthlySummary")) {
+                excelRow.createCell(0).setCellValue(row.getDate() != null ? new SimpleDateFormat("yyyy MMMM").format(row.getDate()) : "");
+            } else if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtConsultantSummary")) {
+                excelRow.createCell(0).setCellValue(row.getStaff() != null && row.getStaff().getPerson() != null && row.getStaff().getPerson().getNameWithTitle() != null ? row.getStaff().getPerson().getNameWithTitle() : "");
+            }
+            excelRow.createCell(1).setCellValue(row.getGrossTotal() != null ? row.getGrossTotal() : 0.0);
+            excelRow.createCell(2).setCellValue(row.getTax() != null ? row.getTax() : 0.0);
+            excelRow.createCell(3).setCellValue(row.getTotal() != null ? row.getTotal() : 0.0);
+        }
+
+        Row totalRow = dataSheet.createRow(startRow++);
+        totalRow.createCell(0).setCellValue("");
+        totalRow.createCell(1).setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
+        totalRow.createCell(2).setCellValue(bundle.getTax() != null ? bundle.getTax() : 0.0);
+        totalRow.createCell(3).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+
+        return;
+    }
+
+    // Filter info to excel
+    public int addMetaDataToExcelSheet(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex, Map<String, Object> filters) {
+        if (wb == null || sheet == null) {
+            return rowIndex;
+        }
+        if (rowIndex < 0) {
+            return 0;
+        }
+        
+        // Bold style for labels
+        CellStyle headerStyle = wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+        headerFont.setFontHeightInPoints((short) 14);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font metaFontBold = wb.createFont();
+        metaFontBold.setBold(true);
+        CellStyle metaStyleBold = wb.createCellStyle();
+        metaStyleBold.setFont(metaFontBold);
+        
+        int pairCounter = 0;
+        Row row = sheet.createRow(rowIndex++);
+
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+
+            // LABEL CELL
+            Cell labelCell = row.createCell(pairCounter * 3);
+            labelCell.setCellValue(entry.getKey());
+            labelCell.setCellStyle(metaStyleBold);
+
+            // VALUE CELL
+            Cell valueCell = row.createCell(pairCounter * 3 + 1);
+            Object value = entry.getValue();
+
+            valueCell.setCellValue((value != null) ? value.toString() : "");
+
+            pairCounter++;
+
+            // Start new row after 3 pairs
+            if (pairCounter == 3) {
+                pairCounter = 0;
+                row = sheet.createRow(rowIndex++);
+            }
+        }
+
+        // blank row after metadata
+        rowIndex++;
+
+        return rowIndex;
+    }
 }
