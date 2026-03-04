@@ -92,6 +92,8 @@ public class InwardProfessionalBillController implements Serializable {
     List<BillFee> lstBillFees;
     List<BillItem> lstBillItems;
     List<BillEntry> lstBillEntries;
+    List<BillFee> encounterProfessionalFees;
+    double totalProfessionalFeesForEncounter;
     /////////////////
     String patientTabId = "tabNewPt";
     String selectText = "";
@@ -624,8 +626,8 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         currentBillFee.setPatienEncounter(getCurrent().getPatientEncounter());
-        currentBillFee.setOrderNo(lstBillFees.size() + 1);
-        lstBillFees.add(getCurrentBillFee());
+        currentBillFee.setOrderNo(getLstBillFees().size() + 1);
+        getLstBillFees().add(getCurrentBillFee());
 
         calTotals();
         //    clearBillItemValues();
@@ -682,18 +684,11 @@ public class InwardProfessionalBillController implements Serializable {
             getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPRO));
             getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPRO));
 
-            /////////
-            getCurrent().setPatientEncounter(getCurrent().getPatientEncounter());
-            getCurrent().setReferredBy(getCurrent().getReferredBy());
-            getCurrent().setCollectingCentre(getCurrent().getCollectingCentre());
-            getCurrent().setStaff(getCurrent().getStaff());
-//        getCurrent().setTotal(bi.getFeeValue());
-//        getCurrent().setNetTotal(bi.getFeeValue());
-//        ////////////////
-
             getCurrent().setBillDate(new Date());
             getCurrent().setBillTime(new Date());
-            getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
+            if (getCurrent().getPatientEncounter() != null) {
+                getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
+            }
 
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
@@ -731,6 +726,10 @@ public class InwardProfessionalBillController implements Serializable {
             saveBillFee(getCurrent(), getBillItem(), bf);
         }
 
+        fetchEncounterProfessionalFees();
+
+        printPreview = true;
+
         JsfUtil.addSuccessMessage("Bill Saved");
 
     }
@@ -757,8 +756,27 @@ public class InwardProfessionalBillController implements Serializable {
         Date toDate = null;
         current = null;
         batchBill = null;
+        printPreview = false;
         makeNullList();
 
+    }
+
+    public void addAnotherProfessionalFee() {
+        PatientEncounter pe = null;
+        if (current != null) {
+            pe = current.getPatientEncounter();
+        }
+        current = null;
+        printPreview = false;
+        makeNullList();
+        if (pe != null) {
+            getCurrent().setPatientEncounter(pe);
+            fetchEncounterProfessionalFees();
+        }
+    }
+
+    public void selectPatientEncounter() {
+        fetchEncounterProfessionalFees();
     }
 
     public String navigateToAddProfessionalFeesFromMenu() {
@@ -769,6 +787,7 @@ public class InwardProfessionalBillController implements Serializable {
     public String navigateToAddProfessionalFeesFromInpatientProfile(PatientEncounter pe) {
         makeNull();
         getCurrent().setPatientEncounter(pe);
+        fetchEncounterProfessionalFees();
         return "/inward/inward_bill_professional?faces-redirect=true";
     }
 
@@ -789,6 +808,48 @@ public class InwardProfessionalBillController implements Serializable {
         lstBillItems = null;
         proEncounterComponent = null;
         proEncounterComponents = null;
+        encounterProfessionalFees = null;
+        totalProfessionalFeesForEncounter = 0.0;
+    }
+
+    private void fetchEncounterProfessionalFees() {
+        encounterProfessionalFees = null;
+        totalProfessionalFeesForEncounter = 0.0;
+        if (getCurrent().getPatientEncounter() == null) {
+            return;
+        }
+        String sql = "select bf from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.retired=false "
+                + " and bf.bill.cancelled=false "
+                + " and bf.bill.patientEncounter=:pe "
+                + " and bf.bill.billType=:bt "
+                + " order by bf.createdAt desc";
+        HashMap hm = new HashMap();
+        hm.put("pe", getCurrent().getPatientEncounter());
+        hm.put("bt", BillType.InwardProfessional);
+        encounterProfessionalFees = getBillFeeFacade().findByJpql(sql, hm);
+        if (encounterProfessionalFees != null) {
+            for (BillFee bf : encounterProfessionalFees) {
+                totalProfessionalFeesForEncounter += bf.getFeeValue();
+            }
+        }
+    }
+
+    public List<BillFee> getEncounterProfessionalFees() {
+        return encounterProfessionalFees;
+    }
+
+    public void setEncounterProfessionalFees(List<BillFee> encounterProfessionalFees) {
+        this.encounterProfessionalFees = encounterProfessionalFees;
+    }
+
+    public double getTotalProfessionalFeesForEncounter() {
+        return totalProfessionalFeesForEncounter;
+    }
+
+    public void setTotalProfessionalFeesForEncounter(double totalProfessionalFeesForEncounter) {
+        this.totalProfessionalFeesForEncounter = totalProfessionalFeesForEncounter;
     }
 
     BillItem billItem;
@@ -880,6 +941,7 @@ public class InwardProfessionalBillController implements Serializable {
         if (current == null) {
             current = new BilledBill();
             current.setBillType(BillType.InwardProfessional);
+            current.setBillTypeAtomic(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
             current.setDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setInstitution(getSessionController().getLoggedUser().getInstitution());
         }
@@ -1011,7 +1073,7 @@ public class InwardProfessionalBillController implements Serializable {
     public BillFee getCurrentBillFee() {
         if (currentBillFee == null) {
             currentBillFee = new BillFee();
-
+            currentBillFee.setFeeAt(new Date());
         }
 
         return currentBillFee;

@@ -803,6 +803,14 @@ public class PharmacyBean {
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
+    public double getStockWithoutPurchaseValue(Item item) {
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(s.stock) from Stock s where s.itemBatch.item=:i";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
     public double getStockByPurchaseValue(Item item, Institution ins) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
@@ -1400,6 +1408,22 @@ public class PharmacyBean {
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
         return true;
+    }
+
+    /**
+     * Returns all Stock records across every department for a given ItemBatch.
+     * Used by rate-adjustment workflows to record stock history in every
+     * department affected by the shared ItemBatch rate change.
+     */
+    public List<Stock> getStocksForItemBatch(ItemBatch itemBatch) {
+        if (itemBatch == null || itemBatch.getId() == null) {
+            return java.util.Collections.emptyList();
+        }
+        String jpql = "select s from Stock s where s.itemBatch.id = :batchId and s.stock > 0";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("batchId", itemBatch.getId());
+        List<Stock> result = getStockFacade().findByJpql(jpql, params);
+        return result != null ? result : java.util.Collections.emptyList();
     }
 
     /**

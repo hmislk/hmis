@@ -133,7 +133,22 @@
                                                itemValue="#{category}"/>
                             </p:selectOneMenu>
 
+                            <p:spacer width="20"/>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-capsules ml-5"/>
+                                <p:outputLabel value="Dosage Form" for="phmDf" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDf"
+                                value="#{pharmacyController.dosageForm}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Dosage Forms"/>
+                                <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                            </p:selectOneMenu>
 
                             <p:spacer width="20"/>
 
@@ -156,8 +171,6 @@
                                 </p:column>
                             </p:autoComplete>
 
-                            <p:spacer width="20"/>
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-list-alt ml-5"/>
                                 <p:outputLabel value="Report Type" class="mx-3" for="grnReportType">
@@ -170,6 +183,8 @@
                                 <f:selectItem itemLabel="By Category"
                                               itemValue="categoryWise"/>
                             </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-barcode ml-5"/>
@@ -587,6 +602,15 @@
                                     sortBy="#{i.billItem.item.category.name}"
                                     filterBy="#{i.billItem.item.category.name}">
                                     <p:outputLabel value="#{i.billItem.item.category.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Dosage Form"
+                                    width="6em"
+                                    filterMatchMode="contains"
+                                    sortBy="#{i.billItem.item.dosageForm.name}"
+                                    filterBy="#{i.billItem.item.dosageForm.name}">
+                                    <p:outputLabel value="#{i.billItem.item.dosageForm.name}"/>
                                 </p:column>
 
                                 <p:column

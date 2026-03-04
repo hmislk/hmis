@@ -174,7 +174,22 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100"/>
+
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Priority"/>
+                    <h:panelGroup id="gppriority">
+                        <p:selectOneMenu value="#{laboratoryManagementController.priority}" class="w-100" style="max-width: 100%">
+                            <f:selectItem itemLabel="Any"></f:selectItem>
+                            <f:selectItems 
+                                value="#{enumController.priorities}" 
+                                var="pt"
+                                itemLabel="#{pt.displayName}" 
+                                itemValue="#{pt}">
+                            </f:selectItems>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGrid>
+
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100">
@@ -201,7 +216,7 @@
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                 rowsPerPageTemplate="15,25,50"
                 style="table-layout: fixed; width: 100%;">
-                
+
                 <p:column headerText="#" style="width: 2em; vertical-align: top;">
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
@@ -258,7 +273,7 @@
                     </h:panelGroup>
                 </p:column>
 
-                <p:column headerText="Type" width="12em;" style=" vertical-align: top;">
+                <p:column headerText="Type" width="12em;" style=" vertical-align: top; text-align: center;">
                     <h:panelGroup rendered="#{b.ipOpOrCc == 'CC'}">
                         <h:outputLabel value="Collecting Centre (CC)" class="text-warning"/>
                     </h:panelGroup>
@@ -268,9 +283,19 @@
                     <h:panelGroup rendered="#{b.ipOpOrCc == 'OP'}">
                         <h:outputLabel value="Outpatient (OP)" class="text-primary"/>
                     </h:panelGroup>
+
+                    <h:panelGroup rendered="#{b.priority ne 'NORMAL'}">
+                        <br/>
+                        <div class="d-flex justify-content-center mt-2">
+                            <div style="border: 2px solid #{b.priority.priorityColor}; color: #{b.priority.priorityColor}; min-width: 150px; font-weight: 700; border-radius: 15px;" class="d-flex justify-content-center p-1 m-1" >
+                                <h:outputLabel value="#{b.priority}"/>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
                 </p:column>
 
-                <p:column headerText="Status" width="10em;" style="vertical-align: top;">
+                <p:column headerText="Status" width="10em;" style="vertical-align: top; text-align: center;">
                     <h:panelGroup rendered="#{b.cancelled}">
                         <div class="d-flex justify-content-center mt-1">
                             <p:badge 
@@ -289,15 +314,15 @@
 
                 </p:column>
 
-                <p:column headerText="Actions" width="12em;">
+                <p:column headerText="Actions" width="10em;" style="text-align: center;">
                     <p:commandButton 
-                            icon="fa-regular fa-rectangle-list"
-                            value="To WorkSheet" 
-                            class="ui-button-warning"
-                            disabled="#{b.cancelled}"
-                            action="#{laboratoryManagementController.navigateToPrintWorkSheetFromSelectedBill(b)}"
-                            ajax="false" >
-                        </p:commandButton>
+                        icon="fa-regular fa-rectangle-list"
+                        value="To WorkSheet" 
+                        class="ui-button-warning"
+                        disabled="#{b.cancelled}"
+                        action="#{laboratoryManagementController.navigateToPrintWorkSheetFromSelectedBill(b)}"
+                        ajax="false" >
+                    </p:commandButton>
                 </p:column>
             </p:dataTable>
         </h:panelGroup>

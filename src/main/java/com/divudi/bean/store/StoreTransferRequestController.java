@@ -150,7 +150,8 @@ public class StoreTransferRequestController implements Serializable {
 
             getBill().setInstitution(getSessionController().getInstitution());
             getBill().setDepartment(getSessionController().getDepartment());
-
+            getBill().setFromDepartment(getSessionController().getDepartment());
+            getBill().setFromInstitution(getSessionController().getInstitution());
             getBill().setToInstitution(getBill().getToDepartment().getInstitution());
 
             getBillFacade().create(getBill());

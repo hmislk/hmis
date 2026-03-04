@@ -154,6 +154,10 @@ public class UserDepartmentController implements Serializable {
             JsfUtil.addSuccessMessage("Select a Department");
             return;
         }
+        if (isDepartmentAlreadyAddedForUser(selectedUser, currentDepartment)) {
+            JsfUtil.addErrorMessage("Selected department is already added for this user");
+            return;
+        }
         WebUserDepartment d = new WebUserDepartment();
         d.setCreatedAt(Calendar.getInstance().getTime());
         ///other properties
@@ -165,6 +169,18 @@ public class UserDepartmentController implements Serializable {
 
     }
 
+    private boolean isDepartmentAlreadyAddedForUser(WebUser user, Department department) {
+        String jpql = "select ud from WebUserDepartment ud "
+                + "where ud.retired=:retired "
+                + "and ud.webUser=:user "
+                + "and ud.department=:department";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("user", user);
+        params.put("department", department);
+        return getEjbFacade().findFirstByJpql(jpql, params) != null;
+    }
+
 
     public void addRouteForUser() {
         if (selectedUser == null) {
@@ -173,6 +189,10 @@ public class UserDepartmentController implements Serializable {
         }
         if (currentDepartment == null) {
             JsfUtil.addSuccessMessage("Select a Route");
+            return;
+        }
+        if (isDepartmentAlreadyAddedForUser(selectedUser, currentDepartment)) {
+            JsfUtil.addErrorMessage("Selected route is already added for this user");
             return;
         }
         WebUserDepartment d = new WebUserDepartment();
