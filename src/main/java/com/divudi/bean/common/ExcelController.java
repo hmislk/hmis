@@ -4147,7 +4147,9 @@ public class ExcelController {
                 addDataToWhtSummary(dataSheet, currentRow, bundle);
                 break;
             default:
-                break;
+                JsfUtil.addErrorMessage("Unsupported Report Type: " + bundle.getBundleType());
+                workbook.close();
+                return null;
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

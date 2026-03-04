@@ -2681,10 +2681,14 @@ public class PdfController {
                     }
                     break;
                 default:
-                    document.add(new Paragraph("Unsupported bundle type: " + bundle.getBundleType()));
+                    JsfUtil.addErrorMessage("Unsupported report type for PDF export: " + bundle.getBundleType());
+                    document.close();
+                    return null;
             }
         } else {
-            document.add(new Paragraph("No bundle type specified for " + bundle.getName()));
+            JsfUtil.addErrorMessage("Report type is not specified for PDF export.");
+            document.close();
+            return null;
         }
 
         if (withHeaderFooter) {
@@ -2725,7 +2729,7 @@ public class PdfController {
                 Bill bill = r.getBill();
 
                 if (bill == null) {
-                    table.addCell(new Cell().add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
+                    table.addCell(new Cell(1, 11).add(new Paragraph(" - ")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
                     continue;
                 }
 
@@ -2768,7 +2772,7 @@ public class PdfController {
                 Bill bill = r.getBill();
 
                 if (bill == null) {
-                    table.addCell(new Cell().add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
+                    table.addCell(new Cell(1, 9).add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
                     continue;
                 }
 
