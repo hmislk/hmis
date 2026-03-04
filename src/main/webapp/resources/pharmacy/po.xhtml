@@ -169,7 +169,7 @@
                 <h:outputLabel value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
                 <span>
                     <h:outputLabel value="Created Date/Time: "/>
-                    <p:outputLabel value="#{sessionController.currentDate}">
+                    <p:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </p:outputLabel>
                 </span>
