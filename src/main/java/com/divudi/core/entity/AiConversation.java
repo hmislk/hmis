@@ -46,21 +46,22 @@ public class AiConversation implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return (id != null) ? id.hashCode() : System.identityHashCode(this);
     }
 
     @Override
     public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
         if (!(object instanceof AiConversation)) {
             return false;
         }
         AiConversation other = (AiConversation) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if (this.id == null || other.id == null) {
             return false;
         }
-        return true;
+        return this.id.equals(other.id);
     }
 
     @Override

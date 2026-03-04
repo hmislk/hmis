@@ -1154,7 +1154,7 @@ public class DailyReturnDtoController implements Serializable {
     public StreamedContent getBundleAsPdf() {
         StreamedContent pdfSc = null;
         try {
-            pdfSc = pdfController.createPdfForBundle(bundle);
+            pdfSc = pdfController.createA3PdfForBundle(bundle);
         } catch (IOException e) {
             // Handle IOException
         }

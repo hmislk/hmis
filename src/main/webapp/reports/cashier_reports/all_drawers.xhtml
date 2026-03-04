@@ -4,127 +4,334 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
         <ui:composition template="./../index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
+                <h:form>
                     <p:panel header="All Drawers" class="m-1">
-                        <p:commandButton  
-                            value="Process" 
-                            ajax="false"
-                            action="#{searchController.listAllDrawers()}" 
-                            class="ui-button-warning" icon="fas fa-cogs">
-                        </p:commandButton>
+
+                        <h:panelGrid columns="4" class="my-2">
+                            <p:commandButton
+                                value="Process"
+                                ajax="false"
+                                action="#{searchController.listAllDrawers()}"
+                                styleClass="ui-button-warning mx-1"
+                                icon="fas fa-cogs">
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                value="Print All"
+                                icon="fas fa-print"
+                                styleClass="ui-button-info mx-1">
+                                <p:printer target="tbldrawers"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                value="Download"
+                                icon="fas fa-file-excel"
+                                styleClass="ui-button-success mx-1">
+                                <p:dataExporter fileName="All Drawers" type="xlsx" target="tbldrawers"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                value="PDF"
+                                icon="fas fa-file-pdf"
+                                styleClass="ui-button-danger mx-1">
+                            </p:commandButton>
+                        </h:panelGrid>
+
                         <p:dataTable
                             id="tbldrawers"
-                            value="#{searchController.drawerList}" 
-                            var="dr" 
+                            value="#{searchController.drawerList}"
+                            var="dr"
                             rowKey="#{dr.id}"
-                            selectionMode="single"
-                            selection="#{searchController.selectedDrawer}"
+                            rowIndexVar="n"
                             paginator="true"
                             rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}  {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
-                            styleClass="ui-datatable-striped">
+                            styleClass="ui-datatable-striped mt-3">
 
+                            <!-- No -->
+                            <p:column headerText="No" style="padding: 4px;" width="3em">
+                                <h:outputText value="#{n+1}" styleClass="text-end d-block"/>
+                            </p:column>
 
-                            <!-- Staff Name Column with Filter -->
+                            <!-- Staff Name -->
                             <p:column headerText="Staff Name"
                                       filterBy="#{dr.drawerUser.staff.person.nameWithTitle}"
                                       filterMatchMode="contains"
-                                      sortBy="#{dr.drawerUser.staff.person.nameWithTitle}">
-                                <h:commandLink action="#{searchController.navigateToDrawerHistory()}" value="#{dr.drawerUser.staff.person.nameWithTitle}">
-                                    <f:setPropertyActionListener value="#{dr.drawerUser}" target="#{drawerEntryController.webUser}"/>
-                                </h:commandLink> 
+                                      sortBy="#{dr.drawerUser.staff.person.nameWithTitle}"
+                                      style="padding: 4px;" width="14em">
+                                <h:outputText value="#{dr.drawerUser.staff.person.nameWithTitle}"/>
                             </p:column>
 
-                            <p:column headerText="Navigate" exportable="false">
-                                <p:commandButton 
-                                    icon="fa fa-tachometer" 
+                            <!-- Cash -->
+                            <p:column headerText="Cash"
+                                      sortBy="#{dr.cashInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersCashVisible}">
+                                <h:outputText value="#{dr.cashInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Card -->
+                            <p:column headerText="Card"
+                                      sortBy="#{dr.cardInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersCardVisible}">
+                                <h:outputText value="#{dr.cardInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Cheque -->
+                            <p:column headerText="Cheque"
+                                      sortBy="#{dr.chequeInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersChequeVisible}">
+                                <h:outputText value="#{dr.chequeInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Slip -->
+                            <p:column headerText="Slip"
+                                      sortBy="#{dr.slipInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersSlipVisible}">
+                                <h:outputText value="#{dr.slipInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- IOU -->
+                            <p:column headerText="IOU"
+                                      sortBy="#{dr.iouInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersIouVisible}">
+                                <h:outputText value="#{dr.iouInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Credit -->
+                            <p:column headerText="Credit"
+                                      sortBy="#{dr.creditInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersCreditVisible}">
+                                <h:outputText value="#{dr.creditInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- eWallet -->
+                            <p:column headerText="eWallet"
+                                      sortBy="#{dr.ewalletInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersEwalletVisible}">
+                                <h:outputText value="#{dr.ewalletInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Agent -->
+                            <p:column headerText="Agent"
+                                      sortBy="#{dr.agentInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersAgentVisible}">
+                                <h:outputText value="#{dr.agentInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Staff Welfare -->
+                            <p:column headerText="Staff Welfare"
+                                      sortBy="#{dr.staffWelfareInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersStaffWelfareVisible}">
+                                <h:outputText value="#{dr.staffWelfareInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Voucher -->
+                            <p:column headerText="Voucher"
+                                      sortBy="#{dr.voucherInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersVoucherVisible}">
+                                <h:outputText value="#{dr.voucherInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Patient Deposit -->
+                            <p:column headerText="Patient Deposit"
+                                      sortBy="#{dr.patientDepositInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersPatientDepositVisible}">
+                                <h:outputText value="#{dr.patientDepositInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Patient Points -->
+                            <p:column headerText="Patient Points"
+                                      sortBy="#{dr.patientPointsInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersPatientPointsVisible}">
+                                <h:outputText value="#{dr.patientPointsInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Online Settlement -->
+                            <p:column headerText="Online Settlement"
+                                      sortBy="#{dr.onlineSettlementInHandValue}"
+                                      style="padding: 4px;" width="8em"
+                                      rendered="#{userSettingsController.allDrawersOnlineSettlementVisible}">
+                                <h:outputText value="#{dr.onlineSettlementInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Grand Total -->
+                            <p:column headerText="Grand Total"
+                                      style="padding: 4px;" width="9em">
+                                <h:outputText value="#{dr.cashInHandValue + dr.cardInHandValue + dr.chequeInHandValue + dr.slipInHandValue + dr.iouInHandValue + dr.creditInHandValue + dr.ewalletInHandValue + dr.agentInHandValue + dr.staffWelfareInHandValue + dr.voucherInHandValue + dr.patientDepositInHandValue + dr.patientPointsInHandValue + dr.onlineSettlementInHandValue}" styleClass="text-end d-block">
+                                    <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Actions - not exported or printed -->
+                            <p:column headerText="Actions" style="padding: 4px;" width="12em" exportable="false">
+                                <p:commandButton
+                                    icon="fa fa-tachometer"
+                                    value="Dashboard"
                                     title="Drawer Dashboard"
-                                    styleClass="m-1"
+                                    styleClass="ui-button-info mr-1"
                                     ajax="false"
-                                    action="#{searchController.navigateToUserDrawerDashboard()}" >
+                                    action="#{searchController.navigateToUserDrawerDashboard()}">
                                     <f:setPropertyActionListener value="false" target="#{drawerController.editDrawerAccess}"/>
                                     <f:setPropertyActionListener value="#{dr}" target="#{searchController.drawer}"/>
                                 </p:commandButton>
-                            </p:column>
-                            <!-- Cash Balance Column with Sorting -->
-                            <p:column headerText="Cash"
-                                      sortBy="#{dr.cashInHandValue}">
-                                <h:outputText value="#{dr.cashInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-
-                            <!-- Card Balance Column with Sorting -->
-                            <p:column headerText="Card"
-                                      sortBy="#{dr.cardInHandValue}">
-                                <h:outputText value="#{dr.cardInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-
-                            <!-- Cheque Balance Column with Sorting -->
-                            <p:column headerText="Cheque"
-                                      sortBy="#{dr.chequeInHandValue}">
-                                <h:outputText value="#{dr.chequeInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-                            
-                            <!-- Slip Balance Column with Sorting -->
-                            <p:column headerText="Slip"
-                                      sortBy="#{dr.slipInHandValue}">
-                                <h:outputText value="#{dr.slipInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-                            
-                            <!-- Credit Balance Column with Sorting -->
-                            <p:column headerText="Credit"
-                                      sortBy="#{dr.creditInHandValue}">
-                                <h:outputText value="#{dr.creditInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-
-                            <!-- Voucher Balance Column with Sorting -->
-                            <p:column headerText="Voucher Balance"
-                                      sortBy="#{dr.voucherInHandValue}">
-                                <h:outputText value="#{dr.voucherInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-
-                            <!-- IOU Balance Column with Sorting -->
-                            <p:column headerText="IOU Balance"
-                                      sortBy="#{dr.iouInHandValue}">
-                                <h:outputText value="#{dr.iouInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-                            
-                            <p:column headerText="Grand Total">
-                                <h:outputText value="#{dr.cashInHandValue + dr.cardInHandValue + dr.chequeInHandValue + dr.voucherInHandValue + dr.iouInHandValue}">
-                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
-                                </h:outputText>
+                                <p:commandButton
+                                    icon="fas fa-history"
+                                    value="History"
+                                    title="Drawer History"
+                                    styleClass="ui-button-secondary"
+                                    ajax="false"
+                                    action="#{searchController.navigateToDrawerHistory()}">
+                                    <f:setPropertyActionListener value="#{dr.drawerUser}" target="#{drawerEntryController.webUser}"/>
+                                </p:commandButton>
                             </p:column>
 
                         </p:dataTable>
 
+                        <!-- Customize Columns Panel -->
+                        <p:panel header="Customize Columns" toggleable="true" collapsed="true" class="mt-3">
+                            <h:panelGrid columns="4" cellpadding="5">
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="cashVisible"
+                                                             value="#{userSettingsController.allDrawersCashVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="cashVisible" value=" Cash"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="cardVisible"
+                                                             value="#{userSettingsController.allDrawersCardVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="cardVisible" value=" Card"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="chequeVisible"
+                                                             value="#{userSettingsController.allDrawersChequeVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="chequeVisible" value=" Cheque"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="slipVisible"
+                                                             value="#{userSettingsController.allDrawersSlipVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="slipVisible" value=" Slip"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="iouVisible"
+                                                             value="#{userSettingsController.allDrawersIouVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="iouVisible" value=" IOU"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="creditVisible"
+                                                             value="#{userSettingsController.allDrawersCreditVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="creditVisible" value=" Credit"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="ewalletVisible"
+                                                             value="#{userSettingsController.allDrawersEwalletVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="ewalletVisible" value=" eWallet"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="agentVisible"
+                                                             value="#{userSettingsController.allDrawersAgentVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="agentVisible" value=" Agent"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="staffWelfareVisible"
+                                                             value="#{userSettingsController.allDrawersStaffWelfareVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="staffWelfareVisible" value=" Staff Welfare"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="voucherVisible"
+                                                             value="#{userSettingsController.allDrawersVoucherVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="voucherVisible" value=" Voucher"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="patientDepositVisible"
+                                                             value="#{userSettingsController.allDrawersPatientDepositVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="patientDepositVisible" value=" Patient Deposit"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="patientPointsVisible"
+                                                             value="#{userSettingsController.allDrawersPatientPointsVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="patientPointsVisible" value=" Patient Points"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <h:selectBooleanCheckbox id="onlineSettlementVisible"
+                                                             value="#{userSettingsController.allDrawersOnlineSettlementVisible}">
+                                        <f:ajax render="tbldrawers" execute="@this"/>
+                                    </h:selectBooleanCheckbox>
+                                    <h:outputLabel for="onlineSettlementVisible" value=" Online Settlement"/>
+                                </h:panelGroup>
+                            </h:panelGrid>
+                        </p:panel>
 
                     </p:panel>
-
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
 
     </body>

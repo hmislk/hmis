@@ -642,6 +642,11 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
 
+                                            <p:outputLabel value="Department Type"/>
+                                            <p:outputLabel
+                                                value="#{grnCostingController.currentGrnBillPre.departmentType != null ? grnCostingController.currentGrnBillPre.departmentType.label : 'Not Set'}"
+                                                class="w-100 text-end ui-inputfield"/>
+
                                             <p:outputLabel value="Total Bill Value" />
                                             <p:outputLabel
                                                 id="totalBillValue"
