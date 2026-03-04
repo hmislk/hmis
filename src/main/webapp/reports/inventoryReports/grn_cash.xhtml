@@ -219,8 +219,8 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                                value="To Print" 
+                                action="grn_cash_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -228,15 +228,17 @@
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
                                 value="Download"
-                                action="#{pharmacyReportController.exportGrnCashToExcel()}"/>
-                            
+                                action="#{pharmacyReportController.exportGrnCashToExcel()}">
+                            </p:commandButton>
+
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
                                 value="PDF" 
-                                action="#{pharmacyReportController.exportGrnCashToPDF()}"/>
-                         
+                                action="#{pharmacyReportController.exportGrnCashToPDF()}">
+                            </p:commandButton>
+
 
                         </div>
 
@@ -268,7 +270,7 @@
                             <p:column headerText="Code" width="8em">
                                 <h:outputText value="#{bi.item.code}" />
                             </p:column>
-                            <p:column headerText="GRN Number" styleClass="text-center" headerStyleClass="text-center" width="10em">
+                            <p:column headerText="GRN Number" styleClass="text-center"  width="10em">
                                 <p:commandLink 
                                     value="#{bi.bill.deptId}" 
                                     styleClass="ui-button-info ui-button-outlined w-100"
@@ -282,22 +284,22 @@
                             <p:column headerText="Batch Code" width="10em">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
-                            <p:column headerText="Quantity" styleClass="text-end" headerStyleClass="text-end" width="7em">
+                            <p:column headerText="Quantity" styleClass="text-end"  width="7em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.quantity}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Free Quantity" styleClass="text-end" headerStyleClass="text-end" width="7em">
+                            <p:column headerText="Free Quantity" styleClass="text-end"  width="7em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.freeQuantity}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
+                            <p:column headerText="Cost Rate" styleClass="text-end"  width="9em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.costRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Value" styleClass="text-end" headerStyleClass="text-end" width="10em">
+                            <p:column headerText="Cost Value" styleClass="text-end"  width="10em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.totalCost}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -307,12 +309,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Purchase Rate" styleClass="text-end" headerStyleClass="text-end" width="10em">
+                            <p:column headerText="Purchase Rate" styleClass="text-end"  width="10em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Purchase Value" styleClass="text-end" headerStyleClass="text-end" width="11em">
+                            <p:column headerText="Purchase Value" styleClass="text-end" width="11em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate * bi.billItemFinanceDetails.quantity}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -322,12 +324,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Retail Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
+                            <p:column headerText="Retail Rate" styleClass="text-end"  width="9em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.retailSaleRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Retail Value" styleClass="text-end" headerStyleClass="text-end" width="11em">
+                            <p:column headerText="Retail Value" styleClass="text-end"  width="11em">
                                 <h:outputText value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -337,7 +339,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net Total" styleClass="text-end" headerStyleClass="text-end" width="11em">
+                            <p:column headerText="Net Total" styleClass="text-end"  width="11em">
                                 <h:outputText value="#{bi.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

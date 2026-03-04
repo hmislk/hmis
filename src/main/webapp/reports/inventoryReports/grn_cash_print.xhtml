@@ -5,358 +5,342 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
     <h:body>
-        <ui:composition template="/reports/index.xhtml">
-            <ui:define name="subcontent">
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
                 <h:form >
-                    <p:panel header="GRN Cash" >
+                    <p:panel header="GRN Cash Report Print" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="GRN Cash Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="grn_cash?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
 
-                        <h:panelGrid columns="8" class="w-100">          
+                            </div>
+                        </f:facet>
 
+                        <style>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="fromDate" 
-                                value="#{pharmacyReportController.fromDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
 
-                            <p:spacer width="20"></p:spacer>
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="toDate" 
-                                value="#{pharmacyReportController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
 
+                                .header{
+                                    font-size: 16px!important;
+                                }
 
-                            <p:spacer width="20"/>
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <p:selectCheckboxMenu
-                                    id="departmentTypeFilter"
-                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
-                                    label="Select Department Types"
-                                    class="w-100"
-                                    filter="true"
-                                    filterMatchMode="contains"
-                                    showHeader="true"
-                                    scrollHeight="200"
-                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
-                                    <f:selectItems
-                                        value="#{pharmacyReportController.availableDepartmentTypes}"
-                                        var="depType"
-                                        itemLabel="#{depType.label}"
-                                        itemValue="#{depType}"/>
-                                </p:selectCheckboxMenu>
-                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
-                            </h:panelGroup>
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2" />
-                                <p:outputLabel value="Institution" for="phmIns" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmIns"
-                                class="w-100"
-                                value="#{pharmacyReportController.institution}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>
+                                body {
+                                    counter-reset: page;
+                                }
 
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    size: A4 landscape!important;
 
-                            <p:spacer width="20"></p:spacer>
+                                }
 
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
-                                <p:outputLabel value="Site" for="phmSite" class="m-3"></p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmSite"
-                                class="w-100"
-                                value="#{pharmacyReportController.site}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="phmSite" update="phmDept" />
-                            </p:selectOneMenu>
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
 
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
 
-                            <p:spacer width="20"></p:spacer>
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
 
+                                    <!-- Institution -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;"
+                                         rendered="#{not empty pharmacyReportController.institution}">
+                                        <h:outputText value="#{pharmacyReportController.institution.name}" />
+                                    </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2" />
-                                <p:outputLabel value="Department" for="phmDept" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <h:panelGroup id="phmDept">
+                                    <!-- Site -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;"
+                                         rendered="#{not empty pharmacyReportController.site}">
+                                        <h:outputText value="#{pharmacyReportController.site.name}" />
+                                    </div>
 
-                                <!-- Component 1: Without Institution and Site -->
-                                <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
+                                    <!-- Department -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 14px;"
+                                         rendered="#{not empty pharmacyReportController.department}">
+                                        <h:outputText value="#{pharmacyReportController.department.name}" />
+                                    </div>
 
-                                <!-- Component 2: With Site Only -->
-                                <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
+                                    <div class="text-center" style="font-size:11px; margin-top:5px;">
 
-                                <!-- Component 3: With Institution Only --> 
-                                <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
+                                        Item :
+                                        <h:outputText value="#{not empty pharmacyReportController.item ? pharmacyReportController.item.name : 'All'}"/>
 
-                                <!-- Component 4: With Both Institution and Site --> 
-                                <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
-                            </h:panelGroup>
+                                        |
 
+                                        From Date :
+                                        <h:outputText value="#{pharmacyReportController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-pills mr-2" />
-                                <p:outputLabel value="Item" for="phmItem" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:autoComplete
-                                id="phmItem"
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                value="#{pharmacyReportController.item}"
-                                completeMethod="#{pharmaceuticalItemController.completeItem}"
-                                var="itm"
-                                itemLabel="#{itm.name}"
-                                itemValue="#{itm}"
-                                maxResults="20"
-                                minQueryLength="3"
-                                placeholder="Select an Item">
-                            </p:autoComplete>
+                                        |
 
+                                        To Date :
+                                        <h:outputText value="#{pharmacyReportController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                        </h:outputText>
 
-                        </h:panelGrid>
+                                    </div>
 
-                        <div class="d-flex align-items-center mt-5">
-                            <p:commandButton 
-                                class="ui-button-secondary mx-1" 
-                                icon="fas fa-arrow-left" 
-                                ajax="false" 
-                                value="Back"
-                                action="#{reportController.navigateToCostOfGoodsSold()}">
-                            </p:commandButton>
-                            <p:commandButton 
-                                class="ui-button-warning mx-1" 
-                                icon="fas fa-cogs" 
-                                ajax="false"  
-                                value="Process"
-                                action="#{pharmacyReportController.processGrnCash()}" >
-                            </p:commandButton>
+                                    <div class="text-center" style="font-size:11px; margin-top:5px;">
+                                        Department Type :
+                                        <h:outputText value="#{pharmacyReportController.departmentTypeFilterValue}" />
+                                    </div>                                
 
-                            <p:commandButton 
-                                class="ui-button- mx-1" 
-                                icon="fas fa-print" 
-                                ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
-                            </p:commandButton>
+                                    <!-- Report Name -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 12px; margin-top:5px;">
+                                        <h:outputText value="GRN Cash Report" />
+                                    </div>
 
-                            <p:commandButton 
-                                class="ui-button-success mx-1" 
-                                icon="fas fa-file-excel" 
-                                ajax="false" 
-                                value="Download"
-                                action="#{pharmacyReportController.exportGrnCashToExcel()}"/>
-                            
-                            <p:commandButton 
-                                class="ui-button-danger mx-1" 
-                                icon= "fas fa-file-pdf" 
-                                ajax="false" 
-                                value="PDF" 
-                                action="#{pharmacyReportController.exportGrnCashToPDF()}"/>
-                         
+                                </div>
 
-                        </div>
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 32mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Date" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm;font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Item Name" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Code" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="GRN Number" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Batch Code" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Quantity" style=" margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Free Quantity" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Cost Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Cost Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Purchase Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Purchase Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Retail Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Retail Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Net Total" style="margin-right: 1mm;"/>
+                                                </th>
 
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{pharmacyReportController.billItems}" var="row" varStatus="i">
+                                                <tr>
+                                                    <td style="width: 32mm; text-align: left;" >
+                                                        <h:outputText value="#{row.bill.createdAt}" >
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.item.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.item.code}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.deptId}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.batchNo}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.quantity}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.freeQuantity}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.costRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.totalCost}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.purchaseRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.purchaseRate * row.billItemFinanceDetails.quantity}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.retailSaleRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.billItemFinanceDetails.valueAtRetailRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.bill.netTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
 
-                        <p:dataTable
-                            value="#{pharmacyReportController.billItems}"
-                            var="bi"
-                            id="tbl"
-                            styleClass="w-100 mt-4"
-                            tableStyleClass="w-100"
-                            emptyMessage="No GRN cash records found."
-                            paginator="true"
-                            rows="10"
-                            rowsPerPageTemplate="10,25,50,100"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                            paginatorAlwaysVisible="false">
-                            <p:column headerText="Date" sortBy="#{bi.bill.createdAt}" width="9em">
-                                <h:outputText value="#{bi.bill.createdAt}">
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="Net Amount" styleClass="fw-bold" />
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Item Name" width="18em">
-                                <h:outputText value="#{bi.item.name}" />
-                            </p:column>
-                            <p:column headerText="Code" width="8em">
-                                <h:outputText value="#{bi.item.code}" />
-                            </p:column>
-                            <p:column headerText="GRN Number" styleClass="text-center" headerStyleClass="text-center" width="10em">
-                                <p:commandLink 
-                                    value="#{bi.bill.deptId}" 
-                                    styleClass="ui-button-info ui-button-outlined w-100"
-                                    style="min-width: 8rem;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    title="View GRN #{bi.bill.deptId}"
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{bi.bill}"  target="#{billSearch.bill}" />
-                                </p:commandLink>
-                            </p:column>
-                            <p:column headerText="Batch Code" width="10em">
-                                <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
-                            </p:column>
-                            <p:column headerText="Quantity" styleClass="text-end" headerStyleClass="text-end" width="7em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.quantity}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Free Quantity" styleClass="text-end" headerStyleClass="text-end" width="7em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.freeQuantity}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Cost Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.costRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Cost Value" styleClass="text-end" headerStyleClass="text-end" width="10em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.totalCost}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="fw-bold">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Purchase Rate" styleClass="text-end" headerStyleClass="text-end" width="10em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Purchase Value" styleClass="text-end" headerStyleClass="text-end" width="11em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate * bi.billItemFinanceDetails.quantity}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-bold">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Retail Rate" styleClass="text-end" headerStyleClass="text-end" width="9em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.retailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Retail Value" styleClass="text-end" headerStyleClass="text-end" width="11em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="fw-bold">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Net Total" styleClass="text-end" headerStyleClass="text-end" width="11em">
-                                <h:outputText value="#{bi.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" styleClass="fw-bold">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-                        </p:dataTable>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td style="width: 32mm; text-align: left;" >
+                                                    <h:outputLabel value="Net Amount :" style="margin-left:1mm;font-weight: bold;" />
+                                                </td>
+                                                <td style="width: 17mm; text-align: left;"/>
+                                                <td style="width: 17mm; text-align: left;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{pharmacyReportController.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
 
                     </p:panel>
-
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
 
     </h:body>
-
 </html>
