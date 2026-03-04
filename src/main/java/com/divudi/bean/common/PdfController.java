@@ -2611,9 +2611,8 @@ public class PdfController {
     }
 
     // Export: WHT report
-    public StreamedContent createPdfForWHTReport(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters) throws IOException, DocumentException {
+    public StreamedContent createPdfForWHTReport(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters) throws IOException {
         if (bundle == null) {
-            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return null;
         }
 
@@ -2705,7 +2704,7 @@ public class PdfController {
 
     private void populateTableForWhtIndividualReceipts(Document document, ReportTemplateRowBundle bundle) {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            document.add(new Paragraph("No Data for " + bundle.getName()));
+            document.add(new Paragraph("No Data Available"));
             return;
         }
 
@@ -2732,8 +2731,8 @@ public class PdfController {
 
                 table.addCell(new Cell().add(new Paragraph(bill.getId() != null ? String.valueOf(bill.getId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
-                table.addCell(new Cell().add(new Paragraph(bill.getBillDate() != null ? new SimpleDateFormat("dd MMM yyyy").format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
-                table.addCell(new Cell().add(new Paragraph(bill.getBillTime() != null ? new SimpleDateFormat("hh:mm a").format(bill.getBillTime()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getBillTime() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(bill.getBillTime()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
@@ -2799,7 +2798,7 @@ public class PdfController {
 
     private void populateTableForWhtSummary(Document document, ReportTemplateRowBundle bundle) {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            document.add(new Paragraph("No Data for " + bundle.getName()));
+            document.add(new Paragraph("No Data Available"));
             return;
         }
 
@@ -2855,7 +2854,7 @@ public class PdfController {
 
     // Info Taable using filters
     public Table createInfoTablePdfExport(Map<String, Object> filters)
-            throws DocumentException {
+            throws IOException {
 
         if (filters == null || filters.isEmpty()) {
             return null; // or return an empty table if you prefer

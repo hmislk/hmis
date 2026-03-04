@@ -22453,29 +22453,35 @@ public class SearchController implements Serializable {
 
     // PDF Export: wht Report
     public StreamedContent getWhtReportAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the WHT report before exporting.");
+            return null;
+        }
+
         StreamedContent pdfSc = null;
         try {
             pdfSc = pdfController.createPdfForWHTReport(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport());
         } catch (IOException e) {
-            logger.error("getWHTReportAsPdf: Error creating pdfSc via pdfController.createA4LandscapePdfForReportTemplateRows", e);
+            logger.error("getWHTReportAsPdf: Error creating pdfSc via pdfController.ceratePdfForWhtReport", e);
             pdfSc = null;
             JsfUtil.addErrorMessage("Failed to generate WHT Report PDF file. Please try again.");
-        } catch (Exception e) {
-            logger.error("getWHTReportAsPdf: Unexpected error", e);
-            pdfSc = null;
-            JsfUtil.addErrorMessage("An unexpected error occurred while generating the WHT Report PDF file. Please try again.");
-        }
+        } 
         return pdfSc;
     }
 
     // Excel Export: wht Report
     public StreamedContent getWhtReportAsExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the WHT report before exporting.");
+            return null;
+        }
+
         try {
             downloadingExcel = excelController.createExcelForWhtReport(bundle, getFiltersForWhtReport());
         } catch (IOException e) {
-            logger.error("getWHTReportAsExcel: Error creating downloadingExcel via excelController.createExcelForReportTemplateRows", e);
+            logger.error("getWHTReportAsExcel: Error creating downloadingExcel via excelController.createExcelForWhtReport", e);
             downloadingExcel = null;
-            JsfUtil.addErrorMessage("Failed to generate WHT Individual Receipts Excel file. Please try again.");
+            JsfUtil.addErrorMessage("Failed to generate WHT Report Excel file. Please try again.");
         }
         return downloadingExcel;
     }
@@ -22658,8 +22664,8 @@ public class SearchController implements Serializable {
     public Map<String, Object> getFiltersForWhtReport() {
         Map<String, Object> params = new LinkedHashMap<>();
         String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not availbale";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not availbale";
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
 
         params.put("From Date", formattedFromDate);
         params.put("To Date", formattedToDate);

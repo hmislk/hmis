@@ -4065,7 +4065,6 @@ public class ExcelController {
     // Excel export: wht report/ ReportTemplateRow
     public StreamedContent createExcelForWhtReport(ReportTemplateRowBundle bundle, Map<String, Object> filters) throws IOException {
         if (bundle == null) {
-            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
             return null;
         }
         StreamedContent excelSc;
@@ -4131,6 +4130,12 @@ public class ExcelController {
             criteriaCell.setCellStyle(centerSmallStyle);
             dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 7));
             currentRow++;
+        }
+
+        if (bundle.getBundleType() == null) {
+            JsfUtil.addErrorMessage("Unknown report type. Cannot export to Excel.");
+            workbook.close();
+            return null;
         }
 
         switch (bundle.getBundleType()) {
@@ -4205,8 +4210,8 @@ public class ExcelController {
                 excelRow.createCell(cellIndex++).setCellValue(bill.getId() != null ? String.valueOf(bill.getId()) : "");
                 excelRow.createCell(cellIndex++).setCellValue(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().toString() : "");
             }
-            excelRow.createCell(cellIndex++).setCellValue(bill.getBillDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(bill.getBillDate()) : "");
-            excelRow.createCell(cellIndex++).setCellValue(bill.getBillTime() != null ? new SimpleDateFormat("HH:mm:ss").format(bill.getBillTime()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(bill.getBillDate()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getBillTime() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(bill.getBillTime()) : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "");
             excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "");
