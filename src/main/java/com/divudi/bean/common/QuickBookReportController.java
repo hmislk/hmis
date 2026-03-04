@@ -1766,7 +1766,6 @@ public class QuickBookReportController implements Serializable {
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod in :pms "
                 + " and bi.bill.retired=false "
                 + " and bi.retired=false "
                 + " and bf.retired=false ";
@@ -1803,7 +1802,6 @@ public class QuickBookReportController implements Serializable {
         params.put("fromDate", fd);
 
         params.put("bTp", BillType.OpdBill);
-        params.put("pms", paymentMethods);
 
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
@@ -1994,7 +1992,6 @@ public class QuickBookReportController implements Serializable {
                 + " from BillFee bf join bf.billItem bi "
                 + " where bi.bill.billTypeAtomic in :btas "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod in :pms "
                 + " and bi.bill.retired = false "
                 + " and bi.retired = false "
                 + " and bf.retired = false "
@@ -2033,8 +2030,6 @@ public class QuickBookReportController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         temMap.put("btas", btas);
-
-        temMap.put("pms", paymentMethods);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
 
