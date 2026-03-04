@@ -57,7 +57,8 @@ public enum TestHistoryType {
     RESENT_FAIL_SMS,
     CREATE_EMAIL,
     SENT_EMAIL,
-    SENT_EMAIL_FAIL;
+    SENT_EMAIL_FAIL,
+    RESENT_EMAIL;
     
      
     // <editor-fold defaultstate="collapsed" desc="Extra Need to Add Enum">
@@ -166,6 +167,8 @@ public enum TestHistoryType {
                 return "Email Sent";
             case SENT_EMAIL_FAIL:
                 return "Failed - Email Sent";
+            case RESENT_EMAIL:
+                return "Failed Email Resent";
             default:
                 return this.toString();
         }
