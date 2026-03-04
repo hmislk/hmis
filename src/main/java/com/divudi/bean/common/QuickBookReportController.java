@@ -1766,7 +1766,6 @@ public class QuickBookReportController implements Serializable {
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod in :pms "
                 + " and bi.bill.retired=false "
                 + " and bi.retired=false "
                 + " and bf.retired=false ";
@@ -1774,12 +1773,9 @@ public class QuickBookReportController implements Serializable {
         if (!withProfessionalFee) {
             jpql += " and bf.fee.feeType!=:ft ";
             params.put("ft", FeeType.Staff);
-        } else {
-            jpql += " and bf.fee.feeType!=:ft ";
-            params.put("ft", FeeType.Staff);
         }
         if (institution != null) {
-            jpql += " and bi.bill.institution=:ins ";
+            jpql += " and bi.bill.department.institution=:ins ";
             params.put("ins", institution);
         }
         if (department != null) {
@@ -1806,12 +1802,14 @@ public class QuickBookReportController implements Serializable {
         params.put("fromDate", fd);
 
         params.put("bTp", BillType.OpdBill);
-        params.put("pms", paymentMethods);
 
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, params, TemporalType.TIMESTAMP);
+        if (lobjs == null) {
+            return qbfs;
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         Item itemBefore = null;
@@ -1994,7 +1992,6 @@ public class QuickBookReportController implements Serializable {
                 + " from BillFee bf join bf.billItem bi "
                 + " where bi.bill.billTypeAtomic in :btas "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod in :pms "
                 + " and bi.bill.retired = false "
                 + " and bi.retired = false "
                 + " and bf.retired = false "
@@ -2003,7 +2000,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("ft", FeeType.Staff);
 
         if (institution != null) {
-            jpql += " and bi.bill.institution = :ins ";
+            jpql += " and bi.bill.department.institution = :ins ";
             temMap.put("ins", institution);
         }
         if (department != null) {
@@ -2033,8 +2030,6 @@ public class QuickBookReportController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         temMap.put("btas", btas);
-
-        temMap.put("pms", paymentMethods);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
 
@@ -2074,7 +2069,7 @@ public class QuickBookReportController implements Serializable {
 
         jpql = "select sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
+                + " where bi.bill.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
@@ -2086,8 +2081,6 @@ public class QuickBookReportController implements Serializable {
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";
             temMap.put("cd", creditCompany);
-        } else {
-            jpql += " and bf.department.institution=:ins ";
         }
 
         temMap.put("ft", FeeType.Staff);
@@ -2279,8 +2272,6 @@ public class QuickBookReportController implements Serializable {
         if (!withProfessionalFee) {
             jpql += " and bf.fee.feeType!=:ft ";
             temMap.put("ft", FeeType.Staff);
-        } else {
-
         }
 
         if (pe != null) {

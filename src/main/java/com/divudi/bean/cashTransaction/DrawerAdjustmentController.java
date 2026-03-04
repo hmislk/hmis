@@ -10,6 +10,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
@@ -166,6 +167,7 @@ public class DrawerAdjustmentController implements Serializable {
     private Bill createAndPersistAdjustmentBill(WebUser creator) {
         BilledBill bill = new BilledBill();
         bill.setBillType(BillType.DrawerAdjustment);
+        bill.setBillTypeAtomic(BillTypeAtomic.DRAWER_ADJUSTMENT);
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(creator);
         bill.setDeptId(billNumberBean.institutionBillNumberGenerator(

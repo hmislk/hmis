@@ -310,6 +310,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     GrnCostingController grnCostingController;
     @Inject
     BillReturnController billReturnController;
+    @Inject
+    RequestController requestController;
     /**
      * Class Variables
      */
@@ -5105,6 +5107,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PHARMACY_GRN:
                 return navigateToPharmacyGrnBillView();
 
+            case DRAWER_ADJUSTMENT:
+                return requestController.navigateToDrawerAdjustmentApproveByBill(bill);
+
         }
 
         return "";
@@ -5358,6 +5363,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return navigateToPharmacyGrnReturnBillReprint();
             case PHARMACY_GRN_CANCELLED:
                 return navigateToPharmacyGrnCancellationBillView();
+
+            case DRAWER_ADJUSTMENT:
+                return requestController.navigateToDrawerAdjustmentApproveByBill(bill);
 
         }
 
