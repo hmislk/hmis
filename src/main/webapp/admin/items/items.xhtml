@@ -20,7 +20,7 @@
                 <p:panel 
                     header="Manage Services &amp; Investigations" >
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <p:panel>
                                 <div class="container">
                                     <h:panelGrid columns="3">
@@ -76,7 +76,7 @@
                                 </div>
                             </p:panel>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <p:panel  class="w-100">
                                 <f:facet name="header" >
                                     <h:outputLabel 
@@ -105,8 +105,8 @@
                                                 columns="2" 
                                                 class="w-100" 
                                                 columnClasses="w-25, w-75">
-                                                <h:outputText 
-                                                    id="lblName" value="Name" ></h:outputText>
+                                                
+                                                <h:outputText id="lblName" value="Name" ></h:outputText>
                                                 <p:inputText 
                                                     autocomplete="off" 
                                                     id="txtName" 
@@ -139,6 +139,8 @@
                                                     >                                    
                                                 </p:autoComplete>
 
+                                                <p:outputLabel for="ServiceCode" value="Item Code"/>
+                                                <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100 m-1"/>
 
                                                 <h:outputText value="Financial Category" ></h:outputText>
                                                 <p:autoComplete 
@@ -180,18 +182,13 @@
                                                     <f:selectItem itemLabel="Please select Charge"/>
                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
-                                                <p:outputLabel value="Item Code"/>
-                                                <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100 m-1"/>
-                                            </h:panelGrid>
 
+                                            </h:panelGrid>
 
                                         </p:tab>
                                         <p:tab title="Additional Details" >
                                             <h:panelGrid columns="2" >
-                                                <h:outputText id="lblid" value="ID" ></h:outputText>
-                                                <h:outputText id="lblId" value="#{itemController.current.id}" ></h:outputText>
-
-
+                                                
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.inactive}" itemLabel="Service Inactive"/>
                                                 <h:outputText value="" ></h:outputText>
@@ -213,12 +210,22 @@
                                                 <p:selectBooleanCheckbox value="#{itemController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.printFeesForBills}" itemLabel="Print Separate Fees"/>
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{itemController.current.printSessionNumber}" itemLabel="Print Session Number"/>
+                                                
+                                            </h:panelGrid>
+                                            <hr/>
+                                            <h:panelGrid columns="2" columnClasses="w-50, w-50" >
+                                                <h:outputText value="Item ID"/>
+                                                <h:outputText value="#{itemController.current.id}"/>
                                                 <h:outputText value="Created Person"/>
                                                 <h:outputText value="#{itemController.current.creater.webUserPerson.nameWithTitle}"/>
-                                                <h:outputText value="Item Id"/>
-                                                <h:outputText value="#{itemController.current.id}"/>
-
+                                                <h:outputText value="Created At"/>
+                                                <h:outputText value="#{itemController.current.createdAt}">
+                                                   <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
                                             </h:panelGrid>
+                                            
                                         </p:tab>
                                         <p:tab rendered="false" title="Depricated" >
                                             <h:outputText id="lblVatPercentage" value="VAT Percentage" ></h:outputText>

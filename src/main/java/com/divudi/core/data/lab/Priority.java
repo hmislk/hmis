@@ -7,31 +7,33 @@ package com.divudi.core.data.lab;
  */
 public enum Priority {
     @Deprecated
-    Stat("Stat","","",""),
+    Stat("Stat","","","",0),
     @Deprecated
-    Asap("Asap","","",""),
+    Asap("Asap","","","",0),
     @Deprecated
-    Routeine("Routeine","","",""),
+    Routeine("Routeine","","","",0),
     @Deprecated
-    DELAYED("Delayed","","",""),
+    DELAYED("Delayed","","","",0),
     @Deprecated
-    Other("Other","","",""),
+    Other("Other","","","",0),
     
-    NORMAL("Normal", "", "#00ff25", "Normal processing."),
-    HIGH("High", "H", "#f8ff00", "Faster than Normal."),
-    URGENT("Urgent", "U", "#ff7700", "Immediate attention required."),
-    CRITICAL("Critical", "C", "#ff0000", "Highest priority, stop all other work.");
+    NORMAL("Normal", "", "#00ff25", "Normal processing.",1),
+    HIGH("High", "H", "#f8ff00", "Faster than Normal.",2),
+    URGENT("Urgent", "U", "#ff7700", "Immediate attention required.",3),
+    CRITICAL("Critical", "C", "#ff0000", "Highest priority, stop all other work.",4);
 
     private final String displayName;
     private final String shortName;
     private final String priorityColor;
     private final String description;
+    private final int level;
     
-    Priority(String displayName, String shortName, String priorityColor, String description) {
+    Priority(String displayName, String shortName, String priorityColor, String description, int level ) {
         this.displayName = displayName;
         this.shortName = shortName;
         this.priorityColor = priorityColor;
         this.description = description;
+        this.level = level;
     }
     
     public String getDisplayName() {
@@ -53,6 +55,10 @@ public enum Priority {
     @Override
     public String toString() {
         return displayName;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
 }
