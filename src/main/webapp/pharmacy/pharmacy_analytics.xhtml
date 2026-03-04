@@ -12,15 +12,17 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputLabel value="Pharmacy Analytics" class="mx-1" />
-                        <p:commandButton
-                            rendered="#{webUserController.hasPrivilege('Admin')}"
-                            value="Config"
-                            icon="fa fa-cog"
-                            title="Page Configuration Management"
-                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_analytics')}"
-                            ajax="false"
-                            styleClass="ui-button-secondary ms-5">
-                        </p:commandButton>
+                        <h:form styleClass="d-inline">
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_analytics')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </h:form>
                     </f:facet>
                     <div class="row">
                         <div class="col-md-2">
@@ -70,7 +72,16 @@
                                                 value="Daily Stock Values (F-15)"
                                                 action="#{pharmacyDailyStockReportOptimizedController.navigateToDailyStockReport()}"
                                                 title="High-performance optimized report - Faster execution"/>
-                                            <p:commandButton 
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show F 9B Report')}"
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                icon="fa fa-file-invoice"
+                                                value="F 9B"
+                                                title="Open Pharmacy F 9B Report"
+                                                action="#{pharmacySummaryReportController.navigateToF9bReport()}"/>
+                                            <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
                                                 class="w-100 ui-button-warning"
                                                 ajax="false"

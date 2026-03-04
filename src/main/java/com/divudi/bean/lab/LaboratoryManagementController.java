@@ -740,6 +740,11 @@ public class LaboratoryManagementController implements Serializable {
                 jpql += " AND pi.billItem.bill.status = :status";
                 params.put("status", patientInvestigationStatus);
             }
+            
+            if (priority != null) {
+                jpql += " AND pi.billItem.bill.priority = :prty";
+                params.put("prty", priority);
+            }
 
             jpql += " GROUP BY pi.billItem.bill ";
 

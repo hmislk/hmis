@@ -413,6 +413,12 @@ public class PharmacyController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show F 9B Report",
+            "Controls visibility of F 9B Pharmacy Composite Report button",
+            OptionScope.APPLICATION
+        ));
+
         // Financial Reports Configuration Options
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Analytics - Show Cash In/Out Report",
