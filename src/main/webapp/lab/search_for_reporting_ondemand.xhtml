@@ -403,7 +403,7 @@
                                             <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
                                                 <tr>
                                                     <td>
-                                                        <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="#{patientReportController.navigateToPatientReportPage}" 
+                                                        <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report?faces-redirect=true" 
                                                                        ajax="false">
                                                         </p:commandLink>
                                                     </td>

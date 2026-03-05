@@ -3232,10 +3232,7 @@ public class PatientReportController implements Serializable {
     }
     
     public String navigateToPatientReportPage() {
-        if (currentPatientReport != null) {
-            initialInvestigation = new HashMap<>(20);
-            patientInvestigationToAuditMap(initialInvestigation, currentPatientReport);
-        }
+        
         
         return "/lab/patient_report?faces-redirect=true";
     }
@@ -3271,7 +3268,7 @@ public class PatientReportController implements Serializable {
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
-        }        
+        }
         Investigation ix = null;
         if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
@@ -3301,6 +3298,12 @@ public class PatientReportController implements Serializable {
 
         createNewPatientReport(pi, ix);
         getCommonReportItemController().setCategory(ix.getReportFormat());
+
+        if (currentPatientReport != null) {
+            initialInvestigation = new HashMap<>(20);
+            patientInvestigationToAuditMap(initialInvestigation, currentPatientReport);
+        }
+
         return "/lab/patient_report";
     }
 
@@ -3312,7 +3315,7 @@ public class PatientReportController implements Serializable {
                 && currentPatientSampleComponant.getPatientSample() != null) {
             sampleId = currentPatientSampleComponant.getPatientSample().getIdStr();
         }
-        
+
         createNewPatientReport(pi, currentReportInvestigation, sampleId);
         if (currentReportInvestigation != null) {
             getCommonReportItemController().setCategory(currentReportInvestigation.getReportFormat());
@@ -3589,7 +3592,7 @@ public class PatientReportController implements Serializable {
         this.smsFacade = smsFacade;
     }
     
-    // Admission edit: prepare data to log audit event
+    // PatientInvestigation(PatientReport) Approval: prepare data to log audit event
     public void patientInvestigationToAuditMap(Map<String, Object> m, PatientReport pr) {
         if (pr == null || m == null) {
             return;

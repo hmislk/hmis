@@ -209,7 +209,7 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.patientInvestigationToAuditMap(patientReportController.getInitialInvestigation(), patientReportController.getCurrentPatientReport());
         
         patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-        
+ 
         JsfUtil.addSuccessMessage("Cancel Approved.");
     }
 

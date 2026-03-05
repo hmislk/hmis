@@ -26,11 +26,9 @@
                         <div class="col-3">
                             <p:selectOneMenu 
                                 class="mx-3 w-100"
-                                value="#{patientReportController.currentReportInvestigation}" 
-                                required="true">
+                                value="#{patientReportController.currentReportInvestigation}">
                                 <f:selectItem 
-                                    itemLabel="Select Alternative Report" 
-                                    noSelectionOption="true"></f:selectItem>
+                                    itemLabel="Select Alternative Report"></f:selectItem>
                                 <f:selectItems 
                                     value="#{patientInvestigationController.itemsForParentItem}" 
                                     var="alternativeReport"
@@ -42,10 +40,8 @@
                         <div class="col-3">
                             <p:selectOneMenu 
                                 class="mx-3 w-50"
-                                value="#{patientReportController.currentPatientSampleComponant}"
-                                required="true">
-                                <f:selectItem itemLabel="Select Sample"
-                                              noSelectionOption="true"/>
+                                value="#{patientReportController.currentPatientSampleComponant}">
+                                <f:selectItem itemLabel="Select Sample"/>
                                 <f:selectItems 
                                     value="#{patientInvestigationController.patientSampleComponentsByInvestigation}" 
                                     var="psc"
