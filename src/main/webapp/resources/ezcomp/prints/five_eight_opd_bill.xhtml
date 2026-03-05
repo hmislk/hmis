@@ -293,6 +293,14 @@
                     </div>
                 </div>
 
+                <h:panelGroup rendered="#{cc.attrs.bill.priority ne 'NORMAL'}">
+                    <div class="d-flex justify-content-center">
+                        <div class="p-1 m-2 d-flex justify-content-center" style="border: 2px solid red; border-radius: 10px; color: red; min-width: 150px;">
+                            <h:outputLabel value="#{cc.attrs.bill.priority.displayName}" style="font-weight: 700; font-size: 16px;"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
                 <h:panelGroup rendered="#{cc.attrs.bill.membershipScheme ne null or cc.attrs.bill.chiefHouseHolder ne null or cc.attrs.bill.memberFamily ne null}">
                     <table  style="font-size: 8pt;">
                         <tr>
@@ -325,7 +333,7 @@
 
                         </td>
                     </tr>
-                    
+
                     <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}">
                         <tr>
                             <td style="width: 4cm; vertical-align: top;" colspan="3">

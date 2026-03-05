@@ -2142,49 +2142,53 @@ public class PatientReportController implements Serializable {
             Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
             tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
-// ChatGPT and CodeRabbitAI contributed logic:
-// Always create the SMS for lab report approval, regardless of payment status.
-// The timer service will handle delayed sending and check full payment before dispatch.
-        if (currentPtIx != null
-                && currentPtIx.getBillItem() != null
-                && currentPtIx.getBillItem().getBill() != null
-                && currentPtIx.getBillItem().getBill().getPatient() != null
-                && currentPtIx.getBillItem().getBill().getPatient().getPerson() != null
-                && currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() != null
-                && !currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().isEmpty()) {
+        
+        if (currentPtIx.getInvestigation().isAllowToSendSMS()) {
 
-            Sms e = new Sms();
-            e.setPending(true);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(currentPtIx.getBillItem().getBill());
-            e.setPatientReport(currentPatientReport);
-            e.setPatientInvestigation(currentPtIx);
-            e.setSmsType(MessageType.LabReport);
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-            e.setSendingMessage(smsBody(currentPatientReport));
-            e.setDepartment(sessionController.getLoggedUser().getDepartment());
-            e.setInstitution(sessionController.getLoggedUser().getInstitution());
-            e.setSentSuccessfully(false);
-            getSmsFacade().create(e);
-        }
-        if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
+            if (currentPtIx != null
+                    && currentPtIx.getBillItem() != null
+                    && currentPtIx.getBillItem().getBill() != null
+                    && currentPtIx.getBillItem().getBill().getPatient() != null
+                    && currentPtIx.getBillItem().getBill().getPatient().getPerson() != null
+                    && currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() != null
+                    && !currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().isEmpty()) {
 
-            if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
                 Sms e = new Sms();
+                e.setPending(true);
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
                 e.setBill(currentPtIx.getBillItem().getBill());
                 e.setPatientReport(currentPatientReport);
                 e.setPatientInvestigation(currentPtIx);
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
-                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
+                e.setSmsType(MessageType.LabReport);
+                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
                 e.setSendingMessage(smsBody(currentPatientReport));
-                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                e.setDepartment(sessionController.getLoggedUser().getDepartment());
+                e.setInstitution(sessionController.getLoggedUser().getInstitution());
                 e.setSentSuccessfully(false);
                 getSmsFacade().create(e);
+            }
+
+            if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
+
+                if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
+                    Sms e = new Sms();
+                    e.setPending(true);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setBill(currentPtIx.getBillItem().getBill());
+                    e.setPatientReport(currentPatientReport);
+                    e.setPatientInvestigation(currentPtIx);
+                    e.setCreatedAt(new Date());
+                    e.setSmsType(MessageType.LabReport);
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
+                    e.setSendingMessage(smsBody(currentPatientReport));
+                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                    e.setSentSuccessfully(false);
+                    getSmsFacade().create(e);
+                }
             }
         }
 
@@ -2450,7 +2454,7 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Patient investigation not found");
             return;
         }
-        
+
         Date printingTime = new Date();
 
         currentPtIx.setPrinted(true);
@@ -2459,19 +2463,19 @@ public class PatientReportController implements Serializable {
         currentPtIx.setPrintingDepartment(sessionController.getDepartment());
         currentPtIx.setPrinted(true);
         getPiFacade().edit(currentPtIx);
-        
+
         currentPatientReport.setPrinted(Boolean.TRUE);
         currentPatientReport.setPrintingAt(printingTime);
         currentPatientReport.setPrintingDepartment(sessionController.getDepartment());
         currentPatientReport.setPrintingInstitution(sessionController.getInstitution());
         currentPatientReport.setPrintingUser(sessionController.getLoggedUser());
-        
+
         getFacade().edit(currentPatientReport);
 
         laboratoryManagementController.addReportPrintHistory(currentPatientReport.getId());
-        
+
     }
-    
+
     public void reportExport() {
         laboratoryManagementController.addReportExportHistory(currentPatientReport.getId());
     }
@@ -2970,31 +2974,31 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
             return "";
         }
-        
+
         PatientInvestigation pi = piFacade.findWithoutCache(patientInvestigationId);
 
         if (pi == null) {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
-        
+
         Patient pt = patientFacade.findWithoutCache(pi.getBillItem().getBill().getPatient().getId());
-        
-        if(pt == null){
+
+        if (pt == null) {
             JsfUtil.addErrorMessage("Patient is Invalid");
             return "";
         }
 
-        if(pt.getPerson().getDob() == null){
+        if (pt.getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Patient Age is Invalid or Missing");
             return "";
         }
-        
-        if(pt.getPerson().getSex() == null){
+
+        if (pt.getPerson().getSex() == null) {
             JsfUtil.addErrorMessage("Patient Gender is Invalid or Missing");
             return "";
         }
-        
+
         laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }

@@ -164,6 +164,7 @@ public class AiChatController implements Serializable {
     // -------------------------------------------------------------------------
 
     public void sendMessage() {
+        LOG.info("sendMessage() called");
         if (currentConversation == null) {
             startNewConversation();
         }
@@ -186,7 +187,7 @@ public class AiChatController implements Serializable {
             userMsg.setWebUser(sessionController.getLoggedUser());
             userMsg.setCreatedAt(new Date());
             aiMessageFacade.create(userMsg);
-            currentMessages.add(userMsg);
+            getCurrentMessages().add(userMsg);
 
             // Collect config values
             String claudeApiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
@@ -194,8 +195,6 @@ public class AiChatController implements Serializable {
             Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
             int maxTokens = (maxTokensConfig != null) ? maxTokensConfig : 4096;
             String githubBranch = configOptionApplicationController.getShortTextValueByKey("AI Chat - GitHub Branch", "development");
-
-            // Auto-detect HMIS base URL from the current request (same mechanism used for SMS links)
             String hmisApiBaseUrl = resolveHmisBaseUrl();
 
             if (claudeApiKey == null || claudeApiKey.trim().isEmpty()) {
@@ -205,17 +204,17 @@ public class AiChatController implements Serializable {
                 errMsg.setContent("AI Chat is not configured. Please ask your administrator to set the Claude API Key in Application Configuration.");
                 errMsg.setCreatedAt(new Date());
                 aiMessageFacade.create(errMsg);
-                currentMessages.add(errMsg);
+                getCurrentMessages().add(errMsg);
                 return;
             }
 
             // Resolve user's active HMIS API key
             String userHmisApiKey = resolveUserHmisApiKey();
 
-            // Build system prompt with auto-fetched API docs from GitHub
+            // Build system prompt inline (no external HTTP calls)
             String systemPrompt = anthropicApiService.buildSystemPrompt(hmisApiBaseUrl, userHmisApiKey, githubBranch);
 
-            // History = all messages except the one we just added (the service appends it)
+            // History = all messages except the one just added
             List<AiMessage> history = new ArrayList<>(currentMessages);
             history.remove(userMsg);
 
@@ -239,7 +238,8 @@ public class AiChatController implements Serializable {
                 assistantMsg.setOutputTokens(response.getOutputTokens());
                 assistantMsg.setCreatedAt(new Date());
                 aiMessageFacade.create(assistantMsg);
-                currentMessages.add(assistantMsg);
+                getCurrentMessages().add(assistantMsg);
+                LOG.info("sendMessage() complete. messages=" + currentMessages.size());
 
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Error getting AI response", e);
@@ -249,7 +249,7 @@ public class AiChatController implements Serializable {
                 errMsg.setContent("An unexpected error occurred: " + e.getMessage());
                 errMsg.setCreatedAt(new Date());
                 aiMessageFacade.create(errMsg);
-                currentMessages.add(errMsg);
+                getCurrentMessages().add(errMsg);
             }
 
         } finally {
@@ -389,7 +389,11 @@ public class AiChatController implements Serializable {
 
     public List<AiMessage> getCurrentMessages() {
         if (currentMessages == null) {
-            currentMessages = new ArrayList<>();
+            if (currentConversation != null) {
+                loadCurrentMessages();
+            } else {
+                currentMessages = new ArrayList<>();
+            }
         }
         return currentMessages;
     }
