@@ -2272,8 +2272,10 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("First Approve report");
             return;
         }
+        
+        String currentSMSReceipientNumber = currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber();
 
-        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+        if (currentSMSReceipientNumber != null && !currentSMSReceipientNumber.trim().isEmpty()) {
 
             System.out.println("Find Already Created SMS in This Patient Report");
 
@@ -2287,17 +2289,17 @@ public class PatientReportController implements Serializable {
 
             Sms currentSMS = null;
 
-            String currentSMSReceipientNumber = currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim();
-
+            String ptMobile = currentSMSReceipientNumber.trim();
+            
             if (sms != null) {
 
                 System.out.println("Found Current Report Pending SMS");
 
-                System.out.println("Current SMS Receipient Number = " + currentSMSReceipientNumber);
+                System.out.println("Current SMS Receipient Number = " + ptMobile);
                 System.out.println("SMS Receipient Number = " + sms.getReceipientNumber());
 
-                if (!sms.getReceipientNumber().equalsIgnoreCase(currentSMSReceipientNumber)) {
-                    sms.setReceipientNumber(currentSMSReceipientNumber);
+                if (!sms.getReceipientNumber().equalsIgnoreCase(ptMobile)) {
+                    sms.setReceipientNumber(ptMobile);
                     smsFacade.edit(sms);
                 }
 
@@ -2362,7 +2364,7 @@ public class PatientReportController implements Serializable {
                 
                 JsfUtil.addErrorMessage("SMS Sent Failed");
             }     
-        }else{
+        } else {
             JsfUtil.addErrorMessage("Parient Mobile Number is Missing");
         }
     }
