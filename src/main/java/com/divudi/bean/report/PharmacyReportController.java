@@ -7624,7 +7624,7 @@ public class PharmacyReportController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Batch Wise Stock Report.pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
 
@@ -7779,7 +7779,7 @@ public class PharmacyReportController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Item Wise Stock Report.pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
 
