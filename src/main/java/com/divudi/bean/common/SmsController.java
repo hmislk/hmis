@@ -421,6 +421,7 @@ public class SmsController implements Serializable {
             }
             JsfUtil.addSuccessMessage("SMS sent successfully");
         } else {
+            
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                 labTestHistoryController.addSentSMSFailureHistory(s.getPatientInvestigation(), s.getPatientReport(), s, s.getReceivedMessage());
             }

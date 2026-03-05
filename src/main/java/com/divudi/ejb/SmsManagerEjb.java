@@ -126,10 +126,12 @@ public class SmsManagerEjb {
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
         String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
-                + "and e.smsType = :smsType and e.createdAt between :from and :to";
+                + " and e.smsType = :smsType and s.sendingFailed =:faild "
+                + " and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
         params.put("to", delayThreshold.getTime());
+        params.put("faild", false);
         params.put("smsType", MessageType.LabReport);
 
         List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -173,6 +175,9 @@ public class SmsManagerEjb {
                     }
 
                 }else{
+                    sms.setSendingFailed(true);
+                    smsFacade.edit(sms);
+                    
                     if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                         labTestHistoryService.addSentSMSFailureHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms, sms.getReceivedMessage());
                     }
