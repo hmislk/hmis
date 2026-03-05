@@ -276,6 +276,7 @@ public class QuickBookReportController implements Serializable {
         qbfs.addAll(createInwardCollection(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         qbfs.addAll(createAgencyAndCollectionCenterTotal(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         qbfs.addAll(createPatientDepositSection(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+        qbfs.addAll(createCreditCompanyCollectionSection(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
 
         QuickBookFormat qbf = new QuickBookFormat();
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
@@ -320,6 +321,7 @@ public class QuickBookReportController implements Serializable {
             qbfs.addAll(createInwardCollection(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
             qbfs.addAll(createAgencyAndCollectionCenterTotal(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
             qbfs.addAll(createPatientDepositSection(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
+            qbfs.addAll(createCreditCompanyCollectionSection(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
 
             qbf = new QuickBookFormat();
             qbf.setRowType("TRNS");
@@ -2297,6 +2299,43 @@ public class QuickBookReportController implements Serializable {
     public List<QuickBookFormat> createPatientDepositSection(Date fd, Date td) {
         List<QuickBookFormat> qbfs = new ArrayList<>();
 
+        // --- Inward Deposit Collection: sum netTotal of INWARD_DEPOSIT and related bills ---
+        List<BillTypeAtomic> inwardDepositCollectionBtas = new ArrayList<>();
+        inwardDepositCollectionBtas.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardDepositCollectionBtas.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardDepositCollectionBtas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        inwardDepositCollectionBtas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+        Map<String, Object> inwardDepositCollectionMap = new HashMap<>();
+        String inwardDepositCollectionJpql = "select sum(b.netTotal) from Bill b"
+                + " where b.billTypeAtomic in :btas"
+                + " and b.createdAt between :fd and :td"
+                + " and b.retired = false";
+        if (institution != null) { inwardDepositCollectionJpql += " and b.department.institution = :ins"; inwardDepositCollectionMap.put("ins", institution); }
+        if (department != null)  { inwardDepositCollectionJpql += " and b.department = :dep";             inwardDepositCollectionMap.put("dep", department); }
+        if (site != null)        { inwardDepositCollectionJpql += " and b.department.site = :site";        inwardDepositCollectionMap.put("site", site); }
+        inwardDepositCollectionMap.put("btas", inwardDepositCollectionBtas);
+        inwardDepositCollectionMap.put("fd", fd);
+        inwardDepositCollectionMap.put("td", td);
+
+        double inwardDepositCollection = getBillFacade().findDoubleByJpql(inwardDepositCollectionJpql, inwardDepositCollectionMap, TemporalType.TIMESTAMP);
+
+        if (inwardDepositCollection != 0.0) {
+            QuickBookFormat qbf = new QuickBookFormat();
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("Cash Sale");
+            qbf.setName("CASH AR");
+            qbf.setAccnt("ACCRUED CHARGES:Patient Deposits:Indoor Patient Deposit");
+            qbf.setInvItemType("SERV");
+            qbf.setInvItem("Patient Deposit");
+            qbf.setMemo("Inward Deposit Collection");
+            qbf.setAmount(0 - inwardDepositCollection); // negative = liability created
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            grantTot += inwardDepositCollection;
+            qbfs.add(qbf);
+        }
+
         // --- Collection: sum netTotal of PATIENT_DEPOSIT, PATIENT_DEPOSIT_REFUND, PATIENT_DEPOSIT_CANCELLED bills ---
         List<BillTypeAtomic> collectionBtas = new ArrayList<>();
         collectionBtas.add(BillTypeAtomic.PATIENT_DEPOSIT);
@@ -2433,6 +2472,94 @@ public class QuickBookReportController implements Serializable {
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(false);
             grantTot -= inwardUtilization;
+            qbfs.add(qbf);
+        }
+
+        return qbfs;
+    }
+
+    public List<QuickBookFormat> createCreditCompanyCollectionSection(Date fd, Date td) {
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+
+        // --- OPD Credit Company Payment Collection ---
+        // Matches Daily Return: generateCreditCompanyCollectionForOpd()
+        List<BillTypeAtomic> opdCcBtas = new ArrayList<>();
+        opdCcBtas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        opdCcBtas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        opdCcBtas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
+        opdCcBtas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
+        opdCcBtas.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        // Historical pharmacy settlements (deprecated bill types — included for historical data)
+        opdCcBtas.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        opdCcBtas.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        opdCcBtas.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
+        opdCcBtas.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_DEBIT_NOTE);
+
+        Map<String, Object> opdCcMap = new HashMap<>();
+        String opdCcJpql = "select sum(b.netTotal) from Bill b"
+                + " where b.billTypeAtomic in :btas"
+                + " and b.createdAt between :fd and :td"
+                + " and b.retired = false";
+        if (institution != null) { opdCcJpql += " and b.department.institution = :ins"; opdCcMap.put("ins", institution); }
+        if (department != null)  { opdCcJpql += " and b.department = :dep";             opdCcMap.put("dep", department); }
+        if (site != null)        { opdCcJpql += " and b.department.site = :site";        opdCcMap.put("site", site); }
+        opdCcMap.put("btas", opdCcBtas);
+        opdCcMap.put("fd", fd);
+        opdCcMap.put("td", td);
+
+        double opdCcTotal = getBillFacade().findDoubleByJpql(opdCcJpql, opdCcMap, TemporalType.TIMESTAMP);
+
+        if (opdCcTotal != 0.0) {
+            QuickBookFormat qbf = new QuickBookFormat();
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("Cash Sale");
+            qbf.setName("CASH AR");
+            qbf.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
+            qbf.setInvItemType("SERV");
+            qbf.setInvItem("OPD Credit Co Settlement");
+            qbf.setMemo("OPD Credit Company Payment Collection");
+            qbf.setAmount(0 - opdCcTotal); // negative = AR being cleared (cash in, receivable reduced)
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            grantTot += opdCcTotal;
+            qbfs.add(qbf);
+        }
+
+        // --- Inward Credit Company Payment Collection ---
+        // Matches Daily Return: generateCreditCompanyCollectionForInward()
+        List<BillTypeAtomic> inwardCcBtas = new ArrayList<>();
+        inwardCcBtas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        inwardCcBtas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        inwardCcBtas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_CREDIT_NOTE);
+        inwardCcBtas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_DEBIT_NOTE);
+
+        Map<String, Object> inwardCcMap = new HashMap<>();
+        String inwardCcJpql = "select sum(b.netTotal) from Bill b"
+                + " where b.billTypeAtomic in :btas"
+                + " and b.createdAt between :fd and :td"
+                + " and b.retired = false";
+        if (institution != null) { inwardCcJpql += " and b.department.institution = :ins"; inwardCcMap.put("ins", institution); }
+        if (department != null)  { inwardCcJpql += " and b.department = :dep";             inwardCcMap.put("dep", department); }
+        if (site != null)        { inwardCcJpql += " and b.department.site = :site";        inwardCcMap.put("site", site); }
+        inwardCcMap.put("btas", inwardCcBtas);
+        inwardCcMap.put("fd", fd);
+        inwardCcMap.put("td", td);
+
+        double inwardCcTotal = getBillFacade().findDoubleByJpql(inwardCcJpql, inwardCcMap, TemporalType.TIMESTAMP);
+
+        if (inwardCcTotal != 0.0) {
+            QuickBookFormat qbf = new QuickBookFormat();
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("Cash Sale");
+            qbf.setName("CASH AR");
+            qbf.setAccnt("Accounts Receivable:Debtors Control");
+            qbf.setInvItemType("SERV");
+            qbf.setInvItem("Inpatient Credit Co Settlement");
+            qbf.setMemo("Company Collection for Inward Services");
+            qbf.setAmount(0 - inwardCcTotal); // negative = AR being cleared (cash in, receivable reduced)
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            grantTot += inwardCcTotal;
             qbfs.add(qbf);
         }
 
