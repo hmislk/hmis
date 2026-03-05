@@ -2592,6 +2592,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         } else if ("IP".equals(reportType)) {
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
@@ -2606,6 +2607,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
