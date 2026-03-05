@@ -3632,7 +3632,7 @@ public class PatientReportController implements Serializable {
                 }
 
                 InvestigationItemType itemType = prv.getInvestigationItem().getIxItemType();
-                if (itemType == InvestigationItemType.DynamicLabel || itemType == InvestigationItemType.Value || itemType == InvestigationItemType.Flag || itemType == InvestigationItemType.WorningFlag || itemType == InvestigationItemType.Calculation) {
+                if (itemType == InvestigationItemType.DynamicLabel || itemType == InvestigationItemType.Value || itemType == InvestigationItemType.Flag || itemType == InvestigationItemType.WarningFlag || itemType == InvestigationItemType.Calculation) {
                     items.put(prv.getInvestigationItem().getName(), prv.getValue());
                 }    
             }
