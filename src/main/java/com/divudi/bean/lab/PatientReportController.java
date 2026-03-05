@@ -90,6 +90,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.persistence.TemporalType;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -2179,7 +2180,7 @@ public class PatientReportController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportCreateSentSMSHistory(currentPtIx, currentPatientReport, e);
                 }
-                
+
                 System.out.println("Create a SMS for " + e.getPatientInvestigation().getInvestigation().getName() + " Report Send to = " + e.getReceipientNumber());
             }
 
@@ -2273,55 +2274,94 @@ public class PatientReportController implements Serializable {
         }
 
         if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(currentPtIx.getBillItem().getBill());
-            e.setPatientReport(currentPatientReport);
-            e.setPatientInvestigation(currentPtIx);
-            e.setCreatedAt(new Date());
-            e.setSmsType(MessageType.LabReport);
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-            e.setSendingMessage(smsBody(currentPatientReport));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(true);
-            getSmsFacade().create(e);
 
-            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                labTestHistoryController.addReportCreateSentManualSMSHistory(currentPtIx, currentPatientReport, e);
+            System.out.println("Find Already Created SMS in This Patient Report");
+
+            String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
+                    + " and e.smsType =:smsType and e.patientReport =:pr ";
+            Map<String, Object> params = new HashMap<>();
+            params.put("pr", currentPatientReport);
+            params.put("smsType", MessageType.LabReport);
+
+            Sms sms = smsFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            Sms currentSMS = null;
+
+            String currentSMSReceipientNumber = currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim();
+
+            if (sms != null) {
+
+                System.out.println("Found Current Report Pending SMS");
+
+                System.out.println("Current SMS Receipient Number = " + currentSMSReceipientNumber);
+                System.out.println("SMS Receipient Number = " + sms.getReceipientNumber());
+
+                if (!sms.getReceipientNumber().equalsIgnoreCase(currentSMSReceipientNumber)) {
+                    sms.setReceipientNumber(currentSMSReceipientNumber);
+                    smsFacade.edit(sms);
+                }
+
+                currentSMS = sms;
+
+            } else {
+                System.out.println("Not Found Pending SMS. Create New One ");
+                
+                Sms e = new Sms();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setBill(currentPtIx.getBillItem().getBill());
+                e.setPatientReport(currentPatientReport);
+                e.setPatientInvestigation(currentPtIx);
+                e.setCreatedAt(new Date());
+                e.setSmsType(MessageType.LabReport);
+                e.setCreater(sessionController.getLoggedUser());
+                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
+                e.setSendingMessage(smsBody(currentPatientReport));
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                e.setPending(true);
+                getSmsFacade().create(e);
+                
+                currentSMS = e;
+
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    labTestHistoryController.addReportCreateSentManualSMSHistory(currentPtIx, currentPatientReport, e);
+                }
             }
+            
+            System.out.println("Current SMS = " + currentSMS);
 
-            Boolean sent = smsManager.sendSms(e);
+            Boolean sent = smsManager.sendSms(currentSMS);
 
             if (sent) {
-                e.setSentSuccessfully(true);
-                e.setPending(false);
-                getSmsFacade().edit(e);
-                
-                System.out.println(e.getPatientInvestigation().getInvestigation().getName() + "Report Link Send to = " + e.getReceipientNumber());
+                currentSMS.setSentSuccessfully(true);
+                currentSMS.setPending(false);
+                getSmsFacade().edit(currentSMS);
+
+                System.out.println(currentSMS.getPatientInvestigation().getInvestigation().getName() + "Report Link Send to = " + currentSMS.getReceipientNumber());
 
                 if (!currentPatientReport.getSendSMSComplete()) {
                     currentPatientReport.setSendSMSComplete(true);
                     getFacade().edit(currentPatientReport);
-                    
-                    System.out.println("The SMS was successfully sent and it was updated in the LAB Report. ---> " + currentPatientReport.getSendSMSComplete());
+
+                    System.out.println("The SMS was successfully sent Manualy to "+ currentSMS.getReceipientNumber()+" and it was updated in the LAB Report. ---> " + currentPatientReport.getSendSMSComplete());
                 }
 
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                    labTestHistoryController.addReportSentManualSMSHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, e);
+                    labTestHistoryController.addReportSentManualSMSHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, currentSMS);
                 }
-
+                JsfUtil.addSuccessMessage("SMS Sent");
+                
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                    labTestHistoryController.addSentSMSFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, e, e.getReceivedMessage());
+                    labTestHistoryController.addSentSMSFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, currentSMS, currentSMS.getReceivedMessage());
                 }
-            }
+                
+                JsfUtil.addErrorMessage("SMS Sent Failed");
+            }     
+        }else{
+            JsfUtil.addErrorMessage("Parient Mobile Number is Missing");
         }
-
-        JsfUtil.addSuccessMessage("SMS Sent");
-//
     }
 
     public void sendEmailForPatientReport() {
@@ -2409,7 +2449,6 @@ public class PatientReportController implements Serializable {
                     currentPatientReport.setSendEmailComplete(true);
                     getFacade().edit(currentPatientReport);
                 }
-                
 
                 JsfUtil.addSuccessMessage("Email Sent Successfully");
             } else {
@@ -2462,6 +2501,40 @@ public class PatientReportController implements Serializable {
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
         JsfUtil.addSuccessMessage("Approval Reversed");
 
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addApprovalCancelHistory(currentPtIx, currentPatientReport);
+        }
+
+//      When canceling approval, remove unsent SMS related to that report
+        String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
+                + " and e.smsType = :smsType and e.patientReport =:pr ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pr", currentPatientReport);
+        params.put("smsType", MessageType.LabReport);
+
+        List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (smses != null && !smses.isEmpty()) {
+            System.out.println("Found Pending " + smses.size() + " SMS's");
+            System.out.println("smses = " + smses);
+
+            int successCount = 0;
+            for (Sms s : smses) {
+                s.setRetired(true);
+                s.setRetiredAt(new Date());
+                s.setRetirer(sessionController.getLoggedUser());
+                s.setRetireComments("Due to the cancellation of approval of the report");
+
+                smsFacade.edit(s);
+                successCount++;
+                System.out.println("SMS ID = " + s.getId() + " was removed.");
+            }
+
+            System.out.println("Successfully Removed " + successCount + " SMSs");
+        } else {
+            System.out.println("Not Fount Pending SMS");
+        }
+
         try {
             if (CommonFunctions.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
                 AppEmail e = new AppEmail();
@@ -2486,10 +2559,6 @@ public class PatientReportController implements Serializable {
             }
 
         } catch (Exception e) {
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addApprovalCancelHistory(currentPtIx, currentPatientReport);
         }
 
     }
