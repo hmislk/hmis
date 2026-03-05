@@ -58,8 +58,8 @@ public class EmailManagerEjb {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    LabTestHistoryController labTestHistoryController;
+    @EJB
+    LabTestHistoryService labTestHistoryService;
 
     @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void processPendingLabReportApprovalEmailQueue() {
@@ -130,32 +130,32 @@ public class EmailManagerEjb {
                         true
                 );
 
-                
                 if (success) {
-                    email.setSentSuccessfully(success);
-                    email.setPending(!success);
+                    email.setSentSuccessfully(true);
+                    email.setPending(false);
                     email.setSentAt(new Date());
-                    
+
                     emailFacade.edit(email);
-                    
-                    PatientReport courrentPr = email.getPatientReport();
-                    
-                    courrentPr.setSendEmailComplete(true);
-                    patientReportFacade.edit(courrentPr);
-                    
-                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                        labTestHistoryController.addResentFailureEmailHistory(email.getPatientInvestigation(), email.getPatientReport(), email);
+
+                    PatientReport cuurrentPr = patientReportFacade.findWithoutCache(email.getPatientReport().getId());
+
+                    if (!cuurrentPr.getSendEmailComplete()) {
+                        cuurrentPr.setSendEmailComplete(true);
+                        patientReportFacade.edit(cuurrentPr);
                     }
-                    
-                }else{
+
                     if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                        labTestHistoryController.addSentEmailFailureHistory(email.getPatientInvestigation(), email.getPatientReport(), email, "");
+                        labTestHistoryService.addReportSentEmailHistory( email.getPatientInvestigation(), email.getPatientReport(), email);
+                    }
+
+                } else {
+                    if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                        labTestHistoryService.addSentEmailFailureHistory(email.getPatientInvestigation(), email.getPatientReport(), email, "");
                     }
                 }
-                
+
             } catch (Exception e) {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
-                        "Failed to process Email ID: " + (email != null ? email.getId() : "unknown"), e);
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,"Failed to process Email ID: " + (email != null ? email.getId() : "unknown"), e);
             }
         }
     }

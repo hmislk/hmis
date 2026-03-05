@@ -157,12 +157,17 @@ public class SmsManagerEjb {
                     sms.setSentAt(new Date());
 
                     smsFacade.edit(sms);
+                    
+                    System.out.println(sms.getPatientInvestigation().getInvestigation().getName() + "Report Link Send to = " + sms.getReceipientNumber());
 
-                    PatientReport courrentPr = sms.getPatientReport();
+                    PatientReport currentPr = patientReportFacade.findWithoutCache(sms.getPatientReport().getId());
 
-                    courrentPr.setSendEmailComplete(true);
-                    patientReportFacade.edit(courrentPr);
-
+                    if(!currentPr.getSendSMSComplete()){
+                        currentPr.setSendSMSComplete(true);
+                        patientReportFacade.edit(currentPr);
+                        System.out.println("The SMS was successfully sent and it was updated in the LAB Report. ---> " + currentPr.getSendSMSComplete());
+                    }
+                    
                     if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                         labTestHistoryService.addReportSentSMSToPatientHistory(sms.getPatientInvestigation(), sms.getPatientReport(), sms);
                     }
