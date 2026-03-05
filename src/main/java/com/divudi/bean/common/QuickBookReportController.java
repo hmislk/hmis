@@ -2402,8 +2402,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("CASH AR");
             qbf.setAccnt("ACCRUED CHARGES:Patient Deposits:Patient Deposit");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("Patient Deposit Utilization for OPD Bills");
-            qbf.setMemo("Patient Deposit Utilization for OPD Bills");
+            qbf.setInvItem("Patient Deposit");
+            qbf.setMemo("Utilization for OPD Bills");
             qbf.setAmount(opdUtilization); // positive = liability removed
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(false);
@@ -2432,8 +2432,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("CASH AR");
             qbf.setAccnt("ACCRUED CHARGES:Patient Deposits:Patient Deposit");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("Patient Deposit Utilization for Pharmacy Bills");
-            qbf.setMemo("Patient Deposit Utilization for Pharmacy Bills");
+            qbf.setInvItem("Patient Deposit");
+            qbf.setMemo("Utilization for Pharmacy Bills");
             qbf.setAmount(pharmacyUtilization); // positive = liability removed
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(false);
@@ -2466,8 +2466,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("CASH AR");
             qbf.setAccnt("ACCRUED CHARGES:Patient Deposits:Patient Deposit");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("Patient Deposit Utilization for Inward Payments");
-            qbf.setMemo("Patient Deposit Utilization for Inward Payments");
+            qbf.setInvItem("Patient Deposit");
+            qbf.setMemo("Utilization for Inward Payments");
             qbf.setAmount(inwardUtilization); // positive = liability removed
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(false);
@@ -2514,10 +2514,10 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Cash Sale");
             qbf.setName("CASH AR");
-            qbf.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
+            qbf.setAccnt("ACCRUED CHARGES:Patient Deposits:OP PH Credit Company Collection");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("OPD Credit Co Settlement");
-            qbf.setMemo("OPD Credit Company Payment Collection");
+            qbf.setInvItem("OP PH Credit Company Collection");
+            qbf.setMemo("OP PH Credit Company Collection");
             qbf.setAmount(0 - opdCcTotal); // negative = AR being cleared (cash in, receivable reduced)
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(false);
@@ -2552,10 +2552,10 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Cash Sale");
             qbf.setName("CASH AR");
-            qbf.setAccnt("Accounts Receivable:Debtors Control");
+            qbf.setAccnt("ACCRUED CHARGES:Patient Deposits:IP Credit Company Collection");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("Inpatient Credit Co Settlement");
-            qbf.setMemo("Company Collection for Inward Services");
+            qbf.setInvItem("IP Credit Company Collection");
+            qbf.setMemo("IP Credit Company Collection");
             qbf.setAmount(0 - inwardCcTotal); // negative = AR being cleared (cash in, receivable reduced)
             qbf.setEditQbClass(false);
             qbf.setEditAccnt(false);
