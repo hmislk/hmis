@@ -2140,9 +2140,9 @@ public class PatientReportController implements Serializable {
             e.setPending(true);
 
             getEmailFacade().create(e);
-            
+
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                labTestHistoryController.addReportCreateEmailHistory(currentPtIx, currentPatientReport,e);
+                labTestHistoryController.addReportCreateEmailHistory(currentPtIx, currentPatientReport, e);
             }
         }
 
@@ -2179,6 +2179,8 @@ public class PatientReportController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportCreateSentSMSHistory(currentPtIx, currentPatientReport, e);
                 }
+                
+                System.out.println("Create a SMS for " + e.getPatientInvestigation().getInvestigation().getName() + " Report Send to = " + e.getReceipientNumber());
             }
 
             if (configOptionApplicationController.getBooleanValueByKey("Allow the collection center to be notified via SMS when the report is approved.", false)) {
@@ -2286,27 +2288,34 @@ public class PatientReportController implements Serializable {
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(true);
             getSmsFacade().create(e);
-            
+
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                 labTestHistoryController.addReportCreateSentManualSMSHistory(currentPtIx, currentPatientReport, e);
             }
-            
+
             Boolean sent = smsManager.sendSms(e);
-            
-            if(sent){
-                e.setSentSuccessfully(sent);
+
+            if (sent) {
+                e.setSentSuccessfully(true);
                 e.setPending(false);
                 getSmsFacade().edit(e);
                 
+                System.out.println(e.getPatientInvestigation().getInvestigation().getName() + "Report Link Send to = " + e.getReceipientNumber());
+
+                if (!currentPatientReport.getSendSMSComplete()) {
+                    currentPatientReport.setSendSMSComplete(true);
+                    getFacade().edit(currentPatientReport);
+                    
+                    System.out.println("The SMS was successfully sent and it was updated in the LAB Report. ---> " + currentPatientReport.getSendSMSComplete());
+                }
+
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportSentManualSMSHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, e);
                 }
-                
-                currentPatientReport.setSendSMSComplete(true);
-                getFacade().edit(currentPatientReport);
-            }else{
+
+            } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                    labTestHistoryController.addSentSMSFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, e,e.getReceivedMessage());
+                    labTestHistoryController.addSentSMSFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, e, e.getReceivedMessage());
                 }
             }
         }
@@ -2384,29 +2393,32 @@ public class PatientReportController implements Serializable {
                     email.getMessageSubject(),
                     true
             );
-            
+
             if (success) {
                 email.setSentAt(new Date());
-                email.setSentSuccessfully(success);
+                email.setSentSuccessfully(true);
                 email.setPending(false);
-                
+
                 emailFacade.edit(email);
-                
+
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportSentEmailHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, email);
                 }
+
+                if (!currentPatientReport.getSendEmailComplete()) {
+                    currentPatientReport.setSendEmailComplete(true);
+                    getFacade().edit(currentPatientReport);
+                }
                 
-                currentPatientReport.setSendEmailComplete(true);
-                getFacade().edit(currentPatientReport);
-                
+
                 JsfUtil.addSuccessMessage("Email Sent Successfully");
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                    labTestHistoryController.addSentEmailFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, email,"");
+                    labTestHistoryController.addSentEmailFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, email, "");
                 }
                 JsfUtil.addErrorMessage("Sending Email Failed");
             }
-            
+
         } catch (Exception ex) {
             JsfUtil.addErrorMessage("Sending Email Failed");
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
