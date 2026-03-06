@@ -46,7 +46,7 @@
 
             <div class="headingBill">
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline; font-size: 14px;"/>
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" style="font-size: 14px;" />
 
             </div>
 
@@ -157,15 +157,13 @@
                             <td style="padding:2px 6px;">
                                 #{cc.attrs.bill.paymentMethod}
                             </td>
-
-                            <td style="padding:2px 6px;"
-                                rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}">
-                                <b>Crd. Duration</b>
+                            <td style="padding:2px 6px;">
+                                <b>
+                                    <h:outputText value="Crd. Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                                </b> 
                             </td>
-
-                            <td style="padding:2px 6px;"
-                                rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}">
-                                #{cc.attrs.bill.creditDuration}
+                            <td style="padding:2px 6px;">
+                                    <h:outputText value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
                             </td>
                         </tr>
 

@@ -88,7 +88,6 @@
                                 .paper{
                                     position: static !important;
                                     width: 297mm!important;
-
                                 }
 
                                 .header{
@@ -180,14 +179,8 @@
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th style="width: 7mm; font-weight: 700;">
-                                                    <h:outputText value="No" style="margin-left: 1mm;"/>
-                                                </th>
                                                 <th style="width: 25mm;font-weight: 700;">
-                                                    <h:outputText value="Bill No" style="margin-left: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Date" style="margin-left:  1mm;"/>
+                                                    <h:outputText value="Bill Type + Group" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Net Total" style="margin-right: 1mm;"/>
@@ -222,24 +215,19 @@
                                                 <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Actual Total" style="margin-right: 1mm;"/>
                                                 </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Cost" style="margin-right: 1mm;"/>
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <ui:repeat value="#{pharmacySummaryReportController.bundle.rows}" var="row" varStatus="i">
                                                 <tr>
-                                                    <td style="width: 8mm;" >
-                                                        <h:outputText value="#{i.index +1}" style="margin-left: 1mm;"/>
-                                                    </td>
                                                     <td style="width: 25mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.deptId}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.createdAt}" style="margin-left: 1mm;">
-                                                            <f:convertDateTime pattern="dd/MM/YY" />
-                                                        </h:outputText>
+                                                        <h:outputText value="#{row.rowType}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.bill.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -279,7 +267,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.discount}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{commonFunctionsProxy.reverseSign(row.discount)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -293,14 +281,19 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.totalCostValue}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
                                                 </tr>
                                             </ui:repeat>
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td style="width: 8mm;" />
-                                                <td style="width: 25mm; text-align: left;"/>
-                                                <td style="width: 17mm; text-align: left;"/>
+                                                <td style="width: 25mm; text-align: center;">
+                                                    <h:outputText value="Total" style="padding: 0px!important; margin: 0px!important; font-weight: bold"/>
+                                                </td>
                                                 <td style="width: 17mm; text-align: right;">
                                                     <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
@@ -342,7 +335,7 @@
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{commonFunctionsProxy.reverseSign(pharmacySummaryReportController.bundle.summaryRow.discount)}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
@@ -356,6 +349,12 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.totalCostValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                
                                             </tr>
                                         </tfoot>
                                     </table>
