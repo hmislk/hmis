@@ -36,11 +36,13 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Payment;
 import com.divudi.service.PaymentService;
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
+import com.divudi.core.entity.AuditEvent;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -108,6 +110,8 @@ public class GrnReturnWorkflowController implements Serializable {
     UserSettingsController userSettingsController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private AuditEventController auditEventController;
 
     // Main properties
     private Bill currentBill;
@@ -458,6 +462,84 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         return "/pharmacy/returns_and_cancellations_index?faces-redirect=true";
+    }
+
+    /**
+     * Cancels a GRN Return directly from the list table without opening the
+     * record. Called by the Cancel button in pharmacy_grn_return_list_to_finalize.xhtml.
+     * Writes a before/after audit log entry to the audit database.
+     */
+    public void cancelGrnReturnFromList() {
+        // Guard: bill must be selected and persisted
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: No valid GRN Return found.");
+            return;
+        }
+        // Guard: reject invalid states
+        if (currentBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " is already cancelled.");
+            return;
+        }
+        if (currentBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " has already been refunded.");
+            return;
+        }
+        if (currentBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " has been reactivated.");
+            return;
+        }
+        if (currentBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " is retired.");
+            return;
+        }
+        if (currentBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " is completed.");
+            return;
+        }
+        if (currentBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " payment is completed.");
+            return;
+        }
+        // Capture state before cancellation for audit log
+        String beforeJson = buildGrnReturnAuditJson(currentBill);
+        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                "Cancel GRN Return from List",
+                beforeJson,
+                currentBill.getId()
+        );
+        try {
+            // Mark as cancelled and record who did it
+            currentBill.setCancelled(true);
+            currentBill.setEditedAt(new Date());
+            currentBill.setEditor(sessionController.getLoggedUser());
+            billFacade.edit(currentBill);
+            // Capture state after cancellation and complete the audit log entry
+            auditEventController.completeAuditEvent(auditEvent, buildGrnReturnAuditJson(currentBill));
+            JsfUtil.addSuccessMessage("GRN Return " + currentBill.getDeptId() + " cancelled successfully.");
+        } catch (Exception e) {
+            auditEventController.failAuditEvent(auditEvent, "Cancellation failed: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error cancelling GRN Return " + currentBill.getDeptId() + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Builds a JSON snapshot of a GRN Return bill for audit logging.
+     * Uses only safe scalar fields to avoid JPA lazy-loading issues.
+     */
+    private String buildGrnReturnAuditJson(Bill bill) {
+        String supplier = (bill.getToInstitution() != null) ? bill.getToInstitution().getName() : "";
+        String department = (bill.getDepartment() != null) ? bill.getDepartment().getName() : "";
+        String editor = (bill.getEditor() != null && bill.getEditor().getWebUserPerson() != null)
+                ? bill.getEditor().getWebUserPerson().getName() : "";
+        return "{"
+                + "\"id\":" + bill.getId()
+                + ",\"deptId\":\"" + bill.getDeptId() + "\""
+                + ",\"cancelled\":" + bill.isCancelled()
+                + ",\"supplier\":\"" + supplier + "\""
+                + ",\"department\":\"" + department + "\""
+                + ",\"netTotal\":" + bill.getNetTotal()
+                + ",\"editor\":\"" + editor + "\""
+                + "}";
     }
 
     // Core workflow methods
