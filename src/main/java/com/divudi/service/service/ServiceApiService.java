@@ -468,7 +468,14 @@ public class ServiceApiService implements Serializable {
             throw new Exception("Fee amount must be a non-negative value");
         }
         itemFee.setFee(request.getFee());
-        itemFee.setFfee(request.getFfee() != null && request.getFfee() > 0 ? request.getFfee() : request.getFee());
+        if (request.getFfee() != null) {
+            if (request.getFfee() < 0) {
+                throw new Exception("Foreigner fee amount must be a non-negative value");
+            }
+            itemFee.setFfee(request.getFfee());
+        } else {
+            itemFee.setFfee(request.getFee());
+        }
         itemFee.setDiscountAllowed(request.isDiscountAllowed());
         itemFee.setCreater(user);
         itemFee.setCreatedAt(Calendar.getInstance().getTime());
