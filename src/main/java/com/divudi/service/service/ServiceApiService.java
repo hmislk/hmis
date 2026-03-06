@@ -148,15 +148,7 @@ public class ServiceApiService implements Serializable {
      * Find a service by ID and return full details including fees.
      */
     public ServiceResponseDTO findServiceById(Long id) throws Exception {
-        if (id == null) {
-            throw new Exception("Service ID is required");
-        }
-
-        Service item = serviceFacade.find(id);
-        if (item == null) {
-            throw new Exception("Service not found with ID: " + id);
-        }
-
+        Service item = loadAndValidateService(id);
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Service found successfully");
     }
