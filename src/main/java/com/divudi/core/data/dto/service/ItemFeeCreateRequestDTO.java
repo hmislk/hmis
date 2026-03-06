@@ -14,8 +14,8 @@ public class ItemFeeCreateRequestDTO {
 
     private String name; // required
     private String feeType; // required - FeeType enum value
-    private double fee; // required
-    private double ffee; // optional, defaults to fee if 0
+    private Double fee; // required
+    private Double ffee; // optional, defaults to fee if 0
     private boolean discountAllowed;
     private Long institutionId; // required for OwnInstitution/OtherInstitution/Referral/CollectingCentre
     private Long departmentId;
@@ -27,7 +27,8 @@ public class ItemFeeCreateRequestDTO {
 
     public boolean isValid() {
         return name != null && !name.trim().isEmpty()
-                && feeType != null && !feeType.trim().isEmpty();
+                && feeType != null && !feeType.trim().isEmpty()
+                && fee != null;
     }
 
     public String getName() {
@@ -46,19 +47,19 @@ public class ItemFeeCreateRequestDTO {
         this.feeType = feeType;
     }
 
-    public double getFee() {
+    public Double getFee() {
         return fee;
     }
 
-    public void setFee(double fee) {
+    public void setFee(Double fee) {
         this.fee = fee;
     }
 
-    public double getFfee() {
+    public Double getFfee() {
         return ffee;
     }
 
-    public void setFfee(double ffee) {
+    public void setFfee(Double ffee) {
         this.ffee = ffee;
     }
 

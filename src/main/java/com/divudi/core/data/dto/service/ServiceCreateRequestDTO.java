@@ -42,6 +42,10 @@ public class ServiceCreateRequestDTO {
         if (name == null || name.trim().isEmpty()) {
             return false;
         }
+        if (serviceType.equalsIgnoreCase("Inward")
+                && (inwardChargeType == null || inwardChargeType.trim().isEmpty())) {
+            return false;
+        }
         return true;
     }
 

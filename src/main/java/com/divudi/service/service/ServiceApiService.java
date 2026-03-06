@@ -93,7 +93,7 @@ public class ServiceApiService implements Serializable {
             Long categoryId, Boolean inactive, int limit) throws Exception {
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + (query != null ? query.toUpperCase() : "") + "%");
+        params.put("query", "%" + (query != null ? query : "") + "%");
 
         StringBuilder jpql = new StringBuilder();
         // Query FROM Service covers both Service (OPD) and InwardService (Inward)
@@ -106,11 +106,13 @@ public class ServiceApiService implements Serializable {
             jpql.append("AND type(i) = com.divudi.core.entity.Service ");
         } else if ("Inward".equalsIgnoreCase(serviceType)) {
             jpql.append("AND type(i) = com.divudi.core.entity.inward.InwardService ");
+        } else {
+            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
+            jpql.append("AND (type(i) = com.divudi.core.entity.Service OR type(i) = com.divudi.core.entity.inward.InwardService) ");
         }
-        // No type filter = both OPD and Inward (default)
 
         if (query != null && !query.trim().isEmpty()) {
-            jpql.append("AND upper(i.name) LIKE :query ");
+            jpql.append("AND i.name LIKE :query ");
         } else {
             params.remove("query");
         }
@@ -462,8 +464,11 @@ public class ServiceApiService implements Serializable {
         itemFee.setItem(service);
         itemFee.setName(request.getName().trim());
         itemFee.setFeeType(feeType);
+        if (request.getFee() == null || request.getFee() < 0) {
+            throw new Exception("Fee amount must be a non-negative value");
+        }
         itemFee.setFee(request.getFee());
-        itemFee.setFfee(request.getFfee() > 0 ? request.getFfee() : request.getFee());
+        itemFee.setFfee(request.getFfee() != null && request.getFfee() > 0 ? request.getFfee() : request.getFee());
         itemFee.setDiscountAllowed(request.isDiscountAllowed());
         itemFee.setCreater(user);
         itemFee.setCreatedAt(Calendar.getInstance().getTime());
@@ -532,9 +537,15 @@ public class ServiceApiService implements Serializable {
             }
         }
         if (request.getFee() != null) {
+            if (request.getFee() < 0) {
+                throw new Exception("Fee amount must be a non-negative value");
+            }
             itemFee.setFee(request.getFee());
         }
         if (request.getFfee() != null) {
+            if (request.getFfee() < 0) {
+                throw new Exception("Foreigner fee amount must be a non-negative value");
+            }
             itemFee.setFfee(request.getFfee());
         }
         if (request.getDiscountAllowed() != null) {
@@ -617,8 +628,8 @@ public class ServiceApiService implements Serializable {
             .append("WHERE c.retired = false ");
 
         if (query != null && !query.trim().isEmpty()) {
-            jpql.append("AND upper(c.name) LIKE :query ");
-            params.put("query", "%" + query.toUpperCase() + "%");
+            jpql.append("AND c.name LIKE :query ");
+            params.put("query", "%" + query + "%");
         }
 
         jpql.append("ORDER BY c.name");
@@ -753,6 +764,13 @@ public class ServiceApiService implements Serializable {
         }
         if (service.isRetired()) {
             throw new Exception("Service with ID " + id + " is retired");
+        }
+        // Restrict mutations to OPD (Service) and Inward (InwardService) only.
+        // Other subtypes such as TheatreService must not be mutated via this API.
+        boolean isAllowedType = service.getClass() == Service.class
+                || service instanceof InwardService;
+        if (!isAllowedType) {
+            throw new Exception("Service with ID " + id + " is not an OPD or Inward service");
         }
         return service;
     }
