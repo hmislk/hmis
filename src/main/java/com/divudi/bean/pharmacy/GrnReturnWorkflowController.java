@@ -485,6 +485,13 @@ public class GrnReturnWorkflowController implements Serializable {
             JsfUtil.addErrorMessage("Cannot cancel: GRN Return no longer exists.");
             return;
         }
+        // Guard: bill must belong to the current session department
+        if (freshBill.getDepartment() == null
+                || sessionController.getDepartment() == null
+                || !freshBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("Not authorized to cancel a GRN Return from another department.");
+            return;
+        }
         // Guard: reject invalid states (checked against DB-fresh data)
         if (freshBill.isCancelled()) {
             JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is already cancelled.");
