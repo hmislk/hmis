@@ -72,6 +72,8 @@ public class Sms implements Serializable {
     private Institution institution;
     @ManyToOne
     private Department department;
+    
+    private Boolean sendingFailed;
 
 
 
@@ -285,6 +287,14 @@ public class Sms implements Serializable {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public Boolean getSendingFailed() {
+        return sendingFailed;
+    }
+
+    public void setSendingFailed(Boolean sendingFailed) {
+        this.sendingFailed = sendingFailed;
     }
 
 

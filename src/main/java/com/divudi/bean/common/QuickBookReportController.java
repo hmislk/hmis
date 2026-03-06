@@ -1776,10 +1776,12 @@ public class QuickBookReportController implements Serializable {
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.retired=false "
                 + " and bi.retired=false "
-                + " and bf.retired=false "
-                + " and bi.bill.paymentMethod != :pmCredit ";
+                + " and bf.retired=false ";
 
-        params.put("pmCredit", PaymentMethod.Credit);
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            jpql += " and bi.bill.paymentMethod in :pms ";
+            params.put("pms", paymentMethods);
+        }
         jpql += " and bf.fee.feeType!=:ft ";
         params.put("ft", FeeType.Staff);
         if (institution != null) {

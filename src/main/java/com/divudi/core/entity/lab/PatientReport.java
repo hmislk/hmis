@@ -180,6 +180,9 @@ public class PatientReport implements Serializable, RetirableEntity {
     
     private Boolean handoverComplete = false;
     private Boolean printComplete = false;
+    private Boolean sendSMSComplete = false;
+    private Boolean sendEmailComplete = false;
+
     
     public PatientReport() {
         if (status == null) {
@@ -893,6 +896,22 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     public void setPrintComplete(Boolean printComplete) {
         this.printComplete = printComplete;
+    }
+
+    public Boolean getSendSMSComplete() {
+        return sendSMSComplete;
+    }
+
+    public void setSendSMSComplete(Boolean sendSMSComplete) {
+        this.sendSMSComplete = sendSMSComplete;
+    }
+
+    public Boolean getSendEmailComplete() {
+        return sendEmailComplete;
+    }
+
+    public void setSendEmailComplete(Boolean sendEmailComplete) {
+        this.sendEmailComplete = sendEmailComplete;
     }
     
     
