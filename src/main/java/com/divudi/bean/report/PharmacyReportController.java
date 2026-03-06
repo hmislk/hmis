@@ -3826,7 +3826,10 @@ public class PharmacyReportController implements Serializable {
             PdfPCell retailTotalCell = new PdfPCell(
                     new Phrase(String.format("%,.2f", totalRetailValue), headerFont));
             retailTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(retailTotalCell);            
+            table.addCell(retailTotalCell);    
+            
+            PdfPCell skipDisc = new PdfPCell(new Phrase(" "));
+            table.addCell(skipDisc);
 
             document.add(table);
             document.close();
