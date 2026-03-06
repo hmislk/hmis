@@ -493,6 +493,10 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
         // Guard: reject invalid states (checked against DB-fresh data)
+        if (freshBill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " has already been finalized.");
+            return;
+        }
         if (freshBill.isCancelled()) {
             JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is already cancelled.");
             return;
