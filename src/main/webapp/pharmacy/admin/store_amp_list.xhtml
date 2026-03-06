@@ -81,6 +81,7 @@
                             id="tblAmpList"
                             value="#{storeAmpController.storeAmpListDtos}"
                             var="dto"
+                            rowIndexVar="rowIndex"
                             paginator="true"
                             rows="50"
                             paginatorPosition="both"
@@ -88,12 +89,11 @@
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} items"
                             rowsPerPageTemplate="25,50,100,250"
                             emptyMessage="No Store AMPs found."
-                            filteredValue="#{storeAmpController.filteredItems}"
                             styleClass="table table-striped"
                             resizableColumns="true">
 
                             <p:column headerText="#" style="width: 3em; text-align: center;" exportable="false">
-                                <h:outputText value="#{storeAmpController.storeAmpListDtos.indexOf(dto) + 1}"/>
+                                <h:outputText value="#{rowIndex + 1}"/>
                             </p:column>
 
                             <p:column headerText="Name" sortBy="#{dto.name}" filterBy="#{dto.name}"
