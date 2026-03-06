@@ -470,76 +470,110 @@ public class GrnReturnWorkflowController implements Serializable {
      * Writes a before/after audit log entry to the audit database.
      */
     public void cancelGrnReturnFromList() {
+        // Guard: privilege check before any write or audit operation
+        if (!isAuthorized("CANCEL", "FinalizeGrnReturn")) {
+            return;
+        }
         // Guard: bill must be selected and persisted
         if (currentBill == null || currentBill.getId() == null) {
             JsfUtil.addErrorMessage("Cannot cancel: No valid GRN Return found.");
             return;
         }
-        // Guard: reject invalid states
-        if (currentBill.isCancelled()) {
-            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " is already cancelled.");
+        // Reload authoritative state from DB to avoid merging stale session data
+        Bill freshBill = billFacade.find(currentBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return no longer exists.");
             return;
         }
-        if (currentBill.isRefunded()) {
-            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " has already been refunded.");
+        // Guard: reject invalid states (checked against DB-fresh data)
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is already cancelled.");
             return;
         }
-        if (currentBill.isReactivated()) {
-            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " has been reactivated.");
+        if (freshBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " has already been refunded.");
             return;
         }
-        if (currentBill.isRetired()) {
-            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " is retired.");
+        if (freshBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " has been reactivated.");
             return;
         }
-        if (currentBill.isCompleted()) {
-            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " is completed.");
+        if (freshBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is retired.");
             return;
         }
-        if (currentBill.isPaymentCompleted()) {
-            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + currentBill.getDeptId() + " payment is completed.");
+        if (freshBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " is completed.");
+            return;
+        }
+        if (freshBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return " + freshBill.getDeptId() + " payment is completed.");
             return;
         }
         // Capture state before cancellation for audit log
-        String beforeJson = buildGrnReturnAuditJson(currentBill);
+        String beforeJson = buildGrnReturnAuditJson(freshBill);
         AuditEvent auditEvent = auditEventController.createNewAuditEvent(
                 "Cancel GRN Return from List",
                 beforeJson,
-                currentBill.getId()
+                freshBill.getId()
         );
         try {
             // Mark as cancelled and record who did it
-            currentBill.setCancelled(true);
-            currentBill.setEditedAt(new Date());
-            currentBill.setEditor(sessionController.getLoggedUser());
-            billFacade.edit(currentBill);
+            freshBill.setCancelled(true);
+            freshBill.setEditedAt(new Date());
+            freshBill.setEditor(sessionController.getLoggedUser());
+            billFacade.edit(freshBill);
             // Capture state after cancellation and complete the audit log entry
-            auditEventController.completeAuditEvent(auditEvent, buildGrnReturnAuditJson(currentBill));
-            JsfUtil.addSuccessMessage("GRN Return " + currentBill.getDeptId() + " cancelled successfully.");
+            auditEventController.completeAuditEvent(auditEvent, buildGrnReturnAuditJson(freshBill));
+            // Remove the cancelled row from the backing lists so it disappears from the table
+            // (the query filters cancelled=false, so this row no longer belongs in the list)
+            if (grnReturnsToFinalize != null) {
+                grnReturnsToFinalize.remove(currentBill);
+            }
+            if (filteredGrnReturnsToFinalize != null) {
+                filteredGrnReturnsToFinalize.remove(currentBill);
+            }
+            JsfUtil.addSuccessMessage("GRN Return " + freshBill.getDeptId() + " cancelled successfully.");
         } catch (Exception e) {
             auditEventController.failAuditEvent(auditEvent, "Cancellation failed: " + e.getMessage());
-            JsfUtil.addErrorMessage("Error cancelling GRN Return " + currentBill.getDeptId() + ": " + e.getMessage());
+            JsfUtil.addErrorMessage("Error cancelling GRN Return " + freshBill.getDeptId() + ": " + e.getMessage());
         }
     }
 
     /**
      * Builds a JSON snapshot of a GRN Return bill for audit logging.
-     * Uses only safe scalar fields to avoid JPA lazy-loading issues.
+     * String fields are escaped via jsonStr() so quotes, backslashes and
+     * control characters cannot break the JSON structure.
+     * Numbers and booleans are emitted unquoted so they stay typed.
      */
     private String buildGrnReturnAuditJson(Bill bill) {
-        String supplier = (bill.getToInstitution() != null) ? bill.getToInstitution().getName() : "";
-        String department = (bill.getDepartment() != null) ? bill.getDepartment().getName() : "";
+        String supplier = bill.getToInstitution() != null ? bill.getToInstitution().getName() : null;
+        String department = bill.getDepartment() != null ? bill.getDepartment().getName() : null;
         String editor = (bill.getEditor() != null && bill.getEditor().getWebUserPerson() != null)
-                ? bill.getEditor().getWebUserPerson().getName() : "";
+                ? bill.getEditor().getWebUserPerson().getName() : null;
         return "{"
                 + "\"id\":" + bill.getId()
-                + ",\"deptId\":\"" + bill.getDeptId() + "\""
+                + ",\"deptId\":" + jsonStr(bill.getDeptId())
                 + ",\"cancelled\":" + bill.isCancelled()
-                + ",\"supplier\":\"" + supplier + "\""
-                + ",\"department\":\"" + department + "\""
+                + ",\"supplier\":" + jsonStr(supplier)
+                + ",\"department\":" + jsonStr(department)
                 + ",\"netTotal\":" + bill.getNetTotal()
-                + ",\"editor\":\"" + editor + "\""
+                + ",\"editor\":" + jsonStr(editor)
                 + "}";
+    }
+
+    /** Escapes a string value for safe embedding in JSON, or emits null. */
+    private String jsonStr(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return "\"" + value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+                + "\"";
     }
 
     // Core workflow methods

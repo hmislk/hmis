@@ -101,6 +101,12 @@ public class AuditEvent implements Serializable {
             this.difference = "One or both JSON values are null.";
             return;
         }
+        // If either value is not a JSON object (e.g. a plain toString() string
+        // stored by older code), skip diff calculation and show the raw values.
+        if (!beforeJson.trim().startsWith("{") || !afterJson.trim().startsWith("{")) {
+            this.difference = "Before: " + beforeJson + "\nAfter: " + afterJson;
+            return;
+        }
         try {
             Gson gson = new Gson();
             Type type = new TypeToken<Map<String, Object>>() {
@@ -109,7 +115,6 @@ public class AuditEvent implements Serializable {
             Map<String, Object> beforeMap = gson.fromJson(beforeJson, type);
             Map<String, Object> afterMap = gson.fromJson(afterJson, type);
 
-            // Ensure JSON was parsed successfully
             if (beforeMap == null || afterMap == null) {
                 this.difference = "Failed to parse JSON.";
                 return;
@@ -117,7 +122,7 @@ public class AuditEvent implements Serializable {
 
             this.difference = formatDifference(getDifference(beforeMap, afterMap));
         } catch (Exception e) {
-            this.difference = "Error calculating difference: " + e.getMessage();
+            this.difference = "Before: " + beforeJson + "\nAfter: " + afterJson;
         }
     }
 
