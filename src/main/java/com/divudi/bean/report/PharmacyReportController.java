@@ -11981,7 +11981,6 @@ public class PharmacyReportController implements Serializable {
         return "All";
     }
 
-
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
                 DepartmentType.Pharmacy,
