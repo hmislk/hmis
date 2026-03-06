@@ -483,6 +483,43 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public void fillBillDepartmentTypeFromBillItems() {
+        billController.setOutput("");
+        try {
+            String jpql = "SELECT b FROM Bill b WHERE b.departmentType IS NULL AND b.retired = false";
+            List<Bill> bills = billFacade.findByJpql(jpql, new HashMap<>());
+            billController.setOutput("Found " + bills.size() + " bill(s) with null department type.\n");
+
+            int updated = 0;
+            int skipped = 0;
+            for (Bill bill : bills) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("bill", bill);
+                String biJpql = "SELECT bi FROM BillItem bi WHERE bi.bill = :bill AND bi.retired = false ORDER BY bi.id ASC";
+                List<BillItem> items = billItemFacade.findByJpql(biJpql, params);
+                DepartmentType dt = null;
+                for (BillItem bi : items) {
+                    if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                        dt = bi.getItem().getDepartmentType();
+                        break;
+                    }
+                }
+                if (dt != null) {
+                    bill.setDepartmentType(dt);
+                    billFacade.edit(bill);
+                    updated++;
+                } else {
+                    skipped++;
+                }
+            }
+            billController.setOutput(billController.getOutput()
+                    + "Updated: " + updated + " bill(s). Skipped (no item dept type found): " + skipped + " bill(s).");
+        } catch (Exception e) {
+            billController.setOutput("Error: " + getExceptionMessage(e));
+            e.printStackTrace();
+        }
+    }
+
     public void correctCancellationAndRefundPaymentValues() {
         billController.setOutput("");
 
