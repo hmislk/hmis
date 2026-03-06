@@ -2,9 +2,9 @@
 -- SCRIPT 2: CREATE USER_STOCK INDEXES
 -- ==========================================
 -- Purpose: Create composite index on USER_STOCK for performance optimization
--- Safe to run: YES (uses IF NOT EXISTS)
--- Can be run separately: YES
--- Idempotent: YES (safe to re-run)
+-- Safe to run: YES (duplicate index errors are handled by DatabaseMigrationController)
+-- Can be run separately: NO (requires DatabaseMigrationController error handling)
+-- Idempotent: YES (duplicate index errors are silently skipped)
 
 SELECT 'Creating USER_STOCK Indexes - Script 2 of 5' AS status;
 SELECT NOW() AS script_start_time;
@@ -60,7 +60,7 @@ SELECT
     END AS uppercase_table_status;
 
 -- Create index if table exists and index doesn't
-CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup
+CREATE INDEX idx_user_stock_fast_lookup
 ON USER_STOCK(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID);
 
 SELECT 'Index created successfully on USER_STOCK (if table exists)' AS uppercase_index_status;
@@ -75,7 +75,7 @@ SELECT
     END AS lowercase_table_status;
 
 -- Create index if table exists and index doesn't
-CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup
+CREATE INDEX idx_user_stock_fast_lookup
 ON userstock(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID);
 
 SELECT 'Index created successfully on userstock (if table exists)' AS lowercase_index_status;

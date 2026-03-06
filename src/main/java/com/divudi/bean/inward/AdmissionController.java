@@ -313,8 +313,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null) {
-                al.setPatient(getCurrent().getPatient());
+            if (al.getPatient() == null || al.getPatient().getId() == null) {
+                al.setPatient(patient);
             }
             if (al.getId() == null) {
                 clinicalFindingValueFacade.create(al);
@@ -658,10 +658,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
-
-        current = new Admission();
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission to edit");
+            return "";
+        }
         bhtEditController.setCurrent(current);
-        bhtEditController.getCurrent().getPatient().setEditingMode(true);
+        if (current.getPatient() != null) {
+            current.getPatient().setEditingMode(true);
+        }
         return bhtEditController.navigateToEditAdmissionDetails();
     }
 
@@ -964,16 +968,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
                 return bhtSummeryController.navigateToInpatientProfile();
             } else {
-                if (current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
-                    JsfUtil.addErrorMessage("Selected Room no has a department.");
-                    return "";
-                }
-
-                if (!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-                    JsfUtil.addErrorMessage("Patient is not in your department. Please transfer to the correct department.");
-                    return "";
-                }
-
                 roomChangeController.setCurrent(current);
                 roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
                 return "/inward/admit_room?faces-redirect=true";
@@ -1354,7 +1348,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getPatientFacade().editAndFlush(getPatient());    // Immediate flush
         }
 
-        // NO third edit operation - removed null/reassign pattern
+        // Ensure the admission references the persisted patient
+        if (getCurrent() != null) {
+            getCurrent().setPatient(patient);
+        }
     }
 
     private void saveGuardian() {
@@ -2099,6 +2096,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             patient = new Patient();
             patientDetailsEditable = true;
             patient.setPerson(p);
+            if (current != null) {
+                current.setPatient(patient);
+            }
         }
         return patient;
     }

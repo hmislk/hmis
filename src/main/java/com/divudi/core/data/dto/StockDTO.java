@@ -196,6 +196,24 @@ public class StockDTO implements Serializable {
         this.dosageFormName = dosageFormName;
     }
 
+    // Constructor for department stock report by batch (without genericName)
+    // Uses exact field types from entities: Stock.stock=Double, ItemBatch.purcahseRate=double,
+    // ItemBatch.costRate=Double, ItemBatch.retailsaleRate=double (EclipseLink requires exact match)
+    public StockDTO(Long id,
+                    String categoryName,
+                    String itemName,
+                    DepartmentType departmentType,
+                    String code,
+                    Date dateOfExpire,
+                    String batchNo,
+                    Double stockQty,
+                    double purchaseRate,
+                    Double costRate,
+                    double retailRate,
+                    String dosageFormName) {
+        this(id, categoryName, itemName, departmentType, code, "", dateOfExpire, batchNo, stockQty, purchaseRate, costRate, retailRate, dosageFormName);
+    }
+
     // Constructor for stock count bill generation (optimized for performance)
     public StockDTO(Long stockId, Long itemBatchId, Long itemId,
                     String categoryName, String itemName, String batchNo,

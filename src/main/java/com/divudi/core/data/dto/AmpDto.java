@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.DepartmentType;
 import java.io.Serializable;
 
 /**
@@ -31,11 +32,17 @@ public class AmpDto implements Serializable {
     private Long dosageFormId;
     private String dosageFormName;
 
+    // Department type
+    private DepartmentType departmentType;
+
     // Business rule fields
     private Boolean discountAllowed;
     private Boolean allowFractions;
     private Boolean consumptionAllowed;
     private Boolean refundsAllowed;
+
+    // Short expiry days
+    private int numberOfDaysToMarkAsShortExpiary;
 
     /**
      * Default constructor
@@ -59,6 +66,21 @@ public class AmpDto implements Serializable {
         this.code = code;
         this.barcode = barcode;
         this.inactive = inactive;
+    }
+
+    /**
+     * Constructor with department type - for autocomplete with department type display
+     *
+     * @param id AMP ID
+     * @param name AMP name
+     * @param code AMP code
+     * @param barcode AMP barcode
+     * @param inactive Whether AMP is inactive
+     * @param departmentType Department type of the AMP
+     */
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive, DepartmentType departmentType) {
+        this(id, name, code, barcode, inactive);
+        this.departmentType = departmentType;
     }
 
     /**
@@ -147,6 +169,44 @@ public class AmpDto implements Serializable {
         this.allowFractions = allowFractions;
         this.consumptionAllowed = consumptionAllowed;
         this.refundsAllowed = refundsAllowed;
+    }
+
+    /**
+     * Comprehensive list constructor — all Details-Section fields for the Store AMP list page.
+     * Used by getStoreAmpListDtos() JPQL query.
+     *
+     * @param id                                AMP id
+     * @param name                              AMP name
+     * @param code                              AMP code
+     * @param barcode                           AMP barcode
+     * @param inactive                          inactive flag
+     * @param vmpName                           VMP name (may be null)
+     * @param dosageFormName                    Dosage form name (may be null)
+     * @param categoryName                      Category name (may be null)
+     * @param numberOfDaysToMarkAsShortExpiary  short-expiry threshold
+     * @param discountAllowed                   business rule flag
+     * @param refundsAllowed                    business rule flag
+     * @param consumptionAllowed                business rule flag
+     * @param allowFractions                    business rule flag
+     */
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive,
+                  String vmpName, String dosageFormName, String categoryName,
+                  int numberOfDaysToMarkAsShortExpiary,
+                  Boolean discountAllowed, boolean refundsAllowed,
+                  boolean consumptionAllowed, boolean allowFractions) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.barcode = barcode;
+        this.inactive = inactive;
+        this.vmpName = vmpName;
+        this.dosageFormName = dosageFormName;
+        this.categoryName = categoryName;
+        this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
+        this.discountAllowed = discountAllowed;
+        this.refundsAllowed = refundsAllowed;
+        this.consumptionAllowed = consumptionAllowed;
+        this.allowFractions = allowFractions;
     }
 
     // Display utility methods
@@ -311,6 +371,16 @@ public class AmpDto implements Serializable {
         this.dosageFormName = dosageFormName;
     }
 
+    // Short expiry days getter and setter
+
+    public int getNumberOfDaysToMarkAsShortExpiary() {
+        return numberOfDaysToMarkAsShortExpiary == 0 ? 30 : numberOfDaysToMarkAsShortExpiary;
+    }
+
+    public void setNumberOfDaysToMarkAsShortExpiary(int numberOfDaysToMarkAsShortExpiary) {
+        this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
+    }
+
     // Business rule getters and setters
 
     public Boolean getDiscountAllowed() {
@@ -363,6 +433,20 @@ public class AmpDto implements Serializable {
 
     public void setRefundsAllowed(Boolean refundsAllowed) {
         this.refundsAllowed = refundsAllowed;
+    }
+
+    // Department type getter and setter
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
+    public String getDepartmentTypeLabel() {
+        return departmentType != null ? departmentType.getShortLabel() : "";
     }
 
     // Utility methods for consistency

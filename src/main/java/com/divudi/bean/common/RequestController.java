@@ -1,22 +1,27 @@
 package com.divudi.bean.common;
 
 import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Request;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.RequestFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.service.DrawerService;
 import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -43,6 +48,8 @@ public class RequestController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    DrawerService drawerService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -80,6 +87,7 @@ public class RequestController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
@@ -100,6 +108,28 @@ public class RequestController implements Serializable {
 
     public String navigateToBackSearchRequest() {
         return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public String navigateToDrawerAdjustmentApproveByBill(Bill billParam) {
+        if (billParam == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return null;
+        }
+        if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
+            return null;
+        }
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("bill", billParam);
+        params.put("type", RequestType.DRAWER_ADJUSTMENT);
+        String jpql = "SELECT r FROM Request r WHERE r.bill = :bill AND r.requestType = :type ORDER BY r.id DESC";
+        List<Request> found = requestFacade.findByJpql(jpql, params);
+        if (found == null || found.isEmpty()) {
+            JsfUtil.addErrorMessage("No drawer adjustment request found for this bill.");
+            return null;
+        }
+        currentRequest = found.get(0);
+        return "/cashier/drawer_adjustment_approve?faces-redirect=true";
     }
 
     public String navigateToCreateRequest(Bill bill) {
@@ -165,6 +195,38 @@ public class RequestController implements Serializable {
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return "";
+        }
+
+        // Centralised privilege check per request type.
+        // Add a new case here whenever a new RequestType requiring approval is introduced.
+        switch (currentRequest.getRequestType()) {
+            case BILL_CANCELLATION:
+                if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve bill cancellation requests.");
+                    return "";
+                }
+                break;
+            case DRAWER_ADJUSTMENT:
+                if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+                    return "";
+                }
+                break;
+            default:
+                JsfUtil.addErrorMessage("Approval is not supported for this request type.");
+                return "";
+        }
+
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            bills = new ArrayList<>();
+            if (currentRequest.getStatus() == RequestStatus.PENDING) {
+                currentRequest.setReviewedBy(sessionController.getLoggedUser());
+                currentRequest.setReviewedAt(new Date());
+                currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
+                requestService.save(currentRequest, sessionController.getLoggedUser());
+            }
+            comment = null;
+            return "/cashier/drawer_adjustment_approve?faces-redirect=true";
         }
 
         //Update Review Status
@@ -414,6 +476,69 @@ public class RequestController implements Serializable {
 
     }
 
+    public void approveDrawerAdjustmentRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getRequestType() != RequestType.DRAWER_ADJUSTMENT) {
+            JsfUtil.addErrorMessage("Invalid request type for drawer adjustment approval.");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request.");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.COMPLETED) {
+            JsfUtil.addErrorMessage("This request is already completed.");
+            return;
+        }
+        if (currentRequest.getStatus() != RequestStatus.PENDING
+                && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
+        WebUser targetUser = currentRequest.getTargetWebUser();
+        if (targetUser == null) {
+            JsfUtil.addErrorMessage("Target user not found on request.");
+            return;
+        }
+
+        Drawer drawer = drawerService.getUsersDrawer(targetUser);
+        if (drawer == null) {
+            JsfUtil.addErrorMessage("Drawer not found for target user.");
+            return;
+        }
+
+        if (currentRequest.getPaymentMethod() == null || currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Request is missing required adjustment details (payment method or amount).");
+            return;
+        }
+
+        drawerService.applyDrawerAdjustment(
+                drawer,
+                currentRequest.getPaymentMethod(),
+                currentRequest.getBill().getNetTotal(),
+                currentRequest.getBill(),
+                sessionController.getLoggedUser());
+
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.COMPLETED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Drawer adjustment approved and applied successfully.");
+    }
+
     public void cancelApprovel() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Not found for a request for Approvel");
@@ -454,7 +579,13 @@ public class RequestController implements Serializable {
             return;
         }
 
-        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+        boolean canReject;
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            canReject = webUserController.hasPrivilege("DrawerAdjustmentRequestApproval");
+        } else {
+            canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
+        }
+        if (!canReject) {
             JsfUtil.addErrorMessage("You have not authorize to Cancel this.");
             return;
         }
@@ -465,11 +596,13 @@ public class RequestController implements Serializable {
         currentRequest.setStatus(RequestStatus.REJECTED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
-        //Update Batch Bill
-        currentRequest.getBill().setCurrentRequest(null);
-        billFacade.edit(currentRequest.getBill());
+        // Only update currentRequest on the bill if it has one set
+        if (currentRequest.getBill().getCurrentRequest() != null) {
+            currentRequest.getBill().setCurrentRequest(null);
+            billFacade.edit(currentRequest.getBill());
+        }
 
-        //Update Induvidual Bills of Batch Bil
+        //Update Individual Bills of Batch Bill
         if (bills != null) {
             for (Bill b : bills) {
                 b.setCurrentRequest(null);

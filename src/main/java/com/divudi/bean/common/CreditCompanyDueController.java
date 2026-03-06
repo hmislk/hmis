@@ -22,6 +22,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 
 import java.io.OutputStream;
@@ -65,6 +66,8 @@ public class CreditCompanyDueController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private CashRecieveBillController cashRecieveBillController;
     @EJB
     private CreditBean creditBean;
     @EJB
@@ -119,6 +122,7 @@ public class CreditCompanyDueController implements Serializable {
     private int rowCounter = 0;
 
     private List<Bill> bills = new ArrayList<>();
+    private Map<Long, Boolean> paymentSelectionMap = new HashMap<>();
 
     Map<Institution, Double> instituteGopMap = new HashMap<>();
     Map<Institution, Double> institutPaidByCompanyMap = new HashMap<>();
@@ -1349,6 +1353,7 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             items = new ArrayList<>();
+            paymentSelectionMap = new HashMap<>();
             for (Institution ins : setIns) {
                 List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
                 InstitutionBills newIns = new InstitutionBills();
@@ -3435,6 +3440,72 @@ public class CreditCompanyDueController implements Serializable {
 //    }
     public void setItems(List<InstitutionBills> items) {
         this.items = items;
+    }
+
+    public Map<Long, Boolean> getPaymentSelectionMap() {
+        if (paymentSelectionMap == null) {
+            paymentSelectionMap = new HashMap<>();
+        }
+        return paymentSelectionMap;
+    }
+
+    public void setPaymentSelectionMap(Map<Long, Boolean> paymentSelectionMap) {
+        this.paymentSelectionMap = paymentSelectionMap;
+    }
+
+    public void selectAllPaymentsForInstitution(Institution institution) {
+        if (items == null || institution == null) {
+            return;
+        }
+        for (InstitutionBills ib : items) {
+            if (ib.getInstitution() != null && institution.getId().equals(ib.getInstitution().getId())) {
+                if (ib.getPayments() != null) {
+                    for (Payment p : ib.getPayments()) {
+                        if (p.getId() != null) {
+                            getPaymentSelectionMap().put(p.getId(), Boolean.TRUE);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public String settleSelectedOpdDueBills() {
+        if (items == null) {
+            JsfUtil.addErrorMessage("No data loaded. Please run the due report first.");
+            return null;
+        }
+        List<Bill> selectedBills = new ArrayList<>();
+        Set<Long> selectedBillIds = new HashSet<>();
+        Institution firstCompany = null;
+        for (InstitutionBills ib : items) {
+            if (ib.getPayments() == null) {
+                continue;
+            }
+            for (Payment p : ib.getPayments()) {
+                if (Boolean.TRUE.equals(getPaymentSelectionMap().get(p.getId()))) {
+                    Bill bill = p.getBill();
+                    if (bill == null) {
+                        continue;
+                    }
+                    if (bill.getId() != null && !selectedBillIds.add(bill.getId())) {
+                        continue;
+                    }
+                    if (firstCompany == null) {
+                        firstCompany = ib.getInstitution();
+                    } else if (!firstCompany.getId().equals(ib.getInstitution().getId())) {
+                        JsfUtil.addErrorMessage("Please select bills from one company only.");
+                        return null;
+                    }
+                    selectedBills.add(bill);
+                }
+            }
+        }
+        if (selectedBills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select at least one bill to settle.");
+            return null;
+        }
+        return cashRecieveBillController.navigateWithPreloadedBills(selectedBills);
     }
 
     public InstitutionFacade getInstitutionFacade() {

@@ -90,22 +90,22 @@
                                         ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
                                         actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
 
-                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
-                                        <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
-                                    </p:commandButton>
+                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false"
+                                                     action="#{reportsStock.exportCurrentStockByBatchToPDF()}"
+                                                     />
 
-                                    <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print" icon="fas fa-print" 
-                                        styleClass="ui-button-info mx-1"
-                                        actionListener="#{reportsStock.prepareForPrint()}"
-                                        oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
-                                    <p:commandButton id="print" value="Actual print" style="display: none;">
-                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
-                                        <p:printer target=":frm:tbl" />
-                                    </p:commandButton>
+
+                                    <p:commandButton icon="fas fa-file-excel"
+                                                     styleClass="ui-button-success mx-1"
+                                                     value="Excel"
+                                                     ajax="false"
+                                                     action="#{reportsStock.exportCurrentStockByBatchToExcel}" />
+
+                                    <p:commandButton
+                                        value="To Print"
+                                        styleClass="ui-button-info m-1"
+                                        icon="pi pi-print"
+                                        action="pharmacy_report_department_stock_by_batch_dto_print?faces-redirect=true"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -175,17 +175,6 @@
                                         <h:outputLabel value="Code" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.code}" />
-                                </p:column>
-
-                                <p:column headerText="Generic Name"
-                                          sortBy="#{i.genericName}"
-                                          filterBy="#{i.genericName}"
-                                          filterMatchMode="contains"
-                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Generic Name" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.genericName}" />
                                 </p:column>
 
                                 <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}"
@@ -336,13 +325,6 @@
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="chkCode" value="Code" styleClass="ms-1" />
-                                    </div>
-
-                                    <div class="d-flex align-items-center me-3 mb-2">
-                                        <h:selectBooleanCheckbox id="chkGenericName" value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                            <f:ajax render="tbl" />
-                                        </h:selectBooleanCheckbox>
-                                        <h:outputLabel for="chkGenericName" value="Generic Name" styleClass="ms-1" />
                                     </div>
 
                                     <div class="d-flex align-items-center me-3 mb-2">

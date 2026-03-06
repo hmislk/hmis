@@ -3,7 +3,7 @@
 ## Repository Information
 - **GitHub Repository**: https://github.com/hmislk/hmis (not buddhika75/hmis)
 - **Issues URL**: https://github.com/hmislk/hmis/issues
-- **Project tmp Folder**: `/tmp/` directory contains project-specific temporary files
+- **Project tmp Folder**: `tmp/` directory **inside the project root** (i.e., `<project-root>/tmp/`) for project-specific temporary files. Do NOT use the system `/tmp/` directory.
 
 ## Essential Rules (Always Apply)
 
@@ -19,9 +19,10 @@
 7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
 8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
 
-### Git & Documentation
+### Git & Branching
 9. **Include issue closing keywords** (`Closes #N`) in commit messages
 10. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+11. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
 
 ## Situational Guidelines (Reference When Needed)
 
