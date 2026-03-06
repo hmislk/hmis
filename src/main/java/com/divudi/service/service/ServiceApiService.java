@@ -403,6 +403,9 @@ public class ServiceApiService implements Serializable {
      * Activate a service (set inactive=false).
      */
     public ServiceResponseDTO activateService(Long id, WebUser user) throws Exception {
+        if (user == null) {
+            throw new Exception("User is required for activating service");
+        }
         Service service = loadAndValidateService(id);
         service.setInactive(false);
         service.setEditer(user);
@@ -415,6 +418,9 @@ public class ServiceApiService implements Serializable {
      * Deactivate a service (set inactive=true).
      */
     public ServiceResponseDTO deactivateService(Long id, WebUser user) throws Exception {
+        if (user == null) {
+            throw new Exception("User is required for deactivating service");
+        }
         Service service = loadAndValidateService(id);
         service.setInactive(true);
         service.setEditer(user);
