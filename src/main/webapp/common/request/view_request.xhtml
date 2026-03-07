@@ -186,10 +186,10 @@
                                     <p:column headerText="Actions" style="width: 260px; padding: 8px;">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
+                                                id="btnToApprove"
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
-                                                rendered="#{(r.requestType eq 'BILL_CANCELLATION' and webUserController.hasPrivilege('BillCancelRequestApproval')) or (r.requestType eq 'DRAWER_ADJUSTMENT' and webUserController.hasPrivilege('DrawerAdjustmentRequestApproval'))}"
                                                 disabled="#{r.status eq 'CANCELLED'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >

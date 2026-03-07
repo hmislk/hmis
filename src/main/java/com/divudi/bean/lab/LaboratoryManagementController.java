@@ -740,6 +740,11 @@ public class LaboratoryManagementController implements Serializable {
                 jpql += " AND pi.billItem.bill.status = :status";
                 params.put("status", patientInvestigationStatus);
             }
+            
+            if (priority != null) {
+                jpql += " AND pi.billItem.bill.priority = :prty";
+                params.put("prty", priority);
+            }
 
             jpql += " GROUP BY pi.billItem.bill ";
 
@@ -2386,7 +2391,7 @@ public class LaboratoryManagementController implements Serializable {
 
     public List<PatientReportLight> patientReports(Long patientInvestigationId) {
         String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
-                + " r.id, r.approved, r.printComplete, r.handoverComplete, r.reportType, r.qrCodeContentsLink)"
+                + " r.id, r.approved, r.printComplete, r.handoverComplete, r.sendSMSComplete, r.sendEmailComplete, r.reportType, r.qrCodeContentsLink)"
                 + " from PatientReport r "
                 + " where r.patientInvestigation.id=:piId"
                 + " and r.retired = :ret ";

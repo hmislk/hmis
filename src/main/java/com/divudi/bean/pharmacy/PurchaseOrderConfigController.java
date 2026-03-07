@@ -33,6 +33,7 @@ public class PurchaseOrderConfigController implements Serializable {
     private boolean a4custom1paper;
     private boolean a4custom2paper;
     private boolean letterPaper;
+    private boolean custom4paper;
 
     public PurchaseOrderConfigController() {
     }
@@ -49,6 +50,7 @@ public class PurchaseOrderConfigController implements Serializable {
         a4custom1paper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format", true);
         a4custom2paper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Approval Print - A4 Custom 2 Paper Format", false);
         letterPaper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Approval Print - Letter Paper Format", false);
+        custom4paper = configOptionController.getBooleanValueByKey("Pharmacy Purchase Order Approval Print - Custom 4 Paper Format", false);
     }
 
     /**
@@ -64,6 +66,7 @@ public class PurchaseOrderConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format", a4custom1paper);
             configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Approval Print - A4 Custom 2 Paper Format", a4custom2paper);
             configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Approval Print - Letter Paper Format", letterPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Purchase Order Approval Print - Custom 4 Paper Format", custom4paper);
 
             JsfUtil.addSuccessMessage("Purchase Order configuration saved successfully");
 
@@ -114,6 +117,14 @@ public class PurchaseOrderConfigController implements Serializable {
 
     public void setA4custom2paper(boolean a4custom2paper) {
         this.a4custom2paper = a4custom2paper;
+    }
+
+    public boolean isCustom4paper() {
+        return custom4paper;
+    }
+
+    public void setCustom4paper(boolean custom4paper) {
+        this.custom4paper = custom4paper;
     }
     
     

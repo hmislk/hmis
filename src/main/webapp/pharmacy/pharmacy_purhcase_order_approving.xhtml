@@ -294,6 +294,10 @@
                         <ph:po_custom_3_letter
                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Letter Paper Format', true)}"
                             bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
+                        
+                        <ph:po_custom_4_letter
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Custom 4 Paper Format', true)}"
+                            bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
 
 
                     </h:panelGroup>
@@ -384,6 +388,14 @@
                                         value="#{purchaseOrderConfigController.letterPaper}" />
                                     <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
                                     <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="custom4paper"
+                                        value="#{purchaseOrderConfigController.custom4paper}" />
+                                    <p:outputLabel for="custom4paper" value="Custom 4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Purchase order format - Custom 4 Paper</small>
                                 </div>
 
                             </div>
