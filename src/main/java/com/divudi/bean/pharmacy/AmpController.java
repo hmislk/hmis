@@ -1818,6 +1818,7 @@ public class AmpController implements Serializable {
     }
 
     public String navigateToAmpList() {
+        filterStatus = "all";
         pharmacyAmpListDtos = null;
         getPharmacyAmpListDtos();
         return "/pharmacy/admin/amp_list?faces-redirect=true";
