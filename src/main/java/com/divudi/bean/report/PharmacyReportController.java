@@ -12315,19 +12315,6 @@ public class PharmacyReportController implements Serializable {
         return "All";
     }
 
-    public String getDepartmentTypeFilterValue() {
-
-        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-
-            return selectedDepartmentTypes.stream()
-                    .map(dt -> dt.getLabel())
-                    .sorted()
-                    .collect(Collectors.joining(", "));
-        }
-
-        return "All";
-    }
-
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
                 DepartmentType.Pharmacy,
