@@ -821,12 +821,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @Deprecated // Use getIssueUnit
     public MeasurementUnit getMeasurementUnit() {
-        if(measurementUnit==null){
-            if(issueUnit!=null){
-                measurementUnit = issueUnit;
-            }
-        }
-        return measurementUnit;
+        return measurementUnit != null ? measurementUnit : issueUnit;
     }
 
     @Deprecated // Use setMeasurementUnit
