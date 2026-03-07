@@ -12,7 +12,6 @@
     <ui:composition template="/reports/index.xhtml" class="w-100 border">
         <ui:define name="subcontent">
             <style>
-                @media screen, print {
                     .report-table {
                         border-collapse: collapse;
                         width: 100%;
@@ -62,14 +61,6 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
                     }
-                }
-
-                @media screen {
-                    .report-header {
-                        display: none !important;
-                    }
-                }
-
 
             </style>
 
@@ -132,24 +123,6 @@
                     </h:panelGroup>
 
                     <p:panel id="report">
-                        <div style="padding: 3px!important; margin: 0px!important;" class="report-header">
-                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
-                                <h:outputText value="#{sessionController.institution.name}"/>
-                            </div>
-                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                <h:outputText value="All Department Sale Report"/>
-                                        
-                            </div>
-                            <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
-                                <div class="d-flex">
-                                    <h:outputText value="Department" style="width: 6em!important; font-weight: 600;"/>
-                                    <h:outputText value="#{laborataryReportController.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputText>
-                                </div>
-                            </div>
-                        </div>
-
                         <div style="overflow-x: auto; width: 100%;">
                             <table class="report-table ui-datatable">
                                 <thead>
