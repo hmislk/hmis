@@ -464,7 +464,7 @@ public class LabAtmController implements Serializable {
         if (labAtmListDtos == null) {
             String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
                     + "a.id, a.name, a.code, a.descreption, "
-                    + "a.retired, v.id, v.name) "
+                    + "a.retired, a.inactive, v.id, v.name) "
                     + "FROM Atm a "
                     + "LEFT JOIN a.vtm v "
                     + "WHERE a.retired=false AND a.departmentType=:dep ";
