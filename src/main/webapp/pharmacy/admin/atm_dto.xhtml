@@ -161,6 +161,15 @@
                                                 ajax="false"
                                                 disabled="#{atmController.selectedAtmDto eq null}">
                                             </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewList"
+                                                value="All ATMs List"
+                                                action="#{atmController.navigateToAtmList()}"
+                                                ajax="false"
+                                                class="m-1 ui-button-secondary"
+                                                icon="fas fa-list"
+                                                title="View and download the full list of ATMs"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>

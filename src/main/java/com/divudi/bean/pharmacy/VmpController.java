@@ -1078,7 +1078,6 @@ public class VmpController implements Serializable {
     /**
      *
      */
-    @FacesConverter("vmp")
     // ===================== List Page Methods =====================
 
     public List<VmpDto> getPharmacyVmpListDtos() {
@@ -1116,6 +1115,7 @@ public class VmpController implements Serializable {
         return "/pharmacy/admin/vmp_list?faces-redirect=true";
     }
 
+    @FacesConverter("vmp")
     public static class VmpControllerConverter implements Converter {
 
         @Override
