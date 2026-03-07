@@ -8706,6 +8706,340 @@ public class PharmacyReportController implements Serializable {
 
     }
 
+    public void exportCostOfGoodsSoldToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Cost_Of_Goods_Sold_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Cost Of Goods Sold");
+
+            int rowIndex = 0;
+            int totalColumns = 4;
+
+            // =========================
+            // STYLES
+            // =========================
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            //filter Style 
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            // =========================
+            // HEADER
+            // =========================
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Site
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Department
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            //Department Types
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Item (NEW)
+            Row itemRow = sheet.createRow(rowIndex++);
+            Cell itemCell = itemRow.createCell(0);
+            itemCell.setCellValue(item != null ? "Item: " + item.getName() : "Item: All Items");
+            itemCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Date Filter
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From: " + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy hh:mm a").format(fromDate) : "-")
+                    + "  To: " + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy hh:mm a").format(toDate) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Cost Of Goods Sold Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TABLE HEADER
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            String[] headers = {
+                "Type",
+                "Purchase Value",
+                "Cost Value",
+                "Retail Value"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (Map.Entry<String, Object> entry : cogsRows.entrySet()) {
+
+                Row dataRow = sheet.createRow(rowIndex++);
+
+                String Type = entry.getKey();
+
+                Map<String, Double> values = (Map<String, Double>) entry.getValue();
+
+                double purchase = values.getOrDefault("purchaseValue", 0.0);
+                double cost = values.getOrDefault("costValue", 0.0);
+                double retail = values.getOrDefault("retailValue", 0.0);
+
+                Cell tCell = dataRow.createCell(0);
+                tCell.setCellValue(Type);
+                tCell.setCellStyle(dataStyle);
+
+                Cell pCell = dataRow.createCell(1);
+                pCell.setCellValue(purchase);
+                pCell.setCellStyle(numberStyle);
+
+                Cell cCell = dataRow.createCell(2);
+                cCell.setCellValue(cost);
+                cCell.setCellStyle(numberStyle);
+
+                Cell rCell = dataRow.createCell(3);
+                rCell.setCellValue(retail);
+                rCell.setCellStyle(numberStyle);
+            }
+
+            // Auto size
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportCostOfGoodsSoldToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Cost_Of_Goods_Sold_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            com.itextpdf.text.Font titleFont
+                    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+
+            com.itextpdf.text.Font subTitleFont
+                    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+
+            com.itextpdf.text.Font filterFont
+                    = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            com.itextpdf.text.Font headerFont
+                    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+
+            com.itextpdf.text.Font dataFont
+                    = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+//            document.add(new Paragraph(" "));
+        
+            // Item + Date Filters
+            Paragraph filterPara = new Paragraph(
+                    "Item: " + (item != null ? item.getName() : "All Items")
+                    + " | From: " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " To: " + (toDate != null ? sdf.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+            
+             Paragraph deptTypePara = new Paragraph(
+            "Department Types: " + getDepartmentTypeFilterValue(),filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
+
+//            document.add(new Paragraph(" "));
+            // Report Title
+            Paragraph titlePara
+                    = new Paragraph("Cost Of Goods Sold Report", subTitleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(titlePara);
+
+//            document.add(new Paragraph(" "));
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 4;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(8f);
+
+            float[] widths = {4f, 3f, 3f, 3f};
+            table.setWidths(widths);
+
+            String[] headers = {
+                "Type",
+                "Purchase Value",
+                "Cost Value",
+                "Retail Value"
+            };
+
+            // Header row
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (Map.Entry<String, Object> entry : cogsRows.entrySet()) {
+
+                String type = entry.getKey();
+                Map<String, Double> values
+                        = (Map<String, Double>) entry.getValue();
+
+                double purchase
+                        = values.getOrDefault("purchaseValue", 0.0);
+                double cost
+                        = values.getOrDefault("costValue", 0.0);
+                double retail
+                        = values.getOrDefault("retailValue", 0.0);
+
+                // Type
+                table.addCell(new PdfPCell(
+                        new Phrase(type != null ? type : "-", dataFont)));
+
+                // Purchase
+                PdfPCell pCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", purchase), dataFont));
+                pCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(pCell);
+
+                // Cost
+                PdfPCell cCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cost), dataFont));
+                cCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cCell);
+
+                // Retail
+                PdfPCell rCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", retail), dataFont));
+                rCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rCell);
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyReportController.class.getName())
+                    .log(Level.SEVERE,
+                            "Error exporting Cost Of Goods Sold PDF", e);
+        }
+    }
+
     public void calculateOpeningStockRow() {
         Map<String, Double> openingStock = calculateStockTotals(fromDate);
         synchronized (cogsRows) {
@@ -11969,6 +12303,19 @@ public class PharmacyReportController implements Serializable {
     }
     
      public String getDepartmentTypeFilterValue() {
+
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+
+            return selectedDepartmentTypes.stream()
+                    .map(dt -> dt.getLabel())
+                    .sorted()
+                    .collect(Collectors.joining(", "));
+        }
+
+        return "All";
+    }
+
+    public String getDepartmentTypeFilterValue() {
 
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
 
