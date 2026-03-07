@@ -163,6 +163,15 @@
                                     disabled="#{vmpController.current.id eq null}"
                                     title="View audit history for this VMP record"/>
 
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All VMPs List"
+                                    action="#{vmpController.navigateToVmpList()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of VMPs"/>
+
                             </div>
                         </div>
 

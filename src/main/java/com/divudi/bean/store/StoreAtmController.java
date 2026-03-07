@@ -64,6 +64,7 @@ public class StoreAtmController implements Serializable {
     // DTO properties
     private List<AtmDto> atmDtoList;
     private AtmDto selectedAtmDto;
+    private List<AtmDto> storeAtmListDtos;
 
     // Audit properties
     private List<AuditEvent> atmAuditEvents;
@@ -381,6 +382,41 @@ public class StoreAtmController implements Serializable {
         }
     }
 
+    // ===================== List DTO Methods =====================
+
+    public List<AtmDto> getStoreAtmListDtos() {
+        if (storeAtmListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.retired, v.id, v.name) "
+                    + "FROM Atm a "
+                    + "LEFT JOIN a.vtm v "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Store);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            storeAtmListDtos = (List<AtmDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return storeAtmListDtos;
+    }
+
+    public String navigateToStoreAtmList() {
+        storeAtmListDtos = null;
+        getStoreAtmListDtos();
+        return "/pharmacy/admin/store_atm_list?faces-redirect=true";
+    }
+
     // ===================== Filter Methods =====================
 
     public String getFilterStatus() {
@@ -409,6 +445,7 @@ public class StoreAtmController implements Serializable {
     public void refreshData() {
         items = null;
         clearDtoCache();
+        storeAtmListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
