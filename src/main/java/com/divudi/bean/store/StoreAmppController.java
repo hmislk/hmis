@@ -481,7 +481,7 @@ public class StoreAmppController implements Serializable {
     }
 
     public String navigateToStoreAmppList() {
-        storeAmppListDtos = null;
+        setFilterToAll();
         getStoreAmppListDtos();
         return "/pharmacy/admin/store_ampp_list?faces-redirect=true";
     }

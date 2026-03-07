@@ -895,7 +895,7 @@ public class StoreAmpController implements Serializable {
     }
 
     public String navigateToStoreAmpList() {
-        storeAmpListDtos = null;
+        setFilterToAll();
         getStoreAmpListDtos(); // eagerly load before redirect
         return "/pharmacy/admin/store_amp_list?faces-redirect=true";
     }
