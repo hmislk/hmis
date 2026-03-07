@@ -11359,7 +11359,7 @@ public class PharmacyController implements Serializable {
 
     // Filters for grn_return_variance_report
     public Map<String, Object> getFiltersForGrnReturnVarianceReport() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");

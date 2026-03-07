@@ -9771,7 +9771,7 @@ public class PharmacyReportController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_Detailed.xlsx");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
         Map<String, Object> filters = getFiltersForExpiryItemReport();
@@ -9877,7 +9877,7 @@ public class PharmacyReportController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_Detailed.pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
         Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
@@ -11813,7 +11813,7 @@ public class PharmacyReportController implements Serializable {
 
     // Filters for good_in_transit""
     public Map<String, Object> getFiltersForGoodInTransitReport() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
@@ -11878,7 +11878,7 @@ public class PharmacyReportController implements Serializable {
 
     // Filters for expiry_item_report
     public Map<String, Object> getFiltersForExpiryItemReport() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
@@ -11949,7 +11949,7 @@ public class PharmacyReportController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit_Report.pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
