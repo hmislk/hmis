@@ -331,6 +331,11 @@ public class DataAdministrationController implements Serializable {
     private String mainDatabaseExecutionFeedback;
     private String auditDatabaseExecutionFeedback;
 
+    // Wiki DDL version tracking
+    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
+    private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
+    private String wikiDdlVersion;
+
     Date fromDate;
     Date toDate;
 
@@ -2278,6 +2283,34 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public String fetchWikiDdlVersion() {
+        try {
+            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(10000);
+            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
+            int status = conn.getResponseCode();
+            if (status == 200) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                    String line;
+                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2})");
+                    while ((line = reader.readLine()) != null) {
+                        Matcher m = versionPattern.matcher(line);
+                        if (m.find()) {
+                            return m.group(1).trim();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Network or parse failure — return null so caller falls back to legacy
+        }
+        return null;
+    }
+
     public void checkMissingFields() {
         // Clear all previous results
         suggestedSql = "";
@@ -2287,13 +2320,43 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseErrors = "";
         errors = "";
 
-        // Check both databases if enabled
+        // Check wiki DDL version first
+        wikiDdlVersion = fetchWikiDdlVersion();
+        if (wikiDdlVersion != null) {
+            String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+            if (wikiDdlVersion.equals(storedVersion)) {
+                errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
+                return;
+            }
+        }
+
+        // Version mismatch or wiki unreachable — run legacy check
         if (runOnMainDatabase) {
             checkMissingFieldsForDatabase(itemFacade, "Main Database");
         }
         if (runOnAuditDatabase) {
             checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
         }
+    }
+
+    public void markSchemaAsCurrent() {
+        if (wikiDdlVersion == null) {
+            wikiDdlVersion = fetchWikiDdlVersion();
+        }
+        if (wikiDdlVersion == null) {
+            JsfUtil.addErrorMessage("Could not reach wiki to determine current DDL version.");
+            return;
+        }
+        configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, wikiDdlVersion);
+        JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Future checks will skip the legacy scan.");
+    }
+
+    public String getStoredDdlVersion() {
+        return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+    }
+
+    public String getWikiDdlVersion() {
+        return wikiDdlVersion;
     }
 
     private void checkMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
