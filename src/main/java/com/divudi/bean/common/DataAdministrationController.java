@@ -2348,7 +2348,8 @@ public class DataAdministrationController implements Serializable {
             return;
         }
         configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, wikiDdlVersion);
-        JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Future checks will skip the legacy scan.");
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Migration banner cleared.");
     }
 
     public String getStoredDdlVersion() {
