@@ -158,6 +158,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private double dblValue = 0.0f;
     SessionNumberType sessionNumberType;
     boolean priceByBatch;
+    @Deprecated // User Issue Unit
     @ManyToOne
     MeasurementUnit measurementUnit;
     @ManyToOne
@@ -818,10 +819,17 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.priceByBatch = priceByBatch;
     }
 
+    @Deprecated // Use getIssueUnit
     public MeasurementUnit getMeasurementUnit() {
+        if(measurementUnit==null){
+            if(issueUnit!=null){
+                measurementUnit = issueUnit;
+            }
+        }
         return measurementUnit;
     }
 
+    @Deprecated // Use setMeasurementUnit
     public void setMeasurementUnit(MeasurementUnit measurementUnit) {
         this.measurementUnit = measurementUnit;
     }
