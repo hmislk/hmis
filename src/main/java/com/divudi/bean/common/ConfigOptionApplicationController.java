@@ -141,6 +141,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Require Migration Confirmation", true);
         getBooleanValueByKey("Enable Migration Progress Tracking", true);
         getBooleanValueByKey("Log Migration Execution Details", true);
+        // Wiki DDL version tracking — UNCHECKED means not yet verified against wiki
+        getShortTextValueByKey("DATABASE_DDL_VERSION", "UNCHECKED");
     }
 
     private void loadEmailGatewayConfigurationDefaults() {

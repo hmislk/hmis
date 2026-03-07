@@ -2324,7 +2324,7 @@ public class DataAdministrationController implements Serializable {
         wikiDdlVersion = fetchWikiDdlVersion();
         if (wikiDdlVersion != null) {
             String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
-            if (wikiDdlVersion.equals(storedVersion)) {
+            if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
                 errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
                 return;
             }
@@ -2611,6 +2611,7 @@ public class DataAdministrationController implements Serializable {
         if (runOnAuditDatabase) {
             createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
         }
+        markSchemaAsCurrent();
     }
 
     private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2713,6 +2714,7 @@ public class DataAdministrationController implements Serializable {
         if (runOnAuditDatabase) {
             runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
         }
+        markSchemaAsCurrent();
     }
 
     private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {
