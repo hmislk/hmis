@@ -4108,14 +4108,12 @@ public class PharmacyController implements Serializable {
                     + "bi.bill.department, "
                     + "bi.bill.toDepartment, "
                     + "bi.item, "
-                    + "COALESCE(bi.item.category.id, 0L), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtPurchaseRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtCostRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtRetailRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.netTotal, 0.0)), "
                     + "SUM(bi.qty) "
                     + "FROM BillItem bi "
-                    + "LEFT JOIN bi.item.category "
                     + "WHERE (bi.retired = false OR bi.retired IS NULL) "
                     + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
                     + "AND bi.bill.completed = true  "
@@ -4164,9 +4162,9 @@ public class PharmacyController implements Serializable {
                 parameters.put("departmentTypes", selectedDepartmentTypes);
             }
 
-            // Group by clause - use COALESCE on category id to include items with NULL category
-            jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, COALESCE(bi.item.category.id, 0L) "
-                    + "ORDER BY bi.bill.toDepartment, COALESCE(bi.item.category.id, 0L)";
+            // Group by clause - group by item (category obtained from item entity in Java)
+            jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item "
+                    + "ORDER BY bi.bill.toDepartment";
 
             try {
                 List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -4176,13 +4174,12 @@ public class PharmacyController implements Serializable {
                     Department mainDept = (Department) row[0];
                     Department consumptionDept = (Department) row[1];
                     Item item = (Item) row[2];
-                    // row[3] is COALESCE(category.id, 0L) - get actual Category from the Item entity
                     Category category = (item != null) ? item.getCategory() : null;
-                    Double purchaseValue = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
-                    Double costValue = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
-                    Double retailValue = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
-                    Double netTotal = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
-                    Double qty = row[8] != null ? ((Number) row[8]).doubleValue() : 0.0;
+                    Double purchaseValue = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+                    Double costValue = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
+                    Double retailValue = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
+                    Double netTotal = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
+                    Double qty = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
 
                     DepartmentCategoryWiseItems dtoItem = new DepartmentCategoryWiseItems(
                             mainDept, consumptionDept, item, category,
@@ -4800,8 +4797,59 @@ public class PharmacyController implements Serializable {
             headerFont.setBold(true);
             headerStyle.setFont(headerFont);
 
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+
             XSSFCellStyle amountStyle = workbook.createCellStyle();
             amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+
+            // Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Consumption Report - Department Summary");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+
+            // Filter details header
+            Row dateRow = sheet.createRow(rowIndex++);
+            dateRow.createCell(0).setCellValue("From: " + sdf.format(getFromDate()) + "    To: " + sdf.format(getToDate()));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 5));
+
+            if (institution != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Institution: " + institution.getName());
+            }
+            if (site != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Site: " + site.getName());
+            }
+            if (dept != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Department: " + dept.getName());
+            }
+            if (category != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Category: " + category.getName());
+            }
+            if (dosageForm != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Dosage Form: " + dosageForm.getName());
+            }
+            if (item != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Item: " + item.getName());
+            }
+            if (toDepartment != null) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Consumption Department: " + toDepartment.getName());
+            }
+
+            rowIndex++; // blank row before data
 
             Row headerRow = sheet.createRow(rowIndex++);
             Cell headerCell0 = headerRow.createCell(0);
@@ -4892,6 +4940,13 @@ public class PharmacyController implements Serializable {
             grandTotalNetCell.setCellValue(getTotalSaleValue());
             grandTotalNetCell.setCellStyle(amountStyle);
 
+            // Footer - printed time and user
+            rowIndex++; // blank row
+            Row footerRow = sheet.createRow(rowIndex++);
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            footerRow.createCell(0).setCellValue("Printed by: " + userName);
+            footerRow.createCell(4).setCellValue("Printed on: " + sdf.format(new Date()));
+
             for (int i = 0; i < 6; i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -4921,11 +4976,69 @@ public class PharmacyController implements Serializable {
             PdfWriter.getInstance(document, out);
             document.open();
 
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph title = new Paragraph("Consumption Report", titleFont);
+            Paragraph title = new Paragraph("Consumption Report - Department Summary", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
+            title.setSpacingAfter(10);
             document.add(title);
+
+            // Filter details header
+            com.itextpdf.text.Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            com.itextpdf.text.Font filterBoldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+
+            Paragraph datePara = new Paragraph();
+            datePara.add(new Phrase("From: ", filterBoldFont));
+            datePara.add(new Phrase(sdf.format(getFromDate()), filterFont));
+            datePara.add(new Phrase("    To: ", filterBoldFont));
+            datePara.add(new Phrase(sdf.format(getToDate()), filterFont));
+            document.add(datePara);
+
+            if (institution != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Institution: ", filterBoldFont));
+                p.add(new Phrase(institution.getName(), filterFont));
+                document.add(p);
+            }
+            if (site != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Site: ", filterBoldFont));
+                p.add(new Phrase(site.getName(), filterFont));
+                document.add(p);
+            }
+            if (dept != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Department: ", filterBoldFont));
+                p.add(new Phrase(dept.getName(), filterFont));
+                document.add(p);
+            }
+            if (category != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Category: ", filterBoldFont));
+                p.add(new Phrase(category.getName(), filterFont));
+                document.add(p);
+            }
+            if (dosageForm != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Dosage Form: ", filterBoldFont));
+                p.add(new Phrase(dosageForm.getName(), filterFont));
+                document.add(p);
+            }
+            if (item != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Item: ", filterBoldFont));
+                p.add(new Phrase(item.getName(), filterFont));
+                document.add(p);
+            }
+            if (toDepartment != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Consumption Department: ", filterBoldFont));
+                p.add(new Phrase(toDepartment.getName(), filterFont));
+                document.add(p);
+            }
+
+            document.add(new Paragraph(" ")); // spacing before table
 
             com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
             com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
@@ -4982,6 +5095,15 @@ public class PharmacyController implements Serializable {
             table.addCell(new PdfPCell(new Phrase(decimalFormat.format(getTotalSaleValue()), boldFont)));
 
             document.add(table);
+
+            // Footer - printed time and user
+            document.add(new Paragraph(" "));
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            Paragraph footerPara = new Paragraph();
+            footerPara.add(new Phrase("Printed by: " + userName, filterFont));
+            footerPara.add(new Phrase("    Printed on: " + sdf.format(new Date()), filterFont));
+            document.add(footerPara);
+
             document.close();
             out.flush();
             context.responseComplete();
@@ -11310,6 +11432,113 @@ public class PharmacyController implements Serializable {
             addMetaDataToExcelSheet(workbook, sheet, 0, "Stock Transfer Report By Bill", filters);
         }
         
+    }
+
+    // Excel Export: Consumption Report By Bill
+    public void postProcessConsumptionByBillExcel(Object document) {
+        if (document == null || !(document instanceof XSSFWorkbook)) {
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Consumption Report By Bill");
+
+        // Apply number format to Purchase Value (col 4), Cost Value (col 5), Retail Value (col 6)
+        XSSFCellStyle amountStyle = workbook.createCellStyle();
+        amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        int[] numericColumns = {4, 5, 6};
+        // Start from row 1 (skip header row 0)
+        for (int r = 1; r <= sheet.getLastRowNum(); r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) {
+                continue;
+            }
+            for (int colIdx : numericColumns) {
+                Cell cell = row.getCell(colIdx);
+                if (cell == null) {
+                    continue;
+                }
+                if (cell.getCellType() == CellType.STRING) {
+                    String val = cell.getStringCellValue();
+                    if (val != null && !val.isEmpty()) {
+                        try {
+                            String cleaned = val.replace(",", "");
+                            double numVal = Double.parseDouble(cleaned);
+                            cell.setCellValue(numVal);
+                            cell.setCellStyle(amountStyle);
+                        } catch (NumberFormatException e) {
+                            // leave as-is (e.g. footer text)
+                        }
+                    }
+                } else if (cell.getCellType() == CellType.NUMERIC) {
+                    cell.setCellStyle(amountStyle);
+                }
+            }
+        }
+
+        // Add filter header rows
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+        int headerRows = 2; // title + date range
+        if (institution != null) headerRows++;
+        if (site != null) headerRows++;
+        if (dept != null) headerRows++;
+        if (category != null) headerRows++;
+        if (dosageForm != null) headerRows++;
+        if (item != null) headerRows++;
+        if (toDepartment != null) headerRows++;
+        headerRows++; // blank row before data
+
+        sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
+
+        XSSFCellStyle titleStyle = workbook.createCellStyle();
+        Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+
+        int rowIndex = 0;
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Consumption Report - By Bill");
+        titleCell.setCellStyle(titleStyle);
+
+        Row dateRow = sheet.createRow(rowIndex++);
+        dateRow.createCell(0).setCellValue("From: " + sdf.format(getFromDate()) + "    To: " + sdf.format(getToDate()));
+
+        if (institution != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Institution: " + institution.getName());
+        }
+        if (site != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Site: " + site.getName());
+        }
+        if (dept != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Department: " + dept.getName());
+        }
+        if (category != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Category: " + category.getName());
+        }
+        if (dosageForm != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Dosage Form: " + dosageForm.getName());
+        }
+        if (item != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Item: " + item.getName());
+        }
+        if (toDepartment != null) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Consumption Department: " + toDepartment.getName());
+        }
+
+        // Footer with printed time and user
+        int footerRowIndex = sheet.getLastRowNum() + 2;
+        Row footerRow = sheet.createRow(footerRowIndex);
+        footerRow.createCell(0).setCellValue("Printed on: " + sdf.format(new Date()));
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            footerRow.createCell(3).setCellValue("Printed by: " + sessionController.getLoggedUser().getName());
+        }
     }
 
     // Excel Export: filter info to excel
