@@ -5041,6 +5041,12 @@ public class PharmacyController implements Serializable {
                 p.add(new Phrase(toDepartment.getName(), filterFont));
                 document.add(p);
             }
+            if (!getSelectedDepartmentTypesString().isEmpty()) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Department Types: ", filterBoldFont));
+                p.add(new Phrase(getSelectedDepartmentTypesString(), filterFont));
+                document.add(p);
+            }
 
             document.add(new Paragraph(" ")); // spacing before table
 
