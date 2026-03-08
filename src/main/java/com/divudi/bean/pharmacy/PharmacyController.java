@@ -4848,6 +4848,10 @@ public class PharmacyController implements Serializable {
                 Row filterRow = sheet.createRow(rowIndex++);
                 filterRow.createCell(0).setCellValue("Consumption Department: " + toDepartment.getName());
             }
+            if (!getSelectedDepartmentTypesString().isEmpty()) {
+                Row filterRow = sheet.createRow(rowIndex++);
+                filterRow.createCell(0).setCellValue("Department Types: " + getSelectedDepartmentTypesString());
+            }
 
             rowIndex++; // blank row before data
 
@@ -11005,6 +11009,18 @@ public class PharmacyController implements Serializable {
         this.selectedDepartmentTypes = selectedDepartmentTypes;
     }
 
+    public String getSelectedDepartmentTypesString() {
+        if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < selectedDepartmentTypes.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(selectedDepartmentTypes.get(i).name());
+        }
+        return sb.toString();
+    }
+
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
             DepartmentType.Pharmacy,
@@ -11538,6 +11554,188 @@ public class PharmacyController implements Serializable {
         footerRow.createCell(0).setCellValue("Printed on: " + sdf.format(new Date()));
         if (sessionController != null && sessionController.getLoggedUser() != null) {
             footerRow.createCell(3).setCellValue("Printed by: " + sessionController.getLoggedUser().getName());
+        }
+    }
+
+    // PDF Export: Consumption Report By Bill
+    public void exportConsumptionReportByBillToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report_By_Bill.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            com.itextpdf.text.Font filterBoldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // Title
+            Paragraph title = new Paragraph("Consumption Report - By Bill", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            document.add(title);
+
+            // Filter details
+            Paragraph datePara = new Paragraph();
+            datePara.add(new Phrase("From: ", filterBoldFont));
+            datePara.add(new Phrase(sdf.format(getFromDate()), filterFont));
+            datePara.add(new Phrase("    To: ", filterBoldFont));
+            datePara.add(new Phrase(sdf.format(getToDate()), filterFont));
+            document.add(datePara);
+
+            if (institution != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Institution: ", filterBoldFont));
+                p.add(new Phrase(institution.getName(), filterFont));
+                document.add(p);
+            }
+            if (site != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Site: ", filterBoldFont));
+                p.add(new Phrase(site.getName(), filterFont));
+                document.add(p);
+            }
+            if (dept != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Department: ", filterBoldFont));
+                p.add(new Phrase(dept.getName(), filterFont));
+                document.add(p);
+            }
+            if (category != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Category: ", filterBoldFont));
+                p.add(new Phrase(category.getName(), filterFont));
+                document.add(p);
+            }
+            if (dosageForm != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Dosage Form: ", filterBoldFont));
+                p.add(new Phrase(dosageForm.getName(), filterFont));
+                document.add(p);
+            }
+            if (item != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Item: ", filterBoldFont));
+                p.add(new Phrase(item.getName(), filterFont));
+                document.add(p);
+            }
+            if (toDepartment != null) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Consumption Department: ", filterBoldFont));
+                p.add(new Phrase(toDepartment.getName(), filterFont));
+                document.add(p);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                Paragraph p = new Paragraph();
+                p.add(new Phrase("Department Types: ", filterBoldFont));
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < selectedDepartmentTypes.size(); i++) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(selectedDepartmentTypes.get(i).name());
+                }
+                p.add(new Phrase(sb.toString(), filterFont));
+                document.add(p);
+            }
+
+            document.add(new Paragraph(" "));
+
+            // Table
+            PdfPTable table = new PdfPTable(7);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2.5f, 2.5f, 1.5f, 1.5f, 1.5f, 1.5f, 2.0f});
+
+            String[] headers = {"Bill No", "Consumption Dept", "Request No", "Purchase Value", "Cost Value", "Retail Value", "Created Date"};
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            if (pharmacyRows != null) {
+                for (PharmacyRow row : pharmacyRows) {
+                    if (row == null || row.getBill() == null) {
+                        continue;
+                    }
+                    Bill bill = row.getBill();
+
+                    table.addCell(new PdfPCell(new Phrase(bill.getDeptId() != null ? bill.getDeptId() : "", normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getToDepartment() != null ? bill.getToDepartment().getName() : "", normalFont)));
+                    table.addCell(new PdfPCell(new Phrase(bill.getInvoiceNumber() != null ? bill.getInvoiceNumber() : "", normalFont)));
+
+                    PdfPCell purchaseCell = new PdfPCell(new Phrase(
+                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalPurchaseValue() != null
+                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalPurchaseValue()) : "0.00", normalFont));
+                    purchaseCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(purchaseCell);
+
+                    PdfPCell costCell = new PdfPCell(new Phrase(
+                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalCostValue() != null
+                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalCostValue()) : "0.00", normalFont));
+                    costCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(costCell);
+
+                    PdfPCell retailCell = new PdfPCell(new Phrase(
+                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalRetailSaleValue() != null
+                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalRetailSaleValue()) : "0.00", normalFont));
+                    retailCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(retailCell);
+
+                    table.addCell(new PdfPCell(new Phrase(
+                            bill.getCreatedAt() != null ? sdf.format(bill.getCreatedAt()) : "", normalFont)));
+                }
+            }
+
+            // Grand Total row
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase("Grand Total:", boldFont));
+            totalLabelCell.setColspan(3);
+            totalLabelCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalLabelCell);
+
+            PdfPCell totalPurchaseCell = new PdfPCell(new Phrase(decimalFormat.format(totalPurchase), boldFont));
+            totalPurchaseCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalPurchaseCell);
+
+            PdfPCell totalCostCell = new PdfPCell(new Phrase(decimalFormat.format(totalCostValue), boldFont));
+            totalCostCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalCostCell);
+
+            PdfPCell totalRetailCell = new PdfPCell(new Phrase(decimalFormat.format(totalRetailValue), boldFont));
+            totalRetailCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalRetailCell);
+
+            table.addCell(new PdfPCell(new Phrase("", boldFont)));
+
+            document.add(table);
+
+            // Footer
+            document.add(new Paragraph(" "));
+            String userName = sessionController != null && sessionController.getLoggedUser() != null
+                    ? sessionController.getLoggedUser().getName() : "";
+            Paragraph footerPara = new Paragraph();
+            footerPara.add(new Phrase("Printed by: " + userName, filterFont));
+            footerPara.add(new Phrase("    Printed on: " + sdf.format(new Date()), filterFont));
+            document.add(footerPara);
+
+            document.close();
+            out.flush();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
