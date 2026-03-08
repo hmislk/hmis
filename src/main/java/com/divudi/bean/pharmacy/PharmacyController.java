@@ -11553,6 +11553,9 @@ public class PharmacyController implements Serializable {
         if (toDepartment != null) {
             sheet.createRow(rowIndex++).createCell(0).setCellValue("Consumption Department: " + toDepartment.getName());
         }
+        if (!getSelectedDepartmentTypesString().isEmpty()) {
+            sheet.createRow(rowIndex++).createCell(0).setCellValue("Department Types: " + getSelectedDepartmentTypesString());
+        }
 
         // Footer with printed time and user
         int footerRowIndex = sheet.getLastRowNum() + 2;
@@ -11644,15 +11647,10 @@ public class PharmacyController implements Serializable {
                 p.add(new Phrase(toDepartment.getName(), filterFont));
                 document.add(p);
             }
-            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            if (!getSelectedDepartmentTypesString().isEmpty()) {
                 Paragraph p = new Paragraph();
                 p.add(new Phrase("Department Types: ", filterBoldFont));
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < selectedDepartmentTypes.size(); i++) {
-                    if (i > 0) sb.append(", ");
-                    sb.append(selectedDepartmentTypes.get(i).name());
-                }
-                p.add(new Phrase(sb.toString(), filterFont));
+                p.add(new Phrase(getSelectedDepartmentTypesString(), filterFont));
                 document.add(p);
             }
 
