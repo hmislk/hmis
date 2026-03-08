@@ -2622,7 +2622,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.bill.id, ");
         jpql.append("bi.bill.deptId, ");
         jpql.append("bi.bill.insId, ");
-        jpql.append("bi.bill.billDate, ");
+        jpql.append("bi.bill.createdAt, ");
         jpql.append("pt.phn, ");
         jpql.append("pn.name, ");
         jpql.append("item.id, ");
