@@ -163,6 +163,15 @@
                                     disabled="#{storeVmpController.current.id eq null}"
                                     title="View audit history for this Store VMP record"/>
 
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All VMPs List"
+                                    action="#{storeVmpController.navigateToStoreVmpList()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary m-1"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of Store VMPs"/>
+
                             </div>
                         </div>
 
@@ -272,6 +281,22 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
+                                <p:outputLabel for="selIssueUnit" value="Issue Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu
+                                    id="selIssueUnit"
+                                    value="#{storeVmpController.current.issueUnit}"
+                                    styleClass="w-100"
+                                    filter="true"
+                                    required="true"
+                                    requiredMessage="Dispensing Unit is required"
+                                    disabled="#{!storeVmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dispensing Unit --" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{measurementUnitController.issueUnits}"
+                                        var="m"
+                                        itemValue="#{m}"
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
 
                                 <!-- Department Type automatically set to Store - not displayed -->
 
