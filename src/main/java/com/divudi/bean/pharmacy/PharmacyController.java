@@ -9106,7 +9106,7 @@ public class PharmacyController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
-        String fileName = "GRN_Detailed_report_" + fromDateFormatted() + "_to_" + toDateFormatted()+".pdf";
+        String fileName = "GRN_Detailed_report_" + fromDateFormatted() + "_to_" + toDateFormatted()+".xlsx";
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 

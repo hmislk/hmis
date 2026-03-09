@@ -273,12 +273,12 @@
                                          value="Process"
                                          action="#{pharmacyController.generateGrnReport()}"/>
                         <p:commandButton class="ui-button- mx-1"
-                                         icon="fas fa-print"
-                                         ajax="false"
-                                         value="Print All"
-                                         onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
-                        </p:commandButton>
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        value="Print All"
+                                        onclick="hidePaginatorBeforePrint()">
+                           <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
+                       </p:commandButton>
                         <h:outputScript>
                             function hidePaginatorBeforePrint() {
                                 let paginators = document.querySelectorAll('.ui-paginator');
@@ -301,7 +301,7 @@
                                          rendered="#{pharmacyController.reportType eq 'summary'}">
                             <p:dataExporter type="xlsx"
                                             target="tbl1"
-                                            fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}.xlsx"/>
+                                            fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-success mx-1"
                                          icon="fas fa-file-excel"
@@ -316,7 +316,7 @@
                                          rendered="#{pharmacyController.reportType eq 'summary'}">
                             <p:dataExporter type="pdf"
                                             target="tbl1"
-                                            fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}.pdf"/>
+                                            fileName="GRN_Summary_report_#{pharmacyController.fromDateFormatted()}_to_#{pharmacyController.toDateFormatted()}"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-danger mx-1"
                                          icon="fas fa-file-pdf"
@@ -341,7 +341,7 @@
                             <f:facet name="header" >
                                 <h:outputText value="#{pharmacyController.GRNHeader()}" style="display:none !important; font-size:10px;" />
                             </f:facet>
-                            <p:column headerText="S No" width="3em">
+                            <p:column headerText="SNo" width="2em">
                                 <h:outputText value="#{n+1}"/>
                             </p:column>
                             <p:column headerText="GRN No" width="10em">
