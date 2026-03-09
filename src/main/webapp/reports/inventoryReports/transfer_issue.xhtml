@@ -208,11 +208,8 @@
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="Transfer Issue Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportTransferIssueToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -220,7 +217,7 @@
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
                                 value="PDF"
-                                action="#{pharmacyReportController.exportPharmacyIssuePdf}">
+                                action="#{pharmacyReportController.exportTransferIssueToPDF()}">
                             </p:commandButton>
 
                         </div>
