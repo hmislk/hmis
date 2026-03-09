@@ -11501,6 +11501,7 @@ public class PharmacyController implements Serializable {
         if (dosageForm != null) headerRows++;
         if (item != null) headerRows++;
         if (toDepartment != null) headerRows++;
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) headerRows++;
         headerRows++; // blank row before data
 
         sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
