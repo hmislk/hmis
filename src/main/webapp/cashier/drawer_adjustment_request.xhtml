@@ -63,14 +63,12 @@
                                             <f:selectItem itemLabel="None" itemValue="None"/>
                                         </p:selectOneMenu>
 
-                                        <h:outputLabel for="currentBalance" value="Current Balance" />
-                                        <p:inputText
-                                            id="currentBalance"
-                                            value="#{drawerAdjustmentController.currentBalance}"
-                                            readonly="true"
-                                            class="w-100">
-                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
-                                        </p:inputText>
+                                        <h:outputLabel value="Current Balance" />
+                                        <p:outputPanel id="currentBalance">
+                                            <h:outputText value="#{drawerAdjustmentController.currentBalance}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                            </h:outputText>
+                                        </p:outputPanel>
 
                                         <h:outputLabel for="adjustmentDelta" value="Adjustment Amount *" />
                                         <p:inputText
@@ -84,14 +82,12 @@
                                             <f:convertNumber/>
                                         </p:inputText>
 
-                                        <h:outputLabel for="balanceAfter" value="Balance After Adjustment" />
-                                        <p:inputText
-                                            id="balanceAfter"
-                                            value="#{drawerAdjustmentController.balanceAfterAdjustment}"
-                                            readonly="true"
-                                            class="w-100">
-                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
-                                        </p:inputText>
+                                        <h:outputLabel value="Balance After Adjustment" />
+                                        <p:outputPanel id="balanceAfter">
+                                            <h:outputText value="#{drawerAdjustmentController.balanceAfterAdjustment}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                            </h:outputText>
+                                        </p:outputPanel>
 
                                         <h:outputLabel for="reason" value="Reason *" />
                                         <p:inputTextarea

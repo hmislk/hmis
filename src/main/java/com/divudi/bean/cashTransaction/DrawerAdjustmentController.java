@@ -197,7 +197,7 @@ public class DrawerAdjustmentController implements Serializable {
         if (user == null || paymentMethod == null) {
             return null;
         }
-        Drawer drawer = drawerService.getUsersDrawer(user);
+        Drawer drawer = drawerService.findUsersDrawerWithoutCreate(user);
         if (drawer == null) {
             return null;
         }

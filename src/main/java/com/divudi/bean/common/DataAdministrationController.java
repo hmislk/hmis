@@ -2357,7 +2357,10 @@ public class DataAdministrationController implements Serializable {
         JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Migration banner cleared.");
     }
 
-    private void markSchemaAsCurrentSilently() {
+    private void markSchemaAsCurrentSilently(boolean executionPerformed) {
+        if (!executionPerformed) {
+            return;
+        }
         try {
             String version = fetchWikiDdlVersion();
             if (version != null) {
@@ -2624,13 +2627,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             createTablesOnDatabase(itemFacade, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
+            executionPerformed = true;
         }
-        markSchemaAsCurrentSilently();
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2727,13 +2733,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             runSqlOnDatabase(itemFacade, suggestedSql, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
+            executionPerformed = true;
         }
-        markSchemaAsCurrentSilently();
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {
