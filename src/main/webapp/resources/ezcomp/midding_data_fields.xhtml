@@ -99,6 +99,20 @@
                             <h:outputText value="Audit Database (hmisAuditPU)"/>
                         </h:panelGroup>
 
+                        <p:outputLabel value="Wiki DDL Version" />
+                        <h:outputText value="#{dataAdministrationController.wikiDdlVersion != null ? dataAdministrationController.wikiDdlVersion : '(not yet fetched)'}" />
+
+                        <p:outputLabel value="Stored DB Version" />
+                        <h:panelGroup layout="block" class="d-flex align-items-center">
+                            <h:outputText value="#{dataAdministrationController.storedDdlVersion != null ? dataAdministrationController.storedDdlVersion : '(not set)'}" styleClass="me-3"/>
+                            <p:commandButton
+                                value="Mark Schema as Current"
+                                ajax="false"
+                                action="#{dataAdministrationController.markSchemaAsCurrent()}"
+                                rendered="#{not empty dataAdministrationController.wikiDdlVersion}"
+                                styleClass="ui-button-success" />
+                        </h:panelGroup>
+
                         <p:outputLabel value="Combined Errors" ></p:outputLabel>
                         <p:inputTextarea
                             rows="4"
