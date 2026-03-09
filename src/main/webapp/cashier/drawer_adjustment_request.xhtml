@@ -44,6 +44,7 @@
                                             required="true"
                                             requiredMessage="Please select a payment method."
                                             class="w-100">
+                                            <p:ajax update="currentBalance balanceAfter" />
                                             <f:selectItem itemLabel="-- Select Payment Method --" itemValue="#{null}" noSelectionOption="true"/>
                                             <f:selectItem itemLabel="Cash" itemValue="Cash"/>
                                             <f:selectItem itemLabel="Card" itemValue="Card"/>
@@ -62,6 +63,15 @@
                                             <f:selectItem itemLabel="None" itemValue="None"/>
                                         </p:selectOneMenu>
 
+                                        <h:outputLabel for="currentBalance" value="Current Balance" />
+                                        <p:inputText
+                                            id="currentBalance"
+                                            value="#{drawerAdjustmentController.currentBalance}"
+                                            readonly="true"
+                                            class="w-100">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                        </p:inputText>
+
                                         <h:outputLabel for="adjustmentDelta" value="Adjustment Amount *" />
                                         <p:inputText
                                             id="adjustmentDelta"
@@ -70,7 +80,17 @@
                                             requiredMessage="Please enter an adjustment amount."
                                             placeholder="Positive to add, negative to deduct"
                                             class="w-100">
+                                            <p:ajax update="balanceAfter" />
                                             <f:convertNumber/>
+                                        </p:inputText>
+
+                                        <h:outputLabel for="balanceAfter" value="Balance After Adjustment" />
+                                        <p:inputText
+                                            id="balanceAfter"
+                                            value="#{drawerAdjustmentController.balanceAfterAdjustment}"
+                                            readonly="true"
+                                            class="w-100">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
                                         </p:inputText>
 
                                         <h:outputLabel for="reason" value="Reason *" />
