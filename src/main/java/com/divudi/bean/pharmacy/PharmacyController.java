@@ -11501,6 +11501,7 @@ public class PharmacyController implements Serializable {
         if (dosageForm != null) headerRows++;
         if (item != null) headerRows++;
         if (toDepartment != null) headerRows++;
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) headerRows++;
         headerRows++; // blank row before data
 
         sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
@@ -11556,6 +11557,11 @@ public class PharmacyController implements Serializable {
 
     // PDF Export: Consumption Report By Bill
     public void exportConsumptionReportByBillToPdf() {
+        if (pharmacyRows == null || pharmacyRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
