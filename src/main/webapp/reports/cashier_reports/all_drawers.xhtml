@@ -13,6 +13,15 @@
                 <h:form>
                     <p:panel header="All Drawers" class="m-1">
 
+                        <h:panelGrid columns="2" cellpadding="5" class="my-2">
+                            <h:outputLabel value="User"/>
+                            <p:autoComplete completeMethod="#{webUserController.completeUser}"
+                                            forceSelection="true"
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            value="#{searchController.webUser}"
+                                            class="w-100"/>
+                        </h:panelGrid>
+
                         <h:panelGrid columns="4" class="my-2">
                             <p:commandButton
                                 value="Process"
