@@ -158,6 +158,15 @@
                                                 ajax="false"
                                                 disabled="#{storeVmppController.selectedVmppDto eq null}">
                                             </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewList"
+                                                value="All VMPPs List"
+                                                action="#{storeVmppController.navigateToStoreVmppList()}"
+                                                ajax="false"
+                                                styleClass="ui-button-secondary m-1"
+                                                icon="fas fa-list"
+                                                title="View and download the full list of Store VMPPs"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>
