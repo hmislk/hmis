@@ -26,7 +26,7 @@
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
-                                        font-size: 10pt;
+                                        font-size: 8pt;
                                     }
                                 }
 
@@ -50,7 +50,7 @@
 
                                 .table-summary {
                                     width: 99.9%;
-                                    font-size: 10pt!important;
+                                    font-size: 8pt!important;
                                     margin-top: 3mm!important;
                                     border-collapse: collapse !important;
                                 }
@@ -64,6 +64,13 @@
 
                                 .table-byBill {
                                     width: 99.9%;
+                                    font-size: 9pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+
+                                .table-breakdown {
+                                    width: 99%;
                                     font-size: 9pt!important;
                                     margin-top: 3mm!important;
                                     border-collapse: collapse !important;
@@ -110,7 +117,7 @@
                                                 style="width: 150px"
                                                 ajax="false" 
                                                 value="Print">
-                                                <p:printer target="itemRp" />
+                                                <p:printer target="summaryRp" />
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
@@ -125,7 +132,7 @@
                                 </f:facet>
                             </p:panel>
 
-                            <h:panelGroup id="itemRp" class="d-flex justify-content-center">
+                            <h:panelGroup id="summaryRp" class="d-flex justify-content-center">
                                 <div class="paper">
                                     <div class="header" >
                                             <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
@@ -141,12 +148,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Transfer:" styleClass="label"/>
@@ -246,28 +253,28 @@
 
                                         <!-- Row Expansion Content -->
                                         <p:rowExpansion>
-                                            <div style="padding: 15px; background-color: #fafafa;" 
+                                            <div style="padding: 5px; background-color: #fafafa;" 
                                                 rendered="#{s.departmentName ne 'Total'}">
 
                                                 <!-- Check if summaries map exists and has data -->
                                                 <h:panelGroup rendered="#{not empty s.summeriesMap}">
-                                                    <h6 style="margin-bottom: 15px; color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
+                                                    <div style="margin-bottom: 5px; color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 2px; font-weight: 700;">
                                                         <h:outputText value="Breakdown Details for #{s.issuedDeptName}"/>
-                                                    </h6>
+                                                    </div>
 
                                                     <!-- Card-based layout for better readability -->
                                                     <div class="row">
                                                         <ui:repeat value="#{s.summeriesMap.entrySet()}" var="categoryEntry">
-                                                            <div class="col-md-12 mb-3">
+                                                            <div class="col-md-12 mb-1">
                                                                 <div class="card">
                                                                     <div class="card-header" style="background-color: #e9ecef;">
                                                                         <h:outputText value="#{categoryEntry.key}" 
                                                                                     style="font-weight: bold; color: #495057;"/>
                                                                     </div>
-                                                                    <div class="card-body" style="padding: 10px;">
+                                                                    <div class="card-body" style="padding: 5px;">
                                                                         <h:panelGroup rendered="#{not empty categoryEntry.value}">
                                                                             <div class="table-responsive">
-                                                                                <table class="table table-sm table-striped">
+                                                                                <table class="table-sm table-striped">
                                                                                     <thead>
                                                                                         <tr>
                                                                                             <th>From Department</th>
@@ -329,12 +336,6 @@
                                                         No detailed breakdown available for this department.
                                                     </div>
                                                 </h:panelGroup>
-                                            </div>
-
-                                            <!-- Total row - no expansion content -->
-                                            <div style="padding: 15px; text-align: center; color: #6c757d;" 
-                                                rendered="#{s.departmentName eq 'Total'}">
-                                                <em>Total row - no breakdown available</em>
                                             </div>
                                         </p:rowExpansion>
 
@@ -421,12 +422,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Transfer:" styleClass="label"/>
@@ -635,12 +636,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Transfer:" styleClass="label"/>
@@ -771,6 +772,227 @@
                                         </f:facet>
                                     </p:column>
                                 </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'breakdownSummary'}">
+                        <p:panel header="Stock Transfer Report" styleClass="my-2" >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Stock Transfer Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false" 
+                                            value="Print">
+                                            <p:printer target="brkSummaryRp" />
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Back to Report" 
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/stock_transfer_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+                        <h:panelGroup id="brkSummaryRp" class="d-flex justify-content-center">
+                            <style>
+                                @media screen {
+                                    #brkSummaryRp .paper {
+                                        position: static;
+                                        width: 210mm;
+                                        zoom: 2.0;
+                                    }
+                                }
+                                @media print {
+                                    @page { size: A4 portrait !important; }
+                                    #brkSummaryRp .paper { width: 210mm !important; }
+                                }
+                            </style>
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Stock Transfer Report"/>
+                                        <h:outputText value=" (BreakDown Summary)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:85%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="Transfer:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
+
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Issuing Institution:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+                                                <h:outputText value="Issuing Site:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
+
+                                                <h:outputText value="Issuing Department:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
+
+
+                                                <!-- Row 3 -->
+                                                <h:outputText value="Receiving Institution:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
+
+                                                <h:outputText value="Receiving Site:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+
+                                                <h:outputText value="Receiving Department:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
+
+
+                                                <!-- Row 4 -->
+                                                <h:outputText value="Department Type:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
+
+                                                <h:outputText value="Category:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
+
+                                                <h:outputText value="Dosage Form:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+
+
+                                                <!-- Row 5 -->
+                                                <h:outputText value="Item Name/Code:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+
+                                            </h:panelGrid>
+                                        </div>   
+                                </div>
+                                
+                                <h:panelGroup rendered="#{not empty pharmacyController.transferBreakdownGroups}">
+                                    <table class="table-breakdown table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 75mm;">
+                                                    <h:outputText
+                                                        value="#{empty pharmacyController.breakdownPrimaryColumnLabel
+                                                                ? 'Department'
+                                                                : pharmacyController.breakdownPrimaryColumnLabel}"/>
+                                                </th>
+                                                <th style="text-align:right; width: 25mm;">
+                                                    <h:outputText value="Quantity"/>
+                                                </th>
+                                                <th style="text-align:right; width: 35mm;">
+                                                    <h:outputText value="Purchase Value"/>
+                                                </th>
+                                                <th style="text-align:right; width: 35mm;">
+                                                    <h:outputText value="Cost Value"/>
+                                                </th>
+                                                <th style="text-align:right; width: 35mm;">
+                                                    <h:outputText value="Retail Value"/>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{pharmacyController.transferBreakdownGroups}" var="group">
+                                                <tr style="background-color:#f6f6f6; font-weight:bold;">
+                                                    <td>
+                                                        <h:outputText value="#{group.primaryDepartmentName}"/>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalQuantity}">
+                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalPurchaseValue}">
+                                                            
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalCostValue}">
+                                                            
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalRetailValue}">
+                                                            
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                                <ui:repeat value="#{group.children}" var="child">
+                                                    <tr>
+                                                        <td style="padding-left: 10px!important;">
+                                                            <h:outputText value="#{child.secondaryDepartmentName}"/>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.quantity}">
+                                                                <f:convertNumber pattern="#,##0.##"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.purchaseValue}">
+                                                                
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.costValue}">
+                                                                
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.retailValue}">
+                                                                
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="font-weight:bold;">
+                                                <td>
+                                                    <h:outputText value="Total"/>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalQuantity}">
+                                                        <f:convertNumber pattern="#,##0.##"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalPurchaseValue}">
+                                                        
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalCostValue}">
+                                                        
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalRetailValue}">
+                                                        
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </h:panelGroup>
                             </div>
                         </h:panelGroup>
                     </h:panelGroup>
