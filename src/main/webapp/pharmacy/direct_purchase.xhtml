@@ -490,14 +490,15 @@
 
                                 <p:column>
                                     <p:commandButton
-                                        class="mr-3 ui-button-warning"
+                                        styleClass="ui-button-warning"
+                                        style="margin-right:10px"
                                         icon="fas fa-edit"
                                         title="Edit Item"
                                         process="@this"
                                         update=":bill:dlgEditBillItem"
                                         oncomplete="PF('dlgEditBillItem').show()"
                                         action="#{pharmacyDirectPurchaseController.prepareEditBillItem(ph)}" />
-                                    <p:commandButton class="mr-1 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                                    <p:commandButton styleClass="ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
 
