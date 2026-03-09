@@ -80,6 +80,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private BilledBill bill;
     private List<BillItem> billItems;
     private BillItem currentBillItem;
+    private BillItem editingBillItem;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
     private BillItem currentExpense;
@@ -1094,6 +1095,35 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentBillItem = null;
     }
 
+    public void prepareEditBillItem(BillItem bi) {
+        this.editingBillItem = bi;
+    }
+
+    public void updateBillItem() {
+        if (editingBillItem == null) {
+            JsfUtil.addErrorMessage("No item selected for editing");
+            return;
+        }
+        BillItemFinanceDetails f = editingBillItem.getBillItemFinanceDetails();
+        if (f != null) {
+            // Sync retailSaleRatePerUnit from retailSaleRate (same logic as onRetailSaleRateChange)
+            if (f.getRetailSaleRate() != null) {
+                Item item = editingBillItem.getItem();
+                if (item instanceof Ampp) {
+                    double dblVal = item.getDblValue();
+                    BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+                    f.setRetailSaleRatePerUnit(f.getRetailSaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+                } else {
+                    f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
+                }
+            }
+        }
+        calculateItemTotals(editingBillItem);
+        calculateBillTotalsFromItems();
+        recalculateProfitMarginsForAllItems();
+        editingBillItem = null;
+    }
+
     /**
      * Autocomplete method for items filtered by department type
      * When department type is set on the bill, only items of that type are returned
@@ -2011,6 +2041,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setCurrentBillItem(BillItem currentBillItem) {
         this.currentBillItem = currentBillItem;
+    }
+
+    public BillItem getEditingBillItem() {
+        return editingBillItem;
+    }
+
+    public void setEditingBillItem(BillItem editingBillItem) {
+        this.editingBillItem = editingBillItem;
     }
 
     public List<BillItem> getBillItems() {
