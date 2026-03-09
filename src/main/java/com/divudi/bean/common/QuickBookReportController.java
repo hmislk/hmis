@@ -387,8 +387,22 @@ public class QuickBookReportController implements Serializable {
         }
 
         List<Bill> bills = getBillFacade().findByJpql(billJpql, billParams, TemporalType.TIMESTAMP);
-        if (bills == null) {
+        if (bills == null || bills.isEmpty()) {
             return;
+        }
+
+        // Fetch all BillFees for these bills in one query and group by bill id
+        Map<String, Object> feeParams = new HashMap<>();
+        feeParams.put("bills", bills);
+        List<com.divudi.core.entity.BillFee> allBillFees = getBillFeeFacade().findByJpql(
+                "select bf from BillFee bf where bf.bill in :bills and bf.retired = false",
+                feeParams);
+        Map<Long, List<com.divudi.core.entity.BillFee>> billFeesMap = new HashMap<>();
+        if (allBillFees != null) {
+            for (com.divudi.core.entity.BillFee bf : allBillFees) {
+                Long billId = bf.getBill().getId();
+                billFeesMap.computeIfAbsent(billId, k -> new ArrayList<>()).add(bf);
+            }
         }
 
         for (Bill bill : bills) {
@@ -399,14 +413,7 @@ public class QuickBookReportController implements Serializable {
                 ccName += (cpn != null && !cpn.isEmpty()) ? cpn : bill.getCreditCompany().getName();
             }
 
-            // Fetch BillFees for this bill
-            String feeJpql = "select bf from BillFee bf"
-                    + " where bf.bill = :bill"
-                    + " and bf.retired = false";
-            Map<String, Object> feeParams = new HashMap<>();
-            feeParams.put("bill", bill);
-            List<com.divudi.core.entity.BillFee> billFees = getBillFeeFacade().findByJpql(feeJpql, feeParams);
-
+            List<com.divudi.core.entity.BillFee> billFees = billFeesMap.get(bill.getId());
             if (billFees == null || billFees.isEmpty()) {
                 continue;
             }
