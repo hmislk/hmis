@@ -346,6 +346,51 @@
                                             </div>
                                         </div>
 
+                                        <!-- Strength & Dispensing Section -->
+                                        <h:outputText value="Strength &amp; Dispensing" styleClass="section-header d-block"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="txtStrength" value="Strength"/>
+                                                <p:inputText id="txtStrength"
+                                                             value="#{storeAmpController.current.strengthOfAnIssueUnit}"
+                                                             class="form-control"
+                                                             disabled="#{not storeAmpController.editable}"
+                                                             placeholder="Enter strength value"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="selStrengthUnit" value="Strength Unit"/>
+                                                <p:selectOneMenu
+                                                    id="selStrengthUnit"
+                                                    value="#{storeAmpController.current.strengthUnit}"
+                                                    styleClass="form-control"
+                                                    filter="true"
+                                                    disabled="#{not storeAmpController.editable}">
+                                                    <f:selectItem itemLabel="-- Select Strength Unit --" itemValue="#{null}"/>
+                                                    <f:selectItems
+                                                        value="#{measurementUnitController.items}"
+                                                        var="m"
+                                                        itemValue="#{m}"
+                                                        itemLabel="#{m.name}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="selIssueUnit" value="Issue Unit"/>
+                                                <p:selectOneMenu
+                                                    id="selIssueUnit"
+                                                    value="#{storeAmpController.current.issueUnit}"
+                                                    styleClass="form-control"
+                                                    filter="true"
+                                                    disabled="#{not storeAmpController.editable}">
+                                                    <f:selectItem itemLabel="-- Select Issue Unit --" itemValue="#{null}"/>
+                                                    <f:selectItems
+                                                        value="#{measurementUnitController.issueUnits}"
+                                                        var="m"
+                                                        itemValue="#{m}"
+                                                        itemLabel="#{m.name}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
                                         <!-- Business Rules Section -->
                                         <h:outputText value="Business Rules" styleClass="section-header d-block"/>
                                         <div class="row g-3 mb-3">

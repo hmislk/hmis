@@ -256,7 +256,8 @@
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
                                 <p:dataExporter type="xlsx" target="tblListBills"
-                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"
+                                                postProcessor="#{pharmacyController.postProcessConsumptionByBillExcel}"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
@@ -289,6 +290,46 @@
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport' and (pharmacyController.totalPurchase != 0 or pharmacyController.totalCostValue != 0 or pharmacyController.totalRetailValue != 0 or pharmacyController.totalSaleValue != 0)}" id="tbl1">
                             <h5 class="mt-3">Department Summary</h5>
+                            <h:panelGroup layout="block" styleClass="mb-3 p-2" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.9em;">
+                                <h:panelGroup layout="block">
+                                    <strong>From: </strong>
+                                    <h:outputText value="#{pharmacyController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                    <strong class="ml-3">To: </strong>
+                                    <h:outputText value="#{pharmacyController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.institution ne null}">
+                                    <strong>Institution: </strong>
+                                    <h:outputText value="#{pharmacyController.institution.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.site ne null}">
+                                    <strong>Site: </strong>
+                                    <h:outputText value="#{pharmacyController.site.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.dept ne null}">
+                                    <strong>Department: </strong>
+                                    <h:outputText value="#{pharmacyController.dept.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.category ne null}">
+                                    <strong>Category: </strong>
+                                    <h:outputText value="#{pharmacyController.category.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.dosageForm ne null}">
+                                    <strong>Dosage Form: </strong>
+                                    <h:outputText value="#{pharmacyController.dosageForm.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.item ne null}">
+                                    <strong>Item: </strong>
+                                    <h:outputText value="#{pharmacyController.item.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{pharmacyController.toDepartment ne null}">
+                                    <strong>Consumption Department: </strong>
+                                    <h:outputText value="#{pharmacyController.toDepartment.name}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
 
                             <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
                                        varStatus="status">

@@ -3842,6 +3842,11 @@ public class SearchController implements Serializable {
             jpql.append(" and b.deptId like :billNo");
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            jpql.append(" and b.invoiceNumber like :requestNo");
+            m.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
             jpql.append(" and b.department.name like :fromDep");
