@@ -392,9 +392,6 @@ public class QuickBookReportController implements Serializable {
         }
 
         for (Bill bill : bills) {
-            // Determine sign: BilledBill positive, CancelledBill/RefundBill negative
-            double sign = (bill.getBillClassType() == BillClassType.BilledBill) ? 1.0 : -1.0;
-
             // Credit company display name
             String ccName = "CREDIT COMPANY:";
             if (bill.getCreditCompany() != null) {
@@ -432,7 +429,7 @@ public class QuickBookReportController implements Serializable {
             trns.setDate(dateSdf.format(bill.getCreatedAt()));
             trns.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
             trns.setName(ccName);
-            trns.setAmount(sign * bill.getNetTotal());
+            trns.setAmount(bill.getNetTotal());
             trns.setDocNum(bill.getDeptId());
             trns.setMemo("Sales");
             trns.setEditQbClass(false);
@@ -469,7 +466,7 @@ public class QuickBookReportController implements Serializable {
                 spl.setName(ccName);
                 spl.setInvItemType("SERV");
                 spl.setInvItem(invItem);
-                spl.setAmount(sign * (0 - bf.getFeeValue()));
+                spl.setAmount(0 - bf.getFeeValue());
                 spl.setQbClass(deptName);
                 spl.setMemo(invItem);
                 spl.setCustFld5("1");
@@ -487,7 +484,7 @@ public class QuickBookReportController implements Serializable {
                 staffSpl.setName(ccName);
                 staffSpl.setInvItemType("SERV");
                 staffSpl.setInvItem("Consultant Payment:OPD CONSULTANT CHARGES");
-                staffSpl.setAmount(sign * (0 - staffFeeTotal));
+                staffSpl.setAmount(0 - staffFeeTotal);
                 staffSpl.setQbClass("Consultant Payment");
                 staffSpl.setMemo("Consultant Payment:OPD CONSULTANT CHARGES");
                 staffSpl.setEditQbClass(false);
