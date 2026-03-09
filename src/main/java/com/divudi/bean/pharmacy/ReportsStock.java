@@ -2452,6 +2452,8 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             rows = stocks.size();
         } else if (stockDtos != null && !stockDtos.isEmpty()) {
             rows = stockDtos.size();
+        } else if (departmentViceStockDtos != null && !departmentViceStockDtos.isEmpty()) {
+            rows = departmentViceStockDtos.size();
         } else {
             rows = 0;
         }
