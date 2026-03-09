@@ -574,8 +574,10 @@
                                             autocomplete="off"
                                             value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.stringValue}" />
                                     </p:panelGrid>
+                                    <p:defaultCommand target="btnSave" />
                                     <div class="d-flex justify-content-end mt-3 gap-2">
                                         <p:commandButton
+                                            id="btnSave"
                                             value="Save"
                                             icon="fas fa-save"
                                             styleClass="ui-button-success mr-2"
