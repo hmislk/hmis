@@ -11557,6 +11557,11 @@ public class PharmacyController implements Serializable {
 
     // PDF Export: Consumption Report By Bill
     public void exportConsumptionReportByBillToPdf() {
+        if (pharmacyRows == null || pharmacyRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
