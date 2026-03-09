@@ -490,7 +490,7 @@
 
                                 <p:column>
                                     <p:commandButton
-                                        class="mr-1 ui-button-warning"
+                                        class="mr-3 ui-button-warning"
                                         icon="fas fa-edit"
                                         title="Edit Item"
                                         process="@this"
@@ -579,7 +579,7 @@
                                             icon="fas fa-save"
                                             styleClass="ui-button-success mr-2"
                                             process=":bill:dlgEditBillItem"
-                                            update=":bill:itemList :bill:tot :bill:dlgEditBillItem"
+                                            update=":bill:itemList :bill:tot :bill:billFinanceDetails :bill:dlgEditBillItem"
                                             oncomplete="if (!args.validationFailed) PF('dlgEditBillItem').hide()"
                                             action="#{pharmacyDirectPurchaseController.updateBillItem()}" />
                                         <p:commandButton
