@@ -350,44 +350,162 @@ public class QuickBookReportController implements Serializable {
     }
 
     public void createQBFormatOpdDayCredit() {
-
         quickBookFormats = new ArrayList<>();
+        SimpleDateFormat dateSdf = new SimpleDateFormat("M/d/yyyy");
 
-        List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Credit);
-        for (Institution i : fetchCreditCompany(CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), true, BillType.OpdBill)) {
-            grantTot = 0.0;
-            List<QuickBookFormat> qbfs = new ArrayList<>();
-            if (i != null) {
-            } else {
-            }
-            qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
-            qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
-            if (qbfs.size() == 0) {
-                continue;
-            }
-            QuickBookFormat qbf = new QuickBookFormat();
-            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-            qbf.setRowType("TRNS");
-            qbf.setTrnsType("INVOICE");
-            qbf.setDate(sdf.format(fromDate));
-            qbf.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
-            qbf.setName("CREDIT COMPANY:" + i.getChequePrintingName());
-            qbf.setAmount(grantTot);
-            qbf.setMemo("Sales");
-            sdf = new SimpleDateFormat("yyyyMMdd");
-            qbf.setDocNum(sdf.format(fromDate));
-            qbf.setEditQbClass(false);
-            qbf.setEditAccnt(true);
+        // Fetch all OPD Credit bills in the date range (billed, cancelled and refunded)
+        String billJpql = "select b from Bill b"
+                + " where b.billType = :bTp"
+                + " and b.paymentMethod = :pm"
+                + " and b.retired = false"
+                + " and b.createdAt between :fd and :td"
+                + " and b.creditCompany is not null";
+        if (institution != null) {
+            billJpql += " and b.department.institution = :ins";
+        }
+        if (site != null) {
+            billJpql += " and b.department.site = :site";
+        }
+        if (department != null) {
+            billJpql += " and b.department = :dep";
+        }
+        billJpql += " order by b.creditCompany.id, b.createdAt, b.id";
 
-            quickBookFormats.add(qbf);
-            quickBookFormats.addAll(qbfs);
-            qbf = new QuickBookFormat();
-            qbf.setRowType("ENDTRNS");
-            qbf.setEditQbClass(false);
-            qbf.setEditAccnt(false);
-            quickBookFormats.add(qbf);
+        Map<String, Object> billParams = new HashMap<>();
+        billParams.put("bTp", BillType.OpdBill);
+        billParams.put("pm", PaymentMethod.Credit);
+        billParams.put("fd", CommonFunctions.getStartOfDay(fromDate));
+        billParams.put("td", CommonFunctions.getEndOfDay(toDate));
+        if (institution != null) {
+            billParams.put("ins", institution);
+        }
+        if (site != null) {
+            billParams.put("site", site);
+        }
+        if (department != null) {
+            billParams.put("dep", department);
         }
 
+        List<Bill> bills = getBillFacade().findByJpql(billJpql, billParams, TemporalType.TIMESTAMP);
+        if (bills == null || bills.isEmpty()) {
+            return;
+        }
+
+        // Fetch all BillFees for these bills in one query and group by bill id
+        Map<String, Object> feeParams = new HashMap<>();
+        feeParams.put("bills", bills);
+        List<com.divudi.core.entity.BillFee> allBillFees = getBillFeeFacade().findByJpql(
+                "select bf from BillFee bf where bf.bill in :bills and bf.retired = false",
+                feeParams);
+        Map<Long, List<com.divudi.core.entity.BillFee>> billFeesMap = new HashMap<>();
+        if (allBillFees != null) {
+            for (com.divudi.core.entity.BillFee bf : allBillFees) {
+                Long billId = bf.getBill().getId();
+                billFeesMap.computeIfAbsent(billId, k -> new ArrayList<>()).add(bf);
+            }
+        }
+
+        for (Bill bill : bills) {
+            // Credit company display name
+            String ccName = "CREDIT COMPANY:";
+            if (bill.getCreditCompany() != null) {
+                String cpn = bill.getCreditCompany().getChequePrintingName();
+                ccName += (cpn != null && !cpn.isEmpty()) ? cpn : bill.getCreditCompany().getName();
+            }
+
+            List<com.divudi.core.entity.BillFee> billFees = billFeesMap.get(bill.getId());
+            if (billFees == null || billFees.isEmpty()) {
+                continue;
+            }
+
+            // Separate non-Staff fees and accumulate Staff fee total
+            List<com.divudi.core.entity.BillFee> nonStaffFees = new ArrayList<>();
+            double staffFeeTotal = 0.0;
+            for (com.divudi.core.entity.BillFee bf : billFees) {
+                if (bf.getFee() != null && bf.getFee().getFeeType() == FeeType.Staff) {
+                    staffFeeTotal += bf.getFeeValue();
+                } else {
+                    nonStaffFees.add(bf);
+                }
+            }
+
+            // TRNS row — one per bill
+            QuickBookFormat trns = new QuickBookFormat();
+            trns.setRowType("TRNS");
+            trns.setTrnsType("INVOICE");
+            trns.setDate(dateSdf.format(bill.getCreatedAt()));
+            trns.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
+            trns.setName(ccName);
+            trns.setAmount(bill.getNetTotal());
+            trns.setDocNum(bill.getDeptId());
+            trns.setMemo("Sales");
+            trns.setEditQbClass(false);
+            trns.setEditAccnt(true);
+            quickBookFormats.add(trns);
+
+            // SPL rows — one per non-Staff BillFee
+            for (com.divudi.core.entity.BillFee bf : nonStaffFees) {
+                Item item = (bf.getBillItem() != null) ? bf.getBillItem().getItem() : null;
+                Department dept = null;
+                if (bf.getFee() != null && bf.getFee().getDepartment() != null) {
+                    dept = bf.getFee().getDepartment();
+                } else if (item != null) {
+                    dept = item.getDepartment();
+                }
+
+                String accnt;
+                if (item instanceof Investigation) {
+                    accnt = "RHD LAB INCOME:RHD OPD Sale";
+                } else {
+                    Category cat = (item != null) ? item.getCategory() : null;
+                    accnt = (cat != null && cat.getDescription() != null && !cat.getDescription().isEmpty())
+                            ? cat.getDescription() : "Income Account";
+                }
+
+                String deptName = (dept != null) ? dept.getName() : "No Department";
+                String itemName = (item != null) ? item.getName() : "";
+                String invItem = deptName + ":" + itemName;
+
+                QuickBookFormat spl = new QuickBookFormat();
+                spl.setRowType("SPL");
+                spl.setTrnsType("INVOICE");
+                spl.setAccnt(accnt);
+                spl.setName(ccName);
+                spl.setInvItemType("SERV");
+                spl.setInvItem(invItem);
+                spl.setAmount(0 - bf.getFeeValue());
+                spl.setQbClass(deptName);
+                spl.setMemo(invItem);
+                spl.setCustFld5("1");
+                spl.setEditQbClass(false);
+                spl.setEditAccnt(false);
+                quickBookFormats.add(spl);
+            }
+
+            // SPL row for Staff fees — one per bill, only if there are any
+            if (staffFeeTotal != 0.0) {
+                QuickBookFormat staffSpl = new QuickBookFormat();
+                staffSpl.setRowType("SPL");
+                staffSpl.setTrnsType("INVOICE");
+                staffSpl.setAccnt("ACCRUED CHARGES:Consultant Advance:Consultant Payment");
+                staffSpl.setName(ccName);
+                staffSpl.setInvItemType("SERV");
+                staffSpl.setInvItem("Consultant Payment:OPD CONSULTANT CHARGES");
+                staffSpl.setAmount(0 - staffFeeTotal);
+                staffSpl.setQbClass("Consultant Payment");
+                staffSpl.setMemo("Consultant Payment:OPD CONSULTANT CHARGES");
+                staffSpl.setEditQbClass(false);
+                staffSpl.setEditAccnt(false);
+                quickBookFormats.add(staffSpl);
+            }
+
+            // ENDTRNS row
+            QuickBookFormat endTrns = new QuickBookFormat();
+            endTrns.setRowType("ENDTRNS");
+            endTrns.setEditQbClass(false);
+            endTrns.setEditAccnt(false);
+            quickBookFormats.add(endTrns);
+        }
     }
 
     public void createQBFormatInwardIncome() {
