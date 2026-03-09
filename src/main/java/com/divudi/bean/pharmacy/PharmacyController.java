@@ -4848,7 +4848,7 @@ public class PharmacyController implements Serializable {
                 Row filterRow = sheet.createRow(rowIndex++);
                 filterRow.createCell(0).setCellValue("Consumption Department: " + toDepartment.getName());
             }
-            if (!getSelectedDepartmentTypesString().isEmpty()) {
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 Row filterRow = sheet.createRow(rowIndex++);
                 filterRow.createCell(0).setCellValue("Department Types: " + getSelectedDepartmentTypesString());
             }
@@ -5041,7 +5041,7 @@ public class PharmacyController implements Serializable {
                 p.add(new Phrase(toDepartment.getName(), filterFont));
                 document.add(p);
             }
-            if (!getSelectedDepartmentTypesString().isEmpty()) {
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 Paragraph p = new Paragraph();
                 p.add(new Phrase("Department Types: ", filterBoldFont));
                 p.add(new Phrase(getSelectedDepartmentTypesString(), filterFont));
@@ -11015,18 +11015,6 @@ public class PharmacyController implements Serializable {
         this.selectedDepartmentTypes = selectedDepartmentTypes;
     }
 
-    public String getSelectedDepartmentTypesString() {
-        if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < selectedDepartmentTypes.size(); i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(selectedDepartmentTypes.get(i).name());
-        }
-        return sb.toString();
-    }
-
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
             DepartmentType.Pharmacy,
@@ -11553,7 +11541,7 @@ public class PharmacyController implements Serializable {
         if (toDepartment != null) {
             sheet.createRow(rowIndex++).createCell(0).setCellValue("Consumption Department: " + toDepartment.getName());
         }
-        if (!getSelectedDepartmentTypesString().isEmpty()) {
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sheet.createRow(rowIndex++).createCell(0).setCellValue("Department Types: " + getSelectedDepartmentTypesString());
         }
 
@@ -11647,7 +11635,7 @@ public class PharmacyController implements Serializable {
                 p.add(new Phrase(toDepartment.getName(), filterFont));
                 document.add(p);
             }
-            if (!getSelectedDepartmentTypesString().isEmpty()) {
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 Paragraph p = new Paragraph();
                 p.add(new Phrase("Department Types: ", filterBoldFont));
                 p.add(new Phrase(getSelectedDepartmentTypesString(), filterFont));
