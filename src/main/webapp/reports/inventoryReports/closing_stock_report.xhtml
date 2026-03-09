@@ -292,7 +292,7 @@
                             <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="itemWise" fileName="Item Wise Report" postProcessor="#{pharmacyReportController.postProcessXLSClosingStockReport}"/>
+                                <p:dataExporter type="xlsx" target="itemWise" fileName="Item Wise Stock Report" postProcessor="#{pharmacyReportController.postProcessXLSClosingStockReport}"/>
                             </p:commandButton>
                             <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
@@ -302,7 +302,7 @@
                             <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="batchWise" fileName="Batch Wise Report" postProcessor="#{pharmacyReportController.postProcessXLSClosingStockReport}"/>
+                                <p:dataExporter type="xlsx" target="batchWise" fileName="Batch Wise Stock Report" postProcessor="#{pharmacyReportController.postProcessXLSClosingStockReport}"/>
                             </p:commandButton>
                             <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
