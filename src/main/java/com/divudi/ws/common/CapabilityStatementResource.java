@@ -160,6 +160,10 @@ public class CapabilityStatementResource {
                         "User role management operations",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Services", "/api/services",
+                        "OPD and Inward service management including fees and categories",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .build();
     }
 
