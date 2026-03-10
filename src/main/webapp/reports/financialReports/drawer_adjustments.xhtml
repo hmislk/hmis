@@ -18,9 +18,10 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date"  class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="From Date" for="fromDate" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker  showTime="true"
+                            <p:datePicker  id="fromDate"
+                                           showTime="true"
                                            class="w-100"
                                            inputStyleClass="w-100"
                                            value="#{drawerEntryController.fromDate}"
@@ -30,9 +31,10 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date"  class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="To Date" for="toDate" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker  showTime="true"
+                            <p:datePicker  id="toDate"
+                                           showTime="true"
                                            class="w-100"
                                            inputStyleClass="w-100"
                                            value="#{drawerEntryController.toDate}"
@@ -43,9 +45,10 @@
                         <h:panelGrid columns="4" class="w-100 mt-2">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
-                                <p:outputLabel value="User"  class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="User" for="webUser" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
                             <p:autoComplete
+                                id="webUser"
                                 value="#{drawerEntryController.webUser}"
                                 completeMethod="#{webUserController.completeUser}"
                                 var="wu"
