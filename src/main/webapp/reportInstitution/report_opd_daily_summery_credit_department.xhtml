@@ -10,6 +10,55 @@
 
     <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <style>
+            .credit-report-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 24px;
+            }
+            .credit-report-table thead th {
+                background-color: #343a40;
+                color: #ffffff;
+                font-weight: bold;
+                padding: 10px 8px;
+                border: 1px solid #454d55;
+            }
+            .credit-report-table td {
+                padding: 7px 8px;
+                border: 1px solid #dee2e6;
+                vertical-align: middle;
+            }
+            .credit-report-table .dept-header-row td {
+                background-color: #495057;
+                color: #ffffff;
+                font-weight: bold;
+                font-size: 24px;
+            }
+            .credit-report-table .cat-header-row td {
+                background-color: #6c757d;
+                color: #ffffff;
+                font-weight: bold;
+            }
+            .credit-report-table .item-row:nth-child(even) td {
+                background-color: #f8f9fa;
+            }
+            .credit-report-table .cat-footer-row td {
+                background-color: #e9ecef;
+                font-weight: bold;
+                border-top: 2px solid #adb5bd;
+            }
+            .credit-report-table .dept-footer-row td {
+                background-color: #ced4da;
+                font-weight: bold;
+                border-top: 2px solid #868e96;
+            }
+            .credit-report-table .grand-total-row td {
+                background-color: #343a40;
+                color: #ffffff;
+                font-weight: bold;
+                border-top: 2px solid #000;
+            }
+        </style>
         <h:form>
 
             <p:panel>
@@ -74,117 +123,94 @@
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
                             </f:facet>
-                    <p:dataGrid  value="#{creditSummeryController.dailyCashSummery}" var="d">
-                        
-                        <p:dataTable id="safrin" value="#{d.categoryWitmItems}" var="s" rendered="#{d.departmentTotal!=0}"
-
-                                     paginator="false"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15,20">
-                             
-                            <p:columnGroup type="header">
-                                <p:row>
-                                    <p:column headerText="Item Name"/>                         
-                                    <p:column headerText="Count"/>
-                                    <p:column headerText="Hospital Fee"/>
-                                    <p:column headerText="Professional Fee"/>
-                                    <p:column headerText="Total"/>
-                                </p:row>
-                            </p:columnGroup>
-                            <p:subTable value="#{s.itemWithFees}" var="i" rendered="#{s.subTotal!=0}">
-                                <f:facet name="header" >
-                                    <p:outputLabel value="#{s.category.name}" />                                  
-                                </f:facet>
-                                <p:column>
-                                    <h:outputLabel value="#{i.item.name}" rendered="#{i.total!=0}" />
-                                </p:column>                      
-                                <p:column>
-                                    <h:outputLabel value="#{i.count}" rendered="#{i.total!=0}" />
-                                </p:column>
-                                <p:column style="text-align: right;" rendered="#{i.total!=0}">                               
-                                    <h:outputLabel value="#{i.hospitalFee}" style="text-align: right;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>                                        
-                                </p:column>
-                                <p:column style="text-align: right;">                               
-                                    <h:outputLabel value="#{i.proFee}" rendered="#{i.total!=0}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column style="text-align: right;">                               
-                                    <h:outputLabel value="#{i.total}" rendered="#{i.total!=0}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{s.category.name} Total :"/>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{s.subHosTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{s.subTotal-s.subHosTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{s.subTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-
-
-                            </p:subTable>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column colspan="4"  >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{d.department.name} Total :" style="text-align: left;float:left;"/>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column style="text-align: right;" >
-                                        <f:facet name="footer">
-                                            <h:outputLabel value="#{d.departmentTotal}">
+                    <table class="credit-report-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40%; text-align:left;">Service Item Name</th>
+                                <th style="width:8%;  text-align:center;">Count</th>
+                                <th style="width:17%; text-align:right;">Hospital Fee</th>
+                                <th style="width:17%; text-align:right;">Professional Fee</th>
+                                <th style="width:18%; text-align:right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{creditSummeryController.dailyCashSummery}" var="d">
+                                <ui:fragment rendered="#{d.departmentTotal!=0}">
+                                    <tr class="dept-header-row">
+                                        <td colspan="5"><h:outputText value="#{d.department.name}" /></td>
+                                    </tr>
+                                    <ui:repeat value="#{d.categoryWitmItems}" var="s">
+                                        <ui:fragment rendered="#{s.subTotal!=0}">
+                                            <tr class="cat-header-row">
+                                                <td colspan="5"><h:outputText value="#{s.category.name}" /></td>
+                                            </tr>
+                                            <ui:repeat value="#{s.itemWithFees}" var="i">
+                                                <ui:fragment rendered="#{i.total!=0}">
+                                                    <tr class="item-row">
+                                                        <td><h:outputText value="#{i.item.name}" /></td>
+                                                        <td style="text-align:center;"><h:outputText value="#{i.count}" /></td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{i.hospitalFee}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{i.proFee}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{i.total}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:fragment>
+                                            </ui:repeat>
+                                            <tr class="cat-footer-row">
+                                                <td colspan="2"><h:outputText value="#{s.category.name} Sub Total :" /></td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{s.subHosTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{s.subTotal-s.subHosTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{s.subTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:fragment>
+                                    </ui:repeat>
+                                    <tr class="dept-footer-row">
+                                        <td colspan="4"><h:outputText value="#{d.department.name} Total :" /></td>
+                                        <td style="text-align:right;">
+                                            <h:outputText value="#{d.departmentTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
-                        </p:dataTable>
-
-
-                    </p:dataGrid>
-                    <p:dataTable id="colCredit"  value="#{creditSummeryController.vatTableOpdCredit}" var="sm">
-                        <p:column >
-                            <h:outputLabel value="#{sm.string}" ></h:outputLabel>
-                        </p:column>
-                        <p:column/>
-                        <p:column/>
-                        <p:column/>
-                        <p:column/>
-                        <p:column style="text-align: right;" >
-                            <h:outputLabel value="#{sm.value1}" > 
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                    </p:dataTable>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:fragment>
+                            </ui:repeat>
+                        </tbody>
+                        <tfoot>
+                            <ui:repeat value="#{creditSummeryController.vatTableOpdCredit}" var="sm">
+                                <tr class="grand-total-row">
+                                    <td colspan="4"><h:outputText value="#{sm.string}" /></td>
+                                    <td style="text-align:right;">
+                                        <h:outputText value="#{sm.value1}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tfoot>
+                    </table>
                 </p:panel>
             </p:panel>
         </h:form>

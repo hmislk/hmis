@@ -6032,6 +6032,9 @@ public class PharmacyController implements Serializable {
             pharmacyRows = new ArrayList<>();
             billItems = new ArrayList<>();
             departmentTotalsMap = new HashMap<>();
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
             Map<String, Object> parameters = new HashMap<>();
             StringBuilder sql = new StringBuilder();
 
@@ -6096,11 +6099,14 @@ public class PharmacyController implements Serializable {
                         ? row.getBillItem().getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0.0;
 
                 totalPurchase += purchaseValue;
-
+                totalCostValue += costValue;
+                
                 departmentWiseRows.computeIfAbsent(departmentName, k -> new ArrayList<>()).add(row);
                 double retailValue = row.getBillItem().getBillItemFinanceDetails() != null
                         && row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate() != null
                         ? row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate().doubleValue() : 0.0;
+                
+                totalRetailValue += retailValue;
 
                 departmentTotalsMap.compute(departmentName, (k, v) -> {
                     if (v == null) {
