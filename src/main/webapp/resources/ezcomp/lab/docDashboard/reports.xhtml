@@ -126,16 +126,52 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.cancelled and !patientInvestigation.billItem.refunded}">
-                    <h:panelGroup rendered="#{!laboratoryDoctorDashboardController.hasPatientReports(patientInvestigation)}" class=" d-flex justify-content-center">
-                        <p:badge 
-                            value="Sample Prossesing.." 
-                            severity="warning"
-                            size="large"
-                            class="w-100">
-                        </p:badge>
+
+                    <h:panelGroup rendered="#{!laboratoryDoctorDashboardController.hasPatientReports(patientInvestigation)}" class="justify-content-center">
+
+                        <div class="d-flex w-100 my-2">
+                            <p:commandButton 
+                                icon="fa fa-file-text"
+                                value="New Report"
+                                disabled="#{!(patientInvestigation.sampleAccepted)}" 
+                                rendered="#{webUserController.hasPrivilege('LabDataentry')}"
+                                action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
+                                class="ui-button-danger w-100"
+                                onclick="if (!confirm('Are you sure you want to create a new patient report?'))
+                                            return false;"
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+
+                        <div >
+                            <p:badge 
+                                value="Sample Prossesing.." 
+                                severity="warning"
+                                size="large"
+                                class="w-100">
+                            </p:badge>
+                        </div>
+
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(patientInvestigation)}">
+
+                        <div class="d-flex w-100 my-2">
+                            <p:commandButton 
+                                icon="fa fa-file-text"
+                                value="New Report"
+                                disabled="#{!(patientInvestigation.sampleAccepted)}" 
+                                rendered="#{webUserController.hasPrivilege('LabDataentry')}"
+                                action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
+                                class="ui-button-danger w-100"
+                                onclick="if (!confirm('Are you sure you want to create a new patient report?'))
+                                            return false;"
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
+                        
+                        <hr />
+
                         <ui:repeat value="#{laboratoryManagementController.patientReports(patientInvestigation)}" var="dpr">
                             <div class="d-flex justify-content-between">
                                 <div class="d-flex gap-2 mb-2">
@@ -219,7 +255,7 @@
                                                 class="ui-button-danger"
                                                 rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
                                                 onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
-                                                        return false;"
+                                                            return false;"
                                                 action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
                                                 oncomplete="PF('dlg').hide();" >
                                             </p:commandButton>
