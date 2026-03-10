@@ -103,16 +103,17 @@
                                                 event="itemSelect"
                                                 process="acItem"
                                                 listener="#{pharmacyDirectPurchaseController.onItemSelect}"
-                                                update="txtQty txtFreeQty txtPrate txtLineDiscountRate txtLineDiscountValue 
+                                                update="txtQty txtFreeQty txtPrate txtLineDiscountRate txtLineDiscountValue
                                                 txtRetailRate txtRetailValue txtUnitsPerPack txtPackOrUnit txtCostValue
-                                                txtPurchaseValueMinusLineDiscountValue txtPurchaseValue" />
+                                                txtPurchaseValueMinusLineDiscountValue txtPurchaseValue focusQty" />
 
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-1">
-                                        <h:outputLabel 
+                                        <h:outputLabel
                                             value="Quantity"
                                             class="w-100 m-1"/><br/>
+                                        <p:focus id="focusQty" for="txtQty" />
                                         <p:inputText
                                             id="txtQty"
                                             class="w-100 m-1 text-end"
