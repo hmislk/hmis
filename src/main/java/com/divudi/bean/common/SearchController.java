@@ -16534,7 +16534,44 @@ public class SearchController implements Serializable {
             m.put("site", site);
         }
 
-        return (List<OpdBillItemDTO>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        List<OpdBillItemDTO> dtos = (List<OpdBillItemDTO>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        // For bill items where bill.fromStaff is null (e.g. scanning charges),
+        // fall back to the doctor recorded on the BillFee — same source used by
+        // the Itemized Sale Summary report.
+        List<Long> missingDoctorIds = dtos.stream()
+                .filter(dto -> dto.getDoctorName() == null)
+                .map(OpdBillItemDTO::getBillItemId)
+                .collect(Collectors.toList());
+
+        if (!missingDoctorIds.isEmpty()) {
+            String bfJpql = "SELECT bf.billItem.id, stf.person.name, stf.person.title "
+                    + "FROM BillFee bf "
+                    + "JOIN bf.staff stf "
+                    + "WHERE bf.billItem.id IN :biIds "
+                    + "AND bf.retired = false";
+            Map<String, Object> bfParams = new HashMap<>();
+            bfParams.put("biIds", missingDoctorIds);
+
+            List<Object[]> staffRows = (List<Object[]>) billItemFacade.findLightsByJpql(bfJpql, bfParams);
+
+            Map<Long, Object[]> staffByBillItemId = new HashMap<>();
+            for (Object[] row : staffRows) {
+                staffByBillItemId.putIfAbsent((Long) row[0], row);
+            }
+
+            for (OpdBillItemDTO dto : dtos) {
+                if (dto.getDoctorName() == null) {
+                    Object[] staffData = staffByBillItemId.get(dto.getBillItemId());
+                    if (staffData != null) {
+                        dto.setDoctorName((String) staffData[1]);
+                        dto.setDoctorTitle(staffData[2]);
+                    }
+                }
+            }
+        }
+
+        return dtos;
     }
 
     public void createItemizedSalesSummary() {
