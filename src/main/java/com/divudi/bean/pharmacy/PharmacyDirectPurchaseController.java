@@ -1106,9 +1106,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         BillItemFinanceDetails f = editingBillItem.getBillItemFinanceDetails();
         if (f != null) {
+            Item item = editingBillItem.getItem();
+            PharmaceuticalBillItem pbi = editingBillItem.getPharmaceuticalBillItem();
+
             // Sync retailSaleRatePerUnit from retailSaleRate (same logic as onRetailSaleRateChange)
             if (f.getRetailSaleRate() != null) {
-                Item item = editingBillItem.getItem();
                 if (item instanceof Ampp) {
                     double dblVal = item.getDblValue();
                     BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
@@ -1117,9 +1119,28 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
                 }
             }
+
+            // Sync billItem.qty (pack-level quantity) - mirrors addItem() line 333
+            editingBillItem.setQty(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+
+            // Sync pack-level fields on PharmaceuticalBillItem - mirrors addItem() lines 302-313
+            if (pbi != null) {
+                if (item instanceof Ampp) {
+                    pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+                    pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantity()).doubleValue());
+                    pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+                    pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
+                } else {
+                    pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
+                    pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
+                    pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+                    pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+                }
+            }
         }
         calculateItemTotals(editingBillItem);
         calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems();
         recalculateProfitMarginsForAllItems();
         editingBillItem = null;
     }
