@@ -263,7 +263,7 @@ public class QuickBookReportController implements Serializable {
         quickBookFormats = new ArrayList<>();
         List<QuickBookFormat> qbfs = new ArrayList<>();
 
-        List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
+        List<PaymentMethod> paymentMethods = PaymentMethod.getNonCreditPaymentMethods();
 
         if (withProfessionalFee) {
             qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), null));
@@ -2218,8 +2218,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setAccnt("ACCRUED CHARGES:Consultant Advance:Consultant Payment");
             qbf.setName("Cash AR");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("Consultant Payment:OPD Staff Payments");
-            qbf.setMemo("OPD Staff Payments");
+            qbf.setInvItem("Consultant Payment:OPD Professional Payments");
+            qbf.setMemo("OPD Professional Payments");
             qbf.setAmount(0 - payoutValue);
             qbfs.add(qbf);
             grantTot += payoutValue;
