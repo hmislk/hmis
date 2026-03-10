@@ -187,22 +187,32 @@
                             ajax="false" 
                             value="View List"
                             action="#{searchController.searchOpdProfessionalPaymentBillFees()}"/>
+
+                        <p:commandButton 
+                            class="ui-button-primary mx-1"
+                            icon="fas fa-print"
+                            ajax="false"
+                            action="professional_fee_payments_opd_print?faces-redirect=true"
+                            value="To Print">
+                        </p:commandButton>
+
                         <p:commandButton 
                             class="ui-button-success mx-2" 
                             icon="fas fa-file-excel"
                             id="btnExcel" 
                             ajax="false" 
-                            value="Excel" >
-                            <p:dataExporter fileName="OPD Professional Payments by Patient" type="xlsx" target="tblBills" ></p:dataExporter>
-                        </p:commandButton>
-                        <p:commandButton id="btnPrint" class="ui-button-primary"
-                                         icon="fas fa-print"
-                                         ajax="false"
-                                         value="Print Table">
-                            <p:printer target="tblBills" />
+                            value="Download" >
+                            <p:fileDownload value="#{searchController.opdProfessionalFeePaymentsAsExcel}" />
                         </p:commandButton>
 
-
+                        <p:commandButton 
+                                value="PDF" 
+                                ajax="false" 
+                                icon="fas fa-file-pdf"
+                                class="ui-button-danger mx-1"
+                                style="background-color: #17a2b8; border-color: #17a2b8;" >
+                                <p:fileDownload value="#{searchController.opdProfessionalFeePaymentsAsPdf}" />
+                        </p:commandButton>
 
                         <p:dataTable 
                             rowIndexVar="i" 
@@ -295,8 +305,6 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-
-
                         </p:dataTable>
 
                     </h:form>

@@ -2610,7 +2610,7 @@ public class PdfController {
     }
 
     // Export: WHT report
-    public StreamedContent createPdfForWHTReport(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters) throws IOException {
+    public StreamedContent createPdfForReportTemplateRows(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters) throws IOException {
         if (bundle == null) {
             return null;
         }
@@ -2665,19 +2665,14 @@ public class PdfController {
         if (bundle.getBundleType() != null) {
             switch (bundle.getBundleType()) {
                 case "whtIndividualReceipts":
-                    if (bundle.getReportTemplateRows() != null && !bundle.getReportTemplateRows().isEmpty()) {
-                        populateTableForWhtIndividualReceipts(document, bundle);
-                    } else {
-                        document.add(new Paragraph("No Data for " + bundle.getName()));
-                    }
+                    populateTableForWhtIndividualReceipts(document, bundle);
                     break;
                 case "whtMonthlySummary":
                 case "whtConsultantSummary":
-                    if (bundle.getReportTemplateRows() != null && !bundle.getReportTemplateRows().isEmpty()) {
-                        populateTableForWhtSummary(document, bundle);
-                    } else {
-                        document.add(new Paragraph("No Data for " + bundle.getName()));
-                    }
+                    populateTableForWhtSummary(document, bundle);
+                    break;
+                case "opdProfessionalFeePayments":
+                    populateTableForOpdProfessionalFeePayments(document, bundle);
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report type for PDF export: " + bundle.getBundleType());
@@ -2853,6 +2848,73 @@ public class PdfController {
 
         return;
         
+    }
+
+    // PDF Export: OPD Professional Fee Payments
+    private void populateTableForOpdProfessionalFeePayments(Document document, ReportTemplateRowBundle bundle) throws IOException {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data Available"));
+            return;
+        }
+
+        Table table = new Table(new float[]{2f, 6f, 2f, 4f, 5f, 5f, 4f}).useAllAvailableWidth().setFixedLayout();
+        String[] headers = {"Paid Date", "Payment No", "Billed Date", "Bill", "Patient", "Professional", "Fee Value"};
+
+        for (String header : headers) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(8)
+                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
+            table.addCell(headerCell);
+        }
+
+        for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+            if (r.getBillFee() == null) {
+                table.addCell(new Cell(1, 7).add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setFontSize(8));
+                continue;
+            }
+
+            Bill bill = r.getBillFee().getBill();
+            Bill refBill = r.getBillFee().getBillItem() != null && r.getBillFee().getBillItem().getReferanceBillItem() != null ? r.getBillFee().getBillItem().getReferanceBillItem().getBill() : null;
+
+            table.addCell(new Cell().add(new Paragraph(bill != null && bill.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(bill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+
+            String payNo = "";
+            if (bill != null && bill.getDeptId() != null) {
+                payNo += bill.getDeptId();
+            }
+            if (bill != null && bill.getBillTypeAtomic() != null) {
+                if (!payNo.isEmpty()) {
+                    payNo += " ";
+                }
+                payNo += bill.getBillTypeAtomic().toString();
+            }
+            Cell payNoCell = new Cell().add(new Paragraph(payNo).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+            payNoCell.setKeepTogether(true);
+            table.addCell(payNoCell);
+            table.addCell(new Cell().add(new Paragraph(refBill != null && refBill.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(refBill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+            
+            if (refBill != null && refBill.getDeptId() != null) {
+                table.addCell(new Cell().add(new Paragraph((r.getBillFee().getBillItem() != null && r.getBillFee().getBillItem().getBill() != null && r.getBillFee().getBillItem().getBill().isCancelled()) ? (refBill.getDeptId() + " (Cancelled)") : refBill.getDeptId())).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+            } else {
+                table.addCell(new Cell().add(new Paragraph("")).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+            }
+
+            if (refBill != null && refBill.getPatient() != null) {
+                table.addCell(new Cell().add(new Paragraph(refBill.getPatient().getPerson() != null && refBill.getPatient().getPerson().getNameWithTitle() != null ? refBill.getPatient().getPerson().getNameWithTitle() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            } else {
+                table.addCell(new Cell().add(new Paragraph(r.getBillFee().getPatient() != null && r.getBillFee().getPatient().getPerson() != null && r.getBillFee().getPatient().getPerson().getNameWithTitle() != null ? r.getBillFee().getPatient().getPerson().getNameWithTitle() : "")).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+            }
+
+            table.addCell(new Cell().add(new Paragraph(bill != null && bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getBillFee().getFeeValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+        }
+         table.addCell(new Cell(1, 6).add(new Paragraph("")));
+         table.addCell(new Cell().add(new Paragraph(bundle.getTotal() != null ? String.format("%,.2f", bundle.getTotal()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+
+        document.add(table);
+        return;
     }
 
     // Info Taable using filters

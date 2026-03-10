@@ -10828,6 +10828,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             bundle = createBundleByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
             bundle.calculateTotalsForProfessionalFees();
+            bundle.setName("OPD Professional Fee Payments Report");
+            bundle.setBundleType("opdProfessionalFeePayments");
         }, ProfessionalPaymentReport.OPD_PROFESSIONAL_FEE_PAYMENTS_REPORT, sessionController.getLoggedUser());
     }
 
@@ -22570,12 +22572,30 @@ public class SearchController implements Serializable {
 
         StreamedContent pdfSc = null;
         try {
-            pdfSc = pdfController.createPdfForWHTReport(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport());
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport());
         } catch (IOException e) {
             logger.error("getWHTReportAsPdf: Error creating pdfSc via pdfController.ceratePdfForWhtReport", e);
             pdfSc = null;
             JsfUtil.addErrorMessage("Failed to generate WHT Report PDF file. Please try again.");
         } 
+        return pdfSc;
+    }
+
+    // PDF Export: OPD Professional Fee Payments
+    public StreamedContent getOpdProfessionalFeePaymentsAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Professional Fee Payments report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForOpdProfessionalFeePaymentsReport());
+        } catch (IOException e) {
+            logger.error("getOpdProfessionalFeePaymentsAsPdf: Error creating pdfSc via pdfController.createPdfForOpdProfessionalFeePayments", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate OPD Professional Fee Payments PDF file. Please try again.");
+        }
         return pdfSc;
     }
 
@@ -22587,11 +22607,28 @@ public class SearchController implements Serializable {
         }
 
         try {
-            downloadingExcel = excelController.createExcelForWhtReport(bundle, getFiltersForWhtReport());
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForWhtReport());
         } catch (IOException e) {
             logger.error("getWHTReportAsExcel: Error creating downloadingExcel via excelController.createExcelForWhtReport", e);
             downloadingExcel = null;
             JsfUtil.addErrorMessage("Failed to generate WHT Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // Excel Export: OPD Professional Fee Payments
+    public StreamedContent getOpdProfessionalFeePaymentsAsExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Professional Fee Payments report before exporting.");
+            return null;
+        }
+
+        try {
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForOpdProfessionalFeePaymentsReport());
+        } catch (IOException e) {
+            logger.error("getOpdProfessionalFeePaymentsAsExcel: Error creating downloadingExcel via excelController.createExcelForOpdProfessionalFeePayments", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate OPD Professional Fee Payments Excel file. Please try again.");
         }
         return downloadingExcel;
     }
@@ -22782,10 +22819,31 @@ public class SearchController implements Serializable {
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Site", site != null ? site.getName() : "All Sites");
         params.put("Department", department != null ? department.getName() : "All Departments");
-        params.put("Speciality", speciality != null && speciality.getName() != null ? speciality.getName() : "All Specialities");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All Specialities");
         params.put("Staff", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All Staff");
         params.put("Visit Type", getSearchTypeAsString());
 
         return params; 
     }
+
+    // Filters for OPD Professional Fee Payments Report
+    private Map<String, Object> getFiltersForOpdProfessionalFeePaymentsReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Site", site != null ? site.getName() : "All Sites");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Category", category != null ? category.getName() : "-");
+        params.put("Item", item != null && item.getName() != null ? item.getName() : "-");
+        params.put("MRN", (mrnNo != null || !mrnNo.isEmpty()) ? mrnNo : "-");
+        params.put("Speciality", speciality != null ? speciality.getName() : "-");
+        params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "-");
+
+        return params; 
+    }  
 }

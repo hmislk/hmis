@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -4063,7 +4064,7 @@ public class ExcelController {
 
 
     // Excel export: wht report/ ReportTemplateRow
-    public StreamedContent createExcelForWhtReport(ReportTemplateRowBundle bundle, Map<String, Object> filters) throws IOException {
+    public StreamedContent createExcelForReportTemplateRows(ReportTemplateRowBundle bundle, Map<String, Object> filters) throws IOException {
         if (bundle == null) {
             return null;
         }
@@ -4145,6 +4146,9 @@ public class ExcelController {
             case "whtMonthlySummary":
             case "whtConsultantSummary":
                 addDataToWhtSummary(dataSheet, currentRow, bundle);
+                break;
+            case "opdProfessionalFeePayments":
+                addDataToOpdProfessionalFeePayments(dataSheet, currentRow, bundle);
                 break;
             default:
                 JsfUtil.addErrorMessage("Unsupported Report Type: " + bundle.getBundleType());
@@ -4284,6 +4288,84 @@ public class ExcelController {
         totalRow.createCell(3).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
 
         return;
+    }
+
+    // OPD Professional Fee Payments (opdProfessionalFeePayments)
+    private void addDataToOpdProfessionalFeePayments(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + bundle.getName());
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+            return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+        headerRow.createCell(0).setCellValue("Paid Date");
+        headerRow.createCell(1).setCellValue("Payment No");
+        headerRow.createCell(2).setCellValue("Billed Date");
+        headerRow.createCell(3).setCellValue("Bill");
+        headerRow.createCell(4).setCellValue("Patient");
+        headerRow.createCell(5).setCellValue("Professional");
+        headerRow.createCell(6).setCellValue("Fee Value");
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+            int colIndex = 0;
+
+            if (row.getBillFee() == null) {
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                continue;
+            }
+
+            Bill b = row.getBillFee() != null ? row.getBillFee().getBill() : null;
+            Bill rbi = row.getBillFee() != null && row.getBillFee().getBillItem() != null && row.getBillFee().getBillItem().getReferanceBillItem() != null ? row.getBillFee().getBillItem().getReferanceBillItem().getBill() : null;
+
+            excelRow.createCell(colIndex++).setCellValue(b != null && b.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(b.getBillDate()) : "");
+            
+            String payNo = "";
+            if (b != null && b.getDeptId() != null) {
+                payNo += b.getDeptId();
+            }
+            if (b != null && b.getBillTypeAtomic() != null) {
+                if (!payNo.isEmpty()) {
+                    payNo += " ";
+                }
+                payNo += b.getBillTypeAtomic().toString();
+            }
+            excelRow.createCell(colIndex++).setCellValue(!payNo.isEmpty() ? payNo : "");
+            excelRow.createCell(colIndex++).setCellValue(rbi != null && rbi.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(rbi.getCreatedAt()) : "");
+            
+            if (rbi != null && rbi.getDeptId() != null) {
+                excelRow.createCell(colIndex++).setCellValue((row.getBillFee().getBillItem() != null && row.getBillFee().getBillItem().getBill() != null && row.getBillFee().getBillItem().getBill() .isCancelled()) ? rbi.getDeptId() + " (Cancelled)" : rbi.getDeptId());
+            } else {
+                excelRow.createCell(colIndex++).setCellValue("");
+            }
+
+            if (rbi != null && rbi.getPatient() != null) {
+                excelRow.createCell(colIndex++).setCellValue(rbi.getPatient().getPerson() != null && rbi.getPatient().getPerson().getNameWithTitle() != null ? rbi.getPatient().getPerson().getNameWithTitle() : "");
+            } else {
+                excelRow.createCell(colIndex++).setCellValue(row.getBillFee() != null && row.getBillFee().getPatient() != null && row.getBillFee().getPatient().getPerson() != null && row.getBillFee().getBill().getPatient().getPerson() != null && row.getBillFee().getPatient().getPerson().getNameWithTitle() != null ? row.getBillFee().getPatient().getPerson().getNameWithTitle() : "");
+            }
+            excelRow.createCell(colIndex++).setCellValue(b != null && b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getName() != null ? b.getToStaff().getPerson().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(row.getBillFee() != null ? row.getBillFee().getFeeValue()  : 0.0);
+        }
+
+        Row totalRow = dataSheet.createRow(startRow++);
+        totalRow.createCell(6).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+
+         return;
+
     }
 
     // Filter info to excel
