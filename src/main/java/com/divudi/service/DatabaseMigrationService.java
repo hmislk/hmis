@@ -76,9 +76,10 @@ public class DatabaseMigrationService {
     }
 
     private String fetchWikiDdlVersion() {
+        HttpURLConnection conn = null;
         try {
             URL url = new URL(WIKI_DDL_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(10000);
@@ -97,6 +98,10 @@ public class DatabaseMigrationService {
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "DatabaseMigrationService: Could not fetch wiki DDL version.", e);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }
