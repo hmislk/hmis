@@ -4469,6 +4469,7 @@ public class BookKeepingSummery implements Serializable {
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.paymentMethod IN :pm "
                 + "AND b.retired = false "
+                + "AND bi.retired = false "
                 + "GROUP BY c.name "
                 + "ORDER BY c.name";
 
@@ -4504,6 +4505,7 @@ public class BookKeepingSummery implements Serializable {
                 + "AND b.institution = :ins "
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.retired = false "
+                + "AND bi.retired = false "
                 + "GROUP BY c.name "
                 + "ORDER BY c.name";
 
@@ -4538,6 +4540,7 @@ public class BookKeepingSummery implements Serializable {
                 + "AND b.institution = :ins "
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.retired = false "
+                + "AND bi.retired = false "
                 + "GROUP BY c.name "
                 + "ORDER BY c.name";
 
@@ -4572,6 +4575,7 @@ public class BookKeepingSummery implements Serializable {
                 + "AND b.institution = :ins "
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.retired = false "
+                + "AND bi.retired = false "
                 + "GROUP BY c.name "
                 + "ORDER BY c.name";
 
