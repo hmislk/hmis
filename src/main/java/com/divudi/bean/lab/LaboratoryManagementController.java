@@ -220,7 +220,6 @@ public class LaboratoryManagementController implements Serializable {
             }
         } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
             laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
-            navigateToPatientReportsFromSelectedBill(bill);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
         } else {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
@@ -246,7 +245,6 @@ public class LaboratoryManagementController implements Serializable {
             }
         } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
             laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
-            navigateToInvestigationsFromSelectedBill(bill);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
         } else {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
@@ -568,7 +566,7 @@ public class LaboratoryManagementController implements Serializable {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Old Laboratory Dashboard as its default interface", false)) {
                 return "/lab/search_for_reporting_ondemand?faces-redirect=true";
             } else if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
-                listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+                listingEntity = ListingEntity.PATIENT_REPORTS;
                 return "/lab/laboratory_management_dashboard?faces-redirect=true";
             } else {
                 patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
