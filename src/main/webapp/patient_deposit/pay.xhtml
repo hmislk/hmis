@@ -472,7 +472,9 @@
                                     <h:panelGroup id="payment">
 
                                         <h:panelGroup id="panelGroup" rendered="#{!(patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet')}" style="display: inline-flex; align-items: center; gap: 1rem;" >
-                                            <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
+                                            <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal" onfocus="this.select()">
+                                                <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2" />
+                                            </p:inputText>
                                             <p:inputText value="#{patientController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
                                         </h:panelGroup>
 

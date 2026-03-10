@@ -78,6 +78,7 @@
                                         font-family: Arial, sans-serif;
                                         font-size: 10pt;
                                     }
+                                    size: A4 landscape;
                                 }
 
                                 body {
@@ -87,7 +88,6 @@
                                 .paper{
                                     position: static !important;
                                     width: 297mm!important;
-                                    size: A4 landscape!important;
 
                                 }
 
@@ -135,21 +135,44 @@
                                             </div>
                                         </h:panelGroup>
                                     </div>
-                                    <div class="d-flex justify-content-center mt-2" style=" font-size: 12px;">
-                                        <div class="d-flex gap-3">
-                                            <h:outputText value="From Date" style="width: 5em!important; font-weight: 600;"/>
+                                    <div class="d-flex justify-content-center mt-2" style="font-size:12px; flex-wrap:wrap; gap:16px;">
+    
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="From Date" style="font-weight:600;"/>
                                             <h:outputText value="#{pharmacySummaryReportController.fromDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
-                                        <h:outputText value="" style="width: 15mm!important;"/>
-                                        <div class="d-flex gap-3">
-                                            <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="To Date" style="font-weight:600;"/>
                                             <h:outputText value="#{pharmacySummaryReportController.toDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                             </h:outputText>
                                         </div>
-                                        <div></div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Site" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty pharmacySummaryReportController.site ? 'All institutions' :pharmacySummaryReportController.site.name}"/>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Admission type" style="font-weight:600;"/>
+                                            <h:outputText 
+                                                value="#{empty pharmacySummaryReportController.admissionType ? 'All admission types':pharmacySummaryReportController.admissionType.name}"/>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Discount Scheme" style="font-weight:600;"/>
+                                            <h:outputText 
+                                                value="#{empty pharmacySummaryReportController.paymentScheme ? 'All discount schemes' :pharmacySummaryReportController.paymentScheme.name}"/>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Report Type" style="font-weight:600;"/>
+                                            <h:outputText value="#{pharmacySummaryReportController.reportViewType.label}"/>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -266,7 +289,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{row.actualTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -329,7 +352,7 @@
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>

@@ -141,6 +141,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Require Migration Confirmation", true);
         getBooleanValueByKey("Enable Migration Progress Tracking", true);
         getBooleanValueByKey("Log Migration Execution Details", true);
+        // Wiki DDL version tracking — UNCHECKED means not yet verified against wiki
+        getShortTextValueByKey("DATABASE_DDL_VERSION", "UNCHECKED");
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -1177,7 +1179,11 @@ public class ConfigOptionApplicationController implements Serializable {
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
-            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+            createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        } else {
+            option.setOptionValue(value);
+            optionFacade.edit(option);
+            loadApplicationOptions();
         }
     }
 

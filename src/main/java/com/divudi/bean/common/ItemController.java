@@ -1889,6 +1889,49 @@ public class ItemController implements Serializable {
         JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Priority for Billing");
     }
 
+    public void markSelectedItemsToAllowSnedSMS() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        int updatedCount = 0;
+
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                i.setAllowToSendSMS(true);
+                itemFacade.edit(i);
+                updatedCount++;
+            }
+        }
+        if (updatedCount == 0) {
+            JsfUtil.addErrorMessage("No Investigation items selected.");
+        } else {
+            JsfUtil.addSuccessMessage(updatedCount + " item(s) marked to allow report SMS.");
+        }
+    }
+
+    public void unMarkSelectedItemsToAllowSnedSMS() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        int updatedCount = 0;
+
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                i.setAllowToSendSMS(false);
+                itemFacade.edit(i);
+                updatedCount++;
+
+            }
+        }
+        if (updatedCount == 0) {
+            JsfUtil.addErrorMessage("No Investigation items selected.");
+        } else {
+            JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
+        }
+    }
+
     public void addSessionNumberType() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -2474,11 +2517,8 @@ public class ItemController implements Serializable {
                     + " c.retired=:ret "
                     + " and (type(c)= :amp) "
                     + " and "
-                    + " ( c.departmentType is null or c.departmentType!=:dep ) "
-                    + " and "
                     + " ((c.name) like :str or (c.code) like :str or (c.barcode) like :str ) "
                     + " order by c.name";
-            tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ret", false);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
