@@ -263,7 +263,7 @@ public class QuickBookReportController implements Serializable {
         quickBookFormats = new ArrayList<>();
         List<QuickBookFormat> qbfs = new ArrayList<>();
 
-        List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
+        List<PaymentMethod> paymentMethods = PaymentMethod.getNonCreditPaymentMethods();
 
         if (withProfessionalFee) {
             qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), null));
@@ -387,14 +387,25 @@ public class QuickBookReportController implements Serializable {
         }
 
         List<Bill> bills = getBillFacade().findByJpql(billJpql, billParams, TemporalType.TIMESTAMP);
-        if (bills == null) {
+        if (bills == null || bills.isEmpty()) {
             return;
         }
 
-        for (Bill bill : bills) {
-            // Determine sign: BilledBill positive, CancelledBill/RefundBill negative
-            double sign = (bill.getBillClassType() == BillClassType.BilledBill) ? 1.0 : -1.0;
+        // Fetch all BillFees for these bills in one query and group by bill id
+        Map<String, Object> feeParams = new HashMap<>();
+        feeParams.put("bills", bills);
+        List<com.divudi.core.entity.BillFee> allBillFees = getBillFeeFacade().findByJpql(
+                "select bf from BillFee bf where bf.bill in :bills and bf.retired = false",
+                feeParams);
+        Map<Long, List<com.divudi.core.entity.BillFee>> billFeesMap = new HashMap<>();
+        if (allBillFees != null) {
+            for (com.divudi.core.entity.BillFee bf : allBillFees) {
+                Long billId = bf.getBill().getId();
+                billFeesMap.computeIfAbsent(billId, k -> new ArrayList<>()).add(bf);
+            }
+        }
 
+        for (Bill bill : bills) {
             // Credit company display name
             String ccName = "CREDIT COMPANY:";
             if (bill.getCreditCompany() != null) {
@@ -402,14 +413,7 @@ public class QuickBookReportController implements Serializable {
                 ccName += (cpn != null && !cpn.isEmpty()) ? cpn : bill.getCreditCompany().getName();
             }
 
-            // Fetch BillFees for this bill
-            String feeJpql = "select bf from BillFee bf"
-                    + " where bf.bill = :bill"
-                    + " and bf.retired = false";
-            Map<String, Object> feeParams = new HashMap<>();
-            feeParams.put("bill", bill);
-            List<com.divudi.core.entity.BillFee> billFees = getBillFeeFacade().findByJpql(feeJpql, feeParams);
-
+            List<com.divudi.core.entity.BillFee> billFees = billFeesMap.get(bill.getId());
             if (billFees == null || billFees.isEmpty()) {
                 continue;
             }
@@ -432,7 +436,7 @@ public class QuickBookReportController implements Serializable {
             trns.setDate(dateSdf.format(bill.getCreatedAt()));
             trns.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
             trns.setName(ccName);
-            trns.setAmount(sign * bill.getNetTotal());
+            trns.setAmount(bill.getNetTotal());
             trns.setDocNum(bill.getDeptId());
             trns.setMemo("Sales");
             trns.setEditQbClass(false);
@@ -469,7 +473,7 @@ public class QuickBookReportController implements Serializable {
                 spl.setName(ccName);
                 spl.setInvItemType("SERV");
                 spl.setInvItem(invItem);
-                spl.setAmount(sign * (0 - bf.getFeeValue()));
+                spl.setAmount(0 - bf.getFeeValue());
                 spl.setQbClass(deptName);
                 spl.setMemo(invItem);
                 spl.setCustFld5("1");
@@ -487,7 +491,7 @@ public class QuickBookReportController implements Serializable {
                 staffSpl.setName(ccName);
                 staffSpl.setInvItemType("SERV");
                 staffSpl.setInvItem("Consultant Payment:OPD CONSULTANT CHARGES");
-                staffSpl.setAmount(sign * (0 - staffFeeTotal));
+                staffSpl.setAmount(0 - staffFeeTotal);
                 staffSpl.setQbClass("Consultant Payment");
                 staffSpl.setMemo("Consultant Payment:OPD CONSULTANT CHARGES");
                 staffSpl.setEditQbClass(false);
@@ -2214,8 +2218,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setAccnt("ACCRUED CHARGES:Consultant Advance:Consultant Payment");
             qbf.setName("Cash AR");
             qbf.setInvItemType("SERV");
-            qbf.setInvItem("Consultant Payment:OPD Staff Payments");
-            qbf.setMemo("OPD Staff Payments");
+            qbf.setInvItem("Consultant Payment:OPD Professional Payments");
+            qbf.setMemo("OPD Professional Payments");
             qbf.setAmount(0 - payoutValue);
             qbfs.add(qbf);
             grantTot += payoutValue;

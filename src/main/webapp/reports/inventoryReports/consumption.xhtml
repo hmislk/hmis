@@ -273,9 +273,8 @@
                                              action="#{pharmacyController.exportConsumptionReportSummaryToPdf()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                             rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="pdf" target="tblListBills"
-                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                                             rendered="#{pharmacyController.reportType eq 'byBill'}"
+                                             action="#{pharmacyController.exportConsumptionReportByBillToPdf()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'byBillItem'}">
