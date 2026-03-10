@@ -19,19 +19,26 @@
                     </f:facet>
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel for="frmDate" value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss"
+                                    title="Select the start date and time for the report" >
+                            <f:passThroughAttribute name="aria-label" value="From Date" />
                         </p:calendar>
 
                         <h:outputLabel for="toDate" value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss"
+                                    title="Select the end date and time for the report" >
+                            <f:passThroughAttribute name="aria-label" value="To Date" />
                         </p:calendar>
 
-                        <h:outputLabel value="Select Institution"/>
+                        <h:outputLabel for="institution" value="Select Institution"/>
 
-                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true"
+                        <p:autoComplete id="institution" class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true"
                                         forceSelection="true"
                                         requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}"
+                                        title="Search and select an institution for the report" >
+                            <f:passThroughAttribute name="aria-label" value="Select Institution" />
+                        </p:autoComplete>
                     </h:panelGrid>
 
                     <h:panelGrid columns="6" class="my-2">
