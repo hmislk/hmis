@@ -24,6 +24,7 @@ import static com.divudi.core.data.PaymentMethod.Voucher;
 import static com.divudi.core.data.PaymentMethod.YouOweMe;
 import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.light.common.BillLight;
@@ -267,24 +268,12 @@ public class PharmacyBundle implements Serializable {
                 }
             } else if (firstElement instanceof BillLight) {
                 // Process list as BillLights
-                System.out.println("[F15-DEBUG] PharmacyBundle(List): processing " + entries.size() + " BillLights");
                 for (Object obj : entries) {
                     if (obj instanceof BillLight) {
                         BillLight billLight = (BillLight) obj;
                         PharmacyRow ir = new PharmacyRow(billLight);
                         rows.add(ir);
                     }
-                }
-                System.out.println("[F15-DEBUG] PharmacyBundle(List): created " + rows.size() + " PharmacyRows from BillLights");
-                if (!rows.isEmpty()) {
-                    PharmacyRow first = rows.get(0);
-                    BillLight bl = first.getBillLight();
-                    System.out.println("[F15-DEBUG] PharmacyBundle(List): first BillLight id=" + (bl != null ? bl.getId() : "null")
-                            + " type=" + (bl != null ? bl.getBillTypeAtomic() : "null")
-                            + " total=" + (bl != null ? bl.getTotal() : "null")
-                            + " costValue=" + (bl != null ? bl.getTotalCostValue() : "null")
-                            + " purchaseValue=" + (bl != null ? bl.getTotalPurchaseValue() : "null")
-                            + " retailValue=" + (bl != null ? bl.getTotalRetailSaleValue() : "null"));
                 }
             } else if (firstElement instanceof BillItem) {
                 // Process list as BillItems
@@ -882,44 +871,34 @@ public class PharmacyBundle implements Serializable {
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
 
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
-        int processedCount = 0;
-        int skippedNullBillLight = 0;
-        int skippedNullBillType = 0;
-
-        System.out.println("[F15-DEBUG] generatePaymentDetailsGroupedDto: starting, rows=" + (getRows() != null ? getRows().size() : "null"));
-
         for (PharmacyRow r : getRows()) {
             BillLight b = r.getBillLight();
             if (b == null) {
-                skippedNullBillLight++;
-                System.out.println("[F15-DEBUG] generatePaymentDetailsGroupedDto: skipping row - BillLight is null (bill=" + r.getBill() + ")");
                 continue;
             }
             if (b.getBillTypeAtomic() == null) {
-                skippedNullBillType++;
-                System.out.println("[F15-DEBUG] generatePaymentDetailsGroupedDto: skipping BillLight id=" + b.getId() + " - billTypeAtomic is null");
                 continue;
             }
-            processedCount++;
 
             populateRowFromBill(r, b);
 
             BillTypeAtomic bta = b.getBillTypeAtomic();
             String detail;
-            if (b.getPatientEncounter() != null) {
-                r.setAdmissionType(b.getPatientEncounter().getAdmissionType());
-                if (b.getPatientEncounter().getAdmissionType() == null) {
-                    detail = "No Admission Type";
-                } else {
-                    detail = b.getPatientEncounter().getAdmissionType().getName();
-                }
+            // Support both entity-based (legacy) and scalar-based (new) BillLight construction
+            AdmissionType admissionType = (b.getPatientEncounter() != null)
+                    ? b.getPatientEncounter().getAdmissionType()
+                    : b.getAdmissionType();
+            String schemeName = (b.getPaymentScheme() != null)
+                    ? b.getPaymentScheme().getName()
+                    : b.getPaymentSchemeName();
+            if (admissionType != null) {
+                r.setAdmissionType(admissionType);
+                detail = admissionType.getName();
+            } else if (b.getPatientEncounter() != null || b.getAdmissionType() != null) {
+                // encounter present but admissionType is null
+                detail = "No Admission Type";
             } else {
-                r.setPaymentScheme(b.getPaymentScheme());
-                if (b.getPaymentScheme() == null) {
-                    detail = "No Discount Scheme";
-                } else {
-                    detail = b.getPaymentScheme().getName();
-                }
+                detail = (schemeName != null) ? schemeName : "No Discount Scheme";
             }
 
             String groupKey = bta.name() + " - " + detail;
@@ -976,25 +955,11 @@ public class PharmacyBundle implements Serializable {
             }
         }
 
-        System.out.println("[F15-DEBUG] generatePaymentDetailsGroupedDto: processed=" + processedCount
-                + " skippedNullBillLight=" + skippedNullBillLight
-                + " skippedNullBillType=" + skippedNullBillType
-                + " groupedKeys=" + grouped.keySet());
-
         // Replace with grouped rows, sorted by combined key
         getRows().clear();
         grouped.values().stream()
                 .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
-
-        for (String key : grouped.keySet()) {
-            PharmacyRow gr = grouped.get(key);
-            System.out.println("[F15-DEBUG] grouped row key=" + key
-                    + " grossTotal=" + gr.getGrossTotal()
-                    + " costRate=" + gr.getValueOfStocksAtCostRate()
-                    + " purchaseRate=" + gr.getValueOfStocksAtPurchaseRate()
-                    + " retailRate=" + gr.getValueOfStocksAtRetailSaleRate());
-        }
 
         populateSummaryRow();
     }

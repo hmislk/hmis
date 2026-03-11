@@ -1505,8 +1505,8 @@ public class BillService {
                 + " coalesce(bfd.totalPurchaseValue, 0.0), "
                 + " coalesce(bfd.totalRetailSaleValue, 0.0), "
                 + " b.paymentMethod, "
-                + " pe, "
-                + " ps "
+                + " pe.admissionType, "
+                + " ps.name "
                 + ") "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
@@ -1555,11 +1555,8 @@ public class BillService {
 
         List<BillLight> fetchedBills = null;
         try {
-            System.out.println("[F15-DEBUG] fetchBillLightsWithFinanceDetailsAndPaymentScheme: executing JPQL, params=" + params);
             fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-            System.out.println("[F15-DEBUG] fetchBillLightsWithFinanceDetailsAndPaymentScheme: result count=" + (fetchedBills != null ? fetchedBills.size() : "null"));
         } catch (Exception e) {
-            System.err.println("[F15-DEBUG] fetchBillLightsWithFinanceDetailsAndPaymentScheme: EXCEPTION - " + e.getMessage());
             e.printStackTrace();
         }
         return fetchedBills;
