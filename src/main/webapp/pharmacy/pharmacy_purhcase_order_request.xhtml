@@ -42,11 +42,22 @@
                                     selection="#{purchaseOrderRequestController.selectedBillItems}"
                                     id="itemList" >  
 
-                                    <f:facet name="header">  
+                                    <f:facet name="header">
                                         <div class="d-flex justify-content-between">
                                             <h:outputLabel  value="Purchase Order Items"/>
-                                            <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected" 
-                                                             action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                            <div class="d-flex gap-1">
+                                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                                    <p:commandButton
+                                                        value="Config"
+                                                        icon="fa fa-cog"
+                                                        title="Page Configuration Management"
+                                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_purhcase_order_request')}"
+                                                        ajax="false"
+                                                        styleClass="ui-button-secondary"/>
+                                                </h:panelGroup>
+                                                <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected"
+                                                                 action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                            </div>
                                         </div>
                                     </f:facet>  
 
