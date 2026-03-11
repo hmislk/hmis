@@ -6,6 +6,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
@@ -887,7 +888,7 @@ public class CreditSummeryController implements Serializable {
             facesContext.responseComplete();
 
         } catch (IOException e) {
-            // silently handle IO errors
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
         }
     }
 
