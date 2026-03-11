@@ -44,6 +44,7 @@ import com.divudi.core.data.dto.PharmacySaleItemDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
 import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.facade.PatientEncounterFacade;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -100,7 +101,6 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
-
 /**
  * @author Senula Nanayakkara
  */
@@ -128,6 +128,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     BillService billService;
     @EJB
     BillAnalyticsService billAnalyticsService;
+    @EJB
+    PatientEncounterFacade peFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -269,7 +271,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private PaymentScheme paymentScheme;
 
     private AdmissionType admissionType;
-    private RoomCategory roomCategory;
+    private List<AdmissionType> admissionTypes;
+    private List<RoomCategory> roomCategories;
     private String bhtNo;
     private String patientName;
 
@@ -2579,6 +2582,58 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
+    private List<PatientEncounter> inPatientBillList;
+
+    public void createProfitMatrixReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT pe FROM PatientEncounter pe ");
+
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("LEFT JOIN FETCH pe.currentPatientRoom room ")
+                    .append("LEFT JOIN FETCH room.roomFacilityCharge rfc ")
+                    .append("AND rfc.roomCategory IN :roomCats ");
+            params.put("roomCats", roomCategories);
+        }
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND pe.discharged = true ")
+                .append("AND pe.paymentFinalized = true ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+        
+        if (admissionTypes != null && !admissionTypes.isEmpty()) {
+            jpql.append("AND pe.admissionType IN :admTypes ");
+            params.put("admTypes", admissionTypes);
+        }
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        inPatientBillList = peFacade.findByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+        );
+
+    }
+
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {
@@ -2615,8 +2670,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         }
-        
-        
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
@@ -2929,12 +2982,28 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.patientName = patientName;
     }
 
-    public RoomCategory getRoomCategory() {
-        return roomCategory;
+    public List<AdmissionType> getAdmissionTypes() {
+        return admissionTypes;
     }
 
-    public void setRoomCategory(RoomCategory roomCategory) {
-        this.roomCategory = roomCategory;
+    public void setAdmissionTypes(List<AdmissionType> admissionTypes) {
+        this.admissionTypes = admissionTypes;
+    }
+
+    public List<RoomCategory> getRoomCategories() {
+        return roomCategories;
+    }
+
+    public void setRoomCategories(List<RoomCategory> roomCategories) {
+        this.roomCategories = roomCategories;
+    }
+
+    public List<PatientEncounter> getInPatientBillList() {
+        return inPatientBillList;
+    }
+
+    public void setInPatientBillList(List<PatientEncounter> inPatientBillList) {
+        this.inPatientBillList = inPatientBillList;
     }
 
     private static class ExcelStyleBundle {
@@ -3347,7 +3416,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         table.addCell(cell);
     }
-
 
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
@@ -3883,8 +3951,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
     }
-    
-    public String navigateToGrnSummaryReport(){
+
+    public String navigateToGrnSummaryReport() {
         return "/reports/inventoryReports/grn_summary_report?faces-redirect=true";
     }
 
