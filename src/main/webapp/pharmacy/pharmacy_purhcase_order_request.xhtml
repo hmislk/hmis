@@ -22,7 +22,15 @@
                         <div class="row">
                             <div class="col-9">
 
-                                <p:dataTable 
+                                <h:panelGroup id="itemHistoryAboveWrapper" layout="block">
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible and configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Item History Above Items', false)}" layout="block">
+                                        <ph:history id="itemHistoryAbove"
+                                            closeActionListener="#{purchaseOrderRequestController.closeItemHistory()}"
+                                            updateOnClose=":form:itemHistoryAboveWrapper"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:dataTable
                                     styleClass="noBorder" 
                                     rowIndexVar="i" 
                                     style="padding: 0;"
@@ -57,7 +65,7 @@
                                             id="btnViewSelectedItemDetails"
                                             title="View Item Details"
                                             action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
-                                            update="itemHistoryWrapper"
+                                            update=":form:itemHistoryAboveWrapper :form:itemHistoryBelowWrapper"
                                             process="@this"
                                             class="ui-button-icon-only mx-3"/>
                                     </p:column>
@@ -184,18 +192,11 @@
 
                                 </p:dataTable> 
 
-                                <h:panelGroup id="itemHistoryWrapper" layout="block">
-                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible}" layout="block">
-                                        <div class="d-flex justify-content-end mt-2">
-                                            <p:commandButton
-                                                icon="pi pi-times"
-                                                title="Close Item History"
-                                                class="ui-button-danger ui-button-sm"
-                                                action="#{purchaseOrderRequestController.closeItemHistory()}"
-                                                update="itemHistoryWrapper"
-                                                process="@this"/>
-                                        </div>
-                                        <ph:history id="itemHistory"/>
+                                <h:panelGroup id="itemHistoryBelowWrapper" layout="block">
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible and !configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Item History Above Items', false)}" layout="block">
+                                        <ph:history id="itemHistoryBelow"
+                                            closeActionListener="#{purchaseOrderRequestController.closeItemHistory()}"
+                                            updateOnClose=":form:itemHistoryBelowWrapper"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
