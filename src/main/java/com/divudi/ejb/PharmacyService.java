@@ -347,14 +347,35 @@ public class PharmacyService {
         PharmacyBundle bundle;
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        for (BillTypeAtomic bta : billTypeAtomics) {
-        }
+        System.out.println("[F15-DEBUG] fetchPharmacyIncome: fromDate=" + fromDate + " toDate=" + toDate
+                + " dept=" + (department != null ? department.getId() + "/" + department.getName() : "null")
+                + " billTypes=" + billTypeAtomics);
 
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
+        System.out.println("[F15-DEBUG] fetchPharmacyIncome: query returned " + (pharmacyIncomeBillLights != null ? pharmacyIncomeBillLights.size() : "null") + " BillLights");
+        if (pharmacyIncomeBillLights != null && !pharmacyIncomeBillLights.isEmpty()) {
+            BillLight first = pharmacyIncomeBillLights.get(0);
+            System.out.println("[F15-DEBUG] fetchPharmacyIncome: first BillLight id=" + first.getId()
+                    + " type=" + first.getBillTypeAtomic()
+                    + " total=" + first.getTotal()
+                    + " netTotal=" + first.getNetTotal()
+                    + " costValue=" + first.getTotalCostValue()
+                    + " purchaseValue=" + first.getTotalPurchaseValue()
+                    + " retailValue=" + first.getTotalRetailSaleValue());
+        }
+
         bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        System.out.println("[F15-DEBUG] fetchPharmacyIncome: bundle rows before grouping=" + (bundle.getRows() != null ? bundle.getRows().size() : "null"));
 
         bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+        System.out.println("[F15-DEBUG] fetchPharmacyIncome: bundle rows after grouping=" + (bundle.getRows() != null ? bundle.getRows().size() : "null"));
+        if (bundle.getSummaryRow() != null) {
+            System.out.println("[F15-DEBUG] fetchPharmacyIncome: summaryRow grossTotal=" + bundle.getSummaryRow().getGrossTotal()
+                    + " costRate=" + bundle.getSummaryRow().getValueOfStocksAtCostRate()
+                    + " purchaseRate=" + bundle.getSummaryRow().getValueOfStocksAtPurchaseRate()
+                    + " retailRate=" + bundle.getSummaryRow().getValueOfStocksAtRetailSaleRate());
+        }
 
         return bundle;
     }
