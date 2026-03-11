@@ -264,7 +264,9 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
 
     /**
      * Calculates the stock value at purchase rate for a given date and department.
-     * Uses PURCAHSERATE (intentional DB typo) from ITEMBATCH with no fallback.
+     * Uses the historical purchase rate stored on STOCKHISTORY (PURCHASERATE column),
+     * falling back to ITEMBATCH.PURCAHSERATE (intentional DB typo) when the
+     * history row has no rate recorded.
      *
      * @param date The date for which to calculate stock value
      * @param departmentId The department ID (can be null for all departments)
@@ -277,7 +279,7 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
                 "FROM ( " +
                 "    SELECT  " +
                 "        sh.STOCKQTY, " +
-                "        COALESCE(ib.PURCAHSERATE, 0.0) AS purchase_rate " +
+                "        COALESCE(NULLIF(sh.PURCHASERATE, 0), ib.PURCAHSERATE, 0.0) AS purchase_rate " +
                 "    FROM STOCKHISTORY sh " +
                 "    INNER JOIN ( " +
                 "        SELECT  " +
