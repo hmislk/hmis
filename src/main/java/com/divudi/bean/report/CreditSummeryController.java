@@ -712,7 +712,56 @@ public class CreditSummeryController implements Serializable {
             grandAmtStyle.setDataFormat(numberFormat);
             grandAmtStyle.setAlignment(HorizontalAlignment.RIGHT);
 
+            // Report title style
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+
+            // Filter label style
+            CellStyle filterLblStyle = workbook.createCellStyle();
+            Font filterLblFont = workbook.createFont();
+            filterLblFont.setBold(true);
+            filterLblStyle.setFont(filterLblFont);
+
             int rowNum = 0;
+            java.text.SimpleDateFormat displaySdf = new java.text.SimpleDateFormat("dd MMM yyyy hh:mm a");
+
+            // Report title row
+            Row titleRow = sheet.createRow(rowNum++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Credit Summary - Report By Item");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 4));
+
+            // Blank separator row
+            sheet.createRow(rowNum++);
+
+            // Line 1: From Date | To Date
+            Row dateRow = sheet.createRow(rowNum++);
+            Cell fromLbl = dateRow.createCell(0);
+            fromLbl.setCellValue("From Date :");
+            fromLbl.setCellStyle(filterLblStyle);
+            dateRow.createCell(1).setCellValue(fromDate != null ? displaySdf.format(fromDate) : "");
+            Cell toLbl = dateRow.createCell(2);
+            toLbl.setCellValue("To Date :");
+            toLbl.setCellStyle(filterLblStyle);
+            dateRow.createCell(3).setCellValue(toDate != null ? displaySdf.format(toDate) : "");
+
+            // Line 2: Credit Company | Service
+            Row filterRow = sheet.createRow(rowNum++);
+            Cell ccLbl = filterRow.createCell(0);
+            ccLbl.setCellValue("Credit Company :");
+            ccLbl.setCellStyle(filterLblStyle);
+            filterRow.createCell(1).setCellValue(institution != null ? institution.getName() : "All");
+            Cell svcLbl = filterRow.createCell(2);
+            svcLbl.setCellValue("Service :");
+            svcLbl.setCellStyle(filterLblStyle);
+            filterRow.createCell(3).setCellValue(item != null ? item.getName() : "All");
+
+            // Blank separator row before data table
+            sheet.createRow(rowNum++);
 
             // Column headers
             Row headerRow = sheet.createRow(rowNum++);
