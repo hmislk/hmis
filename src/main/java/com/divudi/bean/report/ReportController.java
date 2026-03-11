@@ -43,6 +43,7 @@ import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
 import com.divudi.core.data.dto.PharmacySaleItemDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
+import com.divudi.core.entity.inward.RoomCategory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -268,6 +269,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private PaymentScheme paymentScheme;
 
     private AdmissionType admissionType;
+    private RoomCategory roomCategory;
+    private String bhtNo;
+    private String patientName;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -2907,6 +2911,30 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 }
             }
         }
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public RoomCategory getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(RoomCategory roomCategory) {
+        this.roomCategory = roomCategory;
     }
 
     private static class ExcelStyleBundle {
