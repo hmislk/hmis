@@ -10,392 +10,399 @@
             <ui:define name="content">
                 <h:form >
                     <style>
-                            @media screen{
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 2.0;
-                                }
-                                
-                                
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 10pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-                                
+                        @media screen{
+                            .paper {
+                                position: static !important;
+                                width: 297mm!important;
+                                zoom: 2.0;
                             }
 
-                            @media screen, print {
 
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
+                        }
 
-                                .table-summary {
-                                    width: 99.9%;
-                                    font-size: 10pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-
-                                .table-detail {
-                                    width: 99.9%;
-                                    font-size: 8pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-
-                                .table-byBill {
-                                    width: 99.9%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-                                
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-
-                                .table-detail .billNo{
-                                    font-size: 10px !important;
+                        @media print {
+                            @page {
+                                size: A4 landscape!important;
+                                @bottom-right {
+                                    content: "Page " counter(page) " of " counter(pages);
+                                    font-family: Arial, sans-serif;
+                                    font-size: 8pt;
                                 }
                             }
-                            
-                        </style>
-                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                            <p:panel header="Stock Transfer Report" styleClass="my-2" >
-                                <f:facet name="header">
-                                    <div class="d-flex justify-content-between">
-                                        <h:outputText value="Stock Transfer Report" class="mt-2"/>
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton 
-                                                icon="fa-solid fa-print"
-                                                class="ui-button-info"
-                                                style="width: 150px"
-                                                ajax="false" 
-                                                value="Print">
-                                                <p:printer target="itemRp" />
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Back to Report" 
-                                                style="width: 200px"
-                                                icon="fa fa-arrow-left"
-                                                class="ui-button-warning"
-                                                action="/reports/inventoryReports/stock_transfer_report?faces-redirect=true">
-                                            </p:commandButton>
-                                        </div>
+
+                            body {
+                                counter-reset: page;
+                            }
+
+                            .paper {
+                                position: static !important;
+                                width: 297mm!important;
+                            }
+
+                        }
+
+                        @media screen, print {
+
+                            .header{
+                                line-height: 1.1;
+                                margin: 0mm!important;
+                            }
+
+                            .table-summary {
+                                width: 99.9%;
+                                font-size: 8pt!important;
+                                margin-top: 3mm!important;
+                                border-collapse: collapse !important;
+                            }
+
+                            .table-detail {
+                                width: 99.9%;
+                                font-size: 8pt!important;
+                                margin-top: 3mm!important;
+                                border-collapse: collapse !important;
+                            }
+
+                            .table-byBill {
+                                width: 99.9%;
+                                font-size: 9pt!important;
+                                margin-top: 3mm!important;
+                                border-collapse: collapse !important;
+                            }
+
+                            .table-breakdown {
+                                width: 99%;
+                                font-size: 9pt!important;
+                                margin-top: 3mm!important;
+                                border-collapse: collapse !important;
+                            }
+
+                            th, td {
+                                border: 1pt solid #000000 !important;
+                                padding: 1pt!important;
+                                text-align: left;
+                                overflow-wrap: break-word;
+                                white-space: normal;
+                            }
+
+                            .report-header-table {
+                                border-collapse: collapse;
+                            }
+
+                            .report-header-table .label {
+                                font-weight: 600;
+                                padding-right: 5px;
+                                white-space: nowrap;
+                            }
+
+                            .report-header-table td {
+                                padding: 3px 8px;
+                                vertical-align: top;
+                            }
+
+                            .table-detail .billNo{
+                                font-size: 10px !important;
+                            }
+                        }
+
+                    </style>
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                        <p:panel header="Stock Transfer Report" styleClass="my-2" >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Stock Transfer Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="summaryRp" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/stock_transfer_report?faces-redirect=true">
+                                        </p:commandButton>
                                     </div>
-                                </f:facet>
-                            </p:panel>
+                                </div>
+                            </f:facet>
+                        </p:panel>
 
-                            <h:panelGroup id="itemRp" class="d-flex justify-content-center">
-                                <div class="paper">
-                                    <div class="header" >
-                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                                <h:outputText value="#{sessionController.institution.name}"/>
-                                            </div>
-                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
-                                                <h:outputText value="Stock Transfer Report"/>
-                                                <h:outputText value=" (Summary)"/>
-                                            </div>
-                                        <div class="d-flex justify-content-center m-3">
-                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
-
-                                                <!-- Row 1 -->
-                                                <h:outputText value="From Date:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
-
-                                                <h:outputText value="To Date:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
-
-                                                <h:outputText value="Transfer:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
-
-
-                                                <!-- Row 2 -->
-                                                <h:outputText value="Issuing Institution:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
-
-                                                <h:outputText value="Issuing Site:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
-
-                                                <h:outputText value="Issuing Department:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
-
-
-                                                <!-- Row 3 -->
-                                                <h:outputText value="Receiving Institution:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
-
-                                                <h:outputText value="Receiving Site:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
-
-                                                <h:outputText value="Receiving Department:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
-
-
-                                                <!-- Row 4 -->
-                                                <h:outputText value="Department Type:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
-
-                                                <h:outputText value="Category:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
-
-                                                <h:outputText value="Dosage Form:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
-
-
-                                                <!-- Row 5 -->
-                                                <h:outputText value="Item Name/Code:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
-
-                                            </h:panelGrid>
-                                        </div>   
+                        <h:panelGroup id="summaryRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
                                     </div>
-                                    <p:dataTable id="tbl1"
-                                         value="#{pharmacyController.departmentSummaries}"
-                                         var="s"
-                                         rowKey="#{s.departmentName}_#{s.issuedDeptName}_#{s.receivedDeptName}_#{n}"
-                                         rowIndexVar="n"
-                                         rendered="#{not empty pharmacyController.departmentSummaries}"
-                                         styleClass="table-summary table-small">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Stock Transfer Report"/>
+                                        <h:outputText value=" (Summary)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
 
-                                        <!-- Expand/Collapse Column -->
-                                        <p:column style="width:32px">
-                                            <p:rowToggler rendered="#{not empty s.summeriesMap and s.departmentName ne 'Total'}"/>
-                                        </p:column>
-
-                                        <!-- Main Department Column -->
-                                        <p:column headerText="Store">
-                                            <h:outputText value="#{s.issuedDeptName}" 
-                                                        style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}"/>
-                                        </p:column>
-
-                                        <!-- Purchase Value Column -->
-                                        <p:column headerText="Purchase Value" style="text-align: right;">
-                                            <h:outputText value="#{s.totalPurchaseValue}" 
-                                                        style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                                
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
-                                        </p:column>
 
-                                        <!-- Cost Value Column -->
-                                        <p:column 
-                                            id="txtCostValueInSummaryReport"
-                                            headerText="Cost Value" style="text-align: right;"
-                                                rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                            <h:outputText value="#{s.totalCostValue}"
-                                                        style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
-                                        </p:column>
 
-                                        <!-- Retail Sale Value Column -->
-                                        <p:column headerText="Retail Sale Value" style="text-align: right;">
-                                            <h:outputText value="#{s.totalRetailSaleValue}" 
-                                                        style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                            </h:outputText>
-                                        </p:column>
+                                            <h:outputText value="Transfer:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
 
-                                        <!-- Good In Transit Amount Column -->
-                                        <p:column headerText="Good In Transit Amount" style="text-align: right;">
-                                            <h:outputText id="lblGoodsInTransitForSummeryReport" value="#{s.goodInTransistAmount}"
-                                                        style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                            </h:outputText>
-                                        </p:column>
 
-                                        <!-- Row Expansion Content -->
-                                        <p:rowExpansion>
-                                            <div style="padding: 15px; background-color: #fafafa;" 
-                                                rendered="#{s.departmentName ne 'Total'}">
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Issuing Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
 
-                                                <!-- Check if summaries map exists and has data -->
-                                                <h:panelGroup rendered="#{not empty s.summeriesMap}">
-                                                    <h6 style="margin-bottom: 15px; color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
-                                                        <h:outputText value="Breakdown Details for #{s.issuedDeptName}"/>
-                                                    </h6>
+                                            <h:outputText value="Issuing Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
 
-                                                    <!-- Card-based layout for better readability -->
-                                                    <div class="row">
-                                                        <ui:repeat value="#{s.summeriesMap.entrySet()}" var="categoryEntry">
-                                                            <div class="col-md-12 mb-3">
-                                                                <div class="card">
-                                                                    <div class="card-header" style="background-color: #e9ecef;">
-                                                                        <h:outputText value="#{categoryEntry.key}" 
-                                                                                    style="font-weight: bold; color: #495057;"/>
-                                                                    </div>
-                                                                    <div class="card-body" style="padding: 10px;">
-                                                                        <h:panelGroup rendered="#{not empty categoryEntry.value}">
-                                                                            <div class="table-responsive">
-                                                                                <table class="table table-sm table-striped">
-                                                                                    <thead>
+                                            <h:outputText value="Issuing Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
+
+
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Receiving Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
+
+                                            <h:outputText value="Receiving Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+
+                                            <h:outputText value="Receiving Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
+
+
+                                            <!-- Row 4 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
+
+                                            <h:outputText value="Category:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
+
+                                            <h:outputText value="Dosage Form:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+
+
+                                            <!-- Row 5 -->
+                                            <h:outputText value="Item Name/Code:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+                                <p:dataTable id="tbl1"
+                                             value="#{pharmacyController.departmentSummaries}"
+                                             var="s"
+                                             rowKey="#{s.departmentName}_#{s.issuedDeptName}_#{s.receivedDeptName}_#{n}"
+                                             rowIndexVar="n"
+                                             rendered="#{not empty pharmacyController.departmentSummaries}"
+                                             styleClass="table-summary table-small">
+
+                                    <!-- Expand/Collapse Column -->
+                                    <p:column style="width:32px">
+                                        <p:rowToggler rendered="#{not empty s.summeriesMap and s.departmentName ne 'Total'}"/>
+                                    </p:column>
+
+                                    <!-- Main Department Column -->
+                                    <p:column headerText="Store">
+                                        <h:outputText value="#{s.issuedDeptName}"
+                                                      style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}"/>
+                                    </p:column>
+
+                                    <!-- Purchase Value Column -->
+                                    <p:column headerText="Purchase Value" style="text-align: right;">
+                                        <h:outputText value="#{s.totalPurchaseValue}"
+                                                      style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
+
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <!-- Cost Value Column -->
+                                    <p:column
+                                        id="txtCostValueInSummaryReport"
+                                        headerText="Cost Value" style="text-align: right;"
+                                        rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                        <h:outputText value="#{s.totalCostValue}"
+                                                      style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <!-- Retail Sale Value Column -->
+                                    <p:column headerText="Retail Sale Value" style="text-align: right;">
+                                        <h:outputText value="#{s.totalRetailSaleValue}"
+                                                      style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <!-- Good In Transit Amount Column -->
+                                    <p:column headerText="Good In Transit Amount" style="text-align: right;">
+                                        <h:outputText id="lblGoodsInTransitForSummeryReport" value="#{s.goodInTransistAmount}"
+                                                      style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <!-- Row Expansion Content -->
+                                    <p:rowExpansion>
+                                        <div style="padding: 5px; background-color: #fafafa;"
+                                             rendered="#{s.departmentName ne 'Total'}">
+
+                                            <!-- Check if summaries map exists and has data -->
+                                            <h:panelGroup rendered="#{not empty s.summeriesMap}">
+                                                <div style="margin-bottom: 5px; color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 2px; font-weight: 700;">
+                                                    <h:outputText value="Breakdown Details for #{s.issuedDeptName}"/>
+                                                </div>
+
+                                                <!-- Card-based layout for better readability -->
+                                                <div class="row">
+                                                    <ui:repeat value="#{s.summeriesMap.entrySet()}" var="categoryEntry">
+                                                        <div class="col-md-12 mb-1">
+                                                            <div class="card">
+                                                                <div class="card-header" style="background-color: #e9ecef;">
+                                                                    <h:outputText value="#{categoryEntry.key}"
+                                                                                style="font-weight: bold; color: #495057;"/>
+                                                                </div>
+                                                                <div class="card-body" style="padding: 5px;">
+                                                                    <h:panelGroup rendered="#{not empty categoryEntry.value}">
+                                                                        <div class="table-responsive">
+                                                                            <table class="table-sm table-striped">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th>From Department</th>
+                                                                                        <th>To Department</th>
+                                                                                        <th style="text-align: right;">Purchase Value</th>
+                                                                                        <th style="text-align: right;"
+                                                                                            rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                                                                            Cost Value
+                                                                                        </th>
+                                                                                        <th style="text-align: right;">Retail Value</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    <ui:repeat value="#{categoryEntry.value}" var="transferDetail">
                                                                                         <tr>
-                                                                                            <th>From Department</th>
-                                                                                            <th>To Department</th>
-                                                                                            <th style="text-align: right;">Purchase Value</th>
-                                                                                            <th style="text-align: right;" 
+                                                                                            <td>
+                                                                                                <h:outputText value="#{transferDetail.issuedDeptName}"/>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <h:outputText value="#{transferDetail.receivedDeptName}"/>
+                                                                                            </td>
+                                                                                            <td style="text-align: right;">
+                                                                                                <h:outputText value="#{transferDetail.totalPurchaseValue}">
+
+                                                                                                </h:outputText>
+                                                                                            </td>
+                                                                                            <td style="text-align: right;"
                                                                                                 rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                                                                                Cost Value
-                                                                                            </th>
-                                                                                            <th style="text-align: right;">Retail Value</th>
+                                                                                                <h:outputText value="#{transferDetail.totalCostValue}">
+
+                                                                                                </h:outputText>
+                                                                                            </td>
+                                                                                            <td style="text-align: right;">
+                                                                                                <h:outputText value="#{transferDetail.totalRetailSaleValue}">
+
+                                                                                                </h:outputText>
+                                                                                            </td>
                                                                                         </tr>
-                                                                                    </thead>
-                                                                                    <tbody>
-                                                                                        <ui:repeat value="#{categoryEntry.value}" var="transferDetail">
-                                                                                            <tr>
-                                                                                                <td>
-                                                                                                    <h:outputText value="#{transferDetail.issuedDeptName}"/>
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <h:outputText value="#{transferDetail.receivedDeptName}"/>
-                                                                                                </td>
-                                                                                                <td style="text-align: right;">
-                                                                                                    <h:outputText value="#{transferDetail.totalPurchaseValue}">
-                                                                                                        
-                                                                                                    </h:outputText>
-                                                                                                </td>
-                                                                                                <td style="text-align: right;" 
-                                                                                                    rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                                                                                    <h:outputText value="#{transferDetail.totalCostValue}">
+                                                                                    </ui:repeat>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </h:panelGroup>
 
-                                                                                                    </h:outputText>
-                                                                                                </td>
-                                                                                                <td style="text-align: right;">
-                                                                                                    <h:outputText value="#{transferDetail.totalRetailSaleValue}">
-                                                                                                        
-                                                                                                    </h:outputText>
-                                                                                                </td>
-                                                                                            </tr>
-                                                                                        </ui:repeat>
-                                                                                    </tbody>
-                                                                                </table>
-                                                                            </div>
-                                                                        </h:panelGroup>
-
-                                                                        <h:panelGroup rendered="#{empty categoryEntry.value}">
-                                                                            <em style="color: #6c757d;">No transfers for this category</em>
-                                                                        </h:panelGroup>
-                                                                    </div>
+                                                                    <h:panelGroup rendered="#{empty categoryEntry.value}">
+                                                                        <em style="color: #6c757d;">No transfers for this category</em>
+                                                                    </h:panelGroup>
                                                                 </div>
                                                             </div>
-                                                        </ui:repeat>
-                                                    </div>
-                                                </h:panelGroup>
+                                                        </div>
+                                                    </ui:repeat>
+                                                </div>
+                                            </h:panelGroup>
 
-                                                <!-- Empty state for entire summaries map -->
-                                                <h:panelGroup rendered="#{empty s.summeriesMap}">
-                                                    <div style="text-align: center; padding: 20px; color: #6c757d; font-style: italic;">
-                                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
-                                                        No detailed breakdown available for this department.
-                                                    </div>
-                                                </h:panelGroup>
-                                            </div>
+                                            <!-- Empty state for entire summaries map -->
+                                            <h:panelGroup rendered="#{empty s.summeriesMap}">
+                                                <div style="text-align: center; padding: 20px; color: #6c757d; font-style: italic;">
+                                                    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                                    No detailed breakdown available for this department.
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
 
-                                            <!-- Total row - no expansion content -->
-                                            <div style="padding: 15px; text-align: center; color: #6c757d;" 
-                                                rendered="#{s.departmentName eq 'Total'}">
-                                                <em>Total row - no breakdown available</em>
-                                            </div>
-                                        </p:rowExpansion>
+                                        <!-- Total row - no expansion content -->
+                                        <div style="padding: 15px; text-align: center; color: #6c757d;"
+                                             rendered="#{s.departmentName eq 'Total'}">
+                                            <em>Total row - no breakdown available</em>
+                                        </div>
+                                    </p:rowExpansion>
 
-                                        <!-- Footer with Grand Totals -->
-                                        <p:columnGroup type="footer">
-                                            <p:row style="font-weight:bold; background-color:#e9ecef;">
-                                                <p:column footerText=""/>
-                                                <p:column footerText="Grand Total"/>
-                                                <p:column style="text-align: right;">
-                                                    <f:facet name="footer">
-                                                        <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalPurchaseValue}">
-                                                            
-                                                        </h:outputText>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column style="text-align: right;"
-                                                        rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                                    <f:facet name="footer">
-                                                        <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalCostValue}">
-                                                            <f:convertNumber pattern="#,##0.00" type="number" minFractionDigits="2" maxFractionDigits="2"/>
-                                                        </h:outputText>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column style="text-align: right;">
-                                                    <f:facet name="footer">
-                                                        <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalRetailSaleValue}">
-                                                            
-                                                        </h:outputText>
-                                                    </f:facet>
-                                                </p:column>
-                                                <p:column style="text-align: right;">
-                                                    <f:facet name="footer">
-                                                        <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).goodInTransistAmount}">
-                                                            
-                                                        </h:outputText>
-                                                    </f:facet>
-                                                </p:column>
-                                            </p:row>
-                                        </p:columnGroup>
-                                    </p:dataTable>
-                                </div>     
-                            </h:panelGroup>
+                                    <!-- Footer with Grand Totals -->
+                                    <p:columnGroup type="footer">
+                                        <p:row style="font-weight:bold; background-color:#e9ecef;">
+                                            <p:column footerText=""/>
+                                            <p:column footerText="Grand Total"/>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalPurchaseValue}">
+
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;"
+                                                      rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalRetailSaleValue}">
+
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).goodInTransistAmount}">
+
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </div>
                         </h:panelGroup>
-                        
+                    </h:panelGroup>
+
                     <h:panelGroup rendered="#{pharmacyController.reportType eq 'detailReport'}">
                         <p:panel header="Stock Transfer Report" styleClass="my-2" >
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
                                     <h:outputText value="Stock Transfer Report" class="mt-2"/>
                                     <div class="d-flex gap-2">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             icon="fa-solid fa-print"
                                             class="ui-button-info"
                                             style="width: 150px"
-                                            ajax="false" 
+                                            ajax="false"
                                             value="Print">
                                             <p:printer target="detailRp" />
                                         </p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="Back to Report" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
                                             style="width: 200px"
                                             icon="fa fa-arrow-left"
                                             class="ui-button-warning"
@@ -416,64 +423,64 @@
                                         <h:outputText value=" (Detail)"/>
                                     </div>
                                     <div class="d-flex justify-content-center m-3">
-                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
+                                        <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
 
-                                                <!-- Row 1 -->
-                                                <h:outputText value="From Date:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
 
-                                                <h:outputText value="To Date:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
 
-                                                <h:outputText value="Transfer:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
-
-
-                                                <!-- Row 2 -->
-                                                <h:outputText value="Issuing Institution:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
-
-                                                <h:outputText value="Issuing Site:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
-
-                                                <h:outputText value="Issuing Department:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
+                                            <h:outputText value="Transfer:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
 
 
-                                                <!-- Row 3 -->
-                                                <h:outputText value="Receiving Institution:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Issuing Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
 
-                                                <h:outputText value="Receiving Site:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+                                            <h:outputText value="Issuing Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
 
-                                                <h:outputText value="Receiving Department:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
-
-
-                                                <!-- Row 4 -->
-                                                <h:outputText value="Department Type:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
-
-                                                <h:outputText value="Category:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
-
-                                                <h:outputText value="Dosage Form:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+                                            <h:outputText value="Issuing Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
 
 
-                                                <!-- Row 5 -->
-                                                <h:outputText value="Item Name/Code:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Receiving Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
 
-                                            </h:panelGrid>
-                                        </div>   
+                                            <h:outputText value="Receiving Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+
+                                            <h:outputText value="Receiving Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
+
+
+                                            <!-- Row 4 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
+
+                                            <h:outputText value="Category:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
+
+                                            <h:outputText value="Dosage Form:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+
+
+                                            <!-- Row 5 -->
+                                            <h:outputText value="Item Name/Code:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
                                 </div>
-                                
+
                                 <ui:repeat value="#{pharmacyController.departmentWiseRows.entrySet()}" var="deptEntry">
 
                                     <div style="background-color:#f0f0f0; font-weight:bold; padding:4px; margin-top:20px; border:1px solid #ccc;">
@@ -481,7 +488,7 @@
                                     </div>
 
                                     <p:dataTable value="#{deptEntry.value}" var="i" style="width:100%; margin-bottom:10px;"
-                                                tableStyle="border-collapse:collapse;" styleClass="table-detail table-small">
+                                                 tableStyle="border-collapse:collapse;" styleClass="table-detail table-small">
 
                                         <p:column headerText="Bill No" width="20mm">
                                             <h:outputText value="#{i.billItem.bill.deptId}" class="billNo"/>
@@ -547,14 +554,14 @@
                                         </p:column>
 
                                         <p:column headerText="Cost Rate" width="14mm" style="text-align: right; padding-right: 10px;"
-                                                rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                                  rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                             <h:outputText value="#{i.billItem.billItemFinanceDetails.costRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Cost Value" width="14mm" style="text-align: right; padding-right: 10px;"
-                                                rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                                  rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                             <h:outputText
                                                 id="lblCostValueInDetailedReport"
                                                 value="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
@@ -589,6 +596,45 @@
                                         </p:column>
                                     </p:dataTable>
                                 </ui:repeat>
+                                <table style="width:100%; border-collapse:collapse;" class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                            </th>
+                                            <th style="text-align:right;">
+                                                <h:outputText value="Purchase Value"/>
+                                            </th>
+                                            <th style="text-align:right;">
+                                                <h:outputText value="Cost Value"/>
+                                            </th>
+                                            <th style="text-align:right;">
+                                                <h:outputText value="Retail Value"/>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr style="font-weight:bold;">
+                                            <td>
+                                                <h:outputText value="Grand Total"/>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{pharmacyController.totalPurchase}">
+                                                    <f:convertNumber pattern="#,##0.00" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{pharmacyController.totalCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <h:outputText value="#{pharmacyController.totalRetailValue}">
+                                                    <f:convertNumber pattern="#,##0.00" type="number" minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </h:panelGroup>
                     </h:panelGroup>
@@ -599,17 +645,17 @@
                                 <div class="d-flex justify-content-between">
                                     <h:outputText value="Stock Transfer Report" class="mt-2"/>
                                     <div class="d-flex gap-2">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             icon="fa-solid fa-print"
                                             class="ui-button-info"
                                             style="width: 150px"
-                                            ajax="false" 
+                                            ajax="false"
                                             value="Print">
                                             <p:printer target="byBillRp" />
                                         </p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="Back to Report" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
                                             style="width: 200px"
                                             icon="fa fa-arrow-left"
                                             class="ui-button-warning"
@@ -630,68 +676,68 @@
                                         <h:outputText value=" (By Bill)"/>
                                     </div>
                                     <div class="d-flex justify-content-center m-3">
-                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
+                                        <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
 
-                                                <!-- Row 1 -->
-                                                <h:outputText value="From Date:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
 
-                                                <h:outputText value="To Date:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                                </h:outputText>
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
 
-                                                <h:outputText value="Transfer:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
-
-
-                                                <!-- Row 2 -->
-                                                <h:outputText value="Issuing Institution:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
-
-                                                <h:outputText value="Issuing Site:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
-
-                                                <h:outputText value="Issuing Department:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
+                                            <h:outputText value="Transfer:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
 
 
-                                                <!-- Row 3 -->
-                                                <h:outputText value="Receiving Institution:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Issuing Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
 
-                                                <h:outputText value="Receiving Site:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+                                            <h:outputText value="Issuing Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
 
-                                                <h:outputText value="Receiving Department:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
-
-
-                                                <!-- Row 4 -->
-                                                <h:outputText value="Department Type:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
-
-                                                <h:outputText value="Category:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
-
-                                                <h:outputText value="Dosage Form:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+                                            <h:outputText value="Issuing Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
 
 
-                                                <!-- Row 5 -->
-                                                <h:outputText value="Item Name/Code:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Receiving Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
 
-                                            </h:panelGrid>
-                                        </div>   
+                                            <h:outputText value="Receiving Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+
+                                            <h:outputText value="Receiving Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
+
+
+                                            <!-- Row 4 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
+
+                                            <h:outputText value="Category:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
+
+                                            <h:outputText value="Dosage Form:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+
+
+                                            <!-- Row 5 -->
+                                            <h:outputText value="Item Name/Code:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
                                 </div>
-                                
+
                                 <p:dataTable id="tbl3" value="#{pharmacyController.departmentWiseBillList}"
-                                            var="b"
-                                            rowIndexVar="n"
-                                            styleClass="table-byBill table-sm">
+                                             var="b"
+                                             rowIndexVar="n"
+                                             styleClass="table-byBill table-sm">
                                     <p:column headerText="Issue/Receive Department">
                                         <h:outputText value="#{b.bill.toDepartment.name}"/>
                                     </p:column>
@@ -749,9 +795,9 @@
                                     <p:column headerText="Transaction Value" style="text-align: right;" width="25mm">
                                         <h:outputText
                                             value="#{(b.bill.netTotal lt 0 and b.bill.billFinanceDetails.totalCostValue gt 0)
-                                                    or (b.bill.netTotal gt 0 and b.bill.billFinanceDetails.totalCostValue lt 0)
-                                                    ? (0 - b.bill.billFinanceDetails.totalCostValue)
-                                                    : b.bill.billFinanceDetails.totalCostValue}">
+                                                     or (b.bill.netTotal gt 0 and b.bill.billFinanceDetails.totalCostValue lt 0)
+                                                     ? (0 - b.bill.billFinanceDetails.totalCostValue)
+                                                     : b.bill.billFinanceDetails.totalCostValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                         <f:facet name="footer">
@@ -771,6 +817,227 @@
                                         </f:facet>
                                     </p:column>
                                 </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'breakdownSummary'}">
+                        <p:panel header="Stock Transfer Report" styleClass="my-2" >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Stock Transfer Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="brkSummaryRp" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/stock_transfer_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+                        <h:panelGroup id="brkSummaryRp" class="d-flex justify-content-center">
+                            <style>
+                                @media screen {
+                                    #brkSummaryRp .paper {
+                                        position: static;
+                                        width: 210mm;
+                                        zoom: 2.0;
+                                    }
+                                }
+                                @media print {
+                                    @page { size: A4 portrait !important; }
+                                    #brkSummaryRp .paper { width: 210mm !important; }
+                                }
+                            </style>
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Stock Transfer Report"/>
+                                        <h:outputText value=" (BreakDown Summary)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:85%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="Transfer:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.transferType == 'receive' ? 'Receive' : 'Issue'}"/>
+
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Issuing Institution:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+                                                <h:outputText value="Issuing Site:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromSite != null ? pharmacyController.fromSite.name : 'All'}"/>
+
+                                                <h:outputText value="Issuing Department:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.fromDepartment != null ? pharmacyController.fromDepartment.name : 'All'}"/>
+
+
+                                                <!-- Row 3 -->
+                                                <h:outputText value="Receiving Institution:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toInstitution != null ? pharmacyController.toInstitution.name : 'All'}"/>
+
+                                                <h:outputText value="Receiving Site:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toSite != null ? pharmacyController.toSite.name : 'All'}"/>
+
+                                                <h:outputText value="Receiving Department:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.toDepartment != null ? pharmacyController.toDepartment.name : 'All'}"/>
+
+
+                                                <!-- Row 4 -->
+                                                <h:outputText value="Department Type:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.selectedDepartmentTypesString}"/>
+
+                                                <h:outputText value="Category:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.category != null ? pharmacyController.category.name : 'All'}"/>
+
+                                                <h:outputText value="Dosage Form:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.dosageForm != null ? pharmacyController.dosageForm.name : 'All'}"/>
+
+
+                                                <!-- Row 5 -->
+                                                <h:outputText value="Item Name/Code:" styleClass="label"/>
+                                                <h:outputText value="#{pharmacyController.item != null ? pharmacyController.item.name : 'All'}"/>
+
+                                            </h:panelGrid>
+                                        </div>
+                                </div>
+
+                                <h:panelGroup rendered="#{not empty pharmacyController.transferBreakdownGroups}">
+                                    <table class="table-breakdown table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 75mm;">
+                                                    <h:outputText
+                                                        value="#{empty pharmacyController.breakdownPrimaryColumnLabel
+                                                                ? 'Department'
+                                                                : pharmacyController.breakdownPrimaryColumnLabel}"/>
+                                                </th>
+                                                <th style="text-align:right; width: 25mm;">
+                                                    <h:outputText value="Quantity"/>
+                                                </th>
+                                                <th style="text-align:right; width: 35mm;">
+                                                    <h:outputText value="Purchase Value"/>
+                                                </th>
+                                                <th style="text-align:right; width: 35mm;">
+                                                    <h:outputText value="Cost Value"/>
+                                                </th>
+                                                <th style="text-align:right; width: 35mm;">
+                                                    <h:outputText value="Retail Value"/>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{pharmacyController.transferBreakdownGroups}" var="group">
+                                                <tr style="background-color:#f6f6f6; font-weight:bold;">
+                                                    <td>
+                                                        <h:outputText value="#{group.primaryDepartmentName}"/>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalQuantity}">
+                                                            <f:convertNumber pattern="#,##0.##"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalPurchaseValue}">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalCostValue}">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{group.totalRetailValue}">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                                <ui:repeat value="#{group.children}" var="child">
+                                                    <tr>
+                                                        <td style="padding-left: 10px!important;">
+                                                            <h:outputText value="#{child.secondaryDepartmentName}"/>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.quantity}">
+                                                                <f:convertNumber pattern="#,##0.##"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.purchaseValue}">
+
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.costValue}">
+
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{child.retailValue}">
+
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="font-weight:bold;">
+                                                <td>
+                                                    <h:outputText value="Total"/>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalQuantity}">
+                                                        <f:convertNumber pattern="#,##0.##"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalPurchaseValue}">
+
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalCostValue}">
+
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalRetailValue}">
+
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </h:panelGroup>
                             </div>
                         </h:panelGroup>
                     </h:panelGroup>

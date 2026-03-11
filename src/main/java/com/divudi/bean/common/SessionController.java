@@ -1153,12 +1153,12 @@ public class SessionController implements Serializable, HttpSessionListener {
             String hashed = getSecurityController().hashAndCheck(password);
             user.setWebUserPassword(hashed);
             user.setNeedToResetPassword(false);
-            uFacade.edit(user);
+            uFacade.editAndCommit(user);
             recordPasswordHistory(user, hashed);
-            
+
             // Purge old password history entries beyond the configured limit
             purgeOldPasswordHistory(user);
-            
+
             passwordRequirementsFulfilled = true;
             JsfUtil.addSuccessMessage("Password changed");
         } else {
@@ -1188,7 +1188,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         String hashed = getSecurityController().hashAndCheck(newPassword);
         user.setWebUserPassword(hashed);
-        uFacade.edit(user);
+        uFacade.editAndCommit(user);
         recordPasswordHistory(user, hashed);
         
         // Purge old password history entries beyond the configured limit
@@ -1280,7 +1280,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL, true);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (SecurityController.matchPassword(password, u.getWebUserPassword())) {

@@ -148,10 +148,10 @@
                                                     <!-- Row 1 -->
                                                     <h:outputText value="Date:" styleClass="label"/>
                                                     <h:outputText value="#{pharmacyReportController.fromDate}" rendered="#{reportController.getReportTemplateFileIndexName() eq 'Opening Stock'}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                     <h:outputText value="#{pharmacyReportController.toDate}" rendered="#{reportController.getReportTemplateFileIndexName() ne 'Opening Stock'}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
 
                                                     <h:outputText value="Institute:" styleClass="label"/>
@@ -351,10 +351,10 @@
 
                                             <h:outputText value="Date:" styleClass="label"/>
                                             <h:outputText value="#{pharmacyReportController.fromDate}" rendered="#{reportController.getReportTemplateFileIndexName() eq 'Opening Stock'}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                             <h:outputText value="#{pharmacyReportController.toDate}" rendered="#{reportController.getReportTemplateFileIndexName() ne 'Opening Stock'}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
 
                                             <h:outputText value="Institute:" styleClass="label"/>

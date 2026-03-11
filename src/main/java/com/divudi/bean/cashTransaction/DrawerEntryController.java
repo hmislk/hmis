@@ -2,6 +2,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.DrawerEntry;
@@ -145,6 +146,34 @@ public class DrawerEntryController implements Serializable {
         Collections.reverse(result);
 
         // Assign to the class field
+        userDrawerEntry = result;
+    }
+
+    public void findAllUsersDrawerAdjustments() {
+        userDrawerEntry = new ArrayList();
+        String jpql = "select de"
+                + " from DrawerEntry de"
+                + " where de.retired=:ret"
+                + " and de.bill.billTypeAtomic=:bta";
+
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bta", BillTypeAtomic.DRAWER_ADJUSTMENT);
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and de.createdAt between :fd and :td";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+        if (webUser != null) {
+            jpql += " and de.webUser=:wu ";
+            m.put("wu", webUser);
+        }
+
+        jpql += " order by de.id desc";
+
+        List<DrawerEntry> result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        Collections.reverse(result);
         userDrawerEntry = result;
     }
 

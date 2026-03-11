@@ -347,8 +347,6 @@ public class PharmacyService {
         PharmacyBundle bundle;
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        for (BillTypeAtomic bta : billTypeAtomics) {
-        }
 
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
