@@ -96,6 +96,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     private boolean printPreview;
+    private boolean itemHistoryVisible;
     private double totalBillItemsCount;
     private Long billId;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
@@ -194,6 +195,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBillItem = null;
         billItems = null;
         printPreview = false;
+        itemHistoryVisible = false;
     }
 
     public void addItem() {
@@ -472,6 +474,19 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
+        itemHistoryVisible = true;
+    }
+
+    public void closeItemHistory() {
+        itemHistoryVisible = false;
+    }
+
+    public boolean isItemHistoryVisible() {
+        return itemHistoryVisible;
+    }
+
+    public void setItemHistoryVisible(boolean itemHistoryVisible) {
+        this.itemHistoryVisible = itemHistoryVisible;
     }
 
     /**

@@ -185,7 +185,18 @@
                                 </p:dataTable> 
 
                                 <h:panelGroup id="itemHistoryWrapper" layout="block">
-                                    <ph:history id="itemHistory"/>
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible}" layout="block">
+                                        <div class="d-flex justify-content-end mt-2">
+                                            <p:commandButton
+                                                icon="pi pi-times"
+                                                title="Close Item History"
+                                                class="ui-button-danger ui-button-sm"
+                                                action="#{purchaseOrderRequestController.closeItemHistory()}"
+                                                update="itemHistoryWrapper"
+                                                process="@this"/>
+                                        </div>
+                                        <ph:history id="itemHistory"/>
+                                    </h:panelGroup>
                                 </h:panelGroup>
 
 
