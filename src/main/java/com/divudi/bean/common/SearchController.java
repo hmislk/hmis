@@ -17615,9 +17615,13 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
         jpql = "select d from Drawer d "
-                + " where d.retired=:ret"
-                + " order by d.drawerUser.name ";
+                + " where d.retired=:ret";
         params.put("ret", false);
+        if (webUser != null) {
+            jpql += " and d.drawerUser=:wu";
+            params.put("wu", webUser);
+        }
+        jpql += " order by d.drawerUser.name ";
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 

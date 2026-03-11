@@ -97,6 +97,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3786,6 +3787,31 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     return null;
                 } else if (getPatient().getPatientMobileNumber() != null && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
                     JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                    return null;
+                }
+            }
+        }
+
+        // Duplicate bill item detection - prevent double stock deduction (Closes #18874)
+        // Check 1: Same object reference appearing multiple times (rapid Add button click)
+        Set<Integer> seenIdentities = new HashSet<>();
+        for (BillItem bi : getPreBill().getBillItems()) {
+            if (!seenIdentities.add(System.identityHashCode(bi))) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Duplicate item detected. Please remove duplicate items and try again.");
+                return null;
+            }
+        }
+        // Check 2: Different BillItem objects pointing to the same Stock batch
+        Set<Long> seenStockIds = new HashSet<>();
+        for (BillItem bi : getPreBill().getBillItems()) {
+            if (bi.getPharmaceuticalBillItem() != null
+                    && bi.getPharmaceuticalBillItem().getStock() != null
+                    && bi.getPharmaceuticalBillItem().getStock().getId() != null) {
+                if (!seenStockIds.add(bi.getPharmaceuticalBillItem().getStock().getId())) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Duplicate item batch detected: "
+                        + bi.getItem().getName() + ". Please remove duplicate items and try again.");
                     return null;
                 }
             }

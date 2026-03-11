@@ -60,7 +60,6 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.text.DocumentException;
 
 import java.util.function.Supplier;
 
@@ -2706,7 +2705,7 @@ public class PdfController {
                 .build();
     }
 
-    private void populateTableForWhtIndividualReceipts(Document document, ReportTemplateRowBundle bundle) {
+    private void populateTableForWhtIndividualReceipts(Document document, ReportTemplateRowBundle bundle) throws IOException {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             document.add(new Paragraph("No Data Available"));
             return;
@@ -2718,10 +2717,10 @@ public class PdfController {
 
             for (String header : headers) {
                 Cell headerCell = new Cell()
-                        .add(new Paragraph(header).setBold())
+                        .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
                         .setTextAlignment(TextAlignment.CENTER)
                         .setFontSize(8)
-                        .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                        .setBackgroundColor(new DeviceRgb(192, 192, 192));
                 table.addCell(headerCell);
             }
 
@@ -2788,9 +2787,9 @@ public class PdfController {
             } 
             
             table.addCell(new Cell(1, 6).add(new Paragraph("")));
-            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
 
 
             document.add(table);
@@ -2800,7 +2799,7 @@ public class PdfController {
         
     }
 
-    private void populateTableForWhtSummary(Document document, ReportTemplateRowBundle bundle) {
+    private void populateTableForWhtSummary(Document document, ReportTemplateRowBundle bundle) throws IOException {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             document.add(new Paragraph("No Data Available"));
             return;
@@ -2824,10 +2823,10 @@ public class PdfController {
 
         for (String header : headers) {
             Cell headerCell = new Cell()
-                    .add(new Paragraph(header).setBold())
+                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
                     .setTextAlignment(TextAlignment.CENTER)
                     .setFontSize(8)
-                    .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
             table.addCell(headerCell);
         }
 
@@ -2846,9 +2845,9 @@ public class PdfController {
         } 
 
         table.addCell(new Cell().add(new Paragraph("")));
-        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
 
         document.add(table);
 
@@ -2872,7 +2871,7 @@ public class PdfController {
         for (Map.Entry<String, Object> entry : filters.entrySet()) {
 
             // LABEL
-            Cell labelCell = new Cell().add(new Paragraph(entry.getKey()).setFontSize(8).setBold().setTextAlignment(TextAlignment.LEFT));
+            Cell labelCell = new Cell().add(new Paragraph(entry.getKey()).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setFontSize(8).setTextAlignment(TextAlignment.LEFT));
             infoTable.addCell(labelCell);
 
             // VALUE
