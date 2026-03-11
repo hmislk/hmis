@@ -10309,7 +10309,7 @@ public class PharmacyReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"Batch Wise Stock Report.pdf\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -10322,7 +10322,7 @@ public class PharmacyReportController implements Serializable {
 
             // Title
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
+            Paragraph title = new Paragraph(reportController.getReportTemplateFileIndexName() != null ? reportController.getReportTemplateFileIndexName() : "Closing Stock Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(10);
             document.add(title);
@@ -10464,7 +10464,7 @@ public class PharmacyReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"Item Wise Stock Report.pdf\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -10476,7 +10476,7 @@ public class PharmacyReportController implements Serializable {
             document.add(new Paragraph(" "));
 
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            Paragraph title = new Paragraph("Closing Stock Report", titleFont);
+            Paragraph title = new Paragraph(reportController.getReportTemplateFileIndexName() != null ? reportController.getReportTemplateFileIndexName() : "Closing Stock Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(10);
             document.add(title);
@@ -12894,12 +12894,12 @@ public class PharmacyReportController implements Serializable {
                 sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 9));
             }
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
+            SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
             Row titleRow = sheet.createRow(0);
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellStyle(headerStyle);
-            titleCell.setCellValue("Closing Stock Report");
+            titleCell.setCellValue(reportController.getReportTemplateFileIndexName() != null ? reportController.getReportTemplateFileIndexName() : "Closing Stock Report");
 
             Row metaRow = sheet.createRow(1);
             metaRow.createCell(0).setCellValue("Report Type:");
