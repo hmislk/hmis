@@ -11296,7 +11296,7 @@ public class PharmacyController implements Serializable {
         metaStyleBold.setFont(metaFontBold);
 
         if (title != null && !title.isEmpty()) {
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
             Row titleRow = sheet.createRow(rowIndex++);
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue(title);
