@@ -57,7 +57,7 @@
                                             id="btnViewSelectedItemDetails"
                                             title="View Item Details"
                                             action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
-                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            update="itemHistoryWrapper"
                                             process="@this"
                                             class="ui-button-icon-only mx-3"/>
                                     </p:column>
@@ -184,9 +184,9 @@
 
                                 </p:dataTable> 
 
-                                <div >
+                                <h:panelGroup id="itemHistoryWrapper" layout="block">
                                     <ph:history id="itemHistory"/>
-                                </div>
+                                </h:panelGroup>
 
 
                             </div>
