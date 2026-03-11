@@ -155,7 +155,7 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel styleClass="shadow-sm">
+                        <p:panel styleClass="shadow-sm" contentStyle="overflow-x: auto; overflow-y: visible;">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>GRN Return Requests for Approval</span>
@@ -188,9 +188,8 @@
                                 emptyMessage="No GRN return requests found matching your criteria"
                                 filteredValue="#{grnReturnWorkflowController.filteredGrnReturnsToApprove}"
                                 sortMode="multiple"
-                                resizableColumns="true"
-                                reflow="true">
-                            <p:column id="colRequestedAt" headerText="Requested At" toggleable="true">
+                                tableStyle="width: max-content;">
+                            <p:column id="colRequestedAt" headerText="Requested At" toggleable="true" style="min-width: 140px;" headerStyle="white-space: nowrap;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     <h:outputLabel value="#{b.createdAt}">
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -207,7 +206,7 @@
                                 </h:panelGroup>                       
                             </p:column> 
 
-                            <p:column id="colRequestedBy" headerText="Requested By" toggleable="true">
+                            <p:column id="colRequestedBy" headerText="Requested By" toggleable="true" style="min-width: 130px;" headerStyle="white-space: nowrap;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}">                                      
                                     </h:outputLabel>
@@ -222,29 +221,29 @@
                                 </h:panelGroup>
                             </p:column>    
 
-                            <p:column id="colSupplier" headerText="Supplier" toggleable="true">
+                            <p:column id="colSupplier" headerText="Supplier" toggleable="true" style="min-width: 130px;" headerStyle="white-space: nowrap;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column id="colReturnNo" headerText="Return No" toggleable="true">
+                            <p:column id="colReturnNo" headerText="Return No" toggleable="true" style="min-width: 110px;" headerStyle="white-space: nowrap;">
                                 <h:outputText value="#{b.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column id="colOriginalGrn" headerText="Original GRN" toggleable="true">
+                            <p:column id="colOriginalGrn" headerText="Original GRN" toggleable="true" style="min-width: 120px;" headerStyle="white-space: nowrap;">
                                 <h:outputText value="#{b.referenceBill.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column id="colRequestedDept" headerText="Requested Department" toggleable="true">
+                            <p:column id="colRequestedDept" headerText="Requested Department" toggleable="true" style="min-width: 160px;" headerStyle="white-space: nowrap;">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     #{b.department.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column id="colRequestedValue" headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true">
+                            <p:column id="colRequestedValue" headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true" style="min-width: 140px;" headerStyle="white-space: nowrap;">
                                 <div class="d-flex align-items-center justify-content-end">
                                     <i class="fas fa-coins text-success me-2"></i>
                                     <span class="fw-bold text-success fs-6">
@@ -255,7 +254,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column id="colApprovedPerson" headerText="Approved Person" toggleable="true">
+                            <p:column id="colApprovedPerson" headerText="Approved Person" toggleable="true" style="min-width: 140px;" headerStyle="white-space: nowrap;">
                                 <h:commandLink 
                                     action="pharmacy_reprint_grn_return_request" 
                                     value="#{b.completedBy.webUserPerson.nameWithTitle}"
@@ -264,7 +263,7 @@
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column id="colApprovedValue" headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true">
+                            <p:column id="colApprovedValue" headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true" style="min-width: 130px;" headerStyle="white-space: nowrap;">
                                 <div class="d-flex align-items-center justify-content-end" rendered="#{b.completed eq true}">
                                     <i class="fas fa-coins text-info me-2"></i>
                                     <span class="fw-bold text-info fs-6">
@@ -275,7 +274,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column id="colStatus" headerText="Status" width="8em" toggleable="true">
+                            <p:column id="colStatus" headerText="Status" toggleable="true" style="min-width: 100px;" headerStyle="white-space: nowrap;">
                                 <h:panelGroup rendered="#{b.checkedBy ne null and (b.completed eq false or b.completed eq null)}">
                                     <span class="badge bg-warning text-dark">Pending Approval</span>
                                 </h:panelGroup>
@@ -287,7 +286,7 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="150">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" style="min-width: 150px;" headerStyle="white-space: nowrap;">
                                 <div class="d-flex justify-content-center align-items-center gap-1">
                                     <p:commandButton
                                         id="approve"
@@ -316,7 +315,6 @@
                                 </div>
                             </p:column>
                         </p:dataTable>
-                            
                         <!-- Column Visibility Settings -->
                         <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
                             <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">

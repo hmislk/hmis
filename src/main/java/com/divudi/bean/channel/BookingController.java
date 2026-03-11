@@ -338,7 +338,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                     return statusComparison;
                 }
                 // If status is the same, sort by starting time
-                return si1.getStartingTime().compareTo(si2.getStartingTime());
+                return Comparator.nullsLast(Date::compareTo).compare(si1.getStartingTime(), si2.getStartingTime());
             }
 
             private Integer getStatusOrder(SessionInstance si) {

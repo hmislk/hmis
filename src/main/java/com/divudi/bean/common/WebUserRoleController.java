@@ -110,6 +110,21 @@ public class WebUserRoleController implements Serializable {
         items = findAllItems();
         JsfUtil.addSuccessMessage("Saved");
     }
+    
+    public void deleteCurrent() {
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Select a user role to delete");
+        }
+        
+        items = findAllItems();
+        current = null;
+    }
 
     public void save(WebUserRole r){
         if(r==null){

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -58,6 +59,8 @@ public class SmsController implements Serializable {
     SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     /*
     Class Variables
@@ -226,7 +229,7 @@ public class SmsController implements Serializable {
 
         String jpql
                 = "select new com.divudi.core.data.dto.SmsDTO("
-                + " COALESCE(s.id, ''), "
+                + " COALESCE(s.id, 0), "
                 + " s.createdAt, "
                 + " s.sentAt, "
                 + " s.smsType, "
@@ -413,8 +416,15 @@ public class SmsController implements Serializable {
         boolean sent = smsManager.sendSms(s);
 
         if (sent) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addResentFailureSMSHistory(s.getPatientInvestigation(), s.getPatientReport(), s);
+            }
             JsfUtil.addSuccessMessage("SMS sent successfully");
         } else {
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addSentSMSFailureHistory(s.getPatientInvestigation(), s.getPatientReport(), s, s.getReceivedMessage());
+            }
             JsfUtil.addErrorMessage("SMS sending failed");
         }
     }

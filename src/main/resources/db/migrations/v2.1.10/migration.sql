@@ -44,20 +44,12 @@ ORDER BY (data_length + index_length) DESC;
 
 -- =====================================================
 -- PERFORMANCE INDEX CREATION
--- Using conditional logic to avoid "index already exists" errors
+-- Index creation is unconditional; duplicate index errors are handled by DatabaseMigrationController
 -- =====================================================
 
 -- INDEX 1: Critical stock value calculation performance
--- Only create if it doesn't exist
-SET @index1_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
-                      WHERE TABLE_SCHEMA = DATABASE()
-                      AND TABLE_NAME = 'STOCKHISTORY'
-                      AND INDEX_NAME = 'idx_stockhistory_dept_batch_date_retired');
-
 SELECT 'Creating Index 1: Stock calculation optimization...' AS status;
 
--- Create index 1 if not exists (MySQL compatible way)
--- Note: We'll use a stored procedure approach or handle the error gracefully
 CREATE INDEX idx_stockhistory_dept_batch_date_retired
 ON STOCKHISTORY (DEPARTMENT_ID, ITEMBATCH_ID, CREATEDAT, RETIRED, STOCKQTY);
 

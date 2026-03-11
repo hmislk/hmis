@@ -3308,6 +3308,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/opd/patient?faces-redirect=true";
     }
 
+    public String saveAndNavigateToAdmissionProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return null;
+        }
+        return admissionController.navigateToAdmissionProfilePage();
+    }
+
     public boolean saveSelected(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");

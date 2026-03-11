@@ -28,15 +28,27 @@
                                                 <div class="col-6" >
                                                     <p:focus id="focusForName" for="txtRole" ></p:focus>
                                                     <p:focus id="focusForList" for="lstItems" ></p:focus>
-                                                    <p:commandButton 
-                                                        id="btnAdd"
-                                                        icon="fas fa-add"
-                                                        class="ui-button-success my-2"
-                                                        value="Add New" 
-                                                        process="btnAdd"
-                                                        update="gpDetails focusForName actions"
-                                                        action="#{webUserRoleController.toAddNewUserRole}">
-                                                    </p:commandButton>
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton 
+                                                            id="btnAdd"
+                                                            icon="fas fa-add"
+                                                            class="ui-button-success my-2"
+                                                            value="Add New" 
+                                                            process="btnAdd"
+                                                            update="gpDetails focusForName actions"
+                                                            action="#{webUserRoleController.toAddNewUserRole}">
+                                                        </p:commandButton>
+                                                        <p:commandButton 
+                                                            id="btnDelete"
+                                                            class="ui-button-danger my-2"
+                                                            onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                                return false;"
+                                                            value="Delete" 
+                                                            process="btnDelete"
+                                                            update="gpDetails actions focusForList lstItems growl"
+                                                            action="#{webUserRoleController.deleteCurrent}">
+                                                        </p:commandButton>
+                                                    </div>
 
                                                     <p:selectOneListbox 
                                                         id="lstItems"

@@ -9,15 +9,13 @@
 
     <h:body>
 
-        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
+        <ui:composition template="/payments/pay_index.xhtml">
 
-            <ui:define name="opdPaymentContent">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel header="OPD Payments Due Search" >
                         <f:facet name="header">
                             <h:outputLabel value="OPD Payments Due Search"/>
-                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/opd/opd_doctor_payment_index?faces-redirect=true" ajax="false"/>
-
                         </f:facet>
 
                         <div class="row">
@@ -34,16 +32,21 @@
                                     value="Search" 
                                     action="#{searchController.createDueFeeTableAll()}" 
                                     icon="fas fa-search"
-                                    class="w-100 my-1 ui-button-warning"/>                                
-                                <p:commandButton ajax="false" value="Excel" class="w-100 ui-button-success"
-                                                 icon="fas fa-file-excel">
+                                    class="w-100 my-1 ui-button-warning">
+                                </p:commandButton>   
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Excel" 
+                                    class="w-100 mb-3 ui-button-success"
+                                    icon="fas fa-file-excel">
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>  
 
-                                <h:outputLabel value="OPD Bill No"/>
+                                <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="my-1 w-100"/>
-                                <h:outputLabel value="BHT No"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
+                                <h:outputLabel value="MRN"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.phn}" class="my-1 w-100"/>
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="my-1 w-100"/>
                                 <h:outputLabel value="Speciality"/> 
@@ -55,25 +58,32 @@
                                 <h:outputLabel value="Charges"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}" class="my-1 w-100"/>
 
-                                <p:defaultCommand target="btnSearch" />
-
                             </div>
                             <div class="col-10">
-                                <p:dataTable rowIndexVar="i" 
-                                             id="tblFee" value="#{searchController.billFees}" 
-                                             var="bf"
-                                             style="min-width: 100%;"  
-                                             rows ="10"              
-                                             paginator="true"
-                                             paginatorPosition="bottom"
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,25,50">
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblFee" 
+                                    value="#{searchController.billFees}" 
+                                    var="bf"
+                                    style="min-width: 100%;"  
+                                    rows ="10"              
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,25,50">
 
                                     <f:facet name="header">
-                                        #{searchController.total}
+                                        <div class="d-flex justify-content-end gap-2" style="font-weight: 700; font-size: 22px;">
+                                            <h:outputLabel value="Total Paying"/>
+                                            <h:outputLabel value=":"/>
+                                            <h:outputLabel value="#{searchController.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </div>
+
                                     </f:facet>
 
-                                    <p:column headerText="No" styleClass="alignTop">
+                                    <p:column headerText="No" width="2em;" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
@@ -90,11 +100,11 @@
                                     </p:column>
 
                                     <p:column headerText="Patient" >
-                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>
                                     </p:column>
 
                                     <p:column headerText="Bill No">
-                                        <h:commandLink action="/opd/payment_staff_bill" >
+                                        <h:commandLink action="/opd/payment_staff_bill?faces-redirect=true" >
                                             <h:outputLabel value="#{bf.bill.deptId}">
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
@@ -117,8 +127,10 @@
                                         <h:outputLabel value="#{bf.billItem.item.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Charge" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bf.feeValue}" />
+                                    <p:column headerText="Charge" class="text-end">
+                                        <h:outputLabel value="#{bf.feeValue}" class="text-end">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                     </p:column>
 
                                 </p:dataTable>

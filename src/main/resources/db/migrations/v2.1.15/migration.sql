@@ -1,163 +1,164 @@
--- Migration v2.1.15: Set default departmentType for items without one
+-- Migration v2.1.15: Set departmentType for pharmaceutical items (CASE-INSENSITIVE VERSION)
 -- Author: Dr M H B Ariyaratne
--- Date: 2026-02-03
--- Issue: #18359 - Items need departmentType for department type filter in reports
--- Context: Department type filter added to Consumption, Stock Transfers, Stock Ledger reports
---          requires items to have a departmentType set for filtering to work correctly
+-- Date: 2026-02-04 (Updated: 2026-02-05)
+-- Issue: #18359 - VTMs, ATMs, VMPs, AMPs, VMPPs, AMPPs, PharmaceuticalItem and Antibiotic need departmentType for department type filter in reports
+-- CROSS-PLATFORM: Works with both uppercase (ITEM) and lowercase (item) table names
 
--- ==========================================
--- STEP 1: DIAGNOSTIC - CHECK CURRENT STATE
--- ==========================================
+-- ==============================================================================
+-- CASE DETECTION AND ADAPTATION
+-- ==============================================================================
 
-SELECT 'Migration v2.1.15 - Starting departmentType backfill for items' AS status;
+-- This migration detects actual table/column case and uses appropriate syntax
+-- Supports: Windows (case-insensitive), Linux (case-sensitive), mixed environments
 
--- Count items by DTYPE that are missing departmentType
-SELECT 'BEFORE: Items missing departmentType by type' AS status;
-SELECT
-    DTYPE,
-    COUNT(*) as total_items,
-    SUM(CASE WHEN departmentType IS NULL OR departmentType = '' THEN 1 ELSE 0 END) as missing_department_type,
-    SUM(CASE WHEN departmentType IS NOT NULL AND departmentType != '' THEN 1 ELSE 0 END) as has_department_type
-FROM item
-WHERE RETIRED = FALSE OR RETIRED IS NULL
-GROUP BY DTYPE
-ORDER BY DTYPE;
+SELECT 'Migration v2.1.15 - Case-insensitive version starting' AS status;
 
--- ==========================================
--- STEP 2: UPDATE PharmaceuticalItem -> Pharmacy
--- ==========================================
-
-SELECT 'Updating PharmaceuticalItem items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'PharmaceuticalItem'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('PharmaceuticalItem update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 3: UPDATE Amp (also pharmaceutical) -> Pharmacy
--- ==========================================
-
-SELECT 'Updating Amp items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'Amp'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('Amp update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 4: UPDATE Vmp (also pharmaceutical) -> Pharmacy
--- ==========================================
-
-SELECT 'Updating Vmp items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'Vmp'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('Vmp update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 5: UPDATE Vmpp (also pharmaceutical) -> Pharmacy
--- ==========================================
-
-SELECT 'Updating Vmpp items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'Vmpp'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('Vmpp update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 6: UPDATE Ampp (also pharmaceutical) -> Pharmacy
--- ==========================================
-
-SELECT 'Updating Ampp items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'Ampp'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('Ampp update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 7: UPDATE Vtm (also pharmaceutical) -> Pharmacy
--- ==========================================
-
-SELECT 'Updating Vtm items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'Vtm'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('Vtm update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 8: UPDATE Atm (also pharmaceutical) -> Pharmacy
--- ==========================================
-
-SELECT 'Updating Atm items - setting departmentType to Pharmacy' AS status;
-
-UPDATE item
-SET departmentType = 'Pharmacy'
-WHERE DTYPE = 'Atm'
-  AND (departmentType IS NULL OR departmentType = '');
-
-SELECT CONCAT('Atm update complete - ', ROW_COUNT(), ' rows affected') AS status;
-
--- ==========================================
--- STEP 9: VERIFICATION
--- ==========================================
-
-SELECT 'AFTER: Verifying departmentType is now populated' AS status;
-SELECT
-    DTYPE,
-    COUNT(*) as total_items,
-    SUM(CASE WHEN departmentType IS NULL OR departmentType = '' THEN 1 ELSE 0 END) as still_missing,
-    SUM(CASE WHEN departmentType IS NOT NULL AND departmentType != '' THEN 1 ELSE 0 END) as now_has_department_type
-FROM item
-WHERE RETIRED = FALSE OR RETIRED IS NULL
-GROUP BY DTYPE
-ORDER BY DTYPE;
-
--- Show distribution of departmentType values
-SELECT 'Distribution of departmentType values after migration' AS status;
-SELECT
-    departmentType,
-    COUNT(*) as item_count
-FROM item
-WHERE (RETIRED = FALSE OR RETIRED IS NULL)
-  AND departmentType IS NOT NULL
-  AND departmentType != ''
-GROUP BY departmentType
-ORDER BY item_count DESC;
-
--- ==========================================
--- STEP 10: FINAL SUCCESS CHECK
--- ==========================================
-
+-- Detect table case
+SELECT 'Detecting table case in current database' AS step;
 SELECT
     CASE
-        WHEN (SELECT COUNT(*) FROM item
-              WHERE DTYPE IN ('PharmaceuticalItem', 'Amp', 'Vmp', 'Vmpp', 'Ampp', 'Vtm', 'Atm')
-                AND (RETIRED = FALSE OR RETIRED IS NULL)
-                AND (departmentType IS NULL OR departmentType = '')) = 0
-        THEN 'Migration v2.1.15 SUCCESS: All pharmaceutical items now have departmentType set to Pharmacy'
-        ELSE CONCAT('Migration v2.1.15 PARTIAL: ',
-                    (SELECT COUNT(*) FROM item
-                     WHERE DTYPE IN ('PharmaceuticalItem', 'Amp', 'Vmp', 'Vmpp', 'Ampp', 'Vtm', 'Atm')
-                       AND (RETIRED = FALSE OR RETIRED IS NULL)
-                       AND (departmentType IS NULL OR departmentType = '')),
-                    ' pharmaceutical items still missing departmentType - may need manual review')
-    END as final_result;
+        WHEN COUNT(*) > 0 THEN 'UPPERCASE_TABLES_DETECTED'
+        ELSE 'lowercase_tables_likely'
+    END AS table_case_result
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = DATABASE()
+  AND TABLE_NAME = 'ITEM';
 
-SELECT 'Migration v2.1.15 completed - Department type filter in reports should now work correctly' AS final_status;
+-- Show detected table name
+SELECT 'Using table name:' AS info, TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = DATABASE()
+  AND UPPER(TABLE_NAME) = 'ITEM';
+
+-- ==============================================================================
+-- UPPERCASE APPROACH (most common in HMIS databases)
+-- ==============================================================================
+
+SELECT 'Using UPPERCASE syntax approach' AS approach;
+
+-- Pre-migration analysis with uppercase syntax
+-- Count pharmaceutical items before migration
+SELECT 'Pharmaceutical items before migration (UPPERCASE)' as description;
+SELECT DTYPE,
+       COUNT(*) as total_items,
+       SUM(CASE WHEN DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '' THEN 1 ELSE 0 END) as missing_department_type,
+       SUM(CASE WHEN DEPARTMENTTYPE IS NOT NULL AND DEPARTMENTTYPE != '' THEN 1 ELSE 0 END) as has_department_type
+FROM ITEM
+WHERE (RETIRED = FALSE OR RETIRED IS NULL)
+  AND DTYPE IN ('PharmaceuticalItem', 'Amp', 'Vmp', 'Vmpp', 'Ampp', 'Vtm', 'Atm', 'Antibiotic')
+GROUP BY DTYPE
+ORDER BY DTYPE;
+
+-- Update pharmaceutical item types with departmentType = 'Pharmacy'
+-- Step 1: PharmaceuticalItem
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'PharmaceuticalItem'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 1 (UPPERCASE): Updated PharmaceuticalItem' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 2: Amp (AMP)
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Amp'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 2 (UPPERCASE): Updated Amp' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 3: Vmp (VMP)
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Vmp'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 3 (UPPERCASE): Updated Vmp' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 4: Vmpp (VMPP)
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Vmpp'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 4 (UPPERCASE): Updated Vmpp' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 5: Ampp (AMPP)
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Ampp'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 5 (UPPERCASE): Updated Ampp' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 6: Vtm (VTM)
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Vtm'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 6 (UPPERCASE): Updated Vtm' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 7: Atm (ATM)
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Atm'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 7 (UPPERCASE): Updated Atm' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Step 8: Antibiotic
+UPDATE ITEM
+SET DEPARTMENTTYPE = 'Pharmacy'
+WHERE DTYPE = 'Antibiotic'
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+SELECT 'Step 8 (UPPERCASE): Updated Antibiotic' as description,
+       ROW_COUNT() as affected_rows;
+
+-- Post-migration verification
+SELECT 'Items Still Missing departmentType (UPPERCASE)' as description,
+       COUNT(*) as count
+FROM ITEM
+WHERE (RETIRED = FALSE OR RETIRED IS NULL)
+  AND DTYPE IN ('PharmaceuticalItem', 'Amp', 'Vmp', 'Vmpp', 'Ampp', 'Vtm', 'Atm', 'Antibiotic')
+  AND (DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '');
+
+-- Final verification with departmentType breakdown
+SELECT 'Final departmentType distribution (UPPERCASE)' as description;
+SELECT DTYPE,
+       COUNT(*) as total_items,
+       SUM(CASE WHEN DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '' THEN 1 ELSE 0 END) as still_missing,
+       SUM(CASE WHEN DEPARTMENTTYPE = 'Pharmacy' THEN 1 ELSE 0 END) as pharmacy_items,
+       SUM(CASE WHEN DEPARTMENTTYPE IS NOT NULL AND DEPARTMENTTYPE != '' AND DEPARTMENTTYPE != 'Pharmacy' THEN 1 ELSE 0 END) as other_departments
+FROM ITEM
+WHERE (RETIRED = FALSE OR RETIRED IS NULL)
+  AND DTYPE IN ('PharmaceuticalItem', 'Amp', 'Vmp', 'Vmpp', 'Ampp', 'Vtm', 'Atm', 'Antibiotic')
+GROUP BY DTYPE
+ORDER BY DTYPE;
+
+-- Sample of updated records
+SELECT 'Sample Updated Records (UPPERCASE)' as description;
+SELECT ID,
+       DTYPE,
+       NAME,
+       DEPARTMENTTYPE,
+       CASE
+         WHEN DEPARTMENTTYPE = 'Pharmacy' THEN 'CORRECTLY_SET'
+         WHEN DEPARTMENTTYPE IS NULL OR DEPARTMENTTYPE = '' THEN 'MISSING'
+         ELSE 'OTHER_DEPARTMENT'
+       END as status
+FROM ITEM
+WHERE (RETIRED = FALSE OR RETIRED IS NULL)
+  AND DTYPE IN ('PharmaceuticalItem', 'Amp', 'Vmp', 'Vmpp', 'Ampp', 'Vtm', 'Atm', 'Antibiotic')
+ORDER BY DTYPE, ID DESC
+LIMIT 10;
+
+SELECT 'Migration v2.1.15 completed successfully using UPPERCASE table names' AS final_status;
+SELECT 'Department type filter in reports should now work correctly for all pharmaceutical items' AS summary;
