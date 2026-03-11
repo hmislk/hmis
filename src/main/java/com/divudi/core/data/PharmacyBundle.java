@@ -948,6 +948,11 @@ public class PharmacyBundle implements Serializable {
                     groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
                 );
             }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                groupRow.setValueOfStocksAtPurchaseRate(
+                    groupRow.getValueOfStocksAtPurchaseRate().add(r.getValueOfStocksAtPurchaseRate())
+                );
+            }
             if (r.getValueOfStocksAtRetailSaleRate() != null) {
                 groupRow.setValueOfStocksAtRetailSaleRate(
                     groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
