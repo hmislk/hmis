@@ -309,6 +309,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBill = billService.reloadBill(currentBill);
         calculateBillTotals();
         currentBillItem = null;
+        itemHistoryVisible = false;
     }
 
     @Inject

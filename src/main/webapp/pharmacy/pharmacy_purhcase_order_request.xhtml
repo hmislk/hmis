@@ -195,7 +195,7 @@
                                             class="ui-button-danger" 
                                             icon="fas fa-trash"
                                             process="itemList"
-                                            update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                            update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId} :form:itemHistoryAboveWrapper :form:itemHistoryBelowWrapper"
                                             tabindex="-1"
                                             style="padding: 0;"
                                             action="#{purchaseOrderRequestController.removeItem(bi)}"/>
