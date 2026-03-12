@@ -10,6 +10,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="closeActionListener" method-signature="void actionListener()" required="false"/>
+        <cc:attribute name="updateOnClose" type="java.lang.String" required="false" default=""/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -42,6 +44,16 @@
                             class="ui-button-info"
                             icon="far fa-eye"
                             value="View Detail"/>
+                        <p:commandButton
+                            rendered="#{not empty cc.attrs.closeActionListener}"
+                            icon="pi pi-times"
+                            id="btnCloseHistory"
+                            title="Close"
+                            aria-label="Close"
+                            action="#{cc.attrs.closeActionListener}"
+                            update="#{cc.attrs.updateOnClose}"
+                            process="@this"
+                            class="ui-button-danger mx-1"/>
                     </div>
                 </div>
             </f:facet>
