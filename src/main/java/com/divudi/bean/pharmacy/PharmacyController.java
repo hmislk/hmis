@@ -6448,15 +6448,15 @@ public class PharmacyController implements Serializable {
             sql.append("s.stock, ");
             sql.append("ib.purcahseRate, ");
             sql.append("ib.retailsaleRate, ");
-            sql.append("c.name, ");
+            sql.append("COALESCE(c.name, ''), ");
             sql.append("c.id, ");
             sql.append("d.id, ");
-            sql.append("d.name) ");
+            sql.append("COALESCE(d.name, '')) ");
             sql.append("FROM Stock s ");
             sql.append("JOIN s.itemBatch ib ");
             sql.append("JOIN ib.item i ");
-            sql.append("JOIN i.category c ");
-            sql.append("JOIN s.department d ");
+            sql.append("LEFT JOIN i.category c ");
+            sql.append("LEFT JOIN s.department d ");
             sql.append("WHERE s.retired = false ");
             sql.append("AND s.stock IS NOT NULL ");
 
