@@ -1402,9 +1402,9 @@ public class PurchaseOrderRequestController implements Serializable {
         PageMetadata metadata = new PageMetadata(
                 "pharmacy/pharmacy_purhcase_order_request",
                 "Pharmacy Purchase Order Request",
-                "Create and manage pharmacy purchase order requests to suppliers"
+                "Create and manage pharmacy purchase order requests to suppliers",
+                "PurchaseOrderRequestController"
         );
-        metadata.setControllerClass("PurchaseOrderRequestController");
 
         // Configuration Options - APPLICATION scope
         metadata.addConfigOption(new ConfigOptionInfo(
