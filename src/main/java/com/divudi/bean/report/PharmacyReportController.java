@@ -4591,7 +4591,7 @@ public class PharmacyReportController implements Serializable {
                 nTotal.setCellStyle(numberStyle);
 
                 Cell d8 = row.createCell(15);
-                d8.setCellValue(f.getBill().getComments() != null ? f.getBill().getComments() : "-");
+                d8.setCellValue(f.getBill() != null && f.getBill().getComments() != null ? f.getBill().getComments() : "-");
                 d8.setCellStyle(dataStyle);
 
             }
