@@ -4374,6 +4374,9 @@ public class PharmacyReportController implements Serializable {
             numberStyle.cloneStyleFrom(dataStyle);
             numberStyle.setDataFormat(format.getFormat("#,##0.00"));
 
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
             // =========================
             // FILTER HEADER SECTION
             // =========================
@@ -4417,9 +4420,9 @@ public class PharmacyReportController implements Serializable {
             Cell dateCell = dateRow.createCell(0);
             dateCell.setCellValue(
                     "From Date : "
-                    + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(fromDate) : "-")
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
                     + " | To Date : "
-                    + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(toDate) : "-")
+                    + (toDate != null ? sdf.format(toDate) : "-")
             );
             dateCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
@@ -4474,7 +4477,7 @@ public class PharmacyReportController implements Serializable {
 
                 Cell d0 = row.createCell(0);
                 d0.setCellValue(
-                        new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(f.getBill().getCreatedAt()));
+                        sdf.format(f.getBill().getCreatedAt()));
                 d0.setCellStyle(dataStyle);
 
                 Cell d1 = row.createCell(1);
@@ -4517,9 +4520,7 @@ public class PharmacyReportController implements Serializable {
                 d5.setCellStyle(dataStyle);
 
                 Cell d6 = row.createCell(6);
-
                 String deptId = "";
-
                 if (f.getPharmaceuticalBillItem() != null
                         && f.getPharmaceuticalBillItem().getBillItem() != null
                         && f.getPharmaceuticalBillItem().getBillItem().getBill() != null
@@ -4532,7 +4533,6 @@ public class PharmacyReportController implements Serializable {
                 } else if (f.getBill() != null && f.getBill().getReferenceBill() != null) {
                     deptId = f.getBill().getReferenceBill().getDeptId();
                 }
-
                 d6.setCellValue(deptId != null ? deptId : "");
                 d6.setCellStyle(dataStyle);
 
@@ -4606,7 +4606,7 @@ public class PharmacyReportController implements Serializable {
             totalLabel.setCellStyle(headerStyle);
 
             Cell pTotalValue = totalRow.createCell(9);
-            pTotalValue.setCellValue(purchaseValueTotal);
+            pTotalValue.setCellValue(totalPurchaseValue);
             pTotalValue.setCellStyle(numberStyle);
 
             Cell cTotalValue = totalRow.createCell(11);
