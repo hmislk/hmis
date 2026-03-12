@@ -46,7 +46,7 @@
                                     <p:commandButton 
                                         class="ui-button-success mx-1" 
                                         icon="fas fa-print"
-                                        rendered="#{configOptionController.getBooleanValueByKey('Print Original Purchase Order Approval Bill', false)}"
+                                        rendered="#{webUserController.hasPrivilege('PrintOriginalPoBillFromReprint')}"
                                         value="Print Original" ajax="false" >
                                         <p:printer target="gpOriginalBillPreview" ></p:printer>
                                     </p:commandButton>
@@ -92,7 +92,7 @@
                                     </h:panelGroup> 
                             </div>
                             <div class="col-6 d-flex justify-content-center border border-light boder-1">
-                                    <h:panelGroup id="gpOriginalBillPreview" style="width: 212mm;" rendered="#{configOptionController.getBooleanValueByKey('Print Original Purchase Order Approval Bill', false)}">
+                                    <h:panelGroup id="gpOriginalBillPreview" style="width: 212mm;" rendered="#{webUserController.hasPrivilege('PrintOriginalPoBillFromReprint')}">
 
                                         <ph:po_custom_1
                                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format', true)}"
