@@ -25,8 +25,6 @@ public class StockFacade extends AbstractFacade<Stock> {
 
     @Override
     protected EntityManager getEntityManager() {
-        if (em == null) {
-        }
         return em;
     }
 
@@ -34,11 +32,13 @@ public class StockFacade extends AbstractFacade<Stock> {
         super(Stock.class);
     }
 
-    public List<BeforeStockTakingDTO> findBeforeStockTakingReport(String sql, Map<String, Object> parameters) {
-        Query query = em.createQuery(sql);
+    public List<BeforeStockTakingDTO> findBeforeStockTakingReport(String jpql, Map<String, Object> parameters) {
+        Query query = em.createQuery(jpql);
 
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            query.setParameter(entry.getKey(), entry.getValue());
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
         }
 
         return query.getResultList();

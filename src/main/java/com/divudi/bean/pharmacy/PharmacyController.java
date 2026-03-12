@@ -6518,7 +6518,9 @@ public class PharmacyController implements Serializable {
 
     private List<Stock> convertDtosToStocks(List<BeforeStockTakingDTO> dtos) {
         List<Stock> stocks = new ArrayList<>();
-
+        if (dtos == null) {
+            return stocks;
+        }
         for (BeforeStockTakingDTO dto : dtos) {
             Stock stock = new Stock();
             stock.setId(dto.getId());
@@ -6550,10 +6552,10 @@ public class PharmacyController implements Serializable {
 
             // Set department if needed
             if (dto.getDepartmentId() != null) {
-                Department dept = new Department();
-                dept.setId(dto.getDepartmentId());
-                dept.setName(dto.getDepartmentName());
-                stock.setDepartment(dept);
+                Department department = new Department();
+                department.setId(dto.getDepartmentId());
+                department.setName(dto.getDepartmentName());
+                stock.setDepartment(department);
             }
 
             stocks.add(stock);

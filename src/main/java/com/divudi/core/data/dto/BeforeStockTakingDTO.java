@@ -25,6 +25,9 @@ public class BeforeStockTakingDTO implements Serializable {
     private Long departmentId;
     private String departmentName;
 
+    public BeforeStockTakingDTO() {
+    }
+
     public BeforeStockTakingDTO(
             Long id,
             String itemCode,
