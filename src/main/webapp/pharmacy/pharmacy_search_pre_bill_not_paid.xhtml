@@ -54,13 +54,14 @@
                                             actionListener="#{searchController.createPreBillsNotPaid()}">
                                         </p:commandButton>
                                         
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="Add To Stock" 
-                                            action="#{searchController.addToStock}" 
-                                            icon="fas fa-plus" 
+                                        <p:commandButton
+                                            id="btnAddToStock"
+                                            ajax="false"
+                                            value="Add To Stock"
+                                            action="#{searchController.addToStock}"
+                                            icon="fas fa-plus"
                                             styleClass="ui-button-success"
-                                            disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock')}">
+                                            disabled="#{!webUserController.hasPrivilege('PharmacyAddToStock') or empty searchController.selectedBills}">
                                         </p:commandButton>
                                         
                                         <p:commandButton 
@@ -76,10 +77,10 @@
                             </div>
                         </div>
 
-                        <p:dataTable 
-                            id="tblBills" 
-                            value="#{searchController.bills}"                             
-                            var="bill" 
+                        <p:dataTable
+                            id="tblBills"
+                            value="#{searchController.bills}"
+                            var="bill"
                             rowKey="#{bill.id}"
                             selection="#{searchController.selectedBills}"
                             paginator="true"
@@ -91,6 +92,9 @@
                             selectionRowMode="add"
                             selectionMode="multiple"
                             styleClass="table-striped">
+                            <p:ajax event="rowSelectCheckbox"   update=":#{p:resolveFirstComponentWithId('btnAddToStock', view).clientId}" />
+                            <p:ajax event="rowUnselectCheckbox" update=":#{p:resolveFirstComponentWithId('btnAddToStock', view).clientId}" />
+                            <p:ajax event="toggleSelect"        update=":#{p:resolveFirstComponentWithId('btnAddToStock', view).clientId}" />
                             <p:column selectionBox="true" width="3em" styleClass="text-center"></p:column>
 
                             <p:column headerText="Pre Bill No">

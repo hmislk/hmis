@@ -598,6 +598,7 @@ public class EnumController implements Serializable {
         rt.add(RequestType.FULL_REFUND);
         rt.add(RequestType.PARTIAL_REFUND);
         rt.add(RequestType.SERVICE_REFUND);
+        rt.add(RequestType.DRAWER_ADJUSTMENT);
         //rt.add(RequestType.EDIT_REQUEST);
         //rt.add(RequestType.INFORMATION_UPDATE);
         //rt.add(RequestType.QUANTITY_CHANGE);
@@ -1010,6 +1011,12 @@ public class EnumController implements Serializable {
             PaymentMethod.IOU,
             PaymentMethod.Voucher,
             PaymentMethod.Slip};
+        return p;
+    }
+    public PaymentMethod[] getPaymentMethodsForIpReports() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Credit};
         return p;
     }
 

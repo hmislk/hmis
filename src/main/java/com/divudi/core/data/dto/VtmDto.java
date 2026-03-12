@@ -22,6 +22,7 @@ public class VtmDto implements Serializable {
     private String descreption; // Note: intentional spelling for backward compatibility
     private String instructions;
     private Boolean retired;
+    private Boolean inactive;
 
     // Navigation/Department fields
     private String departmentTypeName;
@@ -33,49 +34,32 @@ public class VtmDto implements Serializable {
     }
 
     /**
-     * Constructor for JPQL query - basic VTM management use case Includes core
-     * fields needed for display and management operations
-     *
-     * @param id VTM ID
-     * @param name VTM name
-     * @param code VTM code (can be null)
-     * @param descreption VTM description (note: spelling preserved for backward
-     * compatibility)
-     * @param instructions Usage instructions (can be null)
-     * @param retired Whether VTM is retired/inactive
-     * @param departmentTypeName Department type name (for display)
+     * Constructor for JPQL query with department type name
      */
     public VtmDto(Long id, String name, String code, String descreption,
-            String instructions, Boolean retired, String departmentTypeName) {
+            String instructions, Boolean retired, Boolean inactive, String departmentTypeName) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.descreption = descreption;
         this.instructions = instructions;
         this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
         this.departmentTypeName = departmentTypeName;
     }
 
     /**
-     * Constructor for JPQL query - basic VTM management use case Includes core
-     * fields needed for display and management operations
-     *
-     * @param id VTM ID
-     * @param name VTM name
-     * @param code VTM code (can be null)
-     * @param descreption VTM description (note: spelling preserved for backward
-     * compatibility)
-     * @param instructions Usage instructions (can be null)
-     * @param retired Whether VTM is retired/inactive
+     * Constructor for JPQL query - basic VTM management use case
      */
     public VtmDto(Long id, String name, String code, String descreption,
-            String instructions, Boolean retired) {
+            String instructions, Boolean retired, Boolean inactive) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.descreption = descreption;
         this.instructions = instructions;
         this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
     }
 
     // Getters and Setters
@@ -132,6 +116,18 @@ public class VtmDto implements Serializable {
         this.retired = retired;
     }
 
+    public Boolean getInactive() {
+        return inactive;
+    }
+
+    public boolean isInactive() {
+        return inactive != null && inactive;
+    }
+
+    public void setInactive(Boolean inactive) {
+        this.inactive = inactive;
+    }
+
     public String getDepartmentTypeName() {
         return departmentTypeName;
     }
@@ -142,17 +138,17 @@ public class VtmDto implements Serializable {
 
     // Utility methods for display
     /**
-     * Returns display status for UI - Active/Inactive
+     * Returns display status for UI - Active/Inactive based on inactive field
      */
     public String getStatusDisplay() {
-        return isRetired() ? "Inactive" : "Active";
+        return isInactive() ? "Inactive" : "Active";
     }
 
     /**
      * Returns CSS class for status display - for styling
      */
     public String getStatusCssClass() {
-        return isRetired() ? "badge-danger" : "badge-success";
+        return isInactive() ? "badge-danger" : "badge-success";
     }
 
     @Override

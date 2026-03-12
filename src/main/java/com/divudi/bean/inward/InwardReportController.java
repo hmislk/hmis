@@ -15,9 +15,14 @@ import com.divudi.core.data.Sex;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
+import com.divudi.core.data.dto.MonthServiceCountDTO;
+import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
+import com.divudi.core.data.dto.IpUnsettledInvoiceDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
+import com.divudi.core.data.dto.SurgeryCountSurgeryWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
@@ -29,12 +34,15 @@ import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.SurgeryType;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.AdmissionTypeFacade;
 import com.divudi.core.facade.BillFacade;
@@ -47,6 +55,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -170,19 +179,42 @@ public class InwardReportController implements Serializable {
     // for disscharge book
     boolean withoutCancelBHT = true;
     private Speciality currentSpeciality;
-    
+
+    // Surgery Survey Report
+    private String reportType;
+    private SurgeryType surgeryType;
+    private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
+    private List<String> surgeryHeaders;
+
+    private Date dischargeFromDate;
+    private Date dischargeToDate;
+    private Date invoiceApprovedFromDate;
+    private Date invoiceApprovedToDate;
+    private Department serviceCenter;
+    private Institution sponsor;
+    private String dischargeType;
+    private String patientCategory;
+    private AdmissionStatus admissionStatus;
+    private RoomCategory roomCategory;
+    private Staff consultant;
+    private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
+    private Item surgeryItem;
+
     // for specialty/doctor wise income
     private List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList;
     private InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome;
     private Doctor currentDoctor;
     private boolean byDoctor;
-    
+
     // for specialty/doctor wise demographic data 
     private List<InwardAdmissionDemographicDataDTO> demographicDataList;
     private boolean demographicDataUnknownGender = false;
     private boolean demographicGeneratedByDoctor;
 
     private ReportKeyWord reportKeyWord;
+
+    private String surgeryWiseLineChartModel;
+    private String surgeryWiseBarChartModel;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -346,47 +378,558 @@ public class InwardReportController implements Serializable {
 
         createChartModels();
     }
-    
+
+    private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;
+
+    public void processSurgeryCountSurgeryWiseReport() {
+        surgeryCountSurgeryWiseList = new ArrayList<>();
+        if (fromYearStartDate == null || toYearEndDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append(" select i.id, ")
+                .append(" i.name, ")
+                .append(" c.name, ")
+                .append(" function('MONTH', b.createdAt) ")
+                .append(" from BilledBill b ")
+                .append(" join b.procedure p ")
+                .append(" join p.item i ")
+                .append(" left join i.category c ")
+                .append(" where b.retired = false ")
+                .append(" and b.cancelled = false ")
+                .append(" and b.billType = :bt ")
+                .append(" and b.createdAt between :fd and :td ")
+                .append(" and p is not null ")
+                .append(" and i is not null ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.SurgeryBill);
+        params.put("fd", fromYearStartDate);
+        params.put("td", toYearEndDate);
+
+        if (institution != null) {
+            jpql.append(" and b.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (department != null) {
+            jpql.append(" and b.department = :dept ");
+            params.put("dept", department);
+        }
+        if (site != null) {
+            jpql.append(" and b.department.site = :site ");
+            params.put("site", site);
+        }
+        if (surgeryType != null) {
+            jpql.append(" and c = :stype ");
+            params.put("stype", surgeryType);
+        }
+        if (surgeryItem != null) {
+            jpql.append(" and i = :sitem ");
+            params.put("sitem", surgeryItem);
+        }
+
+        jpql.append(" order by i.name ");
+
+        List<Object[]> results = billFacade.findObjectArrayByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (results == null || results.isEmpty()) {
+            JsfUtil.addErrorMessage("No surgery records found for the selected period.");
+            return;
+        }
+
+        Map<Long, SurgeryCountSurgeryWiseDTO> surgeryMap = new LinkedHashMap<>();
+
+        for (Object[] row : results) {
+            Long itemId = row[0] != null ? ((Number) row[0]).longValue() : 0L;
+            String surgeryName = row[1] != null ? row[1].toString() : "Unknown";
+            String categoryName = row[2] != null ? row[2].toString() : "N/A";
+            int month = row[3] != null ? ((Number) row[3]).intValue() : 0;
+
+            SurgeryCountSurgeryWiseDTO dto = surgeryMap.get(itemId);
+            if (dto == null) {
+                dto = new SurgeryCountSurgeryWiseDTO();
+                dto.setSurgeryName(surgeryName);
+                dto.setSurgeryCategory(categoryName);
+                surgeryMap.put(itemId, dto);
+            }
+
+            int monthIndex = month - 1;
+            if (monthIndex >= 0 && monthIndex < 12) {
+                dto.addMonthCount(monthIndex, 1);
+            }
+        }
+
+        SurgeryCountSurgeryWiseDTO grandTotal = new SurgeryCountSurgeryWiseDTO();
+        grandTotal.setSurgeryName("Grand Total");
+        grandTotal.setSurgeryCategory("");
+        grandTotal.setGrandTotal(true);
+
+        for (SurgeryCountSurgeryWiseDTO dto : surgeryMap.values()) {
+            dto.calculateYearTotal();
+            surgeryCountSurgeryWiseList.add(dto);
+            grandTotal.addAllCounts(dto);
+        }
+
+        grandTotal.calculateYearTotal();
+        surgeryCountSurgeryWiseList.add(grandTotal);
+        createSurgeryWiseChartModels();
+
+    }
+
+    public List<SurgeryCountSurgeryWiseDTO> getExportableSurgeryCountSurgeryWiseList() {
+        if (surgeryCountSurgeryWiseList == null) {
+            return new ArrayList<>();
+        }
+        return surgeryCountSurgeryWiseList.stream()
+                .filter(dto -> !dto.isGrandTotal())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void createSurgeryWiseChartModels() {
+        createSurgeryWiseBarChart();
+        createSurgeryWiseLineChart();
+    }
+
+    private void createSurgeryWiseBarChart() {
+        if (surgeryCountSurgeryWiseList == null || surgeryCountSurgeryWiseList.isEmpty()) {
+            surgeryWiseBarChartModel = null;
+            return;
+        }
+
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+        };
+        int colorIndex = 0;
+
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        for (SurgeryCountSurgeryWiseDTO dto : surgeryCountSurgeryWiseList) {
+            if (dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 1);
+
+            BarDataset dataset = new BarDataset()
+                    .setLabel(dto.getSurgeryName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(1);
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        barChart.setData(barData);
+
+        BarOptions barOptionsObj = new BarOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Wise Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        barOptionsObj.setScales(scales);
+
+        barChart.setOptions(barOptionsObj);
+        surgeryWiseBarChartModel = barChart.toJson();
+    }
+
+    private void createSurgeryWiseLineChart() {
+        if (surgeryCountSurgeryWiseList == null || surgeryCountSurgeryWiseList.isEmpty()) {
+            surgeryWiseLineChartModel = null;
+            return;
+        }
+
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+        };
+        int colorIndex = 0;
+
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        for (SurgeryCountSurgeryWiseDTO dto : surgeryCountSurgeryWiseList) {
+            if (dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 1);
+
+            LineDataset dataset = new LineDataset()
+                    .setLabel(dto.getSurgeryName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBorderColor(borderColor)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        lineChart.setData(lineData);
+
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Wise Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        lineOptionsObj.setPlugins(plugins);
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        lineOptionsObj.setScales(scales);
+
+        lineChart.setOptions(lineOptionsObj);
+        surgeryWiseLineChartModel = lineChart.toJson();
+    }
+
+    public void processMonthlyWiseSurgerySurveyReport() {
+
+        if (reportType == null) {
+            return;
+        }
+
+        monthlySurgeryCountList = new ArrayList<>();
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        if (reportType.equals("SUMMARY")) {
+
+            jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
+                    .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
+                    .append(" s.item.category.name, ")
+                    .append(" count(s) ")
+                    .append(") ")
+                    .append(" from PatientEncounter s ")
+                    .append(" join s.parentEncounter a ")
+                    .append(" Where s.retired = false ")
+                    .append(" and a.discharged = true ")
+                    .append(" and a.dateOfDischarge is not null ")
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (surgeryType != null) {
+                jpql.append(" and s.item.category = :stype ");
+                params.put("stype", surgeryType);
+            }
+
+            if (institution != null) {
+                jpql.append(" and a.institution = :inst");
+                params.put("inst", institution);
+            }
+
+            if (department != null) {
+                jpql.append(" and a.department = :dept");
+                params.put("dept", department);
+            }
+
+            if (site != null) {
+                jpql.append(" and a.department.site = :site");
+                params.put("site", site);
+            }
+
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.category.name ");
+
+        } else if (reportType.equals("DETAIL")) {
+
+            jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
+                    .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
+                    .append(" s.item.name, ")
+                    .append(" count(s) ")
+                    .append(") ")
+                    .append(" from PatientEncounter s ")
+                    .append(" join s.parentEncounter a ")
+                    .append(" Where s.retired = false ")
+                    .append(" and a.discharged = true ")
+                    .append(" and a.dateOfDischarge is not null ")
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (surgeryType != null) {
+                jpql.append(" and s.item.category = :stype ");
+                params.put("stype", surgeryType);
+            }
+
+            if (institution != null) {
+                jpql.append(" and a.institution = :inst");
+                params.put("inst", institution);
+            }
+
+            if (department != null) {
+                jpql.append(" and a.department = :dept");
+                params.put("dept", department);
+            }
+
+            if (site != null) {
+                jpql.append(" and a.department.site = :site");
+                params.put("site", site);
+            }
+
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.name ");
+
+        }
+
+        List<MonthServiceCountDTO> rawList
+                = (List<MonthServiceCountDTO>) billFacade.findDTOsByJpql(
+                        jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (rawList.isEmpty()) {
+            monthlySurgeryCountList = null;
+            return;
+        }
+
+        Set<String> surgeryHeaderSet = new HashSet<>();
+        Map<Integer, MonthlySurgeryCountDTO> monthMap = new LinkedHashMap<>();
+
+        for (MonthServiceCountDTO dto : rawList) {
+
+            Integer month = dto.getMonth();
+
+            MonthlySurgeryCountDTO aggregated = monthMap.get(month);
+            if (aggregated == null) {
+
+                aggregated = new MonthlySurgeryCountDTO();
+                aggregated.setMonth(month);
+                monthMap.put(month, aggregated);
+            }
+
+            aggregated.addServiceCount(dto.getServiceName(), dto.getServiceCount());
+            surgeryHeaderSet.add(dto.getServiceName());
+        }
+
+        surgeryHeaders = new ArrayList<>(surgeryHeaderSet);
+        Collections.sort(surgeryHeaders);
+
+        MonthlySurgeryCountDTO grandTotal = new MonthlySurgeryCountDTO();
+        grandTotal.setGrandTotal(true);
+
+        for (int month = 1; month <= 12; month++) {
+
+            MonthlySurgeryCountDTO dto = monthMap.get(month);
+
+            if (dto == null) {
+                continue;
+            }
+
+            dto.alignWithHeaders(surgeryHeaders);
+            grandTotal.addAll(dto);
+            monthlySurgeryCountList.add(dto);
+        }
+
+        if (!monthlySurgeryCountList.isEmpty()) {
+            grandTotal.alignWithHeaders(surgeryHeaders);
+            monthlySurgeryCountList.add(grandTotal);
+        }
+
+    }
+
+    public void processIpUnsettledInvoicesReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        // Use PatientEncounter instead of Admission
+        jpql.append("SELECT new com.divudi.core.data.dto.IpUnsettledInvoiceDTO(")
+                .append("pe.id, ")
+                .append("pe.patient.phn, ")
+                .append("pe.patient.person.name, ")
+                .append("pe.patient.person.title, ")
+                .append("pe.patient.person.phone, ")
+                .append("pe.patient.person.dob, ")
+                .append("pe.currentPatientRoom, ")
+                .append("pe.dateOfDischarge, ")
+                .append("pe.paymentFinalized, ")
+                .append("COALESCE(pe.netTotal, 0.0), ")
+                .append("COALESCE(pe.creditPaidAmount, 0.0), ")
+                .append("pe.creater")
+                .append(") FROM PatientEncounter pe ");
+
+        if (roomCategory != null) {
+            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND pe.discharged = TRUE ")
+                .append("AND pe.paymentFinalized = FALSE ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        // Discharge date filter
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        // Invoice approved date filter
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND pe.finalBill IS NOT NULL ")
+                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        // Institution filter
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        // Site filter
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+
+        // Department filter
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+
+        // Consultant filter
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+
+        // Service Center filter (assuming this uses department)
+        if (serviceCenter != null) {
+            jpql.append("AND pe.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+
+        // Admission Status filter (if PatientEncounter has admissionStatus)
+        if (admissionStatus != null) {
+            jpql.append("AND pe.admissionStatus = :as ");
+            params.put("as", admissionStatus);
+        }
+
+        // Admission Type filter
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+
+        // Payment Method filter
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+
+        // Room Category filter
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        try {
+            unsettledInvoicesList = (List<IpUnsettledInvoiceDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(),
+                    params,
+                    TemporalType.TIMESTAMP
+            );
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
+            unsettledInvoicesList = new ArrayList<>();
+        }
+
+        if (unsettledInvoicesList == null) {
+            unsettledInvoicesList = new ArrayList<>();
+        }
+
+    }
+
     public void processSpecialtyDoctorWiseIncomeReport() {
         spcDocIncomeBillList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
-        
+
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        
+
         if (byDoctor) {
             jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
-                .append(" bf.staff.id, ")
-                .append(" bf.staff.person.title,")
-                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
-                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
-                .append(" coalesce(bf.feeValue, 0.0), ")
-                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
-                .append(" bf.bill.id, ")
-                .append(" bf.bill.netTotal ")
-                .append(") ");
+                    .append(" bf.staff.id, ")
+                    .append(" bf.staff.person.title,")
+                    .append(" coalesce(bf.staff.person.name, 'N/A'), ")
+                    .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                    .append(" coalesce(bf.feeValue, 0.0), ")
+                    .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                    .append(" bf.bill.id, ")
+                    .append(" bf.bill.netTotal ")
+                    .append(") ");
         } else {
             jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
-                .append(" bf.staff.speciality.id, ")
-                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
-                .append(" coalesce(bf.feeValue, 0.0), ")
-                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
-                .append(" bf.bill.id, ")
-                .append(" bf.bill.netTotal ")
-                .append(") ");
+                    .append(" bf.staff.speciality.id, ")
+                    .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                    .append(" coalesce(bf.feeValue, 0.0), ")
+                    .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                    .append(" bf.bill.id, ")
+                    .append(" bf.bill.netTotal ")
+                    .append(") ");
         }
-        
+
         jpql.append(" from BillFee bf")
-            .append(" Where bf.retired = false ")
-            .append(" And bf.bill.retired=false ")
-            .append(" And bf.billItem.retired=false ")
-            .append(" And bf.bill.billTypeAtomic in :btas ")
-            .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
-            .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
+                .append(" Where bf.retired = false ")
+                .append(" And bf.bill.retired=false ")
+                .append(" And bf.billItem.retired=false ")
+                .append(" And bf.bill.billTypeAtomic in :btas ")
+                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
+                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
 
         params.put("btas", btas);
         params.put("fromDate", fromYearStartDate);
@@ -398,16 +941,16 @@ public class InwardReportController implements Serializable {
             jpql.append(" AND bf.staff.speciality = :spe ");
             params.put("spe", currentSpeciality);
         }
-        
+
         if (currentDoctor != null) {
             jpql.append(" and bf.staff.id=:staffid ");
             params.put("staffid", currentDoctor.getId());
         }
 
         jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
-        
+
         List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         if (byDoctor) {
             processDoctorWiseIncomeReport(rawList);
         } else {
@@ -435,56 +978,55 @@ public class InwardReportController implements Serializable {
         totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
         totalValuesSpcDocIncome.setTotalCharge(totalCharge);
     }
-    
+
     public void processSpecialtyWiseIncomeReport(List<InwardIncomeDoctorSpecialtyDTO> rawList) {
         if (rawList == null || rawList.isEmpty()) {
             return;
         }
-        
+
         Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
         Map<Long, Set<Long>> spacialtyBill = new LinkedHashMap<>();
-        
+
         for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
             if (dto.getStaffId() == null) {
                 continue;
             }
-            
+
             Long sId = dto.getStaffId();
             InwardIncomeDoctorSpecialtyDTO currentSpc = specialtyMap.computeIfAbsent(sId, k -> {
                 InwardIncomeDoctorSpecialtyDTO spc = new InwardIncomeDoctorSpecialtyDTO();
                 spc.setStaffId(dto.getStaffId());
                 spc.setSpecialtyName(dto.getSpecialtyName());
-                
+
                 return spc;
             });
-            
+
             Set<Long> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new HashSet<>());
             if (currentBill.add(dto.getBillId())) {
                 currentSpc.setBillTotal(currentSpc.getBillTotal() + dto.getBillTotal());
             }
-            
+
             currentSpc.setDocFee(currentSpc.getDocFee() + dto.getDocFee());
             currentSpc.setHosFee(currentSpc.getHosFee() + dto.getHosFee());
         }
-        
+
         calculateTotalValuesSpcDocIncome(specialtyMap);
-        
 
     }
-    
+
     public void processDoctorWiseIncomeReport(List<InwardIncomeDoctorSpecialtyDTO> rawList) {
         if (rawList == null || rawList.isEmpty()) {
             return;
-        }     
-        
+        }
+
         Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
         Map<Long, Set<Long>> doctorBill = new LinkedHashMap<>();
-        
+
         for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
             if (dto.getStaffId() == null) {
                 continue;
             }
-            
+
             Long sId = dto.getStaffId();
             InwardIncomeDoctorSpecialtyDTO currentDoc = doctorMap.computeIfAbsent(sId, k -> {
                 InwardIncomeDoctorSpecialtyDTO doc = new InwardIncomeDoctorSpecialtyDTO();
@@ -492,58 +1034,57 @@ public class InwardReportController implements Serializable {
                 doc.setDoctorTitle(dto.getDoctorTitle());
                 doc.setDoctorName(dto.getDoctorName());
                 doc.setSpecialtyName(dto.getSpecialtyName());
-                
+
                 return doc;
             });
-            
+
             Set<Long> currentBill = doctorBill.computeIfAbsent(sId, k -> new HashSet<>());
             if (currentBill.add(dto.getBillId())) {
                 currentDoc.setBillTotal(currentDoc.getBillTotal() + dto.getBillTotal());
             }
 
-            
             currentDoc.setDocFee(currentDoc.getDocFee() + dto.getDocFee());
             currentDoc.setHosFee(currentDoc.getHosFee() + dto.getHosFee());
         }
 
         calculateTotalValuesSpcDocIncome(doctorMap);
     }
-    
+
     public void processSpecialtyDoctorDemographicDataReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         demographicDataList = null;
-        
+
         if (byDoctor) {
             jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO(")
-                .append(" rc.id, ")
-                .append(" rcp.title, ")
-                .append(" coalesce(rcp.name, 'N/A'), ")
-                .append(" coalesce(rcs.name, 'N/A'), ")
-                .append(" pp.dob, ")
-                .append(" pp.sex ")
-                .append(") ");
+                    .append(" rc.id, ")
+                    .append(" rcp.title, ")
+                    .append(" coalesce(rcp.name, 'N/A'), ")
+                    .append(" coalesce(rcs.name, 'N/A'), ")
+                    .append(" pp.dob, ")
+                    .append(" pp.sex ")
+                    .append(") ");
         } else {
             jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO(")
-                .append(" rcs.id, ")
-                .append(" coalesce(rcs.name, 'N/A'), ")
-                .append(" pp.dob, ")
-                .append(" pp.sex ")
-                .append(") ");
+                    .append(" rcs.id, ")
+                    .append(" coalesce(rcs.name, 'N/A'), ")
+                    .append(" pp.dob, ")
+                    .append(" pp.sex ")
+                    .append(") ");
         }
-        
+
         jpql.append(" from Admission a ")
-            .append(" left join a.referringConsultant rc ")
-            .append(" left join rc.person rcp ")
-            .append(" left join rc.speciality rcs ")
-            .append(" left join a.patient p ")
-            .append(" left join p.person pp")
-            .append(" Where a.retired = false ")
-            .append(" And type(a.referringConsultant) = :consultantClass ")
-//            .append(" And a.dateOfAdmission <= :toDate ")
-//            .append(" And (a.dateOfDischarge >= :fromDate OR a.dateOfDischarge IS NULL) ");
-        // date range considered for discharge date
-            .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+                .append(" left join a.referringConsultant rc ")
+                .append(" left join rc.person rcp ")
+                .append(" left join rc.speciality rcs ")
+                .append(" left join a.patient p ")
+                .append(" left join p.person pp")
+                .append(" Where a.retired = false ")
+                .append(" And type(a.referringConsultant) = :consultantClass ")
+                //            .append(" And a.dateOfAdmission <= :toDate ")
+                //            .append(" And (a.dateOfDischarge >= :fromDate OR a.dateOfDischarge IS NULL) ");
+                // date range considered for discharge date
+                .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
 
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
@@ -574,7 +1115,7 @@ public class InwardReportController implements Serializable {
 
         List<InwardAdmissionDemographicDataDTO> rawList = (List<InwardAdmissionDemographicDataDTO>) peFacade.findLightsByJpqlWithoutCache(jpql.toString(), params, TemporalType.TIMESTAMP);
         demographicDataUnknownGender = false;
-        
+
         if (byDoctor) {
             processDemographicDataDoctorWiseReport(rawList);
             demographicGeneratedByDoctor = true;
@@ -588,24 +1129,24 @@ public class InwardReportController implements Serializable {
         if (rawList == null || rawList.isEmpty()) {
             return;
         }
-        
+
         Map<Long, InwardAdmissionDemographicDataDTO> specialtyList = new LinkedHashMap<>();
-        
+
         for (InwardAdmissionDemographicDataDTO dto : rawList) {
             if (dto.getId() == null) {
                 continue;
             }
-            
+
             InwardAdmissionDemographicDataDTO currentSpc = specialtyList.computeIfAbsent(dto.getId(), k -> {
-                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), null, null);
-                    return newDto;
-                }
+                InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), null, null);
+                return newDto;
+            }
             );
 
             currentSpc.incrementGenderCount(dto.getPatientSex());
             currentSpc.incrementAgeGroupCount(dto.getPatientAge());
             currentSpc.incrementTotalCount();
-            
+
             if (dto.getPatientSex() == Sex.Unknown) {
                 demographicDataUnknownGender = true;
             }
@@ -613,29 +1154,29 @@ public class InwardReportController implements Serializable {
 
         demographicDataList = new ArrayList<>(specialtyList.values());
     }
-    
+
     public void processDemographicDataDoctorWiseReport(List<InwardAdmissionDemographicDataDTO> rawList) {
         if (rawList == null || rawList.isEmpty()) {
             return;
         }
-        
+
         Map<Long, InwardAdmissionDemographicDataDTO> doctorList = new LinkedHashMap<>();
-        
+
         for (InwardAdmissionDemographicDataDTO dto : rawList) {
             if (dto.getId() == null) {
                 continue;
             }
-            
+
             InwardAdmissionDemographicDataDTO currentSpc = doctorList.computeIfAbsent(dto.getId(), k -> {
-                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), dto.getDoctorTitle(), dto.getDoctorName());
-                    return newDto;
-                }
+                InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), dto.getDoctorTitle(), dto.getDoctorName());
+                return newDto;
+            }
             );
 
             currentSpc.incrementGenderCount(dto.getPatientSex());
             currentSpc.incrementAgeGroupCount(dto.getPatientAge());
             currentSpc.incrementTotalCount();
-            
+
             if (dto.getPatientSex() == Sex.Unknown) {
                 demographicDataUnknownGender = true;
             }
@@ -871,6 +1412,7 @@ public class InwardReportController implements Serializable {
 
         jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDTO(")
                 .append(" e.referringConsultant.id, ")
+                .append(" e.referringConsultant.person.title, ")
                 .append(" e.referringConsultant.person.name, ")
                 .append(" e.referringConsultant.speciality.name, ")
                 .append(" e.dateOfDischarge ")
@@ -913,6 +1455,7 @@ public class InwardReportController implements Serializable {
             if (aggregated == null) {
                 aggregated = new InwardAdmissionDTO(
                         dto.getStaffId(),
+                        dto.getDoctorTitle(),
                         dto.getDoctorName(),
                         dto.getSpecialityName(),
                         null
@@ -2387,19 +2930,19 @@ public class InwardReportController implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
+
     public Institution getSite() {
         return site;
     }
-    
+
     public void setSite(Institution site) {
         this.site = site;
     }
-    
+
     public Department getDepartment() {
         return department;
     }
-    
+
     public void setDepartment(Department deptartment) {
         this.department = deptartment;
     }
@@ -2702,15 +3245,15 @@ public class InwardReportController implements Serializable {
     public void setList(List<InwardAdmissionDTO> list) {
         this.list = list;
     }
-    
+
     public List<InwardIncomeDoctorSpecialtyDTO> getSpcDocIncomeBillList() {
         return spcDocIncomeBillList;
     }
-    
+
     public void setSpcDocIncomeBillList(List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList) {
         this.spcDocIncomeBillList = spcDocIncomeBillList;
     }
-    
+
     public InwardIncomeDoctorSpecialtyDTO getTotalValuesSpcDocIncome() {
         return totalValuesSpcDocIncome;
     }
@@ -2718,45 +3261,206 @@ public class InwardReportController implements Serializable {
     public void setTotalValuesSpcDocIncome(InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome) {
         this.totalValuesSpcDocIncome = totalValuesSpcDocIncome;
     }
-    
+
     public Doctor getCurrentDoctor() {
         return currentDoctor;
     }
-    
+
     public void setCurrentDoctor(Doctor currentDoctor) {
         this.currentDoctor = currentDoctor;
     }
-    
+
     public boolean getByDoctor() {
         return byDoctor;
     }
-    
+
     public void setByDoctor(boolean dw) {
         this.byDoctor = dw;
     }
-    
+
     public boolean isDemographicGeneratedByDoctor() {
         return demographicGeneratedByDoctor;
     }
-    
+
     public void setDemographicGeneratedByDoctor(boolean dw) {
         this.demographicGeneratedByDoctor = dw;
     }
-    
+
     public void setDemographicDataList(List<InwardAdmissionDemographicDataDTO> list) {
         this.demographicDataList = list;
     }
-    
+
     public List<InwardAdmissionDemographicDataDTO> getDemographicDataList() {
         return demographicDataList;
     }
-    
+
     public boolean getDemographicDataUnknownGender() {
         return demographicDataUnknownGender;
     }
-    
-    public void setDemographicDataUnknownGender(boolean demographicDataUnknownGender){
+
+    public void setDemographicDataUnknownGender(boolean demographicDataUnknownGender) {
         this.demographicDataUnknownGender = demographicDataUnknownGender;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+    public List<MonthlySurgeryCountDTO> getMonthlySurgeryCountList() {
+        return monthlySurgeryCountList;
+    }
+
+    public void setMonthlySurgeryCountList(List<MonthlySurgeryCountDTO> monthlySurgeryCountList) {
+        this.monthlySurgeryCountList = monthlySurgeryCountList;
+    }
+
+    public List<String> getSurgeryHeaders() {
+        return surgeryHeaders;
+    }
+
+    public void setSurgeryHeaders(List<String> surgeryHeaders) {
+        this.surgeryHeaders = surgeryHeaders;
+    }
+
+    public SurgeryType getSurgeryType() {
+        return surgeryType;
+    }
+
+    public void setSurgeryType(SurgeryType surgeryType) {
+        this.surgeryType = surgeryType;
+    }
+
+    public Date getDischargeFromDate() {
+        return dischargeFromDate;
+    }
+
+    public void setDischargeFromDate(Date dischargeFromDate) {
+        this.dischargeFromDate = dischargeFromDate;
+    }
+
+    public Date getDischargeToDate() {
+        return dischargeToDate;
+    }
+
+    public void setDischargeToDate(Date dischargeToDate) {
+        this.dischargeToDate = dischargeToDate;
+    }
+
+    public Date getInvoiceApprovedFromDate() {
+        return invoiceApprovedFromDate;
+    }
+
+    public void setInvoiceApprovedFromDate(Date invoiceApprovedFromDate) {
+        this.invoiceApprovedFromDate = invoiceApprovedFromDate;
+    }
+
+    public Date getInvoiceApprovedToDate() {
+        return invoiceApprovedToDate;
+    }
+
+    public void setInvoiceApprovedToDate(Date invoiceApprovedToDate) {
+        this.invoiceApprovedToDate = invoiceApprovedToDate;
+    }
+
+    public Department getServiceCenter() {
+        return serviceCenter;
+    }
+
+    public void setServiceCenter(Department serviceCenter) {
+        this.serviceCenter = serviceCenter;
+    }
+
+    public Institution getSponsor() {
+        return sponsor;
+    }
+
+    public void setSponsor(Institution sponsor) {
+        this.sponsor = sponsor;
+    }
+
+    public String getDischargeType() {
+        return dischargeType;
+    }
+
+    public void setDischargeType(String dischargeType) {
+        this.dischargeType = dischargeType;
+    }
+
+    public String getPatientCategory() {
+        return patientCategory;
+    }
+
+    public void setPatientCategory(String patientCategory) {
+        this.patientCategory = patientCategory;
+    }
+
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
+
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
+
+    public RoomCategory getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(RoomCategory roomCategory) {
+        this.roomCategory = roomCategory;
+    }
+
+    public Staff getConsultant() {
+        return consultant;
+    }
+
+    public void setConsultant(Staff consultant) {
+        this.consultant = consultant;
+    }
+
+    public List<IpUnsettledInvoiceDTO> getUnsettledInvoicesList() {
+        return unsettledInvoicesList;
+    }
+
+    public void setUnsettledInvoicesList(List<IpUnsettledInvoiceDTO> unsettledInvoicesList) {
+        this.unsettledInvoicesList = unsettledInvoicesList;
+
+    }
+
+    public List<SurgeryCountSurgeryWiseDTO> getSurgeryCountSurgeryWiseList() {
+        return surgeryCountSurgeryWiseList;
+    }
+
+    public void setSurgeryCountSurgeryWiseList(List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList) {
+        this.surgeryCountSurgeryWiseList = surgeryCountSurgeryWiseList;
+    }
+
+    public Item getSurgeryItem() {
+        return surgeryItem;
+    }
+
+    public void setSurgeryItem(Item surgeryItem) {
+        this.surgeryItem = surgeryItem;
+    }
+
+    public String getSurgeryWiseLineChartModel() {
+        return surgeryWiseLineChartModel;
+    }
+
+    public void setSurgeryWiseLineChartModel(String surgeryWiseLineChartModel) {
+        this.surgeryWiseLineChartModel = surgeryWiseLineChartModel;
+    }
+
+    public String getSurgeryWiseBarChartModel() {
+        return surgeryWiseBarChartModel;
+    }
+
+    public void setSurgeryWiseBarChartModel(String surgeryWiseBarChartModel) {
+        this.surgeryWiseBarChartModel = surgeryWiseBarChartModel;
     }
 
     public class IncomeByCategoryRecord {

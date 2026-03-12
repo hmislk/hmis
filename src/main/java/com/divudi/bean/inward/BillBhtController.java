@@ -67,9 +67,12 @@ import com.divudi.core.entity.UserPreference;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -360,7 +363,7 @@ public class BillBhtController implements Serializable {
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-
+        tmp.setPatient(patientEncounter.getPatient());
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
         String batchBillId = "";
         
@@ -540,6 +543,18 @@ public class BillBhtController implements Serializable {
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
+            
+            Priority highestPriority = Optional
+                    .ofNullable(list)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(bi -> bi.getPriority() != null)
+                    .map(BillItem::getPriority)
+                    .max(Comparator.comparingInt(Priority::getLevel))
+                    .orElse(Priority.NORMAL);
+
+            b.setPriority(highestPriority);
+            
             billFacade.edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
@@ -616,7 +631,7 @@ public class BillBhtController implements Serializable {
 
         temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
         temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        temp.setPatient(patientEncounter.getPatient());
         temp.setFromDepartment(matrixDepartment);
 
         temp.setToDepartment(bt);

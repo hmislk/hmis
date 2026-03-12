@@ -1460,6 +1460,8 @@ public class TransferRequestController implements Serializable {
                     + " where b.retired=false "
                     + " and b.billTypeAtomic=:bt "
                     + " and b.fromDepartment=:fd "
+                    + " and b.toDepartment.retired=false "
+                    + " and b.toDepartment.inactive=false "
                     + " order by b.id desc";
             Map<String, Object> m = new HashMap<>();
             m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);

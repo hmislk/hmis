@@ -4,6 +4,7 @@ on:
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches:
+      - hims-qa3
       - development
       - '*-prod'
 

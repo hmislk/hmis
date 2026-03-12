@@ -89,7 +89,7 @@ public class PharmacyAdjustmentApi {
             
             String privilege = "PharmacyAdjustmentDepartmentStockQTY";
             if (!webUserService.hasPrivilege(privilege,user, request.getDepartmentId())) {
-                return errorResponse("Not autherized", 401);
+                return errorResponse("Not authorized", 403);
             }
             
 
@@ -133,7 +133,7 @@ public class PharmacyAdjustmentApi {
 
             String privilege = "PharmacyAdjustmentSaleRate";
             if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
-                return errorResponse("Not autherized", 401);
+                return errorResponse("Not authorized", 403);
             }
 
             // Process adjustment
@@ -176,7 +176,7 @@ public class PharmacyAdjustmentApi {
 
             String privilege = "PharmacyAdjustmentExpiryDate";
             if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
-                return errorResponse("Not autherized", 401);
+                return errorResponse("Not authorized", 403);
             }
 
             // Process adjustment
@@ -219,7 +219,7 @@ public class PharmacyAdjustmentApi {
 
             String privilege = "PharmacyAdjustmentPurchaseRate";
             if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
-                return errorResponse("Not autherized", 401);
+                return errorResponse("Not authorized", 403);
             }
 
             // Process adjustment

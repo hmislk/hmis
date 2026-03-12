@@ -706,6 +706,11 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
         }
+        Bill batchBillForCheck = billFacade.find(getBill().getBackwardReferenceBill().getId());
+        if (batchBillForCheck != null && batchBillForCheck.isCancelled()) {
+            JsfUtil.addErrorMessage("The batch bill " + batchBillForCheck.getDeptId() + " has already been cancelled. Cannot cancel individual bills separately.");
+            return;
+        }
         if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;

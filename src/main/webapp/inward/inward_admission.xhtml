@@ -40,15 +40,27 @@
                                     icon="fa fa-search" >
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false" 
+                                <p:commandButton
+                                    ajax="false"
                                     immediate="true"
-                                    class="ui-button-warning mx-1" 
-                                    value="Patient Profile" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    class="ui-button-warning mx-1"
+                                    value="Patient Profile"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
                                     icon="fa fa-user" > <!-- Font Awesome icon for user -->
                                     <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        immediate="true"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('inward/inward_admission')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ms-5">
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                         </div>
                     </f:facet>

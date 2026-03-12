@@ -39,8 +39,8 @@
                             <h:outputText id="vtmCode" value="#{vtmController.current.code}"/>
                             <p:outputLabel for="vtmStatus" value="Status: "/>
                             <p:badge id="vtmStatus"
-                                     value="#{vtmController.current.retired ? 'Retired' : 'Active'}"
-                                     severity="#{vtmController.current.retired ? 'danger' : 'success'}"/>
+                                     value="#{vtmController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{vtmController.current.inactive ? 'danger' : 'success'}"/>
                             <p:outputLabel for="vtmDept" value="Department: "/>
                             <h:outputText id="vtmDept" value="#{vtmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
@@ -83,7 +83,7 @@
 
                             <p:column headerText="Changes" style="width: auto;">
                                 <div class="audit-changes">
-                                    <h:outputText escape="false" value="#{audit.difference}" />
+                                    <h:outputText value="#{audit.difference}" />
                                 </div>
                             </p:column>
 

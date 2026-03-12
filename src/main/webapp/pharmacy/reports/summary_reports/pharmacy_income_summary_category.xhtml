@@ -9,17 +9,52 @@
 <h:body>
     <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
         <ui:define name="subcontent">
-            <p:panel header="Pharmacy Income Report">
+            <p:panel header="Income Summary Category">
                 <h:form>
-                    <h:panelGroup layout="block"
-                                  style="padding-left: 20px; padding-right: 20px">
+                    <style>
+                        .custom-grid {
+                            table-layout: fixed;
+                            width: 100%;
+                        }
+
+                        .col-label1,
+                        .col-label2,
+                        .col-label3 {
+                            width: 14%;
+                        }
+
+                        .col-input1,
+                        .col-input2,
+                        .col-input3 {
+                            width: 18%;
+                        }
+                        
+                        .col-space1,
+                        .col-space2 {
+                            width: 2%; 
+                        }
+                    </style>
+                    <h:panelGroup layout="block">
                         <h:panelGrid columns="8" 
-                                     class="w-100 ui-fluid"
-                                     style="table-layout: fixed"
-                                    columnClasses="label-icon-column, input-column">
-                           <h:panelGroup layout="block" styleClass="form-group">
-                               <h:outputText value="&#xf073;" styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                               <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                     class="w-100 ui-fluid custom-grid"
+                                    columnClasses="col-label1,col-input1,col-space1,
+                                                    col-label2,col-input2,col-space2,
+                                                    col-label3,col-input3">
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
+
+                                <div>
+                                    <h:outputText value="&#xf073;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 60px;">
+                                    <h:outputLabel value="From" for="fromDate"/>
+                                </div>
                            </h:panelGroup>
                            <p:calendar
                                    styleClass="w-100"
@@ -28,11 +63,22 @@
                                    value="#{pharmacySummaryReportController.fromDate}"
                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                           <p:spacer width="50"/>
+                           <p:spacer/>
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
 
-                           <h:panelGroup layout="block" styleClass="form-group">
-                               <h:outputText value="&#xf073;" styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
-                               <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                <div>
+                                    <h:outputText value="&#xf073;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 50px;">
+                                    <h:outputLabel value="To" for="toDate"/>
+                                </div>
                            </h:panelGroup>
                            <p:calendar
                                    styleClass="w-100"
@@ -42,15 +88,27 @@
                                    navigator="false"
                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                            />
+                           
+                           <p:spacer/>
+                           <p:spacer width="50"/>
+                           <p:spacer width="50"/>
 
-                           <p:spacer width="50"/>
-                           <p:spacer width="50"/>
-                           <p:spacer width="50"/>
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
 
-                           <h:panelGroup layout="block" styleClass="form-group">
-                               <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
-                               <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
-                           </h:panelGroup>
+                                <div>
+                                    <h:outputText value="&#xf19c;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 90px;">
+                                    <h:outputLabel value="Institution" for="cmbIns"/>
+                                </div>
+                            </h:panelGroup>
                            <p:selectOneMenu
                                    id="cmbIns"
                                    styleClass="w-100 form-control"
@@ -63,11 +121,23 @@
                            </p:selectOneMenu>
 
                            <p:spacer/>
+                           
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
 
-                           <h:panelGroup layout="block" styleClass="form-group">
-                               <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>
-                               <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
-                           </h:panelGroup>
+                                <div>
+                                    <h:outputText value="&#xf3c5;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 60px;">
+                                    <h:outputLabel value="Site" for="siteMenu"/>
+                                </div>
+                            </h:panelGroup>
                            <p:selectOneMenu
                                    id="siteMenu"
                                    styleClass="w-100 form-control"
@@ -80,11 +150,23 @@
                            </p:selectOneMenu>
 
                            <p:spacer/>
+                           
+                           <h:panelGroup 
+                                layout="block" 
+                                styleClass="form-group"
+                                style="display: flex; 
+                                       flex-wrap: wrap; 
+                                       align-items: center;
+                                       gap: 0 20px">
 
-                           <h:panelGroup layout="block" styleClass="form-group">
-                               <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                               <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                           </h:panelGroup>
+                                <div>
+                                    <h:outputText value="&#xf0e8;" styleClass="fa"/>
+                                </div>
+
+                                <div style="display: flex; align-items: center; flex: 1 1 90px;">
+                                    <h:outputLabel value="Department" for="cmbDept"/>
+                                </div>
+                            </h:panelGroup>
                            <h:panelGroup id="cmbDept">
 
                                <!-- Component 1: Without Institution and Site -->
@@ -180,7 +262,7 @@
                         
                         
                          <p:panel
-                             header="Pharmacy Income Summary"
+                             header="Pharmacy Income Summary Report"
                              style="margin-top: 20px">
                              <div style="overflow-x: auto; width: 100%;">
                                  <table class="w-100 ui-datatable ui-datatable-borderless compact-datatable table-no-vertical"
@@ -194,9 +276,9 @@
                                             <th class="text-center" style="border: 1px solid">Online</th>
                                             <th class="text-center" style="border: 1px solid">Credit</th>
                                             <th class="text-center" style="border: 1px solid">Total</th>
-                                            <th class="text-center" style="border: 1px solid">Discount</th>
                                             <th class="text-center" style="border: 1px solid">Refund</th>
-                                            <th class="text-center" style="border: 1px solid">Cancellation</th>
+                                            <th class="text-center" style="border: 1px solid">Cancel</th>
+                                            <th class="text-center" style="border: 1px solid">Discount</th>
                                             <th class="text-center" style="border: 1px solid">Net Sales</th>
                                         </tr>
                                     </thead>
@@ -561,7 +643,7 @@
                                        </tr>
                                         <tr>
                                            <td style="font-weight: 500">
-                                               <h:outputLabel value="X ray"/>
+                                               <h:outputLabel value="X-ray"/>
                                            </td>
                                            <ui:repeat value="#{['', '', '', '', '', '', '', '', '', '', '']}" 
                                                       var="v">
