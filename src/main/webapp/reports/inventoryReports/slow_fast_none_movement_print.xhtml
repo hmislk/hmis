@@ -135,12 +135,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Date Range:" styleClass="label"/>
@@ -169,7 +169,7 @@
 
                                                 <!-- Row 4 -->
                                                 <h:outputText value="Item:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
+                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
                                                 <h:outputText value="Fast Movement"/>
@@ -294,12 +294,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Date Range:" styleClass="label"/>
@@ -328,7 +328,7 @@
 
                                                 <!-- Row 4 -->
                                                 <h:outputText value="Item:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
+                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
                                                 <h:outputText value="Slow Movement"/>
@@ -453,12 +453,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Date Range:" styleClass="label"/>
@@ -487,7 +487,7 @@
 
                                                 <!-- Row 4 -->
                                                 <h:outputText value="Item:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
+                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
                                                 <h:outputText value="Non Movement"/>
