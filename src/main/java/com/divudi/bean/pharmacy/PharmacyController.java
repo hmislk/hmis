@@ -11888,7 +11888,7 @@ public class PharmacyController implements Serializable {
         metaStyleBold.setFont(metaFontBold);
 
         if (title != null && !title.isEmpty()) {
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
             Row titleRow = sheet.createRow(rowIndex++);
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue(title);
@@ -11951,7 +11951,7 @@ public class PharmacyController implements Serializable {
 
     // Filters for grn_return_variance_report
     public Map<String, Object> getFiltersForGrnReturnVarianceReport() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
