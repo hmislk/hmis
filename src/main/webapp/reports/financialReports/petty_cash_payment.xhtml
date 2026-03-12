@@ -154,27 +154,25 @@
                                 action="#{reportController.processPettyCashPayment}" >
                             </p:commandButton>
                             <p:commandButton 
-                                ajax="false" 
-                                value="Print All" 
-                                icon="fas fa-print" 
-                                class="ui-button-info mx-1"  >
-                                <p:printer target="dtaPr"/>
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="petty_cash_payment_print?faces-redirect=true"
+                                    value="To Print">
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
                                 value="Download" 
                                 icon="fas fa-file-excel" 
-                                class="ui-button-success mx-1" >
-                                <p:dataExporter 
-                                    fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" 
-                                    type="xlsx" 
-                                    target="dtaPr" />
+                                class="ui-button-success mx-1" 
+                                action="#{reportController.exportPettyCashPaymentReportToExcel()}">
                             </p:commandButton>
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
+                                value="PDF"
+                                action="#{reportController.exportPettyCashPaymentReportToPDF()}">
                             </p:commandButton>
 
                         </h:panelGrid>
