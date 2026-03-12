@@ -106,6 +106,8 @@
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
+                        <p:commandButton ajax="false" value="Export to Excel" class="ui-button-success mx-2" icon="fas fa-file-excel"
+                                         action="#{creditSummeryController.exportToExcel}"/>
                     </h:panelGrid>
 
                 <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
