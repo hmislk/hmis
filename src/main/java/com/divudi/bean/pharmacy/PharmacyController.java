@@ -6463,7 +6463,7 @@ public class PharmacyController implements Serializable {
             Map<String, Object> parameters = new HashMap<>();
 
             // Apply stock quantity filter
-            if (transferType != null && qty >= 0.0) {
+            if (transferType != null && Double.isFinite(qty)) {
                 switch (transferType) {
                     case "equal":
                         sql.append(" AND s.stock = :stockQty ");
