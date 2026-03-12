@@ -6139,8 +6139,8 @@ public class PharmacyController implements Serializable {
      * <li>Handles null department names with "Unspecified Department"</li>
      * <li>Applies date filter: receive query uses createdAt <= toDate, issue
      * query uses BETWEEN fromDate AND toDate</li> <li>Applies common filters
-     * (fromInstitution,
-     * fromDepartment, toInstitution, toDepartment, etc.) to both queries</li>
+     * (fromInstitution, fromDepartment, toInstitution, toDepartment, etc.) to
+     * both queries</li>
      * </ul>
      *
      * @param billTypeAtomics List of bill type atomics to include in the
