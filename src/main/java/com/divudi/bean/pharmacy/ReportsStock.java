@@ -1060,30 +1060,52 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void fillDepartmentNonEmptyItemStocks() {
         reportTimerController.trackReportExecution(() -> {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
-            Map m = new HashMap();
-            String sql;
-            sql = "select new com.divudi.core.data.dto.StockReportByItemDTO"
-                    + "(s.itemBatch.item.code, "
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select new com.divudi.core.data.dto.StockReportByItemDTO("
+                    + "s.itemBatch.item.code, "
                     + "s.itemBatch.item.name, "
                     + "sum(s.stock), "
                     + "sum(s.itemBatch.purcahseRate * s.stock), "
-                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
-                    + "from Stock s where s.stock>:z and s.department=:d "
-                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
-                    + "order by s.itemBatch.item.name";
-            m.put("d", department);
-            m.put("z", 0.0);
-            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(sql, m);
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s "
+                    + "left join s.itemBatch.item.category cat "
+                    + "left join s.itemBatch.item.dosageForm df "
+                    + "where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" group by s.itemBatch.item.name, s.itemBatch.item.code order by s.itemBatch.item.name");
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(jpql.toString(), m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
             for (StockReportByItemDTO r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
-
             }
             stockReportByItemDTOS = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
