@@ -2585,6 +2585,19 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private List<PatientEncounter> inPatientBillList;
 
     public void createProfitMatrixReport() {
+        // reset results
+        totalNetTotal = 0.0;
+        inPatientBillList = null;
+        billItems = null;
+
+        if ("detail".equalsIgnoreCase(reportType)) {
+            createProfitMatrixDetailReport();
+        } else { // default = summary
+            createProfitMatrixSummaryReport();
+        }
+    }
+
+    private void createProfitMatrixSummaryReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
@@ -2596,6 +2609,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     .append("AND rfc.roomCategory IN :roomCats ");
             params.put("roomCats", roomCategories);
         }
+
         jpql.append("WHERE pe.retired = :ret ")
                 .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
                 .append("AND pe.discharged = true ")
@@ -2619,11 +2633,28 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             jpql.append("AND pe.department = :dept ");
             params.put("dept", department);
         }
-        
+
         if (admissionTypes != null && !admissionTypes.isEmpty()) {
             jpql.append("AND pe.admissionType IN :admTypes ");
             params.put("admTypes", admissionTypes);
         }
+
+        if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
+            jpql.append("AND pe.finalBill.deptId = :inv ");
+            params.put("inv", invoiceNumber.trim());
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql.append("AND pe.bhtNo LIKE :bht ");
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql.append("AND (LOWER(pe.patient.person.name) LIKE :pn ")
+                    .append("OR LOWER(pe.patient.phn) LIKE :pn) ");
+            params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
+        }
+
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
         inPatientBillList = peFacade.findByJpql(
@@ -2632,8 +2663,88 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 TemporalType.TIMESTAMP
         );
 
+        // total for footer
+        if (inPatientBillList != null) {
+            for (PatientEncounter pe : inPatientBillList) {
+                totalNetTotal += pe.getNetTotal();
+            }
+        }
     }
 
+    private void createProfitMatrixDetailReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT bi ")
+                .append("FROM BillItem bi ")
+                .append("JOIN bi.bill b ")
+                .append("JOIN b.patientEncounter pe ")
+                .append("WHERE bi.retired = :ret ")
+                .append("AND b.retired = :bret ")
+                .append("AND b.cancelled = :can ")
+                .append("AND pe.retired = :peret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND pe.discharged = true ")
+                .append("AND pe.paymentFinalized = true ");
+
+        params.put("ret", false);
+        params.put("bret", false);
+        params.put("can", false);
+        params.put("peret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+
+        if (admissionTypes != null && !admissionTypes.isEmpty()) {
+            jpql.append("AND pe.admissionType IN :admTypes ");
+            params.put("admTypes", admissionTypes);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
+            jpql.append("AND b.deptId = :inv ");
+            params.put("inv", invoiceNumber.trim());
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql.append("AND pe.bhtNo LIKE :bht ");
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql.append("AND (LOWER(pe.patient.person.name) LIKE :pn ")
+                    .append("OR LOWER(pe.patient.phn) LIKE :pn) ");
+            params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission, b.deptId, bi.item.name ");
+
+        billItems = billItemFacade.findByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+        );
+
+        totalNetTotal = 0.0;
+        if (billItems != null) {
+            for (BillItem bi : billItems) {
+                totalNetTotal += bi.getNetValue();
+            }
+        }
+    }
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {

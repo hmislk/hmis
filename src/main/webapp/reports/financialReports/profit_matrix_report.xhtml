@@ -182,7 +182,9 @@
                         </div>
 
                         <h:panelGroup id="printPanel" >
-                            <p:panel header="Type: Summary" styleClass="m-3">
+                            <p:panel header="Type: Summary"
+                                     styleClass="m-3"
+                                     rendered="#{empty reportController.reportType or reportController.reportType eq 'summery'}">
                                 <p:dataTable
                                     id="summeryWise"
                                     value="#{reportController.inPatientBillList}"
@@ -205,7 +207,7 @@
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Invoice No"/></f:facet>
-                                        <h:outputText value="#{pe.finalBill.id}"/>
+                                        <h:outputText value="#{pe.finalBill.deptId}"/>
                                     </p:column>
 
                                     <p:column width="8em">
@@ -220,7 +222,7 @@
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Patient Name"/></f:facet>
-                                        <h:outputText value="#{pe.patient.person.name}"/>
+                                        <h:outputText value="#{pe.patient.person.nameWithTitle}"/>
                                     </p:column>
 
                                     <p:column width="8em">
@@ -271,23 +273,24 @@
 
                                 </p:dataTable>
                             </p:panel>
-
-<!--                            <p:panel header="Type: Detail" styleClass="m-3" >
+                            <p:panel header="Type: Detail"
+                                     styleClass="m-3"
+                                     rendered="#{reportController.reportType eq 'detail'}">
                                 <p:dataTable
                                     id="detailWise"
-                                    var="var"
+                                    value="#{reportController.billItems}"
+                                    var="bi"
                                     rowIndexVar="n"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     rows="10"
-                                    rendered="true"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                     styleClass="table-sm">
 
                                     <p:column width="4em" styleClass="text-center">
-                                        <f:facet name="header" >
+                                        <f:facet name="header">
                                             <h:outputText value="S.No" />
                                         </f:facet>
                                         <h:outputText value="#{n+1}"/>
@@ -295,90 +298,78 @@
                                             <h:outputText value="Total"/>
                                         </f:facet>
                                     </p:column>
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Invoice No" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText>
-
+                                        <h:outputText value="#{bi.bill.deptId}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Admission No" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText>
+                                        <h:outputText value="#{bi.patientEncounter.bhtNo}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="MRNO" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText>
+                                        <h:outputText value="#{bi.patientEncounter.patient.phn}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Patient Name" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText>
+                                        <h:outputText value="#{bi.patientEncounter.patient.person.nameWithTitle}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Visit Type" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText>
+                                        <h:outputText value="#{bi.patientEncounter.patientEncounterType}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
-                                            <h:outputText value="Refering Doctor Name" />
+                                    <p:column width="8em">
+                                        <f:facet name="header">
+                                            <h:outputText value="Referring Doctor Name" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText >
+                                        <h:outputText value="#{bi.patientEncounter.referringDoctor.person.name}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Service Name" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText >
+                                        <h:outputText value="#{bi.item.name}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Service Department" />
                                         </f:facet>
-                                        <h:outputText value="">
-                                        </h:outputText >
+                                        <h:outputText value="#{bi.item.department.name}"/>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Invoice Amount" />
                                         </f:facet>
-                                        <h:outputText value="">
+                                        <h:outputText value="#{bi.grossValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
-                                        <f:facet name="footer">
-                                            <h:outputText value="000000">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
 
-                                    <p:column width= "8em" >
-                                        <f:facet name="header" >
+                                    <p:column width="8em">
+                                        <f:facet name="header">
                                             <h:outputText value="Service Value" />
                                         </f:facet>
-                                        <h:outputText value="">  
+                                        <h:outputText value="#{bi.hospitalFee}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
@@ -386,21 +377,18 @@
                                         <f:facet name="header">
                                             <h:outputText value="Profit Margin" />
                                         </f:facet>
-                                        <h:outputText value="">
+                                        <h:outputText value="#{bi.grossValue - bi.netValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
-                                        <f:facet name="footer">
-                                            <h:outputText value="000000">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Matrix Percentage" />
                                         </f:facet>
-                                        <h:outputText value="">
+                                        <h:outputText
+                                            value="#{bi.grossValue ne 0 ? ((bi.grossValue - bi.netValue) * 100.0 / bi.grossValue) : 0}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
@@ -408,20 +396,169 @@
                                         <f:facet name="header">
                                             <h:outputText value="Final Amount" />
                                         </f:facet>
-                                        <h:outputText value="">
+                                        <h:outputText value="#{bi.netValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputText value="000000">
+                                            <h:outputText value="#{reportController.totalNetTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
 
                                 </p:dataTable>
-                            </p:panel>-->
-
+                            </p:panel>
                         </h:panelGroup>
+
+                        <!--                            <p:panel header="Type: Detail" styleClass="m-3" >
+                                                        <p:dataTable
+                                                            id="detailWise"
+                                                            var="var"
+                                                            rowIndexVar="n"
+                                                            paginator="true"
+                                                            paginatorPosition="bottom"
+                                                            rows="10"
+                                                            rendered="true"
+                                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                            currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                                            rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                                            styleClass="table-sm">
+                        
+                                                            <p:column width="4em" styleClass="text-center">
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="S.No" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{n+1}"/>
+                                                                <f:facet name="footer">
+                                                                    <h:outputText value="Total"/>
+                                                                </f:facet>
+                                                            </p:column>
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Invoice No" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText>
+                        
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Admission No" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText>
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="MRNO" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText>
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Patient Name" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText>
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Visit Type" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText>
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Refering Doctor Name" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText >
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Service Name" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText >
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Service Department" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText >
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Invoice Amount" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                                <f:facet name="footer">
+                                                                    <h:outputText value="000000">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </f:facet>
+                                                            </p:column>
+                        
+                                                            <p:column width= "8em" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Service Value" />
+                                                                </f:facet>
+                                                                <h:outputText value="">  
+                                                                </h:outputText>
+                                                            </p:column>
+                        
+                                                            <p:column width="8em">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="Profit Margin" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                                <f:facet name="footer">
+                                                                    <h:outputText value="000000">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </f:facet>
+                                                            </p:column>
+                        
+                                                            <p:column width="8em">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="Matrix Percentage" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                </h:outputText>
+                                                            </p:column>
+                        
+                                                            <p:column width="8em">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="Final Amount" />
+                                                                </f:facet>
+                                                                <h:outputText value="">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                                <f:facet name="footer">
+                                                                    <h:outputText value="000000">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </f:facet>
+                                                            </p:column>
+                        
+                                                        </p:dataTable>
+                                                    </p:panel>-->
+
 
                     </p:panel>
                 </h:form>
