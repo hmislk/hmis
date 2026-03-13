@@ -92,7 +92,7 @@
                                         </p:column>
                                         <p:column 
                                             headerText="Casheir"
-                                            width="27mm">
+                                            width="26mm">
                                             <h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText>
                                         </p:column>
                                         <p:column 
@@ -105,7 +105,7 @@
                                         <p:column 
                                             headerText="Bill Date" 
                                             width="27mm">
-                                            <h:outputText value="#{pc.billDate}" >
+                                            <h:outputText value="#{pc.billDate}">
                                                 <f:convertDateTime pattern="yyyy MM dd hh:mm a" />
                                             </h:outputText>
                                         </p:column>
@@ -123,23 +123,23 @@
                                         </p:column>
                                         <p:column 
                                             headerText="For Whome" 
-                                            width="27mm">
+                                            width="26mm">
                                             <h:outputText value="#{pc.staff.person.name}" rendered="#{pc.staff ne null}" ></h:outputText>
                                             <h:outputText value="#{pc.person.name}" rendered="#{pc.person ne null}" ></h:outputText>
                                         </p:column>
                                         <p:column 
                                             headerText="Paid For" 
-                                            width="27mm">
+                                            width="26mm">
                                             <h:outputText value="#{pc.toDepartment.name}" ></h:outputText>
                                         </p:column>
                                         <p:column 
                                             headerText="Purpose" 
-                                            widht="30mm">
+                                            width="30mm">
                                             <h:outputText value="#{pc.comments}" ></h:outputText>
                                         </p:column>
                                         <p:column 
                                             headerText="Status" 
-                                            width="20mm">
+                                            width="19mm">
                                             <h:outputText value="Approved" rendered="#{pc.approveUser ne null}" style="color: green; font-weight: 700;"/>
                                             <h:outputText value="Not Approved" rendered="#{pc.approveUser eq null}" style="color: red; font-weight: 700;"/>
                                         </p:column>

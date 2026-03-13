@@ -5592,14 +5592,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-        String dates = "";
-        if (fromDate != null && toDate != null) {
-            dates = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate) + "_to_" + new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(toDate);
-        }
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if (dates != null && !dates.isEmpty()) {
-            String fileName = CommonFunctions.sanitizeStringForDatabase("Petty_Cash_Payment_Report_" + dates);
-            response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Petty_Cash_Payment_Report_" + dates + ".xlsx");
         } else {
             response.setHeader("Content-Disposition", "attachment; filename=Petty_Cash_Payment_Report.xlsx");
         }
@@ -5620,7 +5616,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 instFont.setBold(true);
                 instStyle.setFont(instFont);
                 instStyle.setAlignment(HorizontalAlignment.CENTER);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 5));
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
                 Row instRow = sheet.createRow(rowIndex++);
                 Cell instCell = instRow.createCell(0);
                 instCell.setCellValue(institutionName);
@@ -5703,14 +5699,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
-        String dates = "";
-        if (fromDate != null && toDate != null) {
-            dates = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate) + "_to_" + new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(toDate);
-        }
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setContentType("application/pdf");
         if (dates != null && !dates.isEmpty()) {
-            String fileName = CommonFunctions.sanitizeStringForDatabase("Petty_Cash_Payment_Report_" + dates);
-            response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Petty_Cash_Payment_Report_" + dates + ".pdf");
         } else {
             response.setHeader("Content-Disposition", "attachment; filename=Petty_Cash_Payment_Report.pdf");
         }
@@ -5765,9 +5757,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
                 String deptInfo="";
                 if (b.getCancelledBill() != null) {
-                    deptInfo = (b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + " (Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + " (Cancelled)") ) : "";
+                    deptInfo = (b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + "\n(Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + "\n(Cancelled)") ) : "";
                 } else if (b.getRefundedBill() != null) {
-                    deptInfo = (b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + " (Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + " (Refunded)") ) : "";
+                    deptInfo = (b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + "\n(Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + "\n(Refunded)") ) : "";
                 } else {
                     deptInfo = b.getDeptId() != null ? b.getDeptId() : "";
                 }

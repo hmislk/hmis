@@ -40,7 +40,7 @@
     }
 
     .table {
-        width: 99%;
+        width: 99%!important;
         font-size: 9pt!important;
         margin-top: 3mm!important;
         border-collapse: collapse !important;
