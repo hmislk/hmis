@@ -44,11 +44,12 @@
 
                                         <div class="row mb-3">
                                             <div class="col-12">
-                                                <label class="form-label fw-bold text-dark mb-2">
+                                                <h:outputLabel for="insSelect" styleClass="form-label fw-bold text-dark mb-2">
                                                     <i class="fa-solid fa-hospital me-2 text-primary"></i>
                                                     Institution
-                                                </label>
+                                                </h:outputLabel>
                                                 <p:selectOneMenu id="insSelect"
+                                                                 label="Institution"
                                                                  value="#{bhtSummeryController.institution}"
                                                                  style="width:100%">
                                                     <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
@@ -56,20 +57,21 @@
                                                                    var="ins"
                                                                    itemLabel="#{ins.name}"
                                                                    itemValue="#{ins}" />
-                                                    <p:ajax update="acPt" />
+                                                    <p:ajax listener="#{bhtSummeryController.onInstitutionChange}" update="acPt" />
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
 
                                         <div class="row mb-3">
                                             <div class="col-12">
-                                                <label class="form-label fw-bold text-dark mb-2">
+                                                <h:outputLabel for="acPt" styleClass="form-label fw-bold text-dark mb-2">
                                                     <i class="fa-solid fa-user me-2 text-primary"></i>
                                                     Patient Search
-                                                </label>
+                                                </h:outputLabel>
                                                 <p:autoComplete
                                                     widgetVar="aPt"
                                                     id="acPt"
+                                                    label="Patient Search"
                                                     forceSelection="true"
                                                     required="true"
                                                     requiredMessage="Please select a patient"
