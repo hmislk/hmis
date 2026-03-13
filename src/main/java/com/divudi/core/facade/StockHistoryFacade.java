@@ -262,6 +262,60 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
     }
 
 
+    /**
+     * Calculates the stock value at purchase rate for a given date and department.
+     * Uses the historical purchase rate stored on STOCKHISTORY (PURCHASERATE column),
+     * falling back to ITEMBATCH.PURCAHSERATE (intentional DB typo) when the
+     * history row has no rate recorded.
+     *
+     * @param date The date for which to calculate stock value
+     * @param departmentId The department ID (can be null for all departments)
+     * @return The total stock value at purchase rate, or 0.0 if calculation fails
+     */
+    public double calculateStockValueAtPurchaseRateOptimized(Date date, Long departmentId) {
+        try {
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.purchase_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT  " +
+                "        sh.STOCKQTY, " +
+                "        COALESCE(NULLIF(sh.PURCHASERATE, 0), ib.PURCAHSERATE, 0.0) AS purchase_rate " +
+                "    FROM STOCKHISTORY sh " +
+                "    INNER JOIN ( " +
+                "        SELECT  " +
+                "            DEPARTMENT_ID, " +
+                "            ITEMBATCH_ID, " +
+                "            MAX(ID) AS max_id " +
+                "        FROM STOCKHISTORY " +
+                "        WHERE RETIRED = 0 " +
+                "        AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 " +
+                "    AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+
+            Object result = query.getSingleResult();
+            if (result instanceof Number) {
+                return ((Number) result).doubleValue();
+            }
+            return 0.0;
+
+        } catch (Exception e) {
+            System.err.println("Error calculating stock value at purchase rate for date: " + date + " - " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
+
     public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
             HistoryType historyType, int maxResults) {
         StringBuilder jpql = new StringBuilder();

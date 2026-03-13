@@ -133,12 +133,12 @@
                                                     <!-- Row 1 -->
                                                     <h:outputText value="From Date:" styleClass="label"/>
                                                     <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
 
                                                     <h:outputText value="To Date:" styleClass="label"/>
                                                     <h:outputText value="#{pharmacyReportController.toDate}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
 
                                                     <h:outputText value="Issuing/Returning Doc.Status:" styleClass="label"/>

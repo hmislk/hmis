@@ -2587,11 +2587,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         if ("OP".equals(reportType)) {
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         } else if ("IP".equals(reportType)) {
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
@@ -2601,11 +2600,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         } else {
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
-            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
@@ -2613,6 +2611,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         }
+        
+        
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
@@ -2622,7 +2622,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.bill.id, ");
         jpql.append("bi.bill.deptId, ");
         jpql.append("bi.bill.insId, ");
-        jpql.append("bi.bill.billDate, ");
+        jpql.append("bi.bill.createdAt, ");
         jpql.append("pt.phn, ");
         jpql.append("pn.name, ");
         jpql.append("item.id, ");

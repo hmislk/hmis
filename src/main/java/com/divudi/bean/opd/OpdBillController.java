@@ -685,6 +685,69 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Title To Save Patient.",
+                "Requires patient title to be selected before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3125: Patient title validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Name To Save Patient.",
+                "Requires patient name to be entered before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3132: Patient name validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Gender To Save Patient.",
+                "Requires patient gender to be selected before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3139: Patient gender validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Age to Save Patient.",
+                "Requires patient date of birth to be entered before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3146: Patient DOB validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Phone Number to save Patient.",
+                "Requires patient phone number to be entered before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3153: Patient phone validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Mail to save Patient.",
+                "Requires a valid patient email address before settling the OPD bill (default: false)",
+                "OpdBillController.java line 3166: Patient email validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient NIC to save Patient.",
+                "Requires patient NIC to be entered before settling the OPD bill (default: false)",
+                "OpdBillController.java line 3178: Patient NIC validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Address to save Patient.",
+                "Requires patient address to be entered before settling the OPD bill (default: false)",
+                "OpdBillController.java line 3185: Patient address validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Area to save Patient.",
+                "Requires patient area to be selected before settling the OPD bill, when area registration is required (default: false)",
+                "OpdBillController.java line 3192: Patient area validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
         // Advanced Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill",
@@ -2242,18 +2305,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         tmp.add(billEntry);
                     }
                 }
-                
+
                 Priority highestPriority = Optional
-                    .ofNullable(newlyCreatedIndividualBill.getBillItems())
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .filter(bi -> bi.getPriority() != null)
-                    .map(BillItem::getPriority)
-                    .max(Comparator.comparingInt(Priority::getLevel))
-                    .orElse(Priority.NORMAL);
+                        .ofNullable(newlyCreatedIndividualBill.getBillItems())
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .filter(bi -> bi.getPriority() != null)
+                        .map(BillItem::getPriority)
+                        .max(Comparator.comparingInt(Priority::getLevel))
+                        .orElse(Priority.NORMAL);
 
                 newlyCreatedIndividualBill.setPriority(highestPriority);
-                
+
                 // Handling partial payments if allowed
                 if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                     newlyCreatedIndividualBill.setCashPaid(cashPaid);
@@ -2382,7 +2445,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 list.add(getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser()));
             }
             newSingleBill.setBillItems(list);
-            
+
             Priority highestPriority = Optional
                     .ofNullable(list)
                     .orElse(Collections.emptyList())
@@ -2393,7 +2456,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     .orElse(Priority.NORMAL);
 
             newSingleBill.setPriority(highestPriority);
-            
+
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
             if (patientEncounter != null) {
                 newSingleBill.setIpOpOrCc("IP");
@@ -3108,15 +3171,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
             return true;
         }
-        if (getPatient().getPerson() == null) {
-            JsfUtil.addErrorMessage("New Patient's Person is NULL. Programming Error. Contact Developer.");
-            return true;
-        }
-        if (getPatient().getPerson().getName() == null
-                || getPatient().getPerson().getName().trim().equals("")) {
-            JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
-            return true;
-        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
                 && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)) {
@@ -3126,57 +3180,90 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
 
-        if (getPatient().getPerson().getSex() == null) {
-            JsfUtil.addErrorMessage("Can not bill without sex for the Patient !");
+        if (getPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("New Patient's Person is NULL. Programming Error. Contact Developer.");
             return true;
         }
-        if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return true;
-        }
-        if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
-            if (getPatient().getPerson().getArea() == null) {
-                JsfUtil.addErrorMessage("Please Add Patient Area");
-                return true;
-            }
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient", false)) {
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Title To Save Patient.", true)) {
             if (getPatient().getPerson().getTitle() == null) {
                 JsfUtil.addErrorMessage("Please select title");
                 return true;
             }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Name To Save Patient.", true)) {
+            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("")) {
+                JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
+                return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Gender To Save Patient.", true)) {
             if (getPatient().getPerson().getSex() == null) {
                 JsfUtil.addErrorMessage("Please select gender");
                 return true;
             }
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient", false)) {
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Age to Save Patient.", true)) {
             if (getPatient().getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Please select patient date of birth");
                 return true;
             }
         }
 
-        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientPhoneNumber()) {
-            if (getPatient().getPerson().getPhone() == null) {
-                JsfUtil.addErrorMessage("Please Enter a Phone Number");
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Phone Number to save Patient.", true)) {
+            if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+                if (getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please enter phone number.");
+                    return true;
+                }
+                if (getPatient().getPerson().getPhone().trim().equals("")) {
+                    JsfUtil.addErrorMessage("Please Enter a Phone Number");
+                    return true;
+                }
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Mail to save Patient.", false)) {
+            String email = getPatient().getPerson().getEmail();
+            if (email == null || email.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter patient email.");
                 return true;
             }
-            if (getPatient().getPerson().getPhone().trim().equals("")) {
-                JsfUtil.addErrorMessage("Please Enter a Phone Number");
+            if (!CommonFunctions.isValidEmail(email.trim())) {
+                JsfUtil.addErrorMessage("Please enter a valid patient email.");
                 return true;
             }
         }
 
-        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientArea()) {
-            if (getPatient().getPerson().getArea() == null) {
-                JsfUtil.addErrorMessage("Please Select Pataient Area");
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient NIC to save Patient.", false)) {
+            if (getPatient().getPerson().getNic() == null || getPatient().getPerson().getNic().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter patient NIC.");
                 return true;
             }
-            if (getPatient().getPerson().getArea().getName().trim().equals("")) {
-                JsfUtil.addErrorMessage("Please Select Patient Area");
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Address to save Patient.", false)) {
+            if (getPatient().getPerson().getAddress() == null || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter patient address.");
                 return true;
             }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Area to save Patient.", false)) {
+            if (sessionController.getDepartmentPreference().isNeedAreaForPatientRegistration()) {
+                if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please select patient area.");
+                    return true;
+                }
+            }
+        }
+
+        if (getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return true;
         }
 
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {

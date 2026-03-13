@@ -54,20 +54,20 @@
 
                                     <p:panel header="Add New ...">
                                         <div class="d-flex gap-2">
-<!--                                            <p:commandButton 
-                                                                                            id="btnToNewTestFirst" 
-                                                                                            value="Test-1" 
-                                                                                            oncomplete="PF('dlgTest').show();" 
-                                                                                            process="@this" 
-                                                                                            update="dlgTest" 
-                                                                                            actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
-                                                                                        <p:commandButton 
-                                                                                            id="btnToNewTestOther" 
-                                                                                            value="Tests-*" 
-                                                                                            oncomplete="PF('dlgTest').show();" 
-                                                                                            process="@this" 
-                                                                                            update="dlgTest"
-                                                                                            actionListener="#{investigationItemController.toAddNewTestOthers()}"/>-->
+                                            <!--                                            <p:commandButton 
+                                                                                                                                        id="btnToNewTestFirst" 
+                                                                                                                                        value="Test-1" 
+                                                                                                                                        oncomplete="PF('dlgTest').show();" 
+                                                                                                                                        process="@this" 
+                                                                                                                                        update="dlgTest" 
+                                                                                                                                        actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
+                                                                                                                                    <p:commandButton 
+                                                                                                                                        id="btnToNewTestOther" 
+                                                                                                                                        value="Tests-*" 
+                                                                                                                                        oncomplete="PF('dlgTest').show();" 
+                                                                                                                                        process="@this" 
+                                                                                                                                        update="dlgTest"
+                                                                                                                                        actionListener="#{investigationItemController.toAddNewTestOthers()}"/>-->
 
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Label" action="#{investigationItemController.addNewLabel()}"/>
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Value" action="#{investigationItemController.addNewValue()}"/>
@@ -668,7 +668,7 @@
 
                                                     <h:outputText value="Suffix"/>
                                                     <p:inputText autocomplete="off" id="txtSuffix" value="#{investigationItemController.current.formatSuffix}"/>
-                                                    
+
                                                     <h:outputText value="Allow to Generate Chart "/>
                                                     <p:selectBooleanCheckbox value="#{investigationItemController.current.allowToExportChart}" ></p:selectBooleanCheckbox>
                                                 </h:panelGrid>
@@ -762,56 +762,56 @@
 
                                             <!-- HtmlTemplate preview: render from 'current' so live positioning edits are immediately reflected -->
                                             <h:panelGroup rendered="#{investigationItemController.currentInvestigation.reportType eq 'HtmlTemplate'}">
-                                                <!-- Selected Html item: render from current (in-memory, reflects AJAX edits) -->
-                                                <h:panelGroup rendered="#{investigationItemController.current ne null and investigationItemController.current.ixItemType eq 'Html' and investigationItemController.current.retired ne true}">
-                                                    <div style="#{investigationItemController.current.cssStyle}; position: absolute; background-color: yellowgreen; border: 1px solid green;">
-                                                        <h:outputText value="#{investigationItemController.current.htmltext}" escape="false" />
-                                                    </div>
-                                                </h:panelGroup>
-                                                <!-- Fallback: no Html item selected yet, render from items list -->
-                                                <h:panelGroup rendered="#{investigationItemController.current eq null or investigationItemController.current.ixItemType ne 'Html' or investigationItemController.current.retired eq true}">
-                                                    <ui:repeat value="#{investigationItemController.items}" var="myIiTmp">
-                                                        <h:panelGroup rendered="#{myIiTmp.retired ne true and myIiTmp.ixItemType eq 'Html'}">
-                                                            <div style="#{myIiTmp.cssStyle}; position: absolute; background-color: yellowgreen; border: 1px solid green;">
-                                                                <h:outputText value="#{myIiTmp.htmltext}" escape="false" />
-                                                            </div>
-                                                        </h:panelGroup>
-                                                    </ui:repeat>
-                                                </h:panelGroup>
-                                            </h:panelGroup>
 
+                                                <h:panelGroup rendered="#{investigationItemController.editMode eq 'View_Mode'}" >
+                                                    <!-- Selected Html item: render from current (in-memory, reflects AJAX edits) -->
+                                                    <h:panelGroup rendered="#{investigationItemController.current ne null and investigationItemController.current.ixItemType eq 'Html' and investigationItemController.current.retired ne true}">
+                                                        <div style="#{investigationItemController.current.cssStyle}; position: absolute;">
+                                                            <h:outputText value="#{investigationItemController.current.htmltext}" escape="false" />
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <!-- Fallback: no Html item selected yet, render from items list -->
+                                                    <h:panelGroup rendered="#{investigationItemController.current eq null or investigationItemController.current.ixItemType ne 'Html' or investigationItemController.current.retired eq true}">
+                                                        <ui:repeat value="#{investigationItemController.items}" var="myIiTmp">
+                                                            <h:panelGroup rendered="#{myIiTmp.retired ne true and myIiTmp.ixItemType eq 'Html'}">
+                                                                <div style="#{myIiTmp.cssStyle}; position: absolute; ">
+                                                                    <h:outputText value="#{myIiTmp.htmltext}" escape="false" />
+                                                                </div>
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{investigationItemController.editMode eq 'Edit_mode'}" >
+                                                    <!-- Selected Html item: render from current (in-memory, reflects AJAX edits) -->
+                                                    <h:panelGroup rendered="#{investigationItemController.current ne null and investigationItemController.current.ixItemType eq 'Html' and investigationItemController.current.retired ne true}">
+                                                        <div style="#{investigationItemController.current.cssStyle}; position: absolute; background-color: yellowgreen; border: 1px solid green;">
+                                                            <h:outputText value="#{investigationItemController.current.htmltext}" escape="false" />
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <!-- Fallback: no Html item selected yet, render from items list -->
+                                                    <h:panelGroup rendered="#{investigationItemController.current eq null or investigationItemController.current.ixItemType ne 'Html' or investigationItemController.current.retired eq true}">
+                                                        <ui:repeat value="#{investigationItemController.items}" var="myIiTmp">
+                                                            <h:panelGroup rendered="#{myIiTmp.retired ne true and myIiTmp.ixItemType eq 'Html'}">
+                                                                <div style="#{myIiTmp.cssStyle}; position: absolute; background-color: yellowgreen; border: 1px solid green;">
+                                                                    <h:outputText value="#{myIiTmp.htmltext}" escape="false" />
+                                                                </div>
+                                                            </h:panelGroup>
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
 
                                 </p:panel>
                             </div>
-
-
                         </div>
 
                     </div>
 
-
-
-
-                    <p:panel class="w-100">
-                        <f:facet name="header">
-
-                        </f:facet>
-                        <h:panelGrid columns="2" class="w-100">
-                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}">
-
-
-                            </h:panelGrid>
-
-
-                        </h:panelGrid> 
-
-                    </p:panel>
                 </h:form>
-
-
-<!--                <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>-->
 
                 <div class="row mb-3">
                     <div class="col-6">
@@ -830,9 +830,6 @@
                         </h:form>
                     </div>
                 </div>
-
-
-
 
             </ui:define>
         </ui:composition>
