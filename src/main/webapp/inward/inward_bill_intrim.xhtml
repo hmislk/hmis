@@ -21,94 +21,168 @@
             <ui:define name="content">
                 <h:form id="pageForm" >
 
-                    <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
+                    <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}" styleClass="shadow-sm">
                         <f:facet name="header">
-                            <p:outputLabel value="Interim Bill" />
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-file-invoice-dollar fa-lg text-primary me-3"></i>
+                                <div>
+                                    <h4 class="mb-1 text-primary">Interim Bill</h4>
+                                    <p class="mb-0 text-muted small">Search and select an inpatient to generate interim bill</p>
+                                </div>
+                            </div>
                         </f:facet>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <p:outputLabel value="Institution" for="insSelect" class="font-weight-bold" />
-                                <p:selectOneMenu id="insSelect"
-                                                 value="#{bhtSummeryController.institution}"
-                                                 style="width:100%">
-                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
-                                    <f:selectItems value="#{sessionController.loggableInstitutions}"
-                                                   var="ins"
-                                                   itemLabel="#{ins.name}"
-                                                   itemValue="#{ins}" />
-                                    <p:ajax update="acPt" />
-                                </p:selectOneMenu>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-8 d-flex align-items-center">
-                                <p:outputLabel value="Patient / BHT : " class="mr-2" />
-                                <p:autoComplete
-                                    widgetVar="aPt"
-                                    id="acPt"
-                                    forceSelection="true"
-                                    required="true"
-                                    requiredMessage="Please select a patient"
-                                    value="#{bhtSummeryController.patientEncounter}"
-                                    completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
-                                    var="myItem"
-                                    itemValue="#{myItem}"
-                                    itemLabel="#{myItem.bhtNo}"
-                                    size="30"
-                                    class="m-2">
-
-                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{myItem.patient.phn}"/>
-                                    </p:column>
-                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{myItem.bhtNo}"/>
-                                    </p:column>
-                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;">
-                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <div class="d-flex justify-content-center">
-                                            <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                                #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
-                                            </span>
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-10 col-xl-8">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-4">
+                                        <div class="text-center mb-4">
+                                            <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
+                                            <h5 class="text-dark mb-2">Find Inpatient</h5>
+                                            <p class="text-muted">Search by patient name, BHT number, or PHN to generate an interim bill</p>
                                         </div>
-                                    </p:column>
 
-                                </p:autoComplete>
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-hospital me-2 text-primary"></i>
+                                                    Institution
+                                                </label>
+                                                <p:selectOneMenu id="insSelect"
+                                                                 value="#{bhtSummeryController.institution}"
+                                                                 style="width:100%">
+                                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                                    <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                                   var="ins"
+                                                                   itemLabel="#{ins.name}"
+                                                                   itemValue="#{ins}" />
+                                                    <p:ajax update="acPt" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
 
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Select"
-                                    class="ml-2"
-                                    action="#{bhtSummeryController.createIntrimBillTable()}" />
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-user me-2 text-primary"></i>
+                                                    Patient Search
+                                                </label>
+                                                <p:autoComplete
+                                                    widgetVar="aPt"
+                                                    id="acPt"
+                                                    forceSelection="true"
+                                                    required="true"
+                                                    requiredMessage="Please select a patient"
+                                                    value="#{bhtSummeryController.patientEncounter}"
+                                                    completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
+                                                    var="myItem"
+                                                    itemValue="#{myItem}"
+                                                    itemLabel="#{myItem.bhtNo}"
+                                                    placeholder="Type patient name, BHT number, or PHN..."
+                                                    minQueryLength="2"
+                                                    style="width: 100%;"
+                                                    inputStyleClass="form-control form-control-lg">
+                                                    <p:ajax event="itemSelect" update="pnlPatientPreview" />
+
+                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
+                                                            <strong>#{myItem.patient.phn}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                                                            <strong class="text-primary">#{myItem.bhtNo}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user me-2 text-success"></i>
+                                                            <span class="fw-medium">#{myItem.patient.person.nameWithTitle}</span>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                                                        <h:panelGroup rendered="#{myItem.currentPatientRoom ne null}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                                <span>#{myItem.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{myItem.currentPatientRoom eq null}">
+                                                            <span class="text-muted">
+                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                            </span>
+                                                        </h:panelGroup>
+                                                    </p:column>
+                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!myItem.discharged}" />
+                                                    </p:column>
+                                                </p:autoComplete>
+                                            </div>
+                                        </div>
+
+                                        <h:panelGroup id="pnlPatientPreview">
+                                            <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
+                                                <div class="card border-primary mt-3 mb-3">
+                                                    <div class="card-header bg-primary text-white py-2">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user-check me-2"></i>
+                                                            <strong>Selected Patient</strong>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body py-3">
+                                                        <div class="row">
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Patient Name</small>
+                                                                <strong>#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">BHT No</small>
+                                                                <strong class="text-primary">#{bhtSummeryController.patientEncounter.bhtNo}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">PHN</small>
+                                                                <strong>#{bhtSummeryController.patientEncounter.patient.phn}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">Room</small>
+                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom ne null}">
+                                                                    <strong>#{bhtSummeryController.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                                </h:panelGroup>
+                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom eq null}">
+                                                                    <span class="text-muted">Not assigned</span>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Status</small>
+                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtSummeryController.patientEncounter.discharged}" />
+                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtSummeryController.patientEncounter.discharged}" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <p:commandButton
+                                                    id="btnSelect"
+                                                    ajax="false"
+                                                    value="Continue"
+                                                    icon="fa-solid fa-arrow-right"
+                                                    class="ui-button-success btn-lg"
+                                                    style="min-width: 200px; height: 50px;"
+                                                    title="Continue to generate interim bill"
+                                                    action="#{bhtSummeryController.createIntrimBillTable()}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <style>
-                            .discharged-badge {
-                                background-color: #f44336;
-                                color: white;
-                                padding: 2px 8px;
-                                border-radius: 12px;
-                                font-size: 1em;
-                                font-weight: bold;
-                            }
-
-                            .not-discharged-badge {
-                                background-color: #2196F3;
-                                color: white;
-                                padding: 2px 8px;
-                                border-radius: 12px;
-                                font-size: 1em;
-                                font-weight: bold;
-                            }
-                        </style>
-
                     </p:panel>
 
 
