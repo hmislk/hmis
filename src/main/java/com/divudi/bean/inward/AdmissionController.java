@@ -1075,6 +1075,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return suggestions;
     }
 
+    public List<Admission> completePatientNotFinalizedByInstitution(String query, Institution institution) {
+        List<Admission> suggestions;
+        if (query == null) {
+            return new ArrayList<>();
+        }
+        String sql = "select c from Admission c where c.retired=false "
+                + " and ( c.paymentFinalized is null or c.paymentFinalized=false ) "
+                + " and ( ((c.bhtNo) like :q ) "
+                + " or ((c.patient.person.name) like :q ) "
+                + " or ((c.patient.phn =:phn ))) ";
+        HashMap h = new HashMap();
+        h.put("q", "%" + query.toUpperCase() + "%");
+        h.put("phn", query.toUpperCase());
+        if (institution != null) {
+            sql += " and c.institution = :ins ";
+            h.put("ins", institution);
+        }
+        sql += " order by c.bhtNo";
+        suggestions = getFacade().findByJpql(sql, h, 20);
+        return suggestions;
+    }
+
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";

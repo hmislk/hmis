@@ -38,6 +38,7 @@ import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
@@ -174,6 +175,7 @@ public class BhtSummeryController implements Serializable {
     private String duration;
     private boolean patientEncounterHasProvisionalBill = false;
     private List<PatientEncounter> childPatientEncouters;
+    private Institution institution;
 
     public String navigateToIntrimBillEstimate() {
         createTablesWithEstimatedProfessionalFees();
@@ -2268,7 +2270,23 @@ public class BhtSummeryController implements Serializable {
 
     public void clear() {
         patientEncounter = null;
+        institution = sessionController.getInstitution();
         makeNull();
+    }
+
+    public List<Admission> completeAdmissionNotFinalized(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+    }
+
+    public Institution getInstitution() {
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
