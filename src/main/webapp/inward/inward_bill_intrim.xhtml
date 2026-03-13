@@ -26,72 +26,89 @@
                             <p:outputLabel value="Interim Bill" />
                         </f:facet>
 
-                        <h:panelGrid columns="10">
-                            <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
-                            <p:autoComplete  
-                                widgetVar="aPt" 
-                                id="acPt" 
-                                forceSelection="true"
-                                required="true" 
-                                requiredMessage="Please select a patient"
-                                value="#{bhtSummeryController.patientEncounter}"
-                                completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
-                                var="myItem" 
-                                itemValue="#{myItem}"
-                                itemLabel="#{myItem.bhtNo}"
-                                size="30"
-                                class="m-2">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p:outputLabel value="Institution" for="insSelect" class="font-weight-bold" />
+                                <p:selectOneMenu id="insSelect"
+                                                 value="#{bhtSummeryController.institution}"
+                                                 style="width:100%">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                    <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                   var="ins"
+                                                   itemLabel="#{ins.name}"
+                                                   itemValue="#{ins}" />
+                                    <p:ajax update="acPt" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
 
-                                <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                    <h:outputLabel value="#{myItem.patient.phn}"/>
-                                </p:column>
-                                <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                    <h:outputLabel value="#{myItem.bhtNo}"/>
-                                </p:column>
-                                <p:column headerText="Patient" style="padding: 6px; width: 400px;">
-                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                </p:column>
-                                <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                    <div class="d-flex justify-content-center">
-                                        <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                            #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
-                                        </span>
-                                    </div>
-                                </p:column>
+                        <div class="row">
+                            <div class="col-md-8 d-flex align-items-center">
+                                <p:outputLabel value="Patient / BHT : " class="mr-2" />
+                                <p:autoComplete
+                                    widgetVar="aPt"
+                                    id="acPt"
+                                    forceSelection="true"
+                                    required="true"
+                                    requiredMessage="Please select a patient"
+                                    value="#{bhtSummeryController.patientEncounter}"
+                                    completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
+                                    var="myItem"
+                                    itemValue="#{myItem}"
+                                    itemLabel="#{myItem.bhtNo}"
+                                    size="30"
+                                    class="m-2">
 
-                            </p:autoComplete>
+                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.patient.phn}"/>
+                                    </p:column>
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.bhtNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;">
+                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                        <div class="d-flex justify-content-center">
+                                            <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                                #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                            </span>
+                                        </div>
+                                    </p:column>
 
-                            <p:commandButton 
-                                ajax="false"
-                                value="Select"
-                                class="ml-2"
-                                action="#{bhtSummeryController.createIntrimBillTable()}" >
-                            </p:commandButton>
+                                </p:autoComplete>
 
-                            <style>
-                                .discharged-badge {
-                                    background-color: #f44336;
-                                    color: white;
-                                    padding: 2px 8px;
-                                    border-radius: 12px;
-                                    font-size: 1em;
-                                    font-weight: bold;
-                                }
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Select"
+                                    class="ml-2"
+                                    action="#{bhtSummeryController.createIntrimBillTable()}" />
+                            </div>
+                        </div>
 
-                                .not-discharged-badge {
-                                    background-color: #2196F3;
-                                    color: white;
-                                    padding: 2px 8px;
-                                    border-radius: 12px;
-                                    font-size: 1em;
-                                    font-weight: bold;
-                                }
-                            </style>
+                        <style>
+                            .discharged-badge {
+                                background-color: #f44336;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
 
-                        </h:panelGrid>
+                            .not-discharged-badge {
+                                background-color: #2196F3;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+                        </style>
+
                     </p:panel>
 
 
