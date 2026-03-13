@@ -13892,7 +13892,7 @@ public class PharmacyReportController implements Serializable {
                 instFont.setBold(true);
                 instStyle.setFont(instFont);
                 instStyle.setAlignment(HorizontalAlignment.CENTER);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7);
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
                 Row instRow = sheet.createRow(rowIndex++);
                 Cell instCell = instRow.createCell(0);
                 instCell.setCellValue(institutionName);
