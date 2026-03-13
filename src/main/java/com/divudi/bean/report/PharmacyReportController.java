@@ -7517,12 +7517,16 @@ public class PharmacyReportController implements Serializable {
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.reset();
         response.setContentType("application/pdf");
-        if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_DTO_Report_" + dates + ".pdf");
+        String fileName = "Stock_Ledger_DTO_Report";
+        if (stockLedgerReportType != null && "byItem".equals(stockLedgerReportType)) {
+            fileName += "_ByItem";
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_DTO_Report.pdf");
+            fileName += "_ByBatch";
         }
-
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".pdf");
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
 
         Document document = null;
@@ -13942,11 +13946,16 @@ public class PharmacyReportController implements Serializable {
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_Report_" + dates + ".xlsx");
+        String fileName = "Stock_Ledger_DTO_Report";
+        if (stockLedgerReportType != null && "byItem".equals(stockLedgerReportType)) {
+            fileName += "_ByItem";
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_Report.xlsx");
+            fileName += "_ByBatch";
         }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".xlsx");
 
         Map<String, Object> filters = getFiltersForStockLedgerReport();
 
