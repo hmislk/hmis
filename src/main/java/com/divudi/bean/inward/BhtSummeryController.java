@@ -2268,6 +2268,11 @@ public class BhtSummeryController implements Serializable {
         patientRooms = null;
     }
 
+    public void onInstitutionChange() {
+        patientEncounter = null;
+        makeNull();
+    }
+
     public void clear() {
         patientEncounter = null;
         institution = sessionController.getInstitution();
