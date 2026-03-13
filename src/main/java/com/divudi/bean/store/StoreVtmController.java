@@ -61,6 +61,7 @@ public class StoreVtmController implements Serializable {
 
     // DTO properties
     private List<VtmDto> vtmDtoList;
+    private List<VtmDto> storeVtmListDtos;
     private VtmDto selectedVtmDto;
 
     // Audit properties
@@ -410,6 +411,7 @@ public class StoreVtmController implements Serializable {
 
     public void refreshData() {
         items = null;
+        storeVtmListDtos = null;
         clearDtoCache();
 
         if (current != null) {
@@ -560,6 +562,40 @@ public class StoreVtmController implements Serializable {
 
     public void setVtmAuditEvents(List<AuditEvent> vtmAuditEvents) {
         this.vtmAuditEvents = vtmAuditEvents;
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<VtmDto> getStoreVtmListDtos() {
+        if (storeVtmListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VtmDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.instructions, a.retired, a.inactive) "
+                    + "FROM Vtm a "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Store);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            storeVtmListDtos = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return storeVtmListDtos;
+    }
+
+    public String navigateToStoreVtmList() {
+        storeVtmListDtos = null;
+        getStoreVtmListDtos();
+        return "/pharmacy/admin/store_vtm_list?faces-redirect=true";
     }
 
     // ===================== Validation =====================

@@ -609,6 +609,8 @@ public enum Privileges {
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    PrintOriginalPoBillFromReprint("Print Original PO Bill From Reprint"),
+    PrintOriginalGrnBillFromReprint("Print Original GRN Bill From Reprint"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Optician">
@@ -960,6 +962,8 @@ public enum Privileges {
             case PharmacyGrnSave:
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
+            case PrintOriginalPoBillFromReprint:
+            case PrintOriginalGrnBillFromReprint:    
 
                 return "Pharmacy";
 

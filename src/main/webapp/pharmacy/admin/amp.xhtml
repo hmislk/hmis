@@ -158,6 +158,14 @@
                                         styleClass="ui-button-info m-1"
                                         disabled="#{ampController.current.id eq null}"
                                         title="View audit history for this AMP record"/>
+                                    <p:commandButton
+                                        id="btnViewList"
+                                        value="All AMPs List"
+                                        action="#{ampController.navigateToAmpList()}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary m-1"
+                                        icon="fas fa-list"
+                                        title="View and download the full list of AMPs"/>
                                 </h:panelGroup>
 
 
@@ -335,6 +343,51 @@
                                                         class="form-control"
                                                         disabled="#{not ampController.editable}"/>
                                                 </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <!-- Strength & Dispensing Section -->
+                                        <h:outputText value="Strength &amp; Dispensing" styleClass="section-header d-block"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="txtStrength" value="Strength"/>
+                                                <p:inputText id="txtStrength"
+                                                             value="#{ampController.current.strengthOfAnIssueUnit}"
+                                                             class="form-control"
+                                                             disabled="#{not ampController.editable}"
+                                                             placeholder="Enter strength value"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="selStrengthUnit" value="Strength Unit"/>
+                                                <p:selectOneMenu
+                                                    id="selStrengthUnit"
+                                                    value="#{ampController.current.strengthUnit}"
+                                                    styleClass="form-control"
+                                                    filter="true"
+                                                    disabled="#{not ampController.editable}">
+                                                    <f:selectItem itemLabel="-- Select Strength Unit --" itemValue="#{null}"/>
+                                                    <f:selectItems
+                                                        value="#{measurementUnitController.items}"
+                                                        var="m"
+                                                        itemValue="#{m}"
+                                                        itemLabel="#{m.name}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="selIssueUnit" value="Issue Unit"/>
+                                                <p:selectOneMenu
+                                                    id="selIssueUnit"
+                                                    value="#{ampController.current.issueUnit}"
+                                                    styleClass="form-control"
+                                                    filter="true"
+                                                    disabled="#{not ampController.editable}">
+                                                    <f:selectItem itemLabel="-- Select Issue Unit --" itemValue="#{null}"/>
+                                                    <f:selectItems
+                                                        value="#{measurementUnitController.issueUnits}"
+                                                        var="m"
+                                                        itemValue="#{m}"
+                                                        itemLabel="#{m.name}"/>
+                                                </p:selectOneMenu>
                                             </div>
                                         </div>
 

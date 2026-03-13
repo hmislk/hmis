@@ -117,7 +117,8 @@
                                 <h:outputText value="#{drawerentry.bill.fromDepartment.name}" />
                             </p:column>
 
-                            <p:column headerText="Method" style="width:10em; text-align:center;">
+                            <p:column headerText="Method" style="width:10em; text-align:center;"
+                                     exportValue="#{drawerentry.paymentMethod.label}">
                                 <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"                  value="#{drawerentry.paymentMethod.label}" severity="success" />
                                 <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"                  value="#{drawerentry.paymentMethod.label}" severity="warning" />
                                 <p:badge rendered="#{drawerentry.paymentMethod eq 'Cheque'}"                value="#{drawerentry.paymentMethod.label}" severity="info" />
