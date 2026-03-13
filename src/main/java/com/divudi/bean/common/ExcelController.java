@@ -4064,7 +4064,7 @@ public class ExcelController {
 
 
     // Excel export: wht report/ ReportTemplateRow
-    public StreamedContent createExcelForReportTemplateRows(ReportTemplateRowBundle bundle, Map<String, Object> filters) throws IOException {
+    public StreamedContent createExcelForReportTemplateRows(ReportTemplateRowBundle bundle, Map<String, Object> filters, String fileName) throws IOException {
         if (bundle == null) {
             return null;
         }
@@ -4164,7 +4164,7 @@ public class ExcelController {
         InputStream inputStream = new ByteArrayInputStream(bytes);
 
         excelSc = DefaultStreamedContent.builder()
-                .name((bundle.getName() != null ? bundle.getName() : "Wht_Report") + ".xlsx")
+                .name(((fileName != null && !fileName.isEmpty()) ? fileName : "Report") + ".xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();

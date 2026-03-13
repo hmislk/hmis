@@ -14123,20 +14123,20 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList_" + dates + ".xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList_" + dates + ".xlsx");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList.xlsx");
         }
 
         Map<String, Object> filters = getFiltersForExpiryItemReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
-            XSSFSheet sheet = workbook.createSheet("Expiring Item Report");
+            XSSFSheet sheet = workbook.createSheet("Expiry Item Report");
             int rowIndex = 0;
 
             if (filters != null && !filters.isEmpty()) {
-                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiring Item Report", filters);
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiry Item Report", filters);
             }
 
             // Create header row 
@@ -14190,7 +14190,7 @@ public class PharmacyReportController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiring Item Report to Excel", e);
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
         }
     }
 
@@ -14208,9 +14208,9 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/pdf");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList_" + dates + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList_" + dates + ".pdf");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList.pdf");
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
@@ -14221,7 +14221,7 @@ public class PharmacyReportController implements Serializable {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Expiring Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Expiry Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -14293,9 +14293,9 @@ public class PharmacyReportController implements Serializable {
 
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList_" + dates + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList_" + dates + ".pdf");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList.pdf");
         }
 
         response.setContentType("application/pdf");
@@ -14308,7 +14308,7 @@ public class PharmacyReportController implements Serializable {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Expiring Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Expiry Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -14379,20 +14379,20 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList_" + dates + ".xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList_" + dates + ".xlsx");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList.xlsx");
         }
 
         Map<String, Object> filters = getFiltersForExpiryItemReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
-            XSSFSheet sheet = workbook.createSheet("Expiring Item Report");
+            XSSFSheet sheet = workbook.createSheet("Expiry Item Report");
             int rowIndex = 0;
 
             if (filters != null && !filters.isEmpty()) {
-                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiring Item Report", filters);
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiry Item Report", filters);
             }
 
             // Create header row 
@@ -14439,7 +14439,7 @@ public class PharmacyReportController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiring Item Report to Excel", e);
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
         }
     }
 

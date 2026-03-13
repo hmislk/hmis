@@ -2610,7 +2610,7 @@ public class PdfController {
     }
 
     // Export: WHT report
-    public StreamedContent createPdfForReportTemplateRows(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters) throws IOException {
+    public StreamedContent createPdfForReportTemplateRows(ReportTemplateRowBundle bundle, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters, String fileName) throws IOException {
         if (bundle == null) {
             return null;
         }
@@ -2658,9 +2658,7 @@ public class PdfController {
             headerSeparator.setStrokeColor(ColorConstants.BLACK);
             document.add(headerSeparator);
             document.add(new Paragraph("").setMarginBottom(5));
-        }
-
-        
+        }        
 
         if (bundle.getBundleType() != null) {
             switch (bundle.getBundleType()) {
@@ -2694,7 +2692,7 @@ public class PdfController {
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
         return DefaultStreamedContent.builder()
-                .name((bundle.getName() != null ? bundle.getName() : "WHT Report") + ".pdf")
+                .name(((fileName != null && !fileName.isEmpty()) ? fileName : "Report") + ".pdf")
                 .contentType("application/pdf")
                 .stream(() -> inputStream)
                 .build();
@@ -2740,10 +2738,10 @@ public class PdfController {
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
             } 
             
-            table.addCell(new Cell(1, 8).add(new Paragraph("")));
-            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+            table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
             document.add(table);
 
@@ -2839,10 +2837,10 @@ public class PdfController {
             table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getTotal() != null ? r.getTotal() : 0.0)).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
         } 
 
-        table.addCell(new Cell().add(new Paragraph("")));
-        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+        table.addCell(new Cell().add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getGrossTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTax())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getTotal())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
         document.add(table);
 
@@ -2910,8 +2908,8 @@ public class PdfController {
             table.addCell(new Cell().add(new Paragraph(bill != null && bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
             table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getBillFee().getFeeValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
         }
-         table.addCell(new Cell(1, 6).add(new Paragraph("")));
-         table.addCell(new Cell().add(new Paragraph(bundle.getTotal() != null ? String.format("%,.2f", bundle.getTotal()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+         table.addCell(new Cell(1, 6).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+         table.addCell(new Cell().add(new Paragraph(bundle.getTotal() != null ? String.format("%,.2f", bundle.getTotal()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
 
         document.add(table);
         return;

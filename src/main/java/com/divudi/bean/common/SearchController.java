@@ -22572,7 +22572,12 @@ public class SearchController implements Serializable {
 
         StreamedContent pdfSc = null;
         try {
-            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport());
+            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "WHT_Report");
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport(), fileName);
         } catch (IOException e) {
             logger.error("getWHTReportAsPdf: Error creating pdfSc via pdfController.ceratePdfForWhtReport", e);
             pdfSc = null;
@@ -22590,7 +22595,13 @@ public class SearchController implements Serializable {
 
         StreamedContent pdfSc = null;
         try {
-            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForOpdProfessionalFeePaymentsReport());
+            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "OPD_Professional_Fee_Payments_Report");
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            System.out.println("getOpdProfessionalFeePaymentsAsPdf: Generated file name - " + fileName);
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForOpdProfessionalFeePaymentsReport(),  fileName);
         } catch (IOException e) {
             logger.error("getOpdProfessionalFeePaymentsAsPdf: Error creating pdfSc via pdfController.createPdfForOpdProfessionalFeePayments", e);
             pdfSc = null;
@@ -22607,7 +22618,12 @@ public class SearchController implements Serializable {
         }
 
         try {
-            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForWhtReport());
+            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "WHT_Report");
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForWhtReport(), fileName);
         } catch (IOException e) {
             logger.error("getWHTReportAsExcel: Error creating downloadingExcel via excelController.createExcelForWhtReport", e);
             downloadingExcel = null;
@@ -22624,7 +22640,12 @@ public class SearchController implements Serializable {
         }
 
         try {
-            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForOpdProfessionalFeePaymentsReport());
+            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "OPD_Professional_Fee_Payments_Report");
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForOpdProfessionalFeePaymentsReport(), fileName);
         } catch (IOException e) {
             logger.error("getOpdProfessionalFeePaymentsAsExcel: Error creating downloadingExcel via excelController.createExcelForOpdProfessionalFeePayments", e);
             downloadingExcel = null;
@@ -22838,11 +22859,11 @@ public class SearchController implements Serializable {
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Site", site != null ? site.getName() : "All Sites");
         params.put("Department", department != null ? department.getName() : "All Departments");
-        params.put("Category", category != null ? category.getName() : "-");
-        params.put("Item", item != null && item.getName() != null ? item.getName() : "-");
+        params.put("Category", category != null ? category.getName() : "All");
+        params.put("Item", item != null && item.getName() != null ? item.getName() : "All");
         params.put("MRN", (mrnNo != null || !mrnNo.isEmpty()) ? mrnNo : "-");
-        params.put("Speciality", speciality != null ? speciality.getName() : "-");
-        params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "-");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
 
         return params; 
     }  

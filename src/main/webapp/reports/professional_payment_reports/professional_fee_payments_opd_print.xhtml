@@ -154,17 +154,17 @@
                                                     <h:outputText value="#{searchController.category != null ? searchController.category.name : 'All'}"/>
 
                                                     <h:outputText value="Item:" styleClass="label"/>
-                                                    <h:outputText value="#{searchController.item != null ? searchController.item.name : '-'}"/>
+                                                    <h:outputText value="#{searchController.item != null ? searchController.item.name : 'All'}"/>
 
                                                     <h:outputText value="MRN:" styleClass="label"/>
                                                     <h:outputText value="#{!searchController.mrnNo.isEmpty() ? searchController.mrnNo : '-'}"/>
 
                                                     <!-- Row 4 -->
                                                     <h:outputText value="Speciality:" styleClass="label"/>
-                                                    <h:outputText value="#{searchController.speciality != null ? searchController.speciality.name : '-'}"/>
+                                                    <h:outputText value="#{searchController.speciality != null ? searchController.speciality.name : 'All'}"/>
 
                                                     <h:outputText value="Doctor:" styleClass="label"/>
-                                                    <h:outputText value="#{searchController.staff != null ? searchController.staff.person.nameWithTitle : '-'}"/>
+                                                    <h:outputText value="#{searchController.staff != null ? searchController.staff.person.nameWithTitle : 'All'}"/>
 
                                                 </h:panelGrid>
                                             </div>
@@ -208,9 +208,9 @@
                                                 headerText="Bill" 
                                                 style="text-align: left;" 
                                                 width="45mm">
-                                                <h:outputText value="#{row.billFee.billItem.referanceBillItem.bill.deptId} " >
-                                                </h:outputText>
-                                                <p:badge severity="warning" value="Cancelled" rendered="#{row.billFee.billItem.bill.cancelled}" style="font-size: 8pt;"></p:badge>
+                                                <h:outputText value="#{row.billFee.billItem.referanceBillItem.bill.deptId} " />
+                                                <br/>
+                                                <h:outputText value="Cancelled" rendered="#{row.billFee.billItem.bill.cancelled}" style="color: red; font-weight: 600;"/>
                                             </p:column>
 
                                             <p:column 
