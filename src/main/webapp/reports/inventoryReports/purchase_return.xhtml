@@ -237,11 +237,8 @@
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Purchase Return Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportPurchaseReturnToPDF()}">
                             </p:commandButton>
 
                         </div>
@@ -334,8 +331,8 @@
                                 <h:outputText value="#{f.billItemFinanceDetails.valueAtPurchaseRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                 <f:facet name="footer">
-                                     <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
