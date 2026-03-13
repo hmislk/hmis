@@ -5592,6 +5592,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if (dates != null && !dates.isEmpty()) {
@@ -5698,6 +5699,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
 
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setContentType("application/pdf");
@@ -5738,7 +5740,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             String[] headers;
 
             columnWidths = new float[]{1f, 4f, 6f, 3f, 4f, 4f, 5f, 4f, 4f, 3f, 4f};
-            headers = new String[]{"S", "Cashier", "Bill No", "Bill Date", "Document No", "Date", "For Whome", "Paid For", "Purpose", "Status", "Amount"};
+            headers = new String[]{"S", "Cashier", "Bill No", "Bill Date", "Document No", "Date", "For Whom", "Paid For", "Purpose", "Status", "Amount"};
 
             table.setWidths(columnWidths);
             java.awt.Color lightGray = new java.awt.Color(192, 192, 192);
@@ -5793,7 +5795,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Petty Cash Payment Report to PDF", e);
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Error exporting Petty Cash Payment Report to PDF", e);
         }
     }
 

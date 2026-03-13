@@ -199,7 +199,7 @@
                             <p:column headerText="S" width="2em">
                                 <h:outputText value="#{rowIndex+1}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                            <p:column headerText="Cashier"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
                             <p:column headerText="Bill No" width="">
                                 <h:outputText value="#{pc.deptId}" ></h:outputText>
                                 <p:badge value="Cancelled - #{pc.cancelledBill.deptId}" severity="danger" rendered="#{pc.cancelledBill ne null}" />
@@ -218,7 +218,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="For Whome" >
+                            <p:column headerText="For Whom" >
                                 <h:outputText value="#{pc.staff.person.name}" rendered="#{pc.staff ne null}" ></h:outputText>
                                 <h:outputText value="#{pc.person.name}" rendered="#{pc.person ne null}" ></h:outputText>
                             </p:column>

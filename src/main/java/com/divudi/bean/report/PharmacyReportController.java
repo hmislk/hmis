@@ -13196,6 +13196,7 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/pdf");
@@ -13376,6 +13377,7 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -13530,6 +13532,7 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         String fileName = "";
 
@@ -13646,6 +13649,7 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());    
         String fileName = "";
 
@@ -13748,6 +13752,7 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         String fileName = "";
 
@@ -13856,6 +13861,7 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         String fileName = "";
 
@@ -13886,7 +13892,7 @@ public class PharmacyReportController implements Serializable {
                 instFont.setBold(true);
                 instStyle.setFont(instFont);
                 instStyle.setAlignment(HorizontalAlignment.CENTER);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 5));
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7);
                 Row instRow = sheet.createRow(rowIndex++);
                 Cell instCell = instRow.createCell(0);
                 instCell.setCellValue(institutionName);
@@ -13943,6 +13949,7 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -14149,6 +14156,7 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -14234,6 +14242,7 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/pdf");
@@ -14320,6 +14329,7 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
 
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         if (dates != null && !dates.isEmpty()) {
@@ -14405,6 +14415,7 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -14501,7 +14512,7 @@ public class PharmacyReportController implements Serializable {
         String filename = "";
 
         String dates = "";
-        if (reportController.getReportTemplateFileIndexName().equals("Opening Stock")) {
+        if ("Opening Stock".equals(type)) {
             dates = CommonFunctions.dateRangeForFileName(fromDate, null, sessionController.getApplicationPreference().getLongDateFormat(), true);
         } else {
             dates = CommonFunctions.dateRangeForFileName(toDate, null, sessionController.getApplicationPreference().getLongDateFormat(), true);
