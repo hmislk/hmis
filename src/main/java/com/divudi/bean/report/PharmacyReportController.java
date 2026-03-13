@@ -10985,9 +10985,14 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.xlsx");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_Detailed_" + dates + ".xlsx");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_Detailed.xlsx");
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
         Map<String, Object> filters = getFiltersForExpiryItemReport();
@@ -11091,9 +11096,14 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        String dateString = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report.pdf");
+        if (dateString != null && !dateString.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_Detailed_" + dateString + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_Detailed.pdf");
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
         Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
@@ -11125,9 +11135,7 @@ public class PharmacyReportController implements Serializable {
                 "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
+                addCellToPdfTable(table, header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
 
             for (Map.Entry<Item, Map<Long, List<Stock>>> entry : getItemStockMap().entrySet()) {
@@ -11139,60 +11147,65 @@ public class PharmacyReportController implements Serializable {
                     List<Stock> stockList = batchEntry.getValue();
 
                     for (Stock stock : stockList) {
-                        table.addCell(new Phrase(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle(), dataFont));
-                        table.addCell(new Phrase(item.getCategory() != null ? item.getCategory().getCode() : "-", dataFont));
-                        table.addCell(new Phrase(item.getCategory() != null ? item.getCategory().getName() : "-", dataFont));
-                        table.addCell(new Phrase(item.getCode() != null ? item.getCode() : "-", dataFont));
-                        table.addCell(new Phrase(item.getName() != null ? item.getName() : "-", dataFont));
-                        table.addCell(new Phrase(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-", dataFont));
-                        table.addCell(new Phrase(item.getCategory() != null ? item.getCategory().getName() : "-", dataFont));
-                        table.addCell(new Phrase(stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-", dataFont));
-                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                        addCellToPdfTable(table, stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle(), dataFont);
+                        addCellToPdfTable(table, item.getCategory() != null ? item.getCategory().getCode() : "-", dataFont);
+                        addCellToPdfTable(table, item.getCategory() != null ? item.getCategory().getName() : "-", dataFont);
+                        addCellToPdfTable(table, item.getCode() != null ? item.getCode() : "-", dataFont);
+                        addCellToPdfTable(table, item.getName() != null ? item.getName() : "-", dataFont);
+                        addCellToPdfTable(table, item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-", dataFont);
+                        addCellToPdfTable(table, item.getCategory() != null ? item.getCategory().getName() : "-", dataFont);
+                        addCellToPdfTable(table, stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-", dataFont);
+                        addCellToPdfTable(table, stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
-                                ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-", dataFont));
-                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
-                                ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-", dataFont));
-                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-", dataFont);
+                        addCellToPdfTable(table, stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
+                                ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-", dataFont);
+                        addCellToPdfTable(table, stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
-                                ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-", dataFont));
-                        table.addCell(new Phrase(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
-                                ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0", dataFont));
-                        table.addCell(new Phrase(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0), dataFont));
-                        table.addCell(new Phrase(String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0), dataFont));
-                        table.addCell(new Phrase(String.valueOf(stock.getStock() != null ? stock.getStock() : 0), dataFont));
+                                ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-", dataFont);
+                        addCellToPdfTable(table, stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
+                                ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0", dataFont);
+                        addCellToPdfTable(table, String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0), dataFont, null, Element.ALIGN_RIGHT);
+                        addCellToPdfTable(table, String.valueOf(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0), dataFont, null, Element.ALIGN_RIGHT);
+                        addCellToPdfTable(table, String.valueOf(stock.getStock() != null ? stock.getStock() : 0), dataFont, null, Element.ALIGN_RIGHT);
 
                         double itemValue = stock.getItemBatch() != null && stock.getStock() != null
                                 ? stock.getItemBatch().getPurcahseRate() * stock.getStock() : 0;
-                        table.addCell(new Phrase(String.valueOf(itemValue), dataFont));
-                        table.addCell(new Phrase("-", dataFont));
-                        table.addCell(new Phrase("-", dataFont));
-                        table.addCell(new Phrase("-", dataFont));
-                        table.addCell(new Phrase("-", dataFont));
+                        addCellToPdfTable(table, String.valueOf(itemValue), dataFont, null, Element.ALIGN_RIGHT);
+                        addCellToPdfTable(table, "-", dataFont);
+                        addCellToPdfTable(table, "-", dataFont);
+                        addCellToPdfTable(table, "-", dataFont);
+                        addCellToPdfTable(table, "-", dataFont);
                     }
-                    for (int i = 0; i < 16; i++) {
-                        table.addCell(" ");
-                    }
-                    table.addCell(new Phrase(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), dataFont));
-                    table.addCell(new Phrase(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)), dataFont));
-                    for (int i = 0; i < 2; i++) {
-                        table.addCell(" ");
-                    }
+                    // for (int i = 0; i < 16; i++) {
+                    //     addCellToPdfTable(table, " ", dataFont);
+                    // }
+                    PdfPCell batchCell = new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                    batchCell.setColspan(16);
+                    table.addCell(batchCell);
+                    addCellToPdfTable(table, String.valueOf(calculateBatchWiseTotalOfExpiredItems(item, batchNumber)), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), null, Element.ALIGN_RIGHT);
+                    addCellToPdfTable(table, String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), null, Element.ALIGN_RIGHT);
+                    PdfPCell batchAfterCell = new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                    batchAfterCell.setColspan(2);
+                    table.addCell(batchAfterCell);
                 }
-                for (int i = 0; i < 18; i++) {
-                    table.addCell(" ");
-                }
-                table.addCell(new Phrase(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), dataFont));
-                table.addCell(new Phrase(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)), dataFont));
+                PdfPCell itemCell = new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                itemCell.setColspan(18);
+                itemCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(itemCell);
+                addCellToPdfTable(table, String.valueOf(calculateItemWiseTotalOfExpiredItems(item)), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, String.valueOf(calculateItemWiseQtyOfExpiredItems(item)), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
             }
-            for (int i = 0; i < 16; i++) {
-                table.addCell(" ");
-            }
-            table.addCell(new Phrase(String.format("%.2f", stockPurchaseValue), dataFont));
-            table.addCell(new Phrase(String.format("%.2f", quantity), dataFont));
-            table.addCell(new Phrase(String.format("%.2f", stockPurchaseValue), dataFont));
-            table.addCell(new Phrase(String.format("%.2f", quantity), dataFont));
+            PdfPCell totalCell = new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalCell.setColspan(16);
+            totalCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            table.addCell(totalCell);
+            addCellToPdfTable(table, String.format("%.2f", stockPurchaseValue), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, String.format("%.2f", quantity), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, String.format("%.2f", stockPurchaseValue), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, String.format("%.2f", quantity), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
 
             document.add(table);
             document.close();
@@ -13029,7 +13042,7 @@ public class PharmacyReportController implements Serializable {
 
     // Filters for good_in_transit""
     public Map<String, Object> getFiltersForGoodInTransitReport() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
@@ -13042,7 +13055,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Receiving Department", toDepartment != null ? toDepartment.getName() : "All");
         filters.put("Item Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
-        filters.put("Item Name/Code", item != null ? item.getName() + " / " + item.getCode() : "-");
+        filters.put("Item Name/Code", item != null ? item.getName() + " / " + item.getCode() : "All");
         filters.put("Department Type", getSelectedDepartmentTypesString() != null ? getSelectedDepartmentTypesString() : "All");
 
         String docStatus;
@@ -13094,7 +13107,7 @@ public class PharmacyReportController implements Serializable {
 
     // Filters for expiry_item_report
     public Map<String, Object> getFiltersForExpiryItemReport() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
@@ -13106,7 +13119,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Report Type", getExpiryReportTypeAsString());
         filters.put("Item Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
-        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "All");
         filters.put("Department Type", getSelectedDepartmentTypesString());
 
         return filters;
@@ -13126,7 +13139,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Item Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
         filters.put("Department Type", getSelectedDepartmentTypesString());
-        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "All");
 
         String repType;
         if (reportType == null) {
@@ -13163,12 +13176,19 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit.pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit_Report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit_Report.pdf");
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
+        Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -13193,15 +13213,13 @@ public class PharmacyReportController implements Serializable {
             float[] columnWidths;
             String[] headers;
 
-            columnWidths = new float[]{3f, 4f, 4f, 3f, 3f, 4f, 4f, 4f, 4f, 4f, 3f, 3f, 3f, 4f};
+            columnWidths = new float[]{4f, 4f, 4f, 3f, 3f, 3f, 4f, 4f, 4f, 4f, 3f, 3f, 3f, 4f};
             headers = new String[]{"Bill No", "Staff", "Item", "Code", "Dosage Form", "Stock", "Expiry", "From Department", "To Department", "Issued Date", "Retail Sale Value", "Purchase Value", "Cost Value", "Comments"};
 
             table.setWidths(columnWidths);
 
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
+                addCellToPdfTable(table, header, boldFont, BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
 
             for (PharmacyRow deptEntry : pharmacyRows) {
@@ -13209,14 +13227,14 @@ public class PharmacyReportController implements Serializable {
                 Item item = billItem != null ? billItem.getItem() : null;
                 Bill bill = billItem != null ? billItem.getBill() : null;
 
-                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getDeptId() != null) ? bill.getDeptId() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null) ? billItem.getBill().getToStaff().getPerson().getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((item != null && item.getName() != null) ? item.getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((item != null && item.getCode() != null) ? item.getCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((item != null && item.getDosageForm() != null && item.getDosageForm().getName() != null) ? item.getDosageForm().getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                addCellToPdfTable(table, (bill != null && bill.getDeptId() != null) ? bill.getDeptId() : "", normalFont);
+                addCellToPdfTable(table, (bill != null && bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null) ? billItem.getBill().getToStaff().getPerson().getName() : "", normalFont);
+                addCellToPdfTable(table, (item != null && item.getName() != null) ? item.getName() : "", normalFont);
+                addCellToPdfTable(table, (item != null && item.getCode() != null) ? item.getCode() : "", normalFont);
+                addCellToPdfTable(table, (item != null && item.getDosageForm() != null && item.getDosageForm().getName() != null) ? item.getDosageForm().getName() : "", normalFont);
 
                 Paragraph p = new Paragraph();
-                p.setFont(FontFactory.getFont(FontFactory.HELVETICA, 8));
+                p.setFont(normalFont);
                 double displayQty = 0;
 
                 if (billItem != null) {
@@ -13224,7 +13242,7 @@ public class PharmacyReportController implements Serializable {
                         Double remaining = billItemRemainingQuantities.get(billItem.getId());
                         displayQty = remaining != null ? Math.abs(remaining) : 0;
 
-                        p.add(new Chunk(df.format(displayQty), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                        p.add(new Chunk(df.format(displayQty), normalFont));
                     } else {
                         double qty = Math.abs(billItem.getQty());
 
@@ -13234,90 +13252,93 @@ public class PharmacyReportController implements Serializable {
                             if (unitsPerPack != null) {
                                 double totalUnits = Math.abs(qty * unitsPerPack.doubleValue());
 
-                                p.add(new Chunk(df.format(totalUnits), FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                                p.add(new Chunk(" (", FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                                p.add(new Chunk(df.format(qty), FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                                p.add(new Chunk(" pack x ", FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                                p.add(new Chunk(df.format(unitsPerPack), FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                                p.add(new Chunk(") ", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                                p.add(new Chunk(df.format(totalUnits), normalFont));
+                                p.add(new Chunk(" (", normalFont));
+                                p.add(new Chunk(df.format(qty), normalFont));
+                                p.add(new Chunk(" pack x ", normalFont));
+                                p.add(new Chunk(df.format(unitsPerPack), normalFont));
+                                p.add(new Chunk(") ", normalFont));
                             } else {
-                                p.add(new Chunk("", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                                p.add(new Chunk("", normalFont));
                             }
 
                         } else {
                             if (billItem.getPharmaceuticalBillItem() != null) {
-                                p.add(new Chunk(df.format(Math.abs(billItem.getPharmaceuticalBillItem().getQty())), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                                p.add(new Chunk(df.format(Math.abs(billItem.getPharmaceuticalBillItem().getQty())), normalFont));
 
                             } else {
-                                p.add(new Chunk("", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                                p.add(new Chunk("", normalFont));
                             }
                         }
                     }
                 } else {
-                    p.add(new Chunk("", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                    p.add(new Chunk("", normalFont));
                 }
-                table.addCell(new PdfPCell(p));
+                PdfPCell qtyCell = new PdfPCell(p);
+                qtyCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(qtyCell);
 
-                table.addCell(new PdfPCell(new Phrase((billItem != null && billItem.getPharmaceuticalBillItem() != null && billItem.getPharmaceuticalBillItem().getItemBatch() != null && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null) ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getFromDepartment() != null && bill.getFromDepartment().getName() != null) ? bill.getFromDepartment().getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getToDepartment() != null && bill.getToDepartment().getName() != null) ? bill.getToDepartment().getName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase((bill != null && bill.getCreatedAt() != null) ? sdf.format(bill.getCreatedAt()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                addCellToPdfTable(table, (billItem != null && billItem.getPharmaceuticalBillItem() != null && billItem.getPharmaceuticalBillItem().getItemBatch() != null && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null) ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()) : "", normalFont);
+                addCellToPdfTable(table, (bill != null && bill.getFromDepartment() != null && bill.getFromDepartment().getName() != null) ? bill.getFromDepartment().getName() : "", normalFont);
+                addCellToPdfTable(table, (bill != null && bill.getToDepartment() != null && bill.getToDepartment().getName() != null) ? bill.getToDepartment().getName() : "", normalFont);
+                addCellToPdfTable(table, (bill != null && bill.getCreatedAt() != null) ? sdf.format(bill.getCreatedAt()) : "", normalFont);
 
                 if (billItem != null) {
                     if ("pending".equals(reportType) || "accepted".equals(reportType)) {
                         if (billItemRemainingRetailValues.get(billItem.getId()) != null) {
-                            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", billItemRemainingRetailValues.get(billItem.getId())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            addCellToPdfTable(table, (String.format("%.2f", billItemRemainingRetailValues.get(billItem.getId()))), normalFont, null, Element.ALIGN_RIGHT);
                         } else {
-                            table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            addCellToPdfTable(table, "", normalFont, null, Element.ALIGN_RIGHT);
                         }
 
                     } else {
-                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtRetailRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtRetailRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                        addCellToPdfTable(table, ((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtRetailRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtRetailRate().abs()) : "0.00"), normalFont, null, Element.ALIGN_RIGHT);
                     }
                 } else {
-                    table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    addCellToPdfTable(table, "", normalFont, null, Element.ALIGN_RIGHT);
                 }
 
                 if (billItem != null) {
                     if ("pending".equals(reportType) || "accepted".equals(reportType)) {
                         if (billItemRemainingPurchaseValues.get(billItem.getId()) != null) {
-                            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", billItemRemainingPurchaseValues.get(billItem.getId())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            addCellToPdfTable(table, String.format("%.2f", billItemRemainingPurchaseValues.get(billItem.getId())), normalFont, null, Element.ALIGN_RIGHT);
                         } else {
-                            table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            addCellToPdfTable(table, "", normalFont, null, Element.ALIGN_RIGHT);
                         }
 
                     } else {
-                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtPurchaseRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                        addCellToPdfTable(table, ((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtPurchaseRate().abs()) : "0.00"), normalFont, null, Element.ALIGN_RIGHT);
                     }
                 } else {
-                    table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    addCellToPdfTable(table, "", normalFont, null, Element.ALIGN_RIGHT);
                 }
 
                 if (billItem != null) {
                     if ("pending".equals(reportType) || "accepted".equals(reportType)) {
                         if (billItemRemainingCostValues.get(billItem.getId()) != null) {
-                            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", billItemRemainingCostValues.get(billItem.getId())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            addCellToPdfTable(table, (String.format("%.2f", billItemRemainingCostValues.get(billItem.getId()))), normalFont, null, Element.ALIGN_RIGHT);
                         } else {
-                            table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                            addCellToPdfTable(table, "", normalFont, null, Element.ALIGN_RIGHT);
                         }
 
                     } else {
-                        table.addCell(new PdfPCell(new Phrase((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtCostRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtCostRate().abs()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                        addCellToPdfTable(table, ((billItem.getBillItemFinanceDetails() != null && billItem.getBillItemFinanceDetails().getValueAtCostRate() != null) ? String.format("%.2f", billItem.getBillItemFinanceDetails().getValueAtCostRate().abs()) : "0.00"), normalFont, null, Element.ALIGN_RIGHT);
                     }
                 } else {
-                    table.addCell(new PdfPCell(new Phrase("", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    addCellToPdfTable(table, "", normalFont, null, Element.ALIGN_RIGHT);
                 }
 
-                table.addCell(new PdfPCell(new Phrase((bill != null) ? bill.getComments() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                addCellToPdfTable(table, ((bill != null) ? bill.getComments() : ""), normalFont);
             }
-            PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", boldFont));
             totalLabelCell.setColspan(10);
             totalLabelCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            totalLabelCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
             table.addCell(totalLabelCell);
-            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalRetailValue), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
-            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalPurchaseValue), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
-            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalCostValue), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8))));
-            table.addCell(new PdfPCell(new Phrase("")));
+            addCellToPdfTable(table, String.format("%.2f", totalRetailValue), boldFont, BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, String.format("%.2f", totalPurchaseValue), boldFont, BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, String.format("%.2f", totalCostValue), boldFont, BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, "", boldFont, BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
 
             document.add(table);
             document.close();
@@ -13335,9 +13356,14 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit_Report.xlsx");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit_Report_" + dates + ".xlsx");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Good_In_Transit_Report.xlsx");
+        }
 
         Map<String, Object> filters = getFiltersForGoodInTransitReport();
 
@@ -13484,15 +13510,24 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String fileName = "";
 
         response.setContentType("application/pdf");
         if ("fmovement".equals(reportType)) {
+            fileName = "Fast_Movement_Report";
             response.setHeader("Content-Disposition", "attachment; filename=Fast Movement Report.pdf");
         } else if ("smovement".equals(reportType)) {
+            fileName = "Slow_Movement_Report";
             response.setHeader("Content-Disposition", "attachment; filename=Slow Movement Report.pdf");
         } else {
+            fileName = "Movement_Report";
             response.setHeader("Content-Disposition", "attachment; filename=Movement Report.pdf");
         }
+        if (dates != null && !dates.isEmpty()) {
+            fileName = fileName + "_" + dates;
+        }
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
@@ -13540,24 +13575,22 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
+                addCellToPdfTable(table, header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
 
             int slNo = 1;
             for (MovementReportDto deptEntry : records) {
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(slNo++), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(deptEntry.getItemCode(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(deptEntry.getItemName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(deptEntry.getCategoryName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(deptEntry.getDosageFormName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(deptEntry.getLastPurchaseSupplierName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getQty()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getPurchaseValue()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getRetailsaleValue()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getStockQty()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(String.format("%.2f", deptEntry.getStockOnHand()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                addCellToPdfTable(table, String.valueOf(slNo++), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, deptEntry.getItemCode(), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, deptEntry.getItemName(), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, deptEntry.getCategoryName(), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, deptEntry.getDosageFormName(), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, deptEntry.getLastPurchaseSupplierName(), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, String.format("%.2f", deptEntry.getQty()), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, String.format("%.2f", deptEntry.getPurchaseValue()), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, String.format("%.2f", deptEntry.getRetailsaleValue()), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, String.format("%.2f", deptEntry.getStockQty()), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, String.format("%.2f", deptEntry.getStockOnHand()), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
             }
 
             document.add(table);
@@ -13593,13 +13626,20 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());    
+        String fileName = "";
 
         response.setContentType("application/pdf");
         if ("nmovement".equals(reportType)) {
-            response.setHeader("Content-Disposition", "attachment; filename=Non Movement Report.pdf");
+            fileName = "Non_Movement_Report";
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Movement Report.pdf");
+            fileName = "Movement_Report";
         }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
@@ -13688,15 +13728,21 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String fileName = "";
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if ("fmovement".equals(reportType)) {
-            response.setHeader("Content-Disposition", "attachment; filename=Fast_Movement_Report.xlsx");
+            fileName = "Fast_Movement_Report";
         } else if ("smovement".equals(reportType)) {
-            response.setHeader("Content-Disposition", "attachment; filename=Slow_Movement_Report.xlsx");
+            fileName = "Slow_Movement_Report";
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Movement_Report.xlsx");
+            fileName = "Movement_Report";
         }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".xlsx");
 
         Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
 
@@ -13790,13 +13836,19 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        String fileName = "";
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if ("nmovement".equals(reportType)) {
-            response.setHeader("Content-Disposition", "attachment; filename=Non_Movement_Report.xlsx");
+            fileName = "Non_Movement_Report";
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Movement_Report.xlsx");
+            fileName = "Movement_Report";
         }
+        if (dates != null && !dates.isEmpty()) {
+            fileName += "_" + dates;
+        }
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".xlsx");
 
         Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
 
@@ -14067,9 +14119,14 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.xlsx");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList_" + dates + ".xlsx");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.xlsx");
+        }
 
         Map<String, Object> filters = getFiltersForExpiryItemReport();
 
@@ -14147,9 +14204,14 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.pdf");
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
@@ -14177,46 +14239,38 @@ public class PharmacyReportController implements Serializable {
             float[] columnWidths;
             String[] headers;
 
-            columnWidths = new float[]{4f, 3f, 3f, 2f, 3f, 4f, 2f, 3f, 3f, 3f, 4f, 4f, 4f, 4f, 4f};
+            columnWidths = new float[]{4f, 3f, 3f, 2f, 3f, 4f, 2f, 3f, 3f, 4f, 4f, 4f, 4f, 4f, 4f};
             headers = new String[]{"Department", "Category Code", "Category Name", "Dosage Form", "Item Code", "Item Name", "UOM", "Item Type", "Batch Number", "Expiry Date", "Cost Rate", "Retail Rate", "Quantity", "Value at Cost Rate", "Value at Retail Rate"};
 
             table.setWidths(columnWidths);
 
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
+                addCellToPdfTable(table, header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
 
             for (ExpiryItemStockListDto dto : expiryStockListDtos) {
-                table.addCell(new PdfPCell(new Phrase(dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCostRate() != null ? String.format("%.2f", dto.getCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getRetailRate() != null ? String.format("%.2f", dto.getRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getStockQuantity() != null ? String.format("%.2f", dto.getStockQuantity()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getValueAtCostRate() != null ? String.format("%.2f", dto.getValueAtCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getValueAtRetailRate() != null ? String.format("%.2f", dto.getValueAtRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                addCellToPdfTable(table, dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getCategoryName() != null ? dto.getCategoryName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getDosageFormName() != null ? dto.getDosageFormName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getItemCode() != null ? dto.getItemCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getCostRate() != null ? String.format("%.2f", dto.getCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, dto.getRetailRate() != null ? String.format("%.2f", dto.getRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, dto.getStockQuantity() != null ? String.format("%.2f", dto.getStockQuantity()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, dto.getValueAtCostRate() != null ? String.format("%.2f", dto.getValueAtCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, dto.getValueAtRetailRate() != null ? String.format("%.2f", dto.getValueAtRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
             }
-
             PdfPCell totalCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-            totalCell.setColspan(13);
-            totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             totalCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+            totalCell.setColspan(13);
             table.addCell(totalCell);
-            PdfPCell totalValueCost = new PdfPCell(new Phrase(totalValueAtCostRate != null ? String.format("%.2f", totalValueAtCostRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-            totalValueCost.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalValueCost);
-            PdfPCell totalValueRetail = new PdfPCell(new Phrase(totalValueAtRetailRate != null ? String.format("%.2f", totalValueAtRetailRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-            totalValueRetail.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalValueRetail);
+            addCellToPdfTable(table, totalValueAtCostRate != null ? String.format("%.2f", totalValueAtCostRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, totalValueAtRetailRate != null ? String.format("%.2f", totalValueAtRetailRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
 
             document.add(table);
             document.close();
@@ -14237,8 +14291,14 @@ public class PharmacyReportController implements Serializable {
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.pdf");
+        }
+
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
@@ -14272,24 +14332,22 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
+                addCellToPdfTable(table, header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
 
             for (ExpiryItemListDto dto : expiryItemListDtos) {
-                table.addCell(new PdfPCell(new Phrase(dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getCategoryName() != null ? dto.getCategoryName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getDosageFormName() != null ? dto.getDosageFormName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemCode() != null ? dto.getItemCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getTotalStockQuantity() != null ? String.format("%.2f", dto.getTotalStockQuantity()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getTotalCostValue() != null ? String.format("%.2f", dto.getTotalCostValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                table.addCell(new PdfPCell(new Phrase(dto.getTotalRetailValue() != null ? String.format("%.2f", dto.getTotalRetailValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                addCellToPdfTable(table, dto.getDepartmentName() != null ? dto.getDepartmentName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getCategoryCode() != null ? dto.getCategoryCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getCategoryName() != null ? dto.getCategoryName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getDosageFormName() != null ? dto.getDosageFormName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getItemCode() != null ? dto.getItemCode() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getTotalStockQuantity() != null ? String.format("%.2f", dto.getTotalStockQuantity()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, dto.getTotalCostValue() != null ? String.format("%.2f", dto.getTotalCostValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, dto.getTotalRetailValue() != null ? String.format("%.2f", dto.getTotalRetailValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
             }
 
             PdfPCell totalCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
@@ -14297,12 +14355,8 @@ public class PharmacyReportController implements Serializable {
             totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             totalCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
             table.addCell(totalCell);
-            PdfPCell totalValueCost = new PdfPCell(new Phrase(totalValueAtCostRate != null ? String.format("%.2f", totalValueAtCostRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-            totalValueCost.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalValueCost);
-            PdfPCell totalValueRetail = new PdfPCell(new Phrase(totalValueAtRetailRate != null ? String.format("%.2f", totalValueAtRetailRate) : "0.0", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-            totalValueRetail.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalValueRetail);
+            addCellToPdfTable(table, (totalValueAtCostRate != null ? String.format("%.2f", totalValueAtCostRate) : "0.0"), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
+            addCellToPdfTable(table, (totalValueAtRetailRate != null ? String.format("%.2f", totalValueAtRetailRate) : "0.0"), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_RIGHT);
 
             document.add(table);
             document.close();
@@ -14321,9 +14375,14 @@ public class PharmacyReportController implements Serializable {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.xlsx");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList_" + dates + ".xlsx");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.xlsx");
+        }
 
         Map<String, Object> filters = getFiltersForExpiryItemReport();
 
@@ -14384,4 +14443,26 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    // PdfPCell Add to table
+    private void addCellToPdfTable(PdfPTable table, String content, Font font) {
+        addCellToPdfTable(table, content, font, null, Element.ALIGN_LEFT);
+    }
+
+    private void addCellToPdfTable(PdfPTable table, String content, Font font, BaseColor backgroundColor, int alignment) {
+        if (font == null) {
+            font = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        }
+
+        PdfPCell cell = new PdfPCell(new Phrase(content != null ? content : "", font));
+
+        if (alignment < Element.ALIGN_LEFT || alignment > Element.ALIGN_JUSTIFIED) {
+            alignment = Element.ALIGN_LEFT;
+        }
+
+        cell.setHorizontalAlignment(alignment);
+        if (backgroundColor != null) {
+            cell.setBackgroundColor(backgroundColor);
+        }
+        table.addCell(cell);
+    }
 }
