@@ -3034,7 +3034,7 @@ public class PharmacyReportController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void exportGrnCreditToPDF() {
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -3278,7 +3278,6 @@ public class PharmacyReportController implements Serializable {
             e.printStackTrace();
         }
     }
-
 
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
         retrieveBillItemsCompleted(billTypeValue, null);
@@ -4322,7 +4321,6 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-
     public void exportStockAdjustmentReceiveToExcel() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response
@@ -4330,7 +4328,6 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition",
-
                 "attachment; filename=Stock_Adjustment_Receive_Report_COGS.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
@@ -4548,7 +4545,6 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition",
-
                 "attachment; filename=Stock_Adjustment_Issue_Report_COGS.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
@@ -4758,9 +4754,8 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-
     public void exportStockAdjustmentReceiveToPDF() {
-       FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response
                 = (HttpServletResponse) externalContext.getResponse();
@@ -4944,11 +4939,11 @@ public class PharmacyReportController implements Serializable {
                     .log(Level.SEVERE,
                             "Error exporting Stock Adjustment Receive PDF", e);
 
-        } 
+        }
     }
 
     public void exportStockAdjustmentIssueToPDF() {
-        
+
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response
@@ -5337,13 +5332,16 @@ public class PharmacyReportController implements Serializable {
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
             Row dateRow = sheet.createRow(rowIndex++);
             Cell dateCell = dateRow.createCell(0);
             dateCell.setCellValue(
                     "From Date : "
-                    + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(fromDate) : "-")
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
                     + " | To Date : "
-                    + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(toDate) : "-")
+                    + (toDate != null ? sdf.format(toDate) : "-")
             );
             dateCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
@@ -5396,7 +5394,7 @@ public class PharmacyReportController implements Serializable {
 
                 Cell d0 = row.createCell(0);
                 d0.setCellValue(
-                        new SimpleDateFormat("dd/MM/yyyy").format(bi.getBill().getCreatedAt()));
+                        sdf.format(bi.getBill().getCreatedAt()));
                 d0.setCellStyle(dataStyle);
 
                 Cell d1 = row.createCell(1);
@@ -5492,7 +5490,7 @@ public class PharmacyReportController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void exportIpDrugReturnToPDF() {
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -5504,7 +5502,8 @@ public class PharmacyReportController implements Serializable {
         response.setHeader("Content-Disposition",
                 "attachment; filename=IP_Drug_Return_Report.pdf");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
 
         try (OutputStream out = response.getOutputStream()) {
 
@@ -5570,7 +5569,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidthPercentage(100);
 
             float[] widths = {
-                3f, 6f, 3f, 5f, 5f,
+                5f, 6f, 3f, 5f, 5f,
                 2f, 3f,
                 3f, 3f,
                 3f, 3f,
@@ -5619,27 +5618,26 @@ public class PharmacyReportController implements Serializable {
 
                 // Qty
                 PdfPCell qty = new PdfPCell(new Phrase(
-                        String.format("%,.0f",bi.getQty()),
+                        String.format("%,.0f", bi.getQty()),
                         dataFont));
                 qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(qty);
 
-              
                 // Cost Rate
                 PdfPCell costRateCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f",bi.getPharmaceuticalBillItem().getItemBatch().getCostRate()), dataFont));
+                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate()), dataFont));
                 costRateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(costRateCell);
 
                 // Cost Value
                 PdfPCell costVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f",bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty() ), dataFont));
+                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty()), dataFont));
                 costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(costVCell);
 
                 // Purchase Rate
                 PdfPCell purchaseRCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f",0.0 - bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate()), dataFont));
+                        new Phrase(String.format("%,.2f", 0.0 - bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate()), dataFont));
                 purchaseRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(purchaseRCell);
 
@@ -5648,7 +5646,7 @@ public class PharmacyReportController implements Serializable {
                         new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty()), dataFont));
                 purchaseVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(purchaseVCell);
-                
+
                 // Net
                 PdfPCell netCell = new PdfPCell(
                         new Phrase(String.format("%,.2f", bi.getBill().getNetTotal()), dataFont));
@@ -5669,7 +5667,7 @@ public class PharmacyReportController implements Serializable {
 
                 // Discount
                 PdfPCell disc = new PdfPCell(
-                         new Phrase(String.format("%,.2f", bi.getDiscount()), dataFont));
+                        new Phrase(String.format("%,.2f", bi.getDiscount()), dataFont));
                 disc.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(disc);
 
@@ -5695,7 +5693,7 @@ public class PharmacyReportController implements Serializable {
                     new Phrase(String.format("%,.2f", totalPurchaseValue), headerFont));
             purchaseTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(purchaseTotalCell);
-            
+
             PdfPCell netTotalCell = new PdfPCell(
                     new Phrase(String.format("%,.2f", netTotal), headerFont));
             netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -5707,8 +5705,8 @@ public class PharmacyReportController implements Serializable {
             PdfPCell retailTotalCell = new PdfPCell(
                     new Phrase(String.format("%,.2f", totalRetailValue), headerFont));
             retailTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(retailTotalCell);    
-            
+            table.addCell(retailTotalCell);
+
             PdfPCell skipDisc = new PdfPCell(new Phrase(" "));
             table.addCell(skipDisc);
 
@@ -5720,7 +5718,6 @@ public class PharmacyReportController implements Serializable {
             e.printStackTrace();
         }
     }
-
 
 //    public void exportIpDrugReturnPdf() {
 //        List<String> headers = Arrays.asList(
@@ -5855,7 +5852,6 @@ public class PharmacyReportController implements Serializable {
 //            e.printStackTrace();
 //        }
 //    }
-
     public void exportPharmacyIssuePdf() {
         List<String> headers = Arrays.asList(
                 "Date", "Item Name", "Doc No", "Ref Doc No (Request Doc No)", "Request Department",
@@ -9411,7 +9407,6 @@ public class PharmacyReportController implements Serializable {
             document.add(deptPara);
 
 //            document.add(new Paragraph(" "));
-        
             // Item + Date Filters
             Paragraph filterPara = new Paragraph(
                     "Item: " + (item != null ? item.getName() : "All Items")
@@ -9421,9 +9416,9 @@ public class PharmacyReportController implements Serializable {
             );
             filterPara.setAlignment(Element.ALIGN_CENTER);
             document.add(filterPara);
-            
-             Paragraph deptTypePara = new Paragraph(
-            "Department Types: " + getDepartmentTypeFilterValue(),filterFont);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
             deptTypePara.setAlignment(Element.ALIGN_CENTER);
             document.add(deptTypePara);
 
@@ -12784,8 +12779,8 @@ public class PharmacyReportController implements Serializable {
     public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
         this.selectedDepartmentTypes = selectedDepartmentTypes;
     }
-    
-     public String getDepartmentTypeFilterValue() {
+
+    public String getDepartmentTypeFilterValue() {
 
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
 
@@ -13626,7 +13621,7 @@ public class PharmacyReportController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());    
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         String fileName = "";
 
         response.setContentType("application/pdf");
