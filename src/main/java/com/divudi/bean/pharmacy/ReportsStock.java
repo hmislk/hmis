@@ -296,7 +296,10 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             jpql.append("from Stock s ");
             jpql.append("left join s.itemBatch.item.category cat ");
             jpql.append("left join s.itemBatch.item.dosageForm df ");
-            jpql.append("where s.stock > 0");
+            jpql.append("where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
