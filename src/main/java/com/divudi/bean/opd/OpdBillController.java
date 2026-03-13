@@ -3129,7 +3129,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Title To Save Patient.", true)) {
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Name To Save Patient.", true)) {
             if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("")) {
                 JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
                 return true;
@@ -3190,7 +3190,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Need Patient Area to save Patient.", false)) {
-            if (!sessionController.getDepartmentPreference().isNeedAreaForPatientRegistration()) {
+            if (sessionController.getDepartmentPreference().isNeedAreaForPatientRegistration()) {
                 if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Please select patient area.");
                     return true;
