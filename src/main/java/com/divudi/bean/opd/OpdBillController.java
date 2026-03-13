@@ -685,6 +685,69 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Title To Save Patient.",
+                "Requires patient title to be selected before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3125: Patient title validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Name To Save Patient.",
+                "Requires patient name to be entered before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3132: Patient name validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Gender To Save Patient.",
+                "Requires patient gender to be selected before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3139: Patient gender validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Age to Save Patient.",
+                "Requires patient date of birth to be entered before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3146: Patient DOB validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Phone Number to save Patient.",
+                "Requires patient phone number to be entered before settling the OPD bill (default: true)",
+                "OpdBillController.java line 3153: Patient phone validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Mail to save Patient.",
+                "Requires a valid patient email address before settling the OPD bill (default: false)",
+                "OpdBillController.java line 3166: Patient email validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient NIC to save Patient.",
+                "Requires patient NIC to be entered before settling the OPD bill (default: false)",
+                "OpdBillController.java line 3178: Patient NIC validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Address to save Patient.",
+                "Requires patient address to be entered before settling the OPD bill (default: false)",
+                "OpdBillController.java line 3185: Patient address validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Billing - Need Patient Area to save Patient.",
+                "Requires patient area to be selected before settling the OPD bill, when area registration is required (default: false)",
+                "OpdBillController.java line 3192: Patient area validation in checkErrors()",
+                OptionScope.APPLICATION
+        ));
+
         // Advanced Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill",
