@@ -5632,7 +5632,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("S");
             headerRow.createCell(1).setCellValue("Cashier");
-            headerRow.createCell(2).setCellValue("Department");
+            headerRow.createCell(2).setCellValue("Bill No");
             headerRow.createCell(3).setCellValue("Bill Date");
             headerRow.createCell(4).setCellValue("Document No");
             headerRow.createCell(5).setCellValue("Date");
