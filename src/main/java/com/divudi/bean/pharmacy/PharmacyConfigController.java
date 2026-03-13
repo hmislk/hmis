@@ -63,6 +63,7 @@ public class PharmacyConfigController implements Serializable {
     private boolean grnReceiptA4;
     private boolean grnReceiptCustom1;
     private boolean grnReceiptCustom2;
+    private boolean grnReceiptCustom3;
     
     // GRN Return Settings
     private boolean grnReturnReceiptCustom1;
@@ -230,6 +231,7 @@ public class PharmacyConfigController implements Serializable {
         grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
         grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
+        grnReceiptCustom3 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 3", true);
         
         // GRN Return Settings
         grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", false);
@@ -396,6 +398,7 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 2", grnReceiptCustom2);
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 3", grnReceiptCustom3);
             
             // GRN Return Settings
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 1", grnReturnReceiptCustom1);
@@ -1690,6 +1693,14 @@ public class PharmacyConfigController implements Serializable {
 
     public void setOpdDoctorPaymentHideFiveFiveHeader(boolean opdDoctorPaymentHideFiveFiveHeader) {
         this.opdDoctorPaymentHideFiveFiveHeader = opdDoctorPaymentHideFiveFiveHeader;
+    }
+
+    public boolean isGrnReceiptCustom3() {
+        return grnReceiptCustom3;
+    }
+
+    public void setGrnReceiptCustom3(boolean grnReceiptCustom3) {
+        this.grnReceiptCustom3 = grnReceiptCustom3;
     }
 
 }
