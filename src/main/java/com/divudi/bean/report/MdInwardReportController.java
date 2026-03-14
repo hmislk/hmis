@@ -70,6 +70,7 @@ public class MdInwardReportController implements Serializable {
     Bill bill;
     ReportKeyWord reportKeyWord;
     private int managaeInwardReportIndex = -1;
+    private String dateFilterType = "SERVICE_ADDED";
 
     ////////////////////////////////////
     @EJB
@@ -1859,6 +1860,152 @@ public void fillAdmissionsByConsultants() {
     public void makeListNull() {
         bills = null;
         fillterBill = null;
+        itemWithFees = null;
+        fillterItemWithFees = null;
+    }
+
+    public void processInpatientServiceSummary() {
+        makeListNull();
+        itemWithFees = new ArrayList<>();
+
+        String biDatePath = resolveBillItemDatePath(dateFilterType);
+        String bfDatePath = resolveBillFeeDatePath(dateFilterType);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("bTp", BillType.InwardBill);
+
+        StringBuilder filterSql = new StringBuilder();
+        appendOptionalFilters(filterSql, params, "bi");
+
+        // Query 1: Count per item
+        String countJpql = "SELECT bi.item, "
+                + " SUM(CASE WHEN TYPE(bi.bill) = BilledBill THEN 1 ELSE 0 END) "
+                + " - SUM(CASE WHEN TYPE(bi.bill) = CancelledBill THEN 1 ELSE 0 END) "
+                + " - SUM(CASE WHEN TYPE(bi.bill) = RefundBill THEN 1 ELSE 0 END) "
+                + " FROM BillItem bi "
+                + " WHERE bi.retired=false AND bi.item.retired=false "
+                + " AND bi.bill.billType=:bTp "
+                + " AND " + biDatePath + " BETWEEN :fromDate AND :toDate "
+                + filterSql.toString()
+                + " GROUP BY bi.item";
+
+        List<Object[]> countResults = getBillItemFacade().findAggregates(countJpql, params, TemporalType.TIMESTAMP);
+
+        Map<Long, ItemWithFee> itemMap = new HashMap<>();
+        if (countResults != null) {
+            for (Object[] row : countResults) {
+                Item i = (Item) row[0];
+                long count = ((Number) row[1]).longValue();
+                if (i != null && count != 0) {
+                    ItemWithFee iwf = new ItemWithFee(i, count, 0, 0);
+                    itemMap.put(i.getId(), iwf);
+                }
+            }
+        }
+
+        // Query 2: Fees per item
+        Map<String, Object> feeParams = new HashMap<>();
+        feeParams.put("fromDate", getFromDate());
+        feeParams.put("toDate", getToDate());
+        feeParams.put("bTp", BillType.InwardBill);
+
+        StringBuilder feeFilterSql = new StringBuilder();
+        appendOptionalFilters(feeFilterSql, feeParams, "bf");
+
+        String feeJpql = "SELECT bf.billItem.item, "
+                + " SUM(CASE WHEN bf.staff IS NULL THEN bf.feeValue ELSE 0 END), "
+                + " SUM(CASE WHEN bf.staff IS NOT NULL THEN bf.feeValue ELSE 0 END) "
+                + " FROM BillFee bf "
+                + " WHERE bf.retired=false AND bf.bill.retired=false AND bf.billItem.retired=false "
+                + " AND bf.bill.billType=:bTp "
+                + " AND " + bfDatePath + " BETWEEN :fromDate AND :toDate "
+                + feeFilterSql.toString()
+                + " GROUP BY bf.billItem.item";
+
+        List<Object[]> feeResults = getBillFeeFacade().findAggregates(feeJpql, feeParams, TemporalType.TIMESTAMP);
+
+        if (feeResults != null) {
+            for (Object[] row : feeResults) {
+                Item i = (Item) row[0];
+                double hospitalFee = row[1] != null ? ((Number) row[1]).doubleValue() : 0;
+                double proFee = row[2] != null ? ((Number) row[2]).doubleValue() : 0;
+                if (i != null) {
+                    ItemWithFee iwf = itemMap.get(i.getId());
+                    if (iwf != null) {
+                        iwf.setHospitalFee(hospitalFee);
+                        iwf.setProFee(proFee);
+                        iwf.setTotal(hospitalFee + proFee);
+                    } else {
+                        iwf = new ItemWithFee(i, 0, hospitalFee, proFee);
+                        itemMap.put(i.getId(), iwf);
+                    }
+                }
+            }
+        }
+
+        itemWithFees = new ArrayList<>(itemMap.values());
+    }
+
+    private String resolveBillItemDatePath(String filterType) {
+        if ("ADMITTED".equals(filterType)) {
+            return "bi.bill.patientEncounter.dateOfAdmission";
+        } else if ("DISCHARGED".equals(filterType)) {
+            return "bi.bill.patientEncounter.dateOfDischarge";
+        }
+        return "bi.bill.createdAt";
+    }
+
+    private String resolveBillFeeDatePath(String filterType) {
+        if ("ADMITTED".equals(filterType)) {
+            return "bf.bill.patientEncounter.dateOfAdmission";
+        } else if ("DISCHARGED".equals(filterType)) {
+            return "bf.bill.patientEncounter.dateOfDischarge";
+        }
+        return "bf.bill.createdAt";
+    }
+
+    private void appendOptionalFilters(StringBuilder sql, Map<String, Object> params, String alias) {
+        // Determine the item path and encounter path based on alias
+        String itemPath;
+        String encounterPath;
+        if ("bi".equals(alias)) {
+            itemPath = "bi.item";
+            encounterPath = "bi.bill.patientEncounter";
+        } else {
+            itemPath = "bf.billItem.item";
+            encounterPath = "bf.bill.patientEncounter";
+        }
+
+        if (institution != null) {
+            sql.append(" AND ").append(itemPath).append(".institution=:ins ");
+            params.put("ins", institution);
+        }
+        if (dept != null) {
+            sql.append(" AND ").append(itemPath).append(".department=:dept ");
+            params.put("dept", dept);
+        }
+        if (category != null) {
+            sql.append(" AND ").append(itemPath).append(".category=:cat ");
+            params.put("cat", category);
+        }
+        if (item != null) {
+            sql.append(" AND ").append(itemPath).append("=:item ");
+            params.put("item", item);
+        }
+        if (paymentMethod != null) {
+            sql.append(" AND ").append(encounterPath).append(".paymentMethod=:pm ");
+            params.put("pm", paymentMethod);
+        }
+    }
+
+    public String getDateFilterType() {
+        return dateFilterType;
+    }
+
+    public void setDateFilterType(String dateFilterType) {
+        this.dateFilterType = dateFilterType;
         itemWithFees = null;
         fillterItemWithFees = null;
     }
