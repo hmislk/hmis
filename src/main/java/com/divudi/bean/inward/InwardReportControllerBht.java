@@ -27,6 +27,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.lab.Investigation;
@@ -50,6 +51,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.TemporalType;
 
 /**
@@ -75,6 +78,8 @@ public class InwardReportControllerBht implements Serializable {
     private SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AdmissionController admissionController;
 
     PatientEncounter patientEncounter;
     Bill bill;
@@ -238,8 +243,9 @@ public class InwardReportControllerBht implements Serializable {
             }
 
         } catch (Exception e) {
-            pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
-            pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
         }
 
         return "/inward/reports/inpatient_pharmacy_item_list_dto?faces-redirect=true";
@@ -273,8 +279,9 @@ public class InwardReportControllerBht implements Serializable {
                 }
             }
         } catch (Exception e) {
-            serviceIssueDtosToPatientEncounter = new ArrayList<>();
-            serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service issue DTOs", e);
+            JsfUtil.addErrorMessage("Error loading service data");
+            return null;
         }
         return "/inward/reports/inpatient_service_item_list_dto?faces-redirect=true";
     }
@@ -307,8 +314,9 @@ public class InwardReportControllerBht implements Serializable {
                 }
             }
         } catch (Exception e) {
-            pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
-            pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs for combined report", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
         }
         // Service part
         serviceIssueDtosToPatientEncounter = new ArrayList<>();
@@ -332,8 +340,9 @@ public class InwardReportControllerBht implements Serializable {
                 }
             }
         } catch (Exception e) {
-            serviceIssueDtosToPatientEncounter = new ArrayList<>();
-            serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service issue DTOs for combined report", e);
+            JsfUtil.addErrorMessage("Error loading service data");
+            return null;
         }
         return "/inward/reports/inpatient_pharmacy_and_service_item_list_dto?faces-redirect=true";
     }
@@ -373,6 +382,9 @@ public class InwardReportControllerBht implements Serializable {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter selected");
             return null;
+        }
+        if (patientEncounter instanceof Admission) {
+            admissionController.setCurrent((Admission) patientEncounter);
         }
         return "/inward/admission_profile?faces-redirect=true";
     }

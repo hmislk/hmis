@@ -1879,11 +1879,11 @@ public void fillAdmissionsByConsultants() {
         StringBuilder filterSql = new StringBuilder();
         appendOptionalFilters(filterSql, params, "bi");
 
-        // Query 1: Count per item
+        // Query 1: Count per item (3 separate SUMs to avoid JPQL arithmetic issues)
         String countJpql = "SELECT bi.item, "
-                + " SUM(CASE WHEN TYPE(bi.bill) = BilledBill THEN 1 ELSE 0 END) "
-                + " - SUM(CASE WHEN TYPE(bi.bill) = CancelledBill THEN 1 ELSE 0 END) "
-                + " - SUM(CASE WHEN TYPE(bi.bill) = RefundBill THEN 1 ELSE 0 END) "
+                + " SUM(CASE WHEN TYPE(bi.bill) = BilledBill THEN 1 ELSE 0 END), "
+                + " SUM(CASE WHEN TYPE(bi.bill) = CancelledBill THEN 1 ELSE 0 END), "
+                + " SUM(CASE WHEN TYPE(bi.bill) = RefundBill THEN 1 ELSE 0 END) "
                 + " FROM BillItem bi "
                 + " WHERE bi.retired=false AND bi.item.retired=false "
                 + " AND bi.bill.billType=:bTp "
@@ -1897,7 +1897,10 @@ public void fillAdmissionsByConsultants() {
         if (countResults != null) {
             for (Object[] row : countResults) {
                 Item i = (Item) row[0];
-                long count = ((Number) row[1]).longValue();
+                long billed = row[1] != null ? ((Number) row[1]).longValue() : 0;
+                long cancelled = row[2] != null ? ((Number) row[2]).longValue() : 0;
+                long refunded = row[3] != null ? ((Number) row[3]).longValue() : 0;
+                long count = billed - cancelled - refunded;
                 if (i != null && count != 0) {
                     ItemWithFee iwf = new ItemWithFee(i, count, 0, 0);
                     itemMap.put(i.getId(), iwf);
@@ -1918,7 +1921,7 @@ public void fillAdmissionsByConsultants() {
                 + " SUM(CASE WHEN bf.staff IS NULL THEN bf.feeValue ELSE 0 END), "
                 + " SUM(CASE WHEN bf.staff IS NOT NULL THEN bf.feeValue ELSE 0 END) "
                 + " FROM BillFee bf "
-                + " WHERE bf.retired=false AND bf.bill.retired=false AND bf.billItem.retired=false "
+                + " WHERE bf.retired=false AND bf.bill.retired=false AND bf.billItem.retired=false AND bf.billItem.item.retired=false "
                 + " AND bf.bill.billType=:bTp "
                 + " AND " + bfDatePath + " BETWEEN :fromDate AND :toDate "
                 + feeFilterSql.toString()

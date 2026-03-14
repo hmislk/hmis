@@ -26,7 +26,7 @@
                                     value="Settle"
                                     action="#{cashRecieveBillController.settleBillBht}"
                                     ajax="true"
-                                    process="@this cmbPs creditCard cheque slip"
+                                    process="@this cmbPs creditCard cheque slip txtComment"
                                     update="@form"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
                                     class="ui-button-success"
@@ -198,7 +198,7 @@
                                         <p:outputLabel value="Description" style="font-weight:bold;"/>
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100" rows="2" placeholder="Enter payment remarks if any"/>
+                                        <p:inputTextarea id="txtComment" value="#{cashRecieveBillController.comment}" class="w-100" rows="2" placeholder="Enter payment remarks if any"/>
                                     </div>
                                 </div>
                             </p:panel>
