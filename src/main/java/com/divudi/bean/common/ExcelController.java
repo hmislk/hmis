@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -4366,6 +4367,112 @@ public class ExcelController {
 
          return;
 
+    }
+
+    // Excel export: wht report/ ReportTemplateRow
+    public StreamedContent createExcelForShiftEndSummary(List<Bill> bills, Map<String, Object> filters, String fileName) throws IOException {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bills to export.");
+            return null;
+        }
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String reportName = "Shift End Summary Report";
+        String safeName = WorkbookUtil.createSafeSheetName(reportName);
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Create cell styles for headers
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setBold(true);
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        CellStyle centerSmallStyle = workbook.createCellStyle();
+        centerSmallStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 10);
+        centerSmallStyle.setFont(smallFont);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow++);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+        // Row 1: Report Title
+        Row titleRow = dataSheet.createRow(currentRow++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(reportName);
+        titleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7));
+
+        // Row 2: Search Criteria
+        if (filters != null && !filters.isEmpty()) {
+            currentRow = addMetaDataToExcelSheet(workbook, dataSheet, currentRow, filters);
+        } else {
+            Row criteriaRow = dataSheet.createRow(currentRow++);
+            Cell criteriaCell = criteriaRow.createCell(0);
+            criteriaCell.setCellValue("Search Criteria: N/A");
+            criteriaCell.setCellStyle(centerSmallStyle);
+            dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 7));
+            currentRow++;
+        }
+        // Column headers
+        Row headerRow = dataSheet.createRow(currentRow++);
+        String[] headers = {"ID", "Institution", "Site", "Department", "Date", "Staff", "Starting Bill", "Ending Bill", "Short or Excess"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat());
+
+        for (Bill bill : bills) {
+            int colIndex = 0;
+            Row excelRow = dataSheet.createRow(currentRow++);
+            excelRow.createCell(colIndex++).setCellValue(bill.getId() != null ? String.valueOf(bill.getId()) : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getInstitution() != null && bill.getInstitution().getName() != null ? bill.getInstitution().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getDepartment() != null && bill.getDepartment().getSite() != null &&  bill.getDepartment().getSite().getName() != null ? bill.getDepartment().getSite().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getDepartment() != null && bill.getDepartment().getName() != null ? bill.getDepartment().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getCreatedAt() != null ? dateFormat.format(bill.getCreatedAt()) : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getReferenceBill() != null && bill.getReferenceBill().getBillTypeAtomic() != null ? bill.getReferenceBill().getBillTypeAtomic().toString() : "");
+            excelRow.createCell(colIndex++).setCellValue(bill.getReferenceBill() != null && bill.getReferenceBill().getInsId() != null ? bill.getReferenceBill().getInsId() : "");
+            excelRow.createCell(colIndex++).setCellValue("");
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        excelSc = DefaultStreamedContent.builder()
+                .name((fileName != null && !fileName.isEmpty() ? fileName : "Shift_End_Summary_Report") + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
     }
 
     // Filter info to excel

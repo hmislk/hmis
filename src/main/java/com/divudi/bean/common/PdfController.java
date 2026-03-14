@@ -2917,6 +2917,106 @@ public class PdfController {
         return;
     }
 
+    // PDF Export: Shift End Summary (shift_starts_and_ends)
+    public StreamedContent createPdfForShiftEndSummary(List<Bill> bills, PageSize pageSize, boolean withHeaderFooter, Map<String, Object> filters, String fileName) throws IOException {
+        if (bills == null || bills.isEmpty()) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document;
+        if (pageSize != null) {
+            document = new Document(pdf, pageSize);
+        } else {
+            document = new Document(pdf);
+        }
+
+        if (withHeaderFooter) {
+            String institutionName = "";
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getInstitution() != null) {
+                institutionName = sessionController.getLoggedUser().getInstitution().getName();
+            }
+
+            if (!institutionName.isEmpty()) {
+                Paragraph instPara = new Paragraph(institutionName)
+                        .setBold()
+                        .setFontSize(16)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(2);
+                document.add(instPara);
+            }
+
+            Paragraph titlePara = new Paragraph("Shift End Summary Report")
+                    .setBold()
+                    .setFontSize(14)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(2);
+            document.add(titlePara);
+
+            if (filters != null && !filters.isEmpty()) {
+                Table infoTable = createInfoTablePdfExport(filters);
+                document.add(infoTable);
+            }
+
+            SolidLine headerLine = new SolidLine(1.5f);
+            LineSeparator headerSeparator = new LineSeparator(headerLine);
+            headerSeparator.setStrokeColor(ColorConstants.BLACK);
+            document.add(headerSeparator);
+            document.add(new Paragraph("").setMarginBottom(5));
+        }
+
+        populateTableForShiftEndSummary(document, bills);
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        return DefaultStreamedContent.builder()
+                .name((fileName != null && !fileName.isEmpty() ?fileName : "Shift End Summary") + ".pdf")
+                .contentType("application/pdf") 
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void populateTableForShiftEndSummary(Document document, List<Bill> bills) throws IOException {
+        if (bills == null || bills.isEmpty()) {
+            document.add(new Paragraph("No Data Available"));
+            return;
+        }
+        if (document == null) {
+            return;
+        }
+
+        Table table = new Table(new float[]{3f, 5f, 5f, 5f, 3f, 5f, 5f, 5f, 2f}).useAllAvailableWidth().setFixedLayout();
+        String[] headers = {"ID", "Institution", "Site", "Department", "Date", "Staff", "Starting Bill", "Ending Bill", "Short or Excess"};
+
+        for (String header : headers) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(8)
+                    .setBackgroundColor(new DeviceRgb(240, 240, 240));
+            table.addCell(headerCell);
+        }
+
+        for (Bill bill : bills) {
+            table.addCell(new Cell().add(new Paragraph(bill.getId() != null ? String.valueOf(bill.getId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getInstitution() != null && bill.getInstitution().getName() != null ? bill.getInstitution().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph((bill.getDepartment() != null && bill.getDepartment().getSite() != null && bill.getDepartment().getSite().getName() != null) ? bill.getDepartment().getSite().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getDepartment() != null && bill.getDepartment().getName() != null ? bill.getDepartment().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(bill.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getReferenceBill() != null && bill.getReferenceBill().getBillTypeAtomic() != null ? bill.getReferenceBill().getBillTypeAtomic().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(bill.getReferenceBill() != null && bill.getReferenceBill().getInsId() != null ? bill.getReferenceBill().getInsId() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+        }
+
+        document.add(table);
+    }
+
     // Info Taable using filters
     public Table createInfoTablePdfExport(Map<String, Object> filters)
             throws IOException {

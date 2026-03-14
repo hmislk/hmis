@@ -57,7 +57,7 @@
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
-                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
+                                <f:selectItem itemLabel="All Institutions" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
@@ -73,7 +73,7 @@
 
                             <h:outputLabel value="Site"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
                             </p:selectOneMenu>
                         </h:panelGrid>
@@ -87,12 +87,28 @@
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 
-                            <p:commandButton 
+                            <!-- <p:commandButton 
                                 value="Download Excel" 
                                 ajax="false" 
                                 class="mx-2 ui-button-success" 
                                 icon="fa fa-file-excel">
                                 <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
+                            </p:commandButton> -->
+
+                            <p:commandButton 
+                                value="Download" 
+                                ajax="false" 
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-1" >
+                                <p:fileDownload value="#{searchController.shiftEndSummaryReportAsExcel}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="PDF" 
+                                ajax="false" 
+                                icon="fas fa-file-pdf"
+                                class="ui-button-danger mx-1" >
+                                <p:fileDownload value="#{searchController.shiftEndSummaryReportAsPdf}" />
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -109,7 +125,7 @@
 
                             
                             <p:column headerText="ID" sortBy="#{summary.department.institution.name}">
-                                #{bill.id}
+                                <h:outputText value="#{bill.id}" />
                             </p:column>
                             
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}">

@@ -1679,6 +1679,10 @@ public class SearchController implements Serializable {
         return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
     }
 
+    public String navigateToShiftStartAndEnd() {
+        return "/reports/cashier_reports/shift_start_and_ends?faces-redirect=true";
+    }
+
     public String navigatToReportDoctorPaymentOpd() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -22655,6 +22659,29 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    // PDF Export: Shift End Summary Report (shift_start_and_ends)
+    public StreamedContent getShiftEndSummaryReportAsPdf() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Shift End Summary report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Shift_End_Summary_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }   
+            pdfSc = pdfController.createPdfForShiftEndSummary(bills, PageSize.A4.rotate(), true, getFiltersForShiftEndSummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getShiftEndSummaryReportAsPdf: Error creating pdfSc via pdfController.ceratePdfForWhtReport", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report PDF file. Please try again.");
+        } 
+        return pdfSc;
+    }
+
     // Excel Export: wht Report
     public StreamedContent getWhtReportAsExcel() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
@@ -22868,6 +22895,28 @@ public class SearchController implements Serializable {
         }
     }
 
+    // Excel Export: shift end summary Report (shift_start_and_ends)
+    public StreamedContent getShiftEndSummaryReportAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Shift End Summary report before exporting.");
+            return null;
+        }
+
+        try {
+            String fileName = "Shift_End_Summary_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForShiftEndSummary(bills, getFiltersForShiftEndSummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getShiftEndSummaryReportAsExcel: Error creating downloadingExcel via excelController.getShiftEndSummaryAsExcel", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     // </editor-fold>
 
     // wht report, searchType as String
@@ -22924,6 +22973,23 @@ public class SearchController implements Serializable {
         params.put("MRN", (mrnNo != null && !mrnNo.isEmpty()) ? mrnNo : "All");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+
+        return params; 
+    }
+
+    // Filters for Shift End Summary report
+    public Map<String, Object> getFiltersForShiftEndSummaryReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("User", (webUser != null && webUser.getWebUserPerson() != null) ? webUser.getWebUserPerson().getName() : "All");
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Site", site != null ? site.getName() : "All Sites");
+        params.put("Department", department != null ? department.getName() : "All Departments");
 
         return params; 
     }  
