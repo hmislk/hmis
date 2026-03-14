@@ -22572,7 +22572,22 @@ public class SearchController implements Serializable {
 
         StreamedContent pdfSc = null;
         try {
-            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "WHT_Report");
+            String fileName = "WHT_Report";
+            if (bundle.getBundleType() != null) {
+                switch (bundle.getBundleType()) {
+                    case "whtIndividualReceipts":
+                        fileName = "Individual_Receipts_Wise_WHT_Report";
+                        break;
+                    case "whtMonthlySummary":
+                        fileName = "Monthly_Wise_Summary_WHT_Report";
+                        break;
+                    case "whtConsultantSummary":
+                        fileName = "Consultant_Wise_Summary_WHT_Report";
+                        break;
+                    default:
+                        break;
+                }
+            }
             String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
             if (dates != null && !dates.isEmpty()) {
                 fileName += "_" + dates;
@@ -22595,7 +22610,7 @@ public class SearchController implements Serializable {
 
         StreamedContent pdfSc = null;
         try {
-            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "OPD_Professional_Fee_Payments_Report");
+            String fileName = "OPD_Professional_Fee_Payments_Report";
             String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
             if (dates != null && !dates.isEmpty()) {
                 fileName += "_" + dates;
@@ -22618,7 +22633,22 @@ public class SearchController implements Serializable {
         }
 
         try {
-            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "WHT_Report");
+            String fileName = "WHT_Report";
+            if (bundle.getBundleType() != null) {
+                switch (bundle.getBundleType()) {
+                    case "whtIndividualReceipts":
+                        fileName = "Individual_Receipts_Wise_WHT_Report";
+                        break;
+                    case "whtMonthlySummary":
+                        fileName = "Monthly_Wise_Summary_WHT_Report";
+                        break;
+                    case "whtConsultantSummary":
+                        fileName = "Consultant_Wise_Summary_WHT_Report";
+                        break;
+                    default:
+                        break;
+                }
+            }
             String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
             if (dates != null && !dates.isEmpty()) {
                 fileName += "_" + dates;
@@ -22640,7 +22670,7 @@ public class SearchController implements Serializable {
         }
 
         try {
-            String fileName = (bundle.getName() != null && !bundle.getName().isEmpty()? bundle.getName() : "OPD_Professional_Fee_Payments_Report");
+            String fileName =  "OPD_Professional_Fee_Payments_Report";
             String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
             if (dates != null && !dates.isEmpty()) {
                 fileName += "_" + dates;
@@ -22861,7 +22891,7 @@ public class SearchController implements Serializable {
         params.put("Department", department != null ? department.getName() : "All Departments");
         params.put("Category", category != null ? category.getName() : "All");
         params.put("Item", item != null && item.getName() != null ? item.getName() : "All");
-        params.put("MRN", (mrnNo != null || !mrnNo.isEmpty()) ? mrnNo : "-");
+        params.put("MRN", (mrnNo != null || !mrnNo.isEmpty()) ? mrnNo : "All");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
 
