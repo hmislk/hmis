@@ -101,7 +101,7 @@
                                                 
                                                 <h:outputText value="Expiray date" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Allowing the use of expired payment schemes', true)}"/>
                                                 <p:calendar 
-                                                    value="#{paymentSchemeController.current.expirayDate}"
+                                                    value="#{paymentSchemeController.current.expiryDate}"
                                                     navigator="false"
                                                     rendered="#{!configOptionApplicationController.getBooleanValueByKey('Allowing the use of expired payment schemes', true)}"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
