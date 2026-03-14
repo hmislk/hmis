@@ -346,6 +346,7 @@ public class PaymentSchemeController implements Serializable {
         dup.setMemberOrFamilyRequired(paymentScheme.isMemberOrFamilyRequired());
         dup.setSeniorCitizenRequired(paymentScheme.isSeniorCitizenRequired());
         dup.setPregnantMotherRequired(paymentScheme.isPregnantMotherRequired());
+        dup.setExpiryDate(paymentScheme.getExpiryDate());
         dup.setCliantType(paymentScheme.getCliantType());
         dup.setInstitution(paymentScheme.getInstitution());
         dup.setPerson(paymentScheme.getPerson());
@@ -521,7 +522,7 @@ public class PaymentSchemeController implements Serializable {
         if (ps == null) {
             return false;
         }
-        Date expiryDate = ps.getExpirayDate();
+        Date expiryDate = ps.getExpiryDate();
         if (expiryDate == null) {
             return false;
         }

@@ -3269,7 +3269,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         if (!configOptionApplicationController.getBooleanValueByKey("Allowing the use of expired payment schemes", true)) {
             if (paymentScheme != null && paymentScheme.getExpired()) {
-                Date expiredDate = paymentScheme.getExpirayDate();
+                Date expiredDate = paymentScheme.getExpiryDate();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd hh.mm a");
                 String formattedDate = formatter.format(expiredDate);
                 paymentScheme = null;

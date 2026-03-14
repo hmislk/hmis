@@ -71,13 +71,13 @@ public class PaymentScheme implements Serializable {
     private boolean memberOrFamilyRequired;
     private boolean seniorCitizenRequired;
     private boolean pregnantMotherRequired;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date expirayDate;
-    
+    private Date expiryDate;
+
     @Transient
     private Boolean expired;
-    
+
     public int getOrderNo() {
         return orderNo;
     }
@@ -109,7 +109,6 @@ public class PaymentScheme implements Serializable {
 //    public void setValidForCrBills(boolean validForCrBills) {
 //        this.validForCrBills = validForCrBills;
 //    }
-
     public Long getId() {
         return id;
     }
@@ -333,20 +332,24 @@ public class PaymentScheme implements Serializable {
         this.pregnantMotherRequired = pregnantMotherRequired;
     }
 
-    public Date getExpirayDate() {
-        return expirayDate;
+    public Date getExpiryDate() {
+        return expiryDate;
     }
 
-    public void setExpirayDate(Date expirayDate) {
-        this.expirayDate = expirayDate;
+    public void setExpirayDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     public Boolean getExpired() {
-        if (expirayDate == null) {
+        if (expiryDate == null) {
             return false;
         }
-        expired = new Date().after(expirayDate);
+        expired = new Date().after(expiryDate);
         return expired;
     }
-    
+
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
 }
