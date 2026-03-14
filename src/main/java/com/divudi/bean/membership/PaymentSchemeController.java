@@ -517,6 +517,21 @@ public class PaymentSchemeController implements Serializable {
         this.allowedPaymentMethods = allowedPaymentMethods;
     }
 
+    public boolean isExpired(PaymentScheme ps) {
+        if (ps == null) {
+            return false;
+        }
+        Date expiryDate = ps.getExpirayDate();
+        if (expiryDate == null) {
+            return false;
+        }
+        return new Date().after(expiryDate);
+    }
+
+    public boolean isCurrentSchemeExpired() {
+        return isExpired(paymentScheme);
+    }
+
     public List<PaymentScheme> getAllPaymentSchemes() {
         allPaymentSchemes = createPaymentSchemes(true, true, true);
         return allPaymentSchemes;
