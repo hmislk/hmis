@@ -4347,18 +4347,18 @@ public class ExcelController {
             excelRow.createCell(colIndex++).setCellValue(rbi != null && rbi.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(rbi.getCreatedAt()) : "");
             
             if (rbi != null && rbi.getDeptId() != null) {
-                excelRow.createCell(colIndex++).setCellValue((row.getBillFee().getBillItem() != null && row.getBillFee().getBillItem().getBill() != null && row.getBillFee().getBillItem().getBill() .isCancelled()) ? rbi.getDeptId() + " (Cancelled)" : rbi.getDeptId());
+                excelRow.createCell(colIndex++).setCellValue((row.getBillFee().getBillItem() != null && row.getBillFee().getBillItem().getBill() != null && row.getBillFee().getBillItem().getBill() .isCancelled()) ? (rbi.getDeptId() + " (Cancelled)") : rbi.getDeptId());
             } else {
                 excelRow.createCell(colIndex++).setCellValue("");
             }
 
-            if (rbi != null && rbi.getPatient() != null) {
-                excelRow.createCell(colIndex++).setCellValue(rbi.getPatient().getPerson() != null && rbi.getPatient().getPerson().getNameWithTitle() != null ? rbi.getPatient().getPerson().getNameWithTitle() : "");
+            if (row.getBillFee().getReferenceBillFee() != null && row.getBillFee().getReferenceBillFee().getBill() != null && row.getBillFee().getReferenceBillFee().getBill().getPatient()  != null) {
+                excelRow.createCell(colIndex++).setCellValue(row.getBillFee().getReferenceBillFee().getBill().getPatient().getPerson() != null && row.getBillFee().getReferenceBillFee().getBill().getPatient().getPerson().getNameWithTitle() != null ? row.getBillFee().getReferenceBillFee().getBill().getPatient().getPerson().getNameWithTitle() : "");
             } else {
-                excelRow.createCell(colIndex++).setCellValue(row.getBillFee() != null && row.getBillFee().getPatient() != null && row.getBillFee().getPatient().getPerson() != null && row.getBillFee().getBill().getPatient().getPerson() != null && row.getBillFee().getPatient().getPerson().getNameWithTitle() != null ? row.getBillFee().getPatient().getPerson().getNameWithTitle() : "");
+                excelRow.createCell(colIndex++).setCellValue(row.getBillFee().getPatient() != null && row.getBillFee().getPatient().getPerson() != null && row.getBillFee().getPatient().getPerson().getNameWithTitle() != null ? row.getBillFee().getPatient().getPerson().getNameWithTitle() : "");
             }
             excelRow.createCell(colIndex++).setCellValue(b != null && b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getName() != null ? b.getToStaff().getPerson().getName() : "");
-            excelRow.createCell(colIndex++).setCellValue(row.getBillFee() != null ? row.getBillFee().getFeeValue()  : 0.0);
+            excelRow.createCell(colIndex++).setCellValue(row.getBillFee().getFeeValue());
         }
 
         Row totalRow = dataSheet.createRow(startRow++);

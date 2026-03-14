@@ -22891,7 +22891,7 @@ public class SearchController implements Serializable {
         params.put("Department", department != null ? department.getName() : "All Departments");
         params.put("Category", category != null ? category.getName() : "All");
         params.put("Item", item != null && item.getName() != null ? item.getName() : "All");
-        params.put("MRN", (mrnNo != null || !mrnNo.isEmpty()) ? mrnNo : "All");
+        params.put("MRN", (mrnNo != null && !mrnNo.isEmpty()) ? mrnNo : "All");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
 

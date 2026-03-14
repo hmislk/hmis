@@ -26,6 +26,7 @@ import com.divudi.core.data.ReportItemType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.lab.CommonReportItem;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientReportItemValue;
@@ -2891,7 +2892,7 @@ public class PdfController {
             Cell payNoCell = new Cell().add(new Paragraph(payNo).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
             payNoCell.setKeepTogether(true);
             table.addCell(payNoCell);
-            table.addCell(new Cell().add(new Paragraph(refBill != null && refBill.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(refBill.getBillDate()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
+            table.addCell(new Cell().add(new Paragraph(refBill != null && refBill.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(refBill.getCreatedAt()) : "").setTextAlignment(TextAlignment.CENTER).setFontSize(8)));
             
             if (refBill != null && refBill.getDeptId() != null) {
                 table.addCell(new Cell().add(new Paragraph((r.getBillFee().getBillItem() != null && r.getBillFee().getBillItem().getBill() != null && r.getBillFee().getBillItem().getBill().isCancelled()) ? (refBill.getDeptId() + " (Cancelled)") : refBill.getDeptId())).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
@@ -2899,8 +2900,9 @@ public class PdfController {
                 table.addCell(new Cell().add(new Paragraph("")).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
             }
 
-            if (refBill != null && refBill.getPatient() != null) {
-                table.addCell(new Cell().add(new Paragraph(refBill.getPatient().getPerson() != null && refBill.getPatient().getPerson().getNameWithTitle() != null ? refBill.getPatient().getPerson().getNameWithTitle() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+            if (r.getBillFee().getReferenceBillFee() != null && r.getBillFee().getReferenceBillFee().getBill() != null && r.getBillFee().getReferenceBillFee().getBill().getPatient() != null) {
+                Patient refPatient = r.getBillFee().getReferenceBillFee().getBill().getPatient();
+                table.addCell(new Cell().add(new Paragraph(refPatient.getPerson() != null && refPatient.getPerson().getNameWithTitle() != null ? refPatient.getPerson().getNameWithTitle() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
             } else {
                 table.addCell(new Cell().add(new Paragraph(r.getBillFee().getPatient() != null && r.getBillFee().getPatient().getPerson() != null && r.getBillFee().getPatient().getPerson().getNameWithTitle() != null ? r.getBillFee().getPatient().getPerson().getNameWithTitle() : "")).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
             }

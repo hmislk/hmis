@@ -14190,7 +14190,7 @@ public class PharmacyReportController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
         }
     }
 
@@ -14439,7 +14439,7 @@ public class PharmacyReportController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
         }
     }
 
