@@ -6,7 +6,6 @@ package com.divudi.core.entity;
 
 import com.divudi.core.data.CliantType;
 import com.divudi.core.entity.Department;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
