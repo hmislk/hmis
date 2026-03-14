@@ -54,7 +54,37 @@
                 <div class="row">
                     <div class="col-3">
                         <div class="m-1">
-                            <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.nameWithTitle}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.sex}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.ageAsString}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.mobile}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.phone}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty admissionController.current.patient.person.nic ? 'N/A' : admissionController.current.patient.person.nic}" /></div>
+                                </div>
+                            </p:panel>
                         </div>
                         <div class="m-1">
                             <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"></common:admission_details>

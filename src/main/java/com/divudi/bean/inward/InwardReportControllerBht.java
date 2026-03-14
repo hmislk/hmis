@@ -279,6 +279,65 @@ public class InwardReportControllerBht implements Serializable {
         return "/inward/reports/inpatient_service_item_list_dto?faces-redirect=true";
     }
 
+    public String navigateToInpatientPharmacyAndServiceItemListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        // Pharmacy part
+        pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
+        pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
+            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
+            pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
+            for (InpatientPharmacyIssueDTO dto : allDtos) {
+                BillTypeAtomic billType = dto.getBillTypeAtomic();
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                    pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
+            pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+        }
+        // Service part
+        serviceIssueDtosToPatientEncounter = new ArrayList<>();
+        serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+            serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
+            for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                    serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            serviceIssueDtosToPatientEncounter = new ArrayList<>();
+            serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+        }
+        return "/inward/reports/inpatient_pharmacy_and_service_item_list_dto?faces-redirect=true";
+    }
+
     private List<InpatientServiceIssueDTO> fetchServiceIssueDtos(List<BillTypeAtomic> billTypes) {
         String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
                 + "bi.id, "
