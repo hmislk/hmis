@@ -67,6 +67,7 @@ import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -3266,6 +3267,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return true;
         }
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Allowing the use of expired payment schemes", true)) {
+            if (paymentScheme != null && paymentScheme.getExpired()) {
+                Date expiredDate = paymentScheme.getExpiryDate();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd hh.mm a");
+                String formattedDate = formatter.format(expiredDate);
+                paymentScheme = null;
+                cashPaid = 0.0;
+                listnerForPaymentMethodChange();
+                JsfUtil.addErrorMessage("The selected discount scheme has expired since " + formattedDate);
+                return true;
+            }
+        }
+
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
             if (referredBy == null && referredByInstitution == null) {
                 JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
@@ -3879,7 +3893,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             }
         }
-
+        getCashBalance();
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
@@ -4823,7 +4837,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCashPaid(double cashPaid) {
         this.cashPaid = cashPaid;
-//        cashBalance = cashPaid - getNetTotal();
     }
 
     public double getCashBalance() {

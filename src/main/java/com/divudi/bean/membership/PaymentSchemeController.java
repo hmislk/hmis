@@ -346,6 +346,7 @@ public class PaymentSchemeController implements Serializable {
         dup.setMemberOrFamilyRequired(paymentScheme.isMemberOrFamilyRequired());
         dup.setSeniorCitizenRequired(paymentScheme.isSeniorCitizenRequired());
         dup.setPregnantMotherRequired(paymentScheme.isPregnantMotherRequired());
+        dup.setExpiryDate(paymentScheme.getExpiryDate());
         dup.setCliantType(paymentScheme.getCliantType());
         dup.setInstitution(paymentScheme.getInstitution());
         dup.setPerson(paymentScheme.getPerson());
@@ -515,6 +516,21 @@ public class PaymentSchemeController implements Serializable {
 
     public void setAllowedPaymentMethods(List<AllowedPaymentMethod> allowedPaymentMethods) {
         this.allowedPaymentMethods = allowedPaymentMethods;
+    }
+
+    public boolean isExpired(PaymentScheme ps) {
+        if (ps == null) {
+            return false;
+        }
+        Date expiryDate = ps.getExpiryDate();
+        if (expiryDate == null) {
+            return false;
+        }
+        return new Date().after(expiryDate);
+    }
+
+    public boolean isCurrentSchemeExpired() {
+        return isExpired(paymentScheme);
     }
 
     public List<PaymentScheme> getAllPaymentSchemes() {
