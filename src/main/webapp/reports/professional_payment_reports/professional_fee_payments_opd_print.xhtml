@@ -83,7 +83,7 @@
                                                     <h:outputText value="#{searchController.item != null ? searchController.item.name : 'All'}"/>
 
                                                     <h:outputText value="MRN:" styleClass="label"/>
-                                                    <h:outputText value="#{!searchController.mrnNo.isEmpty() ? searchController.mrnNo : '-'}"/>
+                                                    <h:outputText value="#{not empty searchController.mrnNo ? searchController.mrnNo : 'All'}"/>
 
                                                     <!-- Row 4 -->
                                                     <h:outputText value="Speciality:" styleClass="label"/>
