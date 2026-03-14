@@ -1344,10 +1344,10 @@
                                                     <p:column style="padding: 9px; min-width: 350px;" headerText="Scheme Name">
                                                         <h:outputText value="#{c.name}" />
                                                     </p:column>
-                                                    <p:column style="padding: 9px;" headerText="Expiray Date">
+                                                    <p:column style="padding: 9px;" headerText="Expiry Date">
                                                         <h:panelGroup class="d-flex justify-content-center">
-                                                            <h:outputText value="Not Included" rendered="#{c.expirayDate eq null}"></h:outputText>
-                                                            <h:outputText value="#{c.expirayDate}" rendered="#{c.expirayDate ne null}">
+                                                            <h:outputText value="Not Included" rendered="#{c.expiryDate eq null}"></h:outputText>
+                                                            <h:outputText value="#{c.expiryDate}" rendered="#{c.expiryDate ne null}">
                                                                 <f:convertDateTime pattern="yyyy.MM.dd hh.mm a"/>
                                                             </h:outputText>
                                                         </h:panelGroup>
