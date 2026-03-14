@@ -6,6 +6,7 @@ package com.divudi.core.entity;
 
 import com.divudi.core.data.CliantType;
 import com.divudi.core.entity.Department;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
@@ -17,6 +18,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -69,7 +71,13 @@ public class PaymentScheme implements Serializable {
     private boolean memberOrFamilyRequired;
     private boolean seniorCitizenRequired;
     private boolean pregnantMotherRequired;
-
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date expirayDate;
+    
+    @Transient
+    private Boolean expired;
+    
     public int getOrderNo() {
         return orderNo;
     }
@@ -325,4 +333,20 @@ public class PaymentScheme implements Serializable {
         this.pregnantMotherRequired = pregnantMotherRequired;
     }
 
+    public Date getExpirayDate() {
+        return expirayDate;
+    }
+
+    public void setExpirayDate(Date expirayDate) {
+        this.expirayDate = expirayDate;
+    }
+
+    public Boolean getExpired() {
+        if (expirayDate == null) {
+            return false;
+        }
+        expired = new Date().after(expirayDate);
+        return expired;
+    }
+    
 }
