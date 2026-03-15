@@ -2360,6 +2360,7 @@ public class FinancialTransactionController implements Serializable {
                 transferPayment.setReferenceNo(p.getReferenceNo());
                 transferPayment.setComments(p.getComments());
                 transferPayment.setRealizedAt(p.getRealizedAt());
+                transferPayment.setReferancePayment(p);
                 getCurrentBillPayments().add(transferPayment);
                 anySelected = true;
             }
@@ -2371,6 +2372,22 @@ public class FinancialTransactionController implements Serializable {
         calculateFundTransferBillTotal();
         currentPayment = null;
         fundTransferAvailablePayments = null;
+    }
+
+    public boolean isFundTransferHasNonCashPayments() {
+        if (currentBillPayments == null) {
+            return false;
+        }
+        for (Payment p : currentBillPayments) {
+            if (p.getPaymentMethod() != null && p.getPaymentMethod() != PaymentMethod.Cash) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean getFundTransferHasNonCashPayments() {
+        return isFundTransferHasNonCashPayments();
     }
 
     public List<Payment> getFundTransferAvailablePayments() {
@@ -2670,6 +2687,15 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         double billTotal = 0.0;
         for (Payment p : getCurrentBillPayments()) {
+            // Mark original non-cash payment as handing over started
+            if (p.getReferancePayment() != null
+                    && p.getPaymentMethod() != null
+                    && p.getPaymentMethod() != PaymentMethod.Cash) {
+                Payment originalPayment = p.getReferancePayment();
+                originalPayment.setHandingOverStarted(true);
+                originalPayment.setHandingOverCompleted(false);
+                paymentController.save(originalPayment);
+            }
             p.setBill(currentBill);
             p.setCreatedAt(new Date());
             p.setCreater(sessionController.getLoggedUser());
@@ -5847,6 +5873,21 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getPayments().addAll(currentBillPayments);
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
+
+        // Transfer ownership of original non-cash payments to the receiving user
+        List<Payment> fundTransferBillPayments = findPaymentsForBill(currentBill.getReferenceBill());
+        if (fundTransferBillPayments != null) {
+            for (Payment ftPayment : fundTransferBillPayments) {
+                if (ftPayment.getReferancePayment() != null) {
+                    Payment originalShiftPayment = ftPayment.getReferancePayment();
+                    originalShiftPayment.setCurrentHolder(sessionController.getLoggedUser());
+                    originalShiftPayment.setHandingOverCompleted(true);
+                    originalShiftPayment.setHandingOverStarted(false);
+                    paymentController.save(originalShiftPayment);
+                }
+            }
+        }
+
         floatTransferStarted = false;
         return "/cashier/fund_transfer_receive_bill_print?faces-redirect=true";
     }
