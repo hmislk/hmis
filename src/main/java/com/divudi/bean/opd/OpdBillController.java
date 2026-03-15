@@ -3641,10 +3641,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
-        
+
+        if (allBillFees == null || allBillFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
 
         List<BillFeeBundleEntry> billItemBillFeeBundleEntries = getBillBean().bundleFeesByName(allBillFees);
-        
+
         if (billItemBillFeeBundleEntries == null || billItemBillFeeBundleEntries.isEmpty()) {
             getLstBillEntries().remove(addingEntry);
             JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
