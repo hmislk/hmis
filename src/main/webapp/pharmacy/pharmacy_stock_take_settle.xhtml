@@ -61,10 +61,10 @@
                                              emptyMessage="No stock items found for this count."
                                              sortMode="multiple">
 
-                                    <p:column headerText="Category" sortBy="#{bi.item.category.name}" 
-                                              filterBy="#{bi.item.category.name}" filterMatchMode="contains"
+                                    <p:column headerText="Category" sortBy="#{bi.catId}"
+                                              filterBy="#{bi.catId}" filterMatchMode="contains"
                                               style="width: 120px;">
-                                        <h:outputText value="#{bi.item.category.name}" 
+                                        <h:outputText value="#{bi.catId}"
                                                       style="color: #495057;"/>
                                     </p:column>
 
@@ -75,19 +75,19 @@
                                                       style="color: #495057; font-weight: 500;"/>
                                     </p:column>
 
-                                    <p:column headerText="Expiry Date" sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
-                                              filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" filterMatchMode="contains"
+                                    <p:column headerText="Expiry Date" sortBy="#{bi.pharmaceuticalBillItem.doe}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.doe}" filterMatchMode="contains"
                                               style="width: 110px; text-align: center;">
-                                        <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.doe}"
                                                       style="color: #6c757d;">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Batch No." sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
-                                              filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" filterMatchMode="contains"
+                                    <p:column headerText="Batch No." sortBy="#{bi.pharmaceuticalBillItem.stringValue}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.stringValue}" filterMatchMode="contains"
                                               style="width: 100px; text-align: center;">
-                                        <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.stringValue}"
                                                       style="color: #6c757d; font-family: monospace;"/>
                                     </p:column>
 
@@ -102,28 +102,28 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Purchase Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
-                                              filterBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" filterMatchMode="exact"
+                                    <p:column headerText="Purchase Rate" sortBy="#{bi.pharmaceuticalBillItem.purchaseRate}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.purchaseRate}" filterMatchMode="exact"
                                               style="width: 110px; text-align: right;">
-                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}"
                                                       style="color: #6c757d;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Retail Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
-                                              filterBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" filterMatchMode="exact"
+                                    <p:column headerText="Retail Rate" sortBy="#{bi.pharmaceuticalBillItem.retailRate}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.retailRate}" filterMatchMode="exact"
                                               style="width: 110px; text-align: right;">
-                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}"
                                                       style="color: #6c757d;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Cost Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
-                                              filterBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" filterMatchMode="exact"
+                                    <p:column headerText="Cost Rate" sortBy="#{bi.pharmaceuticalBillItem.costRate}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.costRate}" filterMatchMode="exact"
                                               style="width: 110px; text-align: right;">
-                                        <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.costRate}"
                                                       style="color: #6c757d;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>

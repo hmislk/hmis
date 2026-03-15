@@ -33,6 +33,7 @@ import com.divudi.service.pharmacy.StockTakeApprovalService;
 import com.divudi.service.pharmacy.ApprovalProgressTracker;
 import com.divudi.service.pharmacy.StockCountGenerationService;
 import com.divudi.service.pharmacy.StockCountGenerationTracker;
+import com.divudi.service.pharmacy.StockTakePersistService;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -102,6 +103,8 @@ public class PharmacyStockTakeController implements Serializable {
     private StockCountGenerationService stockCountGenerationService;
     @EJB
     private StockCountGenerationTracker stockCountGenerationTracker;
+    @EJB
+    private StockTakePersistService stockTakePersistService;
     @EJB
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
@@ -599,24 +602,30 @@ public class PharmacyStockTakeController implements Serializable {
             //LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
-        // Ensure fresh persistence for a new bill: null out IDs if bill is new
+        Department dept = snapshotBill.getDepartment();
         if (snapshotBill.getId() == null) {
-            if (snapshotBill.getBillItems() != null) {
+            String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
+            snapshotBill.setInsId(deptId);
+            snapshotBill.setDeptId(deptId);
+
+            long tSettle0 = System.currentTimeMillis();
+            System.out.println("[settleStockCount] Starting fast batch persist. Items=" + snapshotBill.getBillItems().size());
+            try {
+                stockTakePersistService.persistSnapshotBill(snapshotBill);
+                System.out.println("[settleStockCount] Batch persist complete. ms=" + (System.currentTimeMillis() - tSettle0));
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed, falling back to JPA cascade", e);
+                System.out.println("[settleStockCount] Fallback to JPA cascade. ms=" + (System.currentTimeMillis() - tSettle0));
+                // Ensure fresh IDs for fallback JPA path
                 for (BillItem bi : snapshotBill.getBillItems()) {
                     bi.setId(null);
                     if (bi.getPharmaceuticalBillItem() != null) {
                         bi.getPharmaceuticalBillItem().setId(null);
                     }
                 }
+                billFacade.create(snapshotBill);
+                System.out.println("[settleStockCount] JPA cascade complete. ms=" + (System.currentTimeMillis() - tSettle0));
             }
-        }
-        Department dept = snapshotBill.getDepartment();
-        if (snapshotBill.getId() == null) {
-            String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
-            snapshotBill.setInsId(deptId);
-            snapshotBill.setDeptId(deptId);
-            // Cascade will persist bill items and pharmaceutical bill items
-            billFacade.create(snapshotBill);
         } else {
             // Existing bill: update only
             billFacade.edit(snapshotBill);
