@@ -35,31 +35,48 @@
                             var="ssb"
                             rowKey="#{ssb.id}"
                             rowIndexVar="rowIndex"
+                            paginator="true"
+                            rows="20"
+                            rowsPerPageTemplate="10,20,50,100"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}"
+                            filterDelay="300"
                             emptyMessage="No active shifts found.">
 
                             <p:column headerText="#" width="3em" styleClass="text-center">
                                 <h:outputText value="#{rowIndex + 1}" />
                             </p:column>
 
-                            <p:column headerText="Cashier Name">
+                            <p:column headerText="Cashier Name"
+                                      filterBy="#{ssb.bill.staff.person.name}"
+                                      filterMatchMode="contains"
+                                      sortBy="#{ssb.bill.staff.person.name}">
                                 <h:outputText value="#{ssb.bill.staff.person.name}" rendered="#{ssb.bill.staff ne null}" />
                             </p:column>
 
-                            <p:column headerText="Username">
+                            <p:column headerText="Username"
+                                      filterBy="#{ssb.bill.creater.name}"
+                                      filterMatchMode="contains"
+                                      sortBy="#{ssb.bill.creater.name}">
                                 <h:outputText value="#{ssb.bill.creater.name}" rendered="#{ssb.bill.creater ne null}" />
                             </p:column>
 
-                            <p:column headerText="Department">
+                            <p:column headerText="Department"
+                                      filterBy="#{ssb.bill.department.name}"
+                                      filterMatchMode="contains"
+                                      sortBy="#{ssb.bill.department.name}">
                                 <h:outputText value="#{ssb.bill.department.name}" rendered="#{ssb.bill.department ne null}" />
                             </p:column>
 
-                            <p:column headerText="Shift Started" width="12em">
+                            <p:column headerText="Shift Started" width="12em"
+                                      sortBy="#{ssb.bill.createdAt}">
                                 <h:outputText value="#{ssb.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Duration" width="8em">
+                            <p:column headerText="Duration" width="8em"
+                                      sortBy="#{ssb.bill.createdAt}">
                                 <h:outputText value="#{financialTransactionController.formatDuration(ssb.bill.createdAt)}" />
                             </p:column>
 

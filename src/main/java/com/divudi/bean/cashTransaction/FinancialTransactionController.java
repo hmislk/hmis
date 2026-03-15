@@ -2117,7 +2117,7 @@ public class FinancialTransactionController implements Serializable {
         long totalMinutes = (new Date().getTime() - startDate.getTime()) / (1000 * 60);
         long hours = totalMinutes / 60;
         long minutes = totalMinutes % 60;
-        return hours + "h " + minutes + "m";
+        return hours + " h " + minutes + " m";
     }
 
     private void prepareToAddNewInitialFundBill() {
