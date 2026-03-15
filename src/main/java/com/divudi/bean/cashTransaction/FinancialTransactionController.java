@@ -2090,6 +2090,36 @@ public class FinancialTransactionController implements Serializable {
         return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
+    public String navigateToActiveShiftsReport() {
+        fillAllActiveShifts();
+        return "/reports/cashier_reports/active_shifts?faces-redirect=true";
+    }
+
+    public void fillAllActiveShifts() {
+        bundle = new ReportTemplateRowBundle();
+        String jpql = "Select new com.divudi.core.data.ReportTemplateRow(b) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.referenceBill is null "
+                + " order by b.createdAt ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
+        List<ReportTemplateRow> rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        bundle.setReportTemplateRows(rows);
+    }
+
+    public String formatDuration(Date startDate) {
+        if (startDate == null) {
+            return "";
+        }
+        long totalMinutes = (new Date().getTime() - startDate.getTime()) / (1000 * 60);
+        long hours = totalMinutes / 60;
+        long minutes = totalMinutes % 60;
+        return hours + "h " + minutes + "m";
+    }
+
     private void prepareToAddNewInitialFundBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftStartFundBill);
