@@ -1084,7 +1084,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and ( c.paymentFinalized is null or c.paymentFinalized=false ) "
                 + " and ( ((c.bhtNo) like :q ) "
                 + " or ((c.patient.person.name) like :q ) "
-                + " or ((c.patient.phn =:phn ))) ";
+                + " or ((c.patient.phn =:phn )) "
+                + " or ((c.patient.person.phone) like :q ) "
+                + " or ((c.patient.person.mobile) like :q ) ) ";
         HashMap h = new HashMap();
         h.put("q", "%" + query.toUpperCase() + "%");
         h.put("phn", query.toUpperCase());
