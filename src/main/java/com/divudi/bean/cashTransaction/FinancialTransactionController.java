@@ -55,6 +55,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -264,6 +265,8 @@ public class FinancialTransactionController implements Serializable {
     private double totalCashFund;
 
     boolean floatTransferStarted = false;
+
+    private List<Payment> fundTransferAvailablePayments;
 
     // Float Out Cancellation Properties
     private List<Bill> myFundTransferBillsOut;
@@ -2307,6 +2310,75 @@ public class FinancialTransactionController implements Serializable {
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
+    }
+
+    public void loadAvailablePaymentsForFundTransfer() {
+        fundTransferAvailablePayments = new ArrayList<>();
+        if (currentPayment == null || currentPayment.getPaymentMethod() == null) {
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
+            return;
+        }
+        Bill startBill = fetchNonClosedShiftStartFundBill();
+        if (startBill == null) {
+            return;
+        }
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(startBill, sessionController.getLoggedUser());
+        Set<Payment> uniquePayments = new HashSet<>();
+        if (shiftPayments != null) {
+            uniquePayments.addAll(shiftPayments);
+        }
+        if (othersPayments != null) {
+            uniquePayments.addAll(othersPayments);
+        }
+        for (Payment p : uniquePayments) {
+            if (p.getPaymentMethod() == currentPayment.getPaymentMethod()) {
+                p.setSelectedForHandover(false);
+                fundTransferAvailablePayments.add(p);
+            }
+        }
+        fundTransferAvailablePayments.sort(Comparator.comparing(Payment::getId));
+    }
+
+    public void addSelectedPaymentsToFundTransferBill() {
+        if (fundTransferAvailablePayments == null || fundTransferAvailablePayments.isEmpty()) {
+            JsfUtil.addErrorMessage("No payments available");
+            return;
+        }
+        boolean anySelected = false;
+        for (Payment p : fundTransferAvailablePayments) {
+            if (p.isSelectedForHandover()) {
+                Payment transferPayment = new Payment();
+                transferPayment.setPaymentMethod(p.getPaymentMethod());
+                transferPayment.setPaidValue(Math.abs(p.getPaidValue()));
+                transferPayment.setBank(p.getBank());
+                transferPayment.setCreditCardRefNo(p.getCreditCardRefNo());
+                transferPayment.setChequeRefNo(p.getChequeRefNo());
+                transferPayment.setChequeDate(p.getChequeDate());
+                transferPayment.setReferenceNo(p.getReferenceNo());
+                transferPayment.setComments(p.getComments());
+                transferPayment.setRealizedAt(p.getRealizedAt());
+                getCurrentBillPayments().add(transferPayment);
+                anySelected = true;
+            }
+        }
+        if (!anySelected) {
+            JsfUtil.addErrorMessage("Select at least one payment to add");
+            return;
+        }
+        calculateFundTransferBillTotal();
+        currentPayment = null;
+        fundTransferAvailablePayments = null;
+    }
+
+    public List<Payment> getFundTransferAvailablePayments() {
+        return fundTransferAvailablePayments;
+    }
+
+    public void setFundTransferAvailablePayments(List<Payment> fundTransferAvailablePayments) {
+        this.fundTransferAvailablePayments = fundTransferAvailablePayments;
     }
 
     public void addPaymentToShiftEndFundBill() {
