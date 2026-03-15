@@ -3622,7 +3622,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
-        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+        List<BillComponent> currentBillComponents = getBillBean().billComponentsFromBillItem(bi);
+        addingEntry.setLstBillComponents(currentBillComponents);
 
         List<BillFee> allBillFees;
 
@@ -3641,7 +3642,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
 
+        if (allBillFees == null || allBillFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
+
         List<BillFeeBundleEntry> billItemBillFeeBundleEntries = getBillBean().bundleFeesByName(allBillFees);
+
+        if (billItemBillFeeBundleEntries == null || billItemBillFeeBundleEntries.isEmpty()) {
+            getLstBillEntries().remove(addingEntry);
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
 
         addingEntry.setLstBillFees(allBillFees);
 
@@ -3660,6 +3672,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+
+        if (bi.getNetValue() == 0.0) {
+            if (!bi.getItem().isUserChangable()) {
+                addingEntry.getLstBillFees().removeAll(allBillFees);
+                addingEntry.getLstBillComponents().addAll(currentBillComponents);
+                getLstBillEntries().remove(addingEntry);
+
+                JsfUtil.addErrorMessage("Item Fee is Zero ..! ");
+                return;
+            }
+        }
 
         calTotals();
 
