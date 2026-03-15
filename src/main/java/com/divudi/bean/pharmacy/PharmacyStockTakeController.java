@@ -3158,7 +3158,10 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Load BillItems on-demand using existing optimized infrastructure
         if (snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
-            // Use the existing lazy loading method which handles proper fetch joins
+            // Ensure snapshotBill shell exists so loadSnapshotBillItemsLazily can use its ID
+            if (snapshotBill == null) {
+                snapshotBill = billFacade.getReference(snapshotBillDisplay.getId());
+            }
             loadSnapshotBillItemsLazily();
             return snapshotBill != null ? snapshotBill.getBillItems() : new ArrayList<>();
         }
@@ -3179,6 +3182,81 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Fallback to actual collection size (triggers lazy loading if needed)
         return getSnapshotBillItemsLazy().size();
+    }
+
+    public double getSnapshotRetailTotal() {
+        double total = 0.0;
+        List<BillItem> items = getSnapshotBillItemsLazy();
+        if (items != null) {
+            for (BillItem bi : items) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getSnapshotCostTotal() {
+        double total = 0.0;
+        List<BillItem> items = getSnapshotBillItemsLazy();
+        if (items != null) {
+            for (BillItem bi : items) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getCostRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getSnapshotPurchaseTotal() {
+        double total = 0.0;
+        List<BillItem> items = getSnapshotBillItemsLazy();
+        if (items != null) {
+            for (BillItem bi : items) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getInMemoryRetailTotal() {
+        double total = 0.0;
+        if (snapshotBill != null && snapshotBill.getBillItems() != null) {
+            for (BillItem bi : snapshotBill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getInMemoryCostTotal() {
+        double total = 0.0;
+        if (snapshotBill != null && snapshotBill.getBillItems() != null) {
+            for (BillItem bi : snapshotBill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getCostRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getInMemoryPurchaseTotal() {
+        double total = 0.0;
+        if (snapshotBill != null && snapshotBill.getBillItems() != null) {
+            for (BillItem bi : snapshotBill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
     }
 
     /**

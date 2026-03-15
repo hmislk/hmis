@@ -18,17 +18,27 @@
                             <h:form>
                                 <div class="row mb-4">
                                     <div class="col-lg-8">
-                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" 
+                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank"
                                                      columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Institution:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}" 
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"
                                                           style="color: #495057;"/>
                                             <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}" 
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"
                                                           style="color: #495057;"/>
-                                            <h:outputText value="Total Stock Value:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
-                                                          style="font-weight: bold; color: #28a745; font-size: 1.1rem;">
+                                            <h:outputText value="Cost Value:" style="font-weight:bold; color: #155724;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.inMemoryCostTotal}"
+                                                          style="font-weight: bold; color: #155724; font-size: 1.1rem;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <h:outputText value="Purchase Value:" style="font-weight:bold; color: #004085;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.inMemoryPurchaseTotal}"
+                                                          style="font-weight: bold; color: #004085; font-size: 1.1rem;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <h:outputText value="Retail Value:" style="font-weight:bold; color: #856404;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.inMemoryRetailTotal}"
+                                                          style="font-weight: bold; color: #856404; font-size: 1.1rem;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:panelGrid>
@@ -68,12 +78,21 @@
                                                       style="color: #495057;"/>
                                     </p:column>
 
-                                    <p:column headerText="Item" sortBy="#{bi.descreption}" 
+                                    <p:column headerText="Dosage Form" sortBy="#{bi.pharmaceuticalBillItem.description}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.description}" filterMatchMode="contains"
+                                              style="width: 120px;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.description}"
+                                                      style="color: #6c757d;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Item" sortBy="#{bi.descreption}"
                                               filterBy="#{bi.descreption}" filterMatchMode="contains"
                                               style="min-width: 200px;">
-                                        <h:outputText value="#{bi.descreption}" 
+                                        <h:outputText value="#{bi.descreption}"
                                                       style="color: #495057; font-weight: 500;"/>
                                     </p:column>
+
+
 
                                     <p:column headerText="Expiry Date" sortBy="#{bi.pharmaceuticalBillItem.doe}"
                                               filterBy="#{bi.pharmaceuticalBillItem.doe}" filterMatchMode="contains"
@@ -129,30 +148,67 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Line Value" sortBy="#{bi.netValue}" 
-                                              filterBy="#{bi.netValue}" filterMatchMode="exact"
+                                    <p:column headerText="Purchase Value"
                                               style="width: 120px; text-align: right;">
-                                        <h:outputText value="#{bi.netValue}" 
-                                                      style="color: #28a745; font-weight: bold;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate * bi.qty}"
+                                                      style="color: #004085;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Cost Value"
+                                              style="width: 120px; text-align: right;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.costRate * bi.qty}"
+                                                      style="color: #155724; font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Retail Value"
+                                              style="width: 120px; text-align: right;">
+                                        <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate * bi.qty}"
+                                                      style="color: #856404;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
                                 </p:dataTable>
 
                                 <div class="row mt-4">
-                                    <div class="col-lg-8">
-                                        <!-- Summary information can be added here if needed -->
-                                    </div>
+                                    <div class="col-lg-8"/>
                                     <div class="col-lg-4">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-right">
-                                                <h:outputText value="Total Stock Value:" 
-                                                              style="font-weight: bold; color: #6c757d; font-size: 1.1rem;"/>
-                                                <br/>
-                                                <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
-                                                              style="font-weight: bold; color: #28a745; font-size: 1.8rem;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
+                                        <div class="card">
+                                            <div class="card-header" style="background-color: #495057; color: white;">
+                                                <h:outputText value="Total Stock Value" style="font-weight: bold;"/>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <table class="table table-sm mb-0">
+                                                    <tbody>
+                                                        <tr style="background-color: #d4edda;">
+                                                            <td style="font-weight: bold; color: #155724; padding: 10px 15px;">Cost Value</td>
+                                                            <td style="font-weight: bold; color: #155724; text-align: right; font-size: 1.2rem; padding: 10px 15px;">
+                                                                <h:outputText value="#{pharmacyStockTakeController.inMemoryCostTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr style="background-color: #cce5ff;">
+                                                            <td style="font-weight: bold; color: #004085; padding: 10px 15px;">Purchase Value</td>
+                                                            <td style="font-weight: bold; color: #004085; text-align: right; font-size: 1.2rem; padding: 10px 15px;">
+                                                                <h:outputText value="#{pharmacyStockTakeController.inMemoryPurchaseTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                        <tr style="background-color: #fff3cd;">
+                                                            <td style="font-weight: bold; color: #856404; padding: 10px 15px;">Retail Value</td>
+                                                            <td style="font-weight: bold; color: #856404; text-align: right; font-size: 1.2rem; padding: 10px 15px;">
+                                                                <h:outputText value="#{pharmacyStockTakeController.inMemoryRetailTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>

@@ -239,6 +239,15 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
     }
 
+    // Constructor for stock count bill generation with purchase, retail rates and dosage form
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate,
+                    double purchaseRate, double retailRate, String dosageFormName) {
+        this(stockId, itemBatchId, itemId, categoryName, itemName, batchNo, dateOfExpire, stockQty, costRate, purchaseRate, retailRate);
+        this.dosageFormName = dosageFormName;
+    }
+
 
     // Constructor for retail sale autocomplete (includes both stock qty and total stock qty)
     public StockDTO(Long id, String itemName, String code, String genericName,

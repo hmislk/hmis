@@ -63,11 +63,12 @@ public class StockCountGenerationService {
                     + "s.id, ib.id, i.id, "
                     + "c.name, i.name, ib.batchNo, "
                     + "ib.dateOfExpire, s.stock, ib.costRate, "
-                    + "ib.purcahseRate, ib.retailsaleRate) "
+                    + "ib.purcahseRate, ib.retailsaleRate, df.name) "
                     + "from Stock s "
                     + "join s.itemBatch ib "
                     + "join ib.item i "
                     + "left join i.category c "
+                    + "left join i.dosageForm df "
                     + "where s.department=:d and s.stock>0 "
                     + "order by coalesce(c.name, '') asc, "
                     + "coalesce(i.name, '') asc, "
@@ -154,6 +155,7 @@ public class StockCountGenerationService {
                 if (dto.getDateOfExpire() != null) {
                     pbi.setDoe(dto.getDateOfExpire());
                 }
+                pbi.setDescription(dto.getDosageFormName());
 
                 // Store category name in BillItem.catId for display on settle page
                 bi.setCatId(dto.getCategoryName());
@@ -186,11 +188,12 @@ public class StockCountGenerationService {
                         + "s.id, ib.id, i.id, "
                         + "c.name, i.name, ib.batchNo, "
                         + "ib.dateOfExpire, s.stock, ib.costRate, "
-                        + "ib.purcahseRate, ib.retailsaleRate) "
+                        + "ib.purcahseRate, ib.retailsaleRate, df.name) "
                         + "from Stock s "
                         + "join s.itemBatch ib "
                         + "join ib.item i "
                         + "left join i.category c "
+                        + "left join i.dosageForm df "
                         + "where s.department=:d and (s.stock is null or s.stock = 0) "
                         + "order by coalesce(c.name, '') asc, "
                         + "coalesce(i.name, '') asc, "
@@ -255,6 +258,7 @@ public class StockCountGenerationService {
                             if (dto.getDateOfExpire() != null) {
                                 pbi.setDoe(dto.getDateOfExpire());
                             }
+                            pbi.setDescription(dto.getDosageFormName());
 
                             bi.setCatId(dto.getCategoryName());
 
