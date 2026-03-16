@@ -2990,7 +2990,7 @@ public class PdfController {
             return;
         }
 
-        Table table = new Table(new float[]{3f, 5f, 5f, 5f, 3f, 5f, 5f, 5f, 2f}).useAllAvailableWidth().setFixedLayout();
+        Table table = new Table(new float[]{2.5f, 5f, 5f, 5f, 2f, 4.5f, 5f, 5f, 2f}).useAllAvailableWidth().setFixedLayout();
         String[] headers = {"ID", "Institution", "Site", "Department", "Date", "Staff", "Starting Bill", "Ending Bill", "Short or Excess"};
 
         for (String header : headers) {
@@ -2998,7 +2998,7 @@ public class PdfController {
                     .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
                     .setTextAlignment(TextAlignment.CENTER)
                     .setFontSize(8)
-                    .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
             table.addCell(headerCell);
         }
 

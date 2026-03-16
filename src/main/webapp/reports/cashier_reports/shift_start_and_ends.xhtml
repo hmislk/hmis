@@ -78,13 +78,13 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3" class="my-2" >
+                        <h:panelGrid columns="4" class="my-2" >
 
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
                                 action="#{searchController.generateShiftStartEndSummary()}" 
-                                class="ui-button-warning" icon="fas fa-cogs">
+                                class="ui-button-warning mx-1" icon="fas fa-cogs">
                             </p:commandButton>
 
                             <!-- <p:commandButton 
@@ -94,6 +94,12 @@
                                 icon="fa fa-file-excel">
                                 <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
                             </p:commandButton> -->
+                            <p:commandButton 
+                                value="To Print" 
+                                ajax="false" 
+                                icon="fas fa-print"
+                                class="ui-button-primary mx-1" 
+                                action="/reports/cashier_reports/shift_start_and_ends_print?faces-redirect=true"/>
 
                             <p:commandButton 
                                 value="Download" 
