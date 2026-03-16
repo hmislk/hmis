@@ -64,20 +64,20 @@
                                                 <h:outputText value="#{r.itemName}"/>
                                             </p:column>
                                             <p:column headerText="Batch" style="width: 120px; text-align:center;">
-                                                <h:outputText value="#{r.batch}"/>
+                                                <h:outputText value="#{r.batchNo}"/>
                                             </p:column>
                                             <p:column headerText="Purchase Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                                <h:outputText value="#{r.purchaseRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Retail Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                                <h:outputText value="#{r.retailRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Cost Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                <h:outputText value="#{r.costRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
@@ -92,7 +92,7 @@
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Sum of Variances at cost rate" style="width: 150px; text-align:right;">
-                                                <h:outputText value="#{r.sumVariance*r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                <h:outputText value="#{r.sumVariance*r.costRate}">
                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>

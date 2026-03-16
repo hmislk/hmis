@@ -2623,94 +2623,115 @@ public class PharmacyStockTakeController implements Serializable {
         if (billId == null) {
             return null;
         }
-        Bill b = billFacade.find(billId);
+        // Load only the bill header (no item collection) using scalar JPQL
+        String jpql = "SELECT b FROM Bill b "
+                + "LEFT JOIN FETCH b.institution ins "
+                + "LEFT JOIN FETCH b.department dept "
+                + "WHERE b.id = :bid";
+        HashMap<String, Object> p = new HashMap<>();
+        p.put("bid", billId);
+        List<?> rows = billFacade.findByJpql(jpql, p);
+        Bill b = (rows != null && !rows.isEmpty()) ? (Bill) rows.get(0) : billFacade.find(billId);
         return gotoViewVariance(b);
     }
 
-    // Build aggregated variance rows for the selected snapshot
+    // Build aggregated variance rows for the selected snapshot using scalar JPQL projections
     private void prepareVarianceRows() {
         varianceRows = new java.util.ArrayList<>();
-        if (snapshotBill == null || snapshotBill.getBillItems() == null) {
+        if (snapshotBill == null || snapshotBill.getId() == null) {
             return;
         }
 
-        // Map snapshot BillItem id -> row
+        // --- Step 1: load snapshot bill items as scalars (no BillItem entity creation) ---
+        String jpqlSnap = "SELECT bi.id, bi.qty, bi.descreption, "
+                + "pbi.purchaseRate, pbi.retailRate, pbi.costRate, "
+                + "ib.batchNo, it.code "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "LEFT JOIN ib.item it "
+                + "WHERE bi.bill.id = :billId "
+                + "ORDER BY bi.descreption";
+        HashMap<String, Object> sp = new HashMap<>();
+        sp.put("billId", snapshotBill.getId());
+        List<Object[]> snapRows = (List<Object[]>) billItemFacade.findByJpql(jpqlSnap, sp);
+
         java.util.Map<Long, VarianceRow> map = new java.util.HashMap<>();
-        for (BillItem snapItem : snapshotBill.getBillItems()) {
-            VarianceRow vr = new VarianceRow();
-            vr.setSnapshotItem(snapItem);
-            vr.setInitialQty(snapItem.getQty() == null ? 0.0 : snapItem.getQty());
-            vr.setSumVariance(0.0);
-            vr.setLastPhysicalQty(null);
-            if (snapItem.getId() != null) {
-                map.put(snapItem.getId(), vr);
+        if (snapRows != null) {
+            for (Object[] r : snapRows) {
+                Long id = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+                Double qty = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
+                String itemName = r[2] != null ? r[2].toString() : null;
+                Double purchaseRate = r[3] instanceof Number ? ((Number) r[3]).doubleValue() : null;
+                Double retailRate = r[4] instanceof Number ? ((Number) r[4]).doubleValue() : null;
+                Double costRate = r[5] instanceof Number ? ((Number) r[5]).doubleValue() : null;
+                String batchNo = r[6] != null ? r[6].toString() : null;
+                String code = r[7] != null ? r[7].toString() : null;
+
+                VarianceRow vr = new VarianceRow();
+                vr.setBillItemId(id);
+                vr.setItemName(itemName);
+                vr.setCode(code);
+                vr.setBatchNo(batchNo);
+                vr.setPurchaseRate(purchaseRate);
+                vr.setRetailRate(retailRate);
+                vr.setCostRate(costRate);
+                vr.setInitialQty(qty != null ? qty : 0.0);
+                vr.setSumVariance(0.0);
+                vr.setLastPhysicalQty(null);
+                if (id != null) {
+                    map.put(id, vr);
+                }
+                varianceRows.add(vr);
             }
-            varianceRows.add(vr);
         }
 
-        // Fetch all physical count bills referencing this snapshot
-        String jpqlBills = "select b from Bill b where b.billType=:bt and b.referenceBill=:rb order by b.createdAt asc, b.id asc";
-        HashMap<String, Object> p = new HashMap<>();
-        p.put("bt", BillType.PharmacyPhysicalCountBill);
-        p.put("rb", snapshotBill);
-        List<Bill> physBills = billFacade.findByJpql(jpqlBills, p);
-        if (physBills == null || physBills.isEmpty()) {
+        // --- Step 2: load physical count bill items as scalars ---
+        // First get IDs of physical count bills referencing this snapshot
+        String jpqlBillIds = "SELECT b.id FROM Bill b "
+                + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
+                + "ORDER BY b.createdAt ASC, b.id ASC";
+        HashMap<String, Object> bp = new HashMap<>();
+        bp.put("bt", BillType.PharmacyPhysicalCountBill);
+        bp.put("rbId", snapshotBill.getId());
+        List<Object> billIdObjs = (List<Object>) billFacade.findByJpql(jpqlBillIds, bp);
+        if (billIdObjs == null || billIdObjs.isEmpty()) {
             return;
         }
+        List<Long> physBillIds = new java.util.ArrayList<>();
+        for (Object o : billIdObjs) {
+            if (o instanceof Number) {
+                physBillIds.add(((Number) o).longValue());
+            }
+        }
 
-        // Load all bill items of those physical bills in one go
-        String jpqlItems = "select bi from BillItem bi where bi.bill in :pbs and bi.referanceBillItem is not null";
+        // Load physical bill items as scalars: refBillItemId, qty, adjustedValue, billCreatedAt, billId
+        String jpqlPhys = "SELECT bi.referanceBillItem.id, bi.qty, bi.adjustedValue, "
+                + "bi.bill.createdAt, bi.bill.id "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.id IN :pbs AND bi.referanceBillItem IS NOT NULL "
+                + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
         HashMap<String, Object> pp = new HashMap<>();
-        pp.put("pbs", physBills);
-        List<BillItem> physItems = billItemFacade.findByJpql(jpqlItems, pp);
-        if (physItems == null) {
+        pp.put("pbs", physBillIds);
+        List<Object[]> physRows = (List<Object[]>) billItemFacade.findByJpql(jpqlPhys, pp);
+        if (physRows == null) {
             return;
         }
-        // Sort by bill createdAt then id to determine the latest per snapshot item
-        physItems.sort((a, b2) -> {
-            Date da = a.getBill() != null ? a.getBill().getCreatedAt() : null;
-            Date db = b2.getBill() != null ? b2.getBill().getCreatedAt() : null;
-            int cmp;
-            if (da == null && db == null) {
-                cmp = 0;
-            } else if (da == null) {
-                cmp = -1;
-            } else if (db == null) {
-                cmp = 1;
-            } else {
-                cmp = da.compareTo(db);
-            }
-            if (cmp != 0) {
-                return cmp;
-            }
-            Long ia = a.getId();
-            Long ib = b2.getId();
-            if (ia == null && ib == null) {
-                return 0;
-            }
-            if (ia == null) {
-                return -1;
-            }
-            if (ib == null) {
-                return 1;
-            }
-            return ia.compareTo(ib);
-        });
 
-        // Aggregate
-        for (BillItem pbi : physItems) {
-            BillItem ref = pbi.getReferanceBillItem();
-            if (ref == null || ref.getId() == null) {
+        // Aggregate — rows already ordered ascending, last write wins for lastPhysicalQty
+        for (Object[] pr : physRows) {
+            Long refId = pr[0] instanceof Number ? ((Number) pr[0]).longValue() : null;
+            Double physQty = pr[1] instanceof Number ? ((Number) pr[1]).doubleValue() : null;
+            Double adjustedValue = pr[2] instanceof Number ? ((Number) pr[2]).doubleValue() : 0.0;
+            if (refId == null) {
                 continue;
             }
-            VarianceRow vr = map.get(ref.getId());
+            VarianceRow vr = map.get(refId);
             if (vr == null) {
                 continue;
             }
-            double var = pbi.getAdjustedValue() == 0 ? 0.0 : pbi.getAdjustedValue();
-            vr.setSumVariance(vr.getSumVariance() + var);
-            // keep updating; after sorted ascending, last iteration holds latest
-            vr.setLastPhysicalQty(pbi.getQty());
+            vr.setSumVariance(vr.getSumVariance() + (adjustedValue != null ? adjustedValue : 0.0));
+            vr.setLastPhysicalQty(physQty);
         }
     }
 
@@ -3839,6 +3860,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Set printPreview to true to show the print section
         this.printPreview = true;
+        this.comments = null;
 
         JsfUtil.addSuccessMessage("Physical count approved");
     }
@@ -4793,74 +4815,52 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_physical_count_pending?faces-redirect=true";
     }
 
-    // DTO for variance report
+    // DTO for variance report — no entity references, all scalar fields
     public static class VarianceRow implements Serializable {
 
-        private BillItem snapshotItem;
+        private Long billItemId;
+        private String code;
+        private String itemName;
+        private String batchNo;
+        private Double purchaseRate;
+        private Double retailRate;
+        private Double costRate;
         private Double initialQty;
         private Double sumVariance;
         private Double lastPhysicalQty;
 
-        public BillItem getSnapshotItem() {
-            return snapshotItem;
-        }
+        public Long getBillItemId() { return billItemId; }
+        public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
 
-        public void setSnapshotItem(BillItem snapshotItem) {
-            this.snapshotItem = snapshotItem;
-        }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
 
-        public Double getInitialQty() {
-            return initialQty;
-        }
+        public String getItemName() { return itemName; }
+        public void setItemName(String itemName) { this.itemName = itemName; }
 
-        public void setInitialQty(Double initialQty) {
-            this.initialQty = initialQty;
-        }
+        public String getBatchNo() { return batchNo; }
+        public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
 
-        public Double getSumVariance() {
-            return sumVariance;
-        }
+        public Double getPurchaseRate() { return purchaseRate != null ? purchaseRate : 0.0; }
+        public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
 
-        public void setSumVariance(Double sumVariance) {
-            this.sumVariance = sumVariance;
-        }
+        public Double getRetailRate() { return retailRate != null ? retailRate : 0.0; }
+        public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
 
-        public Double getLastPhysicalQty() {
-            return lastPhysicalQty;
-        }
+        public Double getCostRate() { return costRate != null ? costRate : 0.0; }
+        public void setCostRate(Double costRate) { this.costRate = costRate; }
 
-        public void setLastPhysicalQty(Double lastPhysicalQty) {
-            this.lastPhysicalQty = lastPhysicalQty;
-        }
+        public Double getInitialQty() { return initialQty; }
+        public void setInitialQty(Double initialQty) { this.initialQty = initialQty; }
 
-        // Convenience getters for table columns
-        public Long getBillItemId() {
-            return snapshotItem != null ? snapshotItem.getId() : null;
-        }
+        public Double getSumVariance() { return sumVariance; }
+        public void setSumVariance(Double sumVariance) { this.sumVariance = sumVariance; }
 
-        public String getCode() {
-            try {
-                return snapshotItem.getPharmaceuticalBillItem().getItemBatch().getItem().getCode();
-            } catch (Exception e) {
-                return null;
-            }
-        }
+        public Double getLastPhysicalQty() { return lastPhysicalQty; }
+        public void setLastPhysicalQty(Double lastPhysicalQty) { this.lastPhysicalQty = lastPhysicalQty; }
 
-        public String getItemName() {
-            try {
-                return snapshotItem.getItem().getName();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        public String getBatch() {
-            try {
-                return snapshotItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo();
-            } catch (Exception e) {
-                return null;
-            }
-        }
+        // Alias used in XHTML column: r.batch
+        public String getBatch() { return batchNo; }
     }
 
     /**
