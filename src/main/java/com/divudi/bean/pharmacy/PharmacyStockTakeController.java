@@ -110,6 +110,8 @@ public class PharmacyStockTakeController implements Serializable {
 
     private Bill snapshotBill;
     private PharmacySnapshotBillLight snapshotBillDisplay; // DTO for display purposes only
+    /** Holds snapshot items as plain DTOs — no JPA entities, no EclipseLink EAGER triggers */
+    private List<com.divudi.core.data.dto.SnapshotBillItemDTO> snapshotItems;
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
@@ -782,6 +784,14 @@ public class PharmacyStockTakeController implements Serializable {
                 }
             }
 
+            Cell hDf = header.createCell(col++);
+            if (hDf != null) {
+                hDf.setCellValue("Dosage Form");
+                if (headerStyle != null) {
+                    hDf.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hBatch = header.createCell(col++);
             if (hBatch != null) {
                 hBatch.setCellValue("Batch");
@@ -851,180 +861,68 @@ public class PharmacyStockTakeController implements Serializable {
                 }
             }
 
-            // PERFORMANCE OPTIMIZATION: Use optimized lazy loading for BillItems
-            List<BillItem> items = getSnapshotBillItemsLazy();
-            if (items == null || items.isEmpty()) {
-                // Fallback: Direct database query if lazy loading fails
-                if (snapshotBill != null && snapshotBill.getId() != null) {
-                    HashMap<String, Object> p = new HashMap<>();
-                    p.put("b", snapshotBill);
-                    items = billItemFacade.findByJpql("select bi from BillItem bi where bi.bill=:b order by bi.id", p);
-                }
-            }
+            // Use already-loaded DTO list — no DB queries, no entity hydration
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
 
-            // Ensure items is not null
-            if (items == null) {
-                items = java.util.Collections.emptyList();
-            }
-
-            // Rows
             int rowNum = 1;
-            for (BillItem bi : items) {
-                // Null check for bill item
-                if (bi == null) {
-                    continue;
-                }
-
-                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                ItemBatch ib = pbi != null ? pbi.getItemBatch() : null;
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
                 Row row = sheet.createRow(rowNum++);
-                if (row == null) {
-                    continue;
-                }
-
                 int c = 0;
 
-                // BillItem ID
                 Cell cId = row.createCell(c++);
-                if (cId != null) {
-                    if (bi.getId() != null) {
-                        cId.setCellValue(bi.getId());
-                    } else {
-                        cId.setCellValue(0);
-                    }
-                    if (integerLocked != null) {
-                        cId.setCellStyle(integerLocked);
-                    }
-                }
+                cId.setCellValue(dto.getBillItemId() != null ? dto.getBillItemId() : 0L);
+                cId.setCellStyle(integerLocked);
 
-                // Code
+                // Code — not stored in SnapshotBillItemDTO
                 Cell cCode = row.createCell(c++);
-                if (cCode != null) {
-                    cCode.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getCode() != null ? ib.getItem().getCode() : "");
-                    if (textLocked != null) {
-                        cCode.setCellStyle(textLocked);
-                    }
-                }
+                cCode.setCellValue("");
+                cCode.setCellStyle(textLocked);
 
-                // Name
                 Cell cName = row.createCell(c++);
-                if (cName != null) {
-                    cName.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getName() != null ? ib.getItem().getName() : (bi.getDescreption() != null ? bi.getDescreption() : ""));
-                    if (textLocked != null) {
-                        cName.setCellStyle(textLocked);
-                    }
-                }
+                cName.setCellValue(dto.getItemName() != null ? dto.getItemName() : "");
+                cName.setCellStyle(textLocked);
 
-                // Category
                 Cell cCat = row.createCell(c++);
-                if (cCat != null) {
-                    cCat.setCellValue(bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null ? bi.getItem().getCategory().getName() : "");
-                    if (textLocked != null) {
-                        cCat.setCellStyle(textLocked);
-                    }
-                }
+                cCat.setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+                cCat.setCellStyle(textLocked);
 
-                // Batch
+                Cell cDf = row.createCell(c++);
+                cDf.setCellValue(dto.getDosageForm() != null ? dto.getDosageForm() : "");
+                cDf.setCellStyle(textLocked);
+
                 Cell cBatch = row.createCell(c++);
-                if (cBatch != null) {
-                    cBatch.setCellValue(ib != null && ib.getBatchNo() != null ? ib.getBatchNo() : "");
-                    if (textLocked != null) {
-                        cBatch.setCellStyle(textLocked);
-                    }
-                }
+                cBatch.setCellValue(dto.getBatchNo() != null ? dto.getBatchNo() : "");
+                cBatch.setCellStyle(textLocked);
 
-                // Expiry
                 Cell cExp = row.createCell(c++);
-                if (cExp != null) {
-                    if (ib != null && ib.getDateOfExpire() != null) {
-                        cExp.setCellValue(ib.getDateOfExpire());
-                        if (dateLocked != null) {
-                            cExp.setCellStyle(dateLocked);
-                        }
-                    } else {
-                        cExp.setCellValue("");
-                        if (textLocked != null) {
-                            cExp.setCellStyle(textLocked);
-                        }
-                    }
+                if (dto.getExpiryDate() != null) {
+                    cExp.setCellValue(dto.getExpiryDate());
+                    cExp.setCellStyle(dateLocked);
+                } else {
+                    cExp.setCellValue("");
+                    cExp.setCellStyle(textLocked);
                 }
 
-                // Rates - handle null returns from getter methods
-                double pr = 0.0;
-                double rr = 0.0;
-                double cr = 0.0;
+                double pr = dto.getPurchaseRate();
+                double rr = dto.getRetailRate();
+                double cr = dto.getCostRate();
+                double qty = dto.getQty() != null ? dto.getQty() : 0.0;
 
-                if (ib != null) {
-                    Double prObj = ib.getPurcahseRate();
-                    pr = (prObj != null) ? prObj : 0.0;
+                Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
+                Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
+                Cell cCR = row.createCell(c++); cCR.setCellValue(cr); cCR.setCellStyle(numberLocked);
 
-                    Double rrObj = ib.getRetailsaleRate();
-                    rr = (rrObj != null) ? rrObj : 0.0;
-
-                    Double crObj = ib.getCostRate();
-                    cr = (crObj != null) ? crObj : 0.0;
-                }
-
-                Cell cPR = row.createCell(c++);
-                if (cPR != null) {
-                    cPR.setCellValue(pr);
-                    if (numberLocked != null) {
-                        cPR.setCellStyle(numberLocked);
-                    }
-                }
-
-                Cell cRR = row.createCell(c++);
-                if (cRR != null) {
-                    cRR.setCellValue(rr);
-                    if (numberLocked != null) {
-                        cRR.setCellStyle(numberLocked);
-                    }
-                }
-
-                Cell cCR = row.createCell(c++);
-                if (cCR != null) {
-                    cCR.setCellValue(cr);
-                    if (numberLocked != null) {
-                        cCR.setCellStyle(numberLocked);
-                    }
-                }
-
-                // System Qty (optional) - handle null return from pbi.getQty()
                 if (includeSystemQty) {
-                    double sys = 0.0;
-                    if (pbi != null) {
-                        Double sysObj = pbi.getQty();
-                        sys = (sysObj != null) ? sysObj : 0.0;
-                    }
-                    Cell cSys = row.createCell(c++);
-                    if (cSys != null) {
-                        cSys.setCellValue(sys);
-                        if (integerLocked != null) {
-                            cSys.setCellStyle(integerLocked);
-                        }
-                    }
+                    Cell cSys = row.createCell(c++); cSys.setCellValue(qty); cSys.setCellStyle(integerLocked);
                 }
 
-                // Real Stock Qty (input - unlocked)
+                // Real Stock Qty (editable input)
                 Cell cReal = row.createCell(c++);
-                if (cReal != null && inputUnlocked != null) {
-                    cReal.setCellStyle(inputUnlocked);
-                }
+                cReal.setCellStyle(inputUnlocked);
 
-                // Line Value (system = cost rate * system qty) - handle null return from pbi.getQty()
-                double sysQtyForLV = 0.0;
-                if (includeSystemQty && pbi != null) {
-                    Double qtyObj = pbi.getQty();
-                    sysQtyForLV = (qtyObj != null) ? qtyObj : 0.0;
-                }
-                double lineValue = cr * sysQtyForLV;
                 Cell cLV = row.createCell(c++);
-                if (cLV != null) {
-                    cLV.setCellValue(lineValue);
-                    if (numberLocked != null) {
-                        cLV.setCellStyle(numberLocked);
-                    }
-                }
+                cLV.setCellValue(cr * qty);
+                cLV.setCellStyle(numberLocked);
             }
 
             // Autosize columns
@@ -2491,6 +2389,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         long t0 = System.currentTimeMillis();
         System.out.println("[ViewSnapshot] START billId=" + billId);
+        snapshotItems = null; // clear any previously loaded items from a different bill
 
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
@@ -3087,53 +2986,52 @@ public class PharmacyStockTakeController implements Serializable {
         System.out.println("[LoadLazy] START billId=" + snapshotBill.getId());
 
         try {
-            // Native SQL: only the columns we actually display — no entity hydration overhead
-            String sql = "SELECT "
-                    + "  bi.ID, bi.qty, bi.descreption, bi.catId, bi.netValue, "
-                    + "  pbi.ID, pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
-                    + "  pbi.doe, pbi.stringValue, pbi.description "
-                    + "FROM billitem bi "
-                    + "LEFT JOIN pharmaceuticalbillitem pbi ON pbi.billItem_ID = bi.ID "
-                    + "WHERE bi.bill_ID = ? "
+            // JPQL scalar projection — JPA resolves entity/column names correctly on all
+            // platforms (case-insensitive). Selecting individual fields (not the entity itself)
+            // means EclipseLink returns raw Object[] rows and never hydrates BillItem entities,
+            // so EAGER relationships (billFees, patientInvestigation, etc.) never fire.
+            String jpql = "SELECT bi.id, bi.qty, bi.descreption, bi.catId, bi.netValue, "
+                    + "pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
+                    + "pbi.doe, pbi.stringValue, pbi.description "
+                    + "FROM BillItem bi "
+                    + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                    + "WHERE bi.bill.id = :billId "
                     + "ORDER BY bi.catId, bi.descreption";
 
-            List<Object> params = new java.util.ArrayList<>();
-            params.add(snapshotBill.getId());
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("billId", snapshotBill.getId());
 
-            System.out.println("[LoadLazy] Running native SQL... ms=" + (System.currentTimeMillis() - t0));
-            List<Object[]> rows = billItemFacade.findByNativeQuery(sql, params);
-            System.out.println("[LoadLazy] SQL done. rows=" + rows.size()
+            System.out.println("[LoadLazy] Running JPQL scalar... ms=" + (System.currentTimeMillis() - t0));
+            @SuppressWarnings("unchecked")
+            List<Object[]> rows = (List<Object[]>) (List<?>) billItemFacade.findByJpql(jpql, params);
+            System.out.println("[LoadLazy] JPQL done. rows=" + rows.size()
                     + " ms=" + (System.currentTimeMillis() - t0));
 
-            List<BillItem> billItems = new java.util.ArrayList<>(rows.size());
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> dtos =
+                    new java.util.ArrayList<>(rows.size());
             for (Object[] r : rows) {
-                BillItem bi = new BillItem();
-                bi.setId(toLong(r[0]));
-                bi.setQty(toDouble(r[1]));
-                bi.setDescreption(r[2] != null ? r[2].toString() : null);
-                bi.setCatId(r[3] != null ? r[3].toString() : null);
-                bi.setNetValue(toDouble(r[4]));
-
-                if (r[5] != null) {
-                    PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
-                    pbi.setId(toLong(r[5]));
-                    pbi.setCostRate(toDouble(r[6]));
-                    pbi.setPurchaseRate(toDouble(r[7]));
-                    pbi.setRetailRate(toDouble(r[8]));
-                    pbi.setDoe(r[9] != null ? new Date(((java.sql.Timestamp) r[9]).getTime()) : null);
-                    pbi.setStringValue(r[10] != null ? r[10].toString() : null);
-                    pbi.setDescription(r[11] != null ? r[11].toString() : null);
-                    bi.setPharmaceuticalBillItem(pbi);
-                }
-                billItems.add(bi);
+                Date expiry = r[8] instanceof java.util.Date ? new Date(((java.util.Date) r[8]).getTime()) : null;
+                dtos.add(new com.divudi.core.data.dto.SnapshotBillItemDTO(
+                        toLong(r[0]),          // billItemId
+                        toDouble(r[1]),        // qty
+                        r[2] != null ? r[2].toString() : null,  // itemName
+                        r[3] != null ? r[3].toString() : null,  // categoryName
+                        toDouble(r[4]),        // netValue
+                        toDouble(r[5]),        // costRate
+                        toDouble(r[6]),        // purchaseRate
+                        toDouble(r[7]),        // retailRate
+                        expiry,                // expiryDate
+                        r[9] != null ? r[9].toString() : null,  // batchNo
+                        r[10] != null ? r[10].toString() : null // dosageForm
+                ));
             }
 
-            snapshotBill.setBillItems(billItems);
-            System.out.println("[LoadLazy] DONE. items=" + billItems.size()
+            snapshotItems = dtos;
+            System.out.println("[LoadLazy] DONE. items=" + dtos.size()
                     + " ms=" + (System.currentTimeMillis() - t0));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[LoadLazy] Error loading BillItems for billId="
+            LOGGER.log(Level.SEVERE, "[LoadLazy] Error loading snapshot items for billId="
                     + snapshotBill.getId(), e);
         }
     }
@@ -3156,17 +3054,15 @@ public class PharmacyStockTakeController implements Serializable {
      * This method is called by JSF EL expressions like:
      * #{pharmacyStockTakeController.snapshotBillItemsLazy}
      */
-    public List<BillItem> getSnapshotBillItemsLazy() {
-        // Check if BillItems are already loaded — fast path, no DB hit
-        if (snapshotBill != null && snapshotBill.getBillItems() != null
-            && !snapshotBill.getBillItems().isEmpty()) {
-            System.out.println("[GetLazy] CACHE HIT items=" + snapshotBill.getBillItems().size());
-            return snapshotBill.getBillItems();
+    public List<com.divudi.core.data.dto.SnapshotBillItemDTO> getSnapshotItems() {
+        // Fast path — already loaded as plain DTOs, no EclipseLink involved
+        if (snapshotItems != null && !snapshotItems.isEmpty()) {
+            System.out.println("[GetLazy] CACHE HIT items=" + snapshotItems.size());
+            return snapshotItems;
         }
 
-        System.out.println("[GetLazy] CACHE MISS — will load. snapshotBill="
-                + (snapshotBill != null ? snapshotBill.getId() : "null")
-                + " snapshotBillDisplay=" + (snapshotBillDisplay != null ? snapshotBillDisplay.getId() : "null"));
+        System.out.println("[GetLazy] CACHE MISS — will load. snapshotBillDisplay="
+                + (snapshotBillDisplay != null ? snapshotBillDisplay.getId() : "null"));
 
         if (snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
             if (snapshotBill == null) {
@@ -3174,10 +3070,15 @@ public class PharmacyStockTakeController implements Serializable {
                 System.out.println("[GetLazy] Created proxy billId=" + snapshotBill.getId());
             }
             loadSnapshotBillItemsLazily();
-            return snapshotBill != null ? snapshotBill.getBillItems() : new ArrayList<>();
+            return snapshotItems != null ? snapshotItems : new ArrayList<>();
         }
 
         System.out.println("[GetLazy] No display bill set — returning empty list");
+        return new ArrayList<>();
+    }
+
+    /** Keep for backward compatibility with any other code that still calls this */
+    public List<BillItem> getSnapshotBillItemsLazy() {
         return new ArrayList<>();
     }
 
@@ -3192,45 +3093,33 @@ public class PharmacyStockTakeController implements Serializable {
             return snapshotBillDisplay.getItemsCount().intValue();
         }
 
-        // Fallback to actual collection size (triggers lazy loading if needed)
-        return getSnapshotBillItemsLazy().size();
+        // Fallback to DTO list size
+        return getSnapshotItems().size();
     }
 
     public double getSnapshotRetailTotal() {
         double total = 0.0;
-        List<BillItem> items = getSnapshotBillItemsLazy();
-        if (items != null) {
-            for (BillItem bi : items) {
-                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
-                    total += bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty();
-                }
-            }
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+            total += dto.getRetailValue();
         }
         return total;
     }
 
     public double getSnapshotCostTotal() {
         double total = 0.0;
-        List<BillItem> items = getSnapshotBillItemsLazy();
-        if (items != null) {
-            for (BillItem bi : items) {
-                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
-                    total += bi.getPharmaceuticalBillItem().getCostRate() * bi.getQty();
-                }
-            }
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+            total += dto.getCostValue();
         }
         return total;
     }
 
     public double getSnapshotPurchaseTotal() {
         double total = 0.0;
-        List<BillItem> items = getSnapshotBillItemsLazy();
-        if (items != null) {
-            for (BillItem bi : items) {
-                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
-                    total += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getQty();
-                }
-            }
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+            total += dto.getPurchaseValue();
         }
         return total;
     }
@@ -3995,6 +3884,7 @@ public class PharmacyStockTakeController implements Serializable {
      */
     public void resetStockTakingSession() {
         this.snapshotBill = null;
+        this.snapshotItems = null;
         this.physicalCountBill = null;
         this.file = null;
         this.printPreview = false;
@@ -4250,6 +4140,14 @@ public class PharmacyStockTakeController implements Serializable {
                 hCat.setCellValue("Category");
                 if (headerStyle != null) {
                     hCat.setCellStyle(headerStyle);
+                }
+            }
+
+            Cell hDf = header.createCell(col++);
+            if (hDf != null) {
+                hDf.setCellValue("Dosage Form");
+                if (headerStyle != null) {
+                    hDf.setCellStyle(headerStyle);
                 }
             }
 
@@ -4611,81 +4509,66 @@ public class PharmacyStockTakeController implements Serializable {
                 c.setCellStyle(headerStyle);
             }
 
-            // Build JPQL with optional filters — use catId and pbi.description stored during generation
-            StringBuilder jpql = new StringBuilder(
-                "select bi from BillItem bi "
-                + "left join fetch bi.pharmaceuticalBillItem pbi "
-                + "where bi.bill.id = :billId");
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("billId", snapshotBill.getId());
-
-            if (selectedCategory != null) {
-                jpql.append(" and bi.catId = :catName");
-                params.put("catName", selectedCategory.getName());
-            }
-            if (selectedDosageForm != null) {
-                jpql.append(" and pbi.description = :dfName");
-                params.put("dfName", selectedDosageForm.getName());
-            }
-            jpql.append(" order by bi.catId, bi.descreption");
-
-            List<BillItem> items = billItemFacade.findByJpql(jpql.toString(), params);
-            if (items == null) {
-                items = java.util.Collections.emptyList();
+            // Filter the already-loaded snapshotItems DTO list in memory — no DB hit
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> allItems = getSnapshotItems();
+            String catFilter = selectedCategory != null ? selectedCategory.getName() : null;
+            String dfFilter = selectedDosageForm != null ? selectedDosageForm.getName() : null;
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = new java.util.ArrayList<>();
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : allItems) {
+                if (catFilter != null && !catFilter.equals(dto.getCategoryName())) continue;
+                if (dfFilter != null && !dfFilter.equals(dto.getDosageForm())) continue;
+                items.add(dto);
             }
 
             int rowNum = 1;
-            for (BillItem bi : items) {
-                if (bi == null) continue;
-                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
                 Row row = sheet.createRow(rowNum++);
                 int c = 0;
 
                 // BillItem ID
                 Cell cId = row.createCell(c++);
-                if (bi.getId() != null) { cId.setCellValue(bi.getId()); cId.setCellStyle(integerLocked); }
-                else { cId.setCellValue(""); cId.setCellStyle(textLocked); }
+                cId.setCellValue(dto.getBillItemId() != null ? dto.getBillItemId() : 0L);
+                cId.setCellStyle(integerLocked);
 
-                // Code — use item if loaded, else blank
+                // Code — not stored in SnapshotBillItemDTO, leave blank
                 Cell cCode = row.createCell(c++);
-                cCode.setCellValue(bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "");
+                cCode.setCellValue("");
                 cCode.setCellStyle(textLocked);
 
-                // Category (from catId field)
+                // Category
                 Cell cCat = row.createCell(c++);
-                cCat.setCellValue(bi.getCatId() != null ? bi.getCatId() : "");
+                cCat.setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
                 cCat.setCellStyle(textLocked);
 
-                // Dosage Form (from pbi.description)
+                // Dosage Form
                 Cell cDf = row.createCell(c++);
-                cDf.setCellValue(pbi != null && pbi.getDescription() != null ? pbi.getDescription() : "");
+                cDf.setCellValue(dto.getDosageForm() != null ? dto.getDosageForm() : "");
                 cDf.setCellStyle(textLocked);
 
                 // Name
                 Cell cName = row.createCell(c++);
-                cName.setCellValue(bi.getDescreption() != null ? bi.getDescreption() : "");
+                cName.setCellValue(dto.getItemName() != null ? dto.getItemName() : "");
                 cName.setCellStyle(textLocked);
 
-                // Batch (from pbi.stringValue)
+                // Batch
                 Cell cBatch = row.createCell(c++);
-                cBatch.setCellValue(pbi != null && pbi.getStringValue() != null ? pbi.getStringValue() : "");
+                cBatch.setCellValue(dto.getBatchNo() != null ? dto.getBatchNo() : "");
                 cBatch.setCellStyle(textLocked);
 
-                // Expiry (from pbi.doe)
+                // Expiry
                 Cell cExp = row.createCell(c++);
-                if (pbi != null && pbi.getDoe() != null) {
-                    cExp.setCellValue(pbi.getDoe());
+                if (dto.getExpiryDate() != null) {
+                    cExp.setCellValue(dto.getExpiryDate());
                     cExp.setCellStyle(dateLocked);
                 } else {
                     cExp.setCellValue("");
                     cExp.setCellStyle(textLocked);
                 }
 
-                // Rates from pbi fields
-                double pr = pbi != null ? pbi.getPurchaseRate() : 0.0;
-                double rr = pbi != null ? pbi.getRetailRate() : 0.0;
-                double cr = pbi != null ? pbi.getCostRate() : 0.0;
-                double qty = bi.getQty() != null ? bi.getQty() : 0.0;
+                double pr = dto.getPurchaseRate();
+                double rr = dto.getRetailRate();
+                double cr = dto.getCostRate();
+                double qty = dto.getQty() != null ? dto.getQty() : 0.0;
 
                 Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
                 Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
