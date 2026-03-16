@@ -191,6 +191,14 @@
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
                                     </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Convert IOU to Cash"
+                                        icon="pi pi-money-bill"
+                                        ajax="false"
+                                        action="#{iouBillController.navigateToConvertIouToCash()}" >
+                                    </p:commandButton>
                                 </p:tab>
 
                                 <p:tab title="Income &amp; Expense Management">
