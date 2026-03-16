@@ -2489,9 +2489,9 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        // PERFORMANCE OPTIMIZATION: Load lightweight DTO instead of full Bill entity
-        // This eliminates the N+1 lazy loading bottleneck that caused 10,330+ queries
-        // Using constructor with netTotal and itemsCount for complete display functionality
+        long t0 = System.currentTimeMillis();
+        System.out.println("[ViewSnapshot] START billId=" + billId);
+
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
                 + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
@@ -2505,10 +2505,11 @@ public class PharmacyStockTakeController implements Serializable {
 
         List<PharmacySnapshotBillLight> results =
             (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
+        System.out.println("[ViewSnapshot] DTO query done ms=" + (System.currentTimeMillis() - t0));
 
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
-
+            System.out.println("[ViewSnapshot] Done. Navigating to print page. ms=" + (System.currentTimeMillis() - t0));
             return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Snapshot Bill not found");
@@ -3078,62 +3079,73 @@ public class PharmacyStockTakeController implements Serializable {
      */
     private void loadSnapshotBillItemsLazily() {
         if (snapshotBill == null || snapshotBill.getId() == null) {
+            System.out.println("[LoadLazy] SKIP: snapshotBill or id is null");
             return;
         }
 
-        String jobId = "LAZY_LOAD-" + System.currentTimeMillis();
-        StockVerificationMetrics.PerformanceTimer timer
-                = StockVerificationMetrics.PerformanceTimer.start(jobId, "Lazy BillItems Loading");
+        long t0 = System.currentTimeMillis();
+        System.out.println("[LoadLazy] START billId=" + snapshotBill.getId());
 
         try {
-            LOGGER.log(Level.INFO, "[Performance] Lazy loading BillItems for snapshot billId={0}", snapshotBill.getId());
+            // Native SQL: only the columns we actually display — no entity hydration overhead
+            String sql = "SELECT "
+                    + "  bi.ID, bi.qty, bi.descreption, bi.catId, bi.netValue, "
+                    + "  pbi.ID, pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
+                    + "  pbi.doe, pbi.stringValue, pbi.description "
+                    + "FROM billitem bi "
+                    + "LEFT JOIN pharmaceuticalbillitem pbi ON pbi.billItem_ID = bi.ID "
+                    + "WHERE bi.bill_ID = ? "
+                    + "ORDER BY bi.catId, bi.descreption";
 
-            // Load BillItems with their PharmaceuticalBillItems
-            String jpql = "select bi from BillItem bi "
-                    + "left join fetch bi.pharmaceuticalBillItem pbi "
-                    + "left join fetch bi.item "
-                    + "left join fetch pbi.stock "
-                    + "left join fetch pbi.itemBatch ib "
-                    + "left join fetch ib.item "
-                    + "where bi.bill.id = :billId";
+            List<Object> params = new java.util.ArrayList<>();
+            params.add(snapshotBill.getId());
 
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("billId", snapshotBill.getId());
+            System.out.println("[LoadLazy] Running native SQL... ms=" + (System.currentTimeMillis() - t0));
+            List<Object[]> rows = billItemFacade.findByNativeQuery(sql, params);
+            System.out.println("[LoadLazy] SQL done. rows=" + rows.size()
+                    + " ms=" + (System.currentTimeMillis() - t0));
 
-            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+            List<BillItem> billItems = new java.util.ArrayList<>(rows.size());
+            for (Object[] r : rows) {
+                BillItem bi = new BillItem();
+                bi.setId(toLong(r[0]));
+                bi.setQty(toDouble(r[1]));
+                bi.setDescreption(r[2] != null ? r[2].toString() : null);
+                bi.setCatId(r[3] != null ? r[3].toString() : null);
+                bi.setNetValue(toDouble(r[4]));
 
-            // Handle lazy collection properly - use reflection or direct assignment
-            // Instead of modifying the lazy collection, we'll just work with the loaded list
-            // and let the HashMap optimization handle the lookups
-            // Store loaded items for HashMap indexing
-            if (billItems != null && !billItems.isEmpty()) {
-                // Force initialization of the lazy collection by accessing it
-                try {
-                    if (snapshotBill.getBillItems() == null) {
-                        // Collection is null, initialize with loaded items
-                        snapshotBill.setBillItems(billItems);
-                    } else {
-                        // Collection exists but might be lazy - try to access it safely
-                        snapshotBill.getBillItems().size(); // Force initialization
-                        snapshotBill.getBillItems().clear();
-                        snapshotBill.getBillItems().addAll(billItems);
-                    }
-                } catch (Exception lazyException) {
-                    // If lazy loading fails, set the collection directly
-                    LOGGER.log(Level.WARNING, "[Performance] Lazy collection access failed, using direct assignment", lazyException);
-                    snapshotBill.setBillItems(billItems);
+                if (r[5] != null) {
+                    PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+                    pbi.setId(toLong(r[5]));
+                    pbi.setCostRate(toDouble(r[6]));
+                    pbi.setPurchaseRate(toDouble(r[7]));
+                    pbi.setRetailRate(toDouble(r[8]));
+                    pbi.setDoe(r[9] != null ? new Date(((java.sql.Timestamp) r[9]).getTime()) : null);
+                    pbi.setStringValue(r[10] != null ? r[10].toString() : null);
+                    pbi.setDescription(r[11] != null ? r[11].toString() : null);
+                    bi.setPharmaceuticalBillItem(pbi);
                 }
+                billItems.add(bi);
             }
 
-            timer.logCompletion(billItems != null ? billItems.size() : 0);
-
-            LOGGER.log(Level.INFO, "[Performance] Lazy loaded {0} BillItems for snapshot",
-                    billItems != null ? billItems.size() : 0);
+            snapshotBill.setBillItems(billItems);
+            System.out.println("[LoadLazy] DONE. items=" + billItems.size()
+                    + " ms=" + (System.currentTimeMillis() - t0));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[Performance] Error lazy loading BillItems for snapshot billId=" + snapshotBill.getId(), e);
-            timer.logCompletion(0);
+            LOGGER.log(Level.SEVERE, "[LoadLazy] Error loading BillItems for billId="
+                    + snapshotBill.getId(), e);
         }
+    }
+
+    private static long toLong(Object o) {
+        if (o == null) return 0L;
+        return ((Number) o).longValue();
+    }
+
+    private static double toDouble(Object o) {
+        if (o == null) return 0.0;
+        return ((Number) o).doubleValue();
     }
 
     /**
@@ -3145,22 +3157,27 @@ public class PharmacyStockTakeController implements Serializable {
      * #{pharmacyStockTakeController.snapshotBillItemsLazy}
      */
     public List<BillItem> getSnapshotBillItemsLazy() {
-        // Check if BillItems are already loaded
+        // Check if BillItems are already loaded — fast path, no DB hit
         if (snapshotBill != null && snapshotBill.getBillItems() != null
             && !snapshotBill.getBillItems().isEmpty()) {
+            System.out.println("[GetLazy] CACHE HIT items=" + snapshotBill.getBillItems().size());
             return snapshotBill.getBillItems();
         }
 
-        // Load BillItems on-demand using existing optimized infrastructure
+        System.out.println("[GetLazy] CACHE MISS — will load. snapshotBill="
+                + (snapshotBill != null ? snapshotBill.getId() : "null")
+                + " snapshotBillDisplay=" + (snapshotBillDisplay != null ? snapshotBillDisplay.getId() : "null"));
+
         if (snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
-            // Ensure snapshotBill shell exists so loadSnapshotBillItemsLazily can use its ID
             if (snapshotBill == null) {
                 snapshotBill = billFacade.getReference(snapshotBillDisplay.getId());
+                System.out.println("[GetLazy] Created proxy billId=" + snapshotBill.getId());
             }
             loadSnapshotBillItemsLazily();
             return snapshotBill != null ? snapshotBill.getBillItems() : new ArrayList<>();
         }
 
+        System.out.println("[GetLazy] No display bill set — returning empty list");
         return new ArrayList<>();
     }
 
