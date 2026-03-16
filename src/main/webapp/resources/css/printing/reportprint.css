@@ -40,7 +40,7 @@
     }
 
     .table {
-        width: 99%!important;
+        width: 99.9%!important;
         font-size: 9pt!important;
         margin-top: 3mm!important;
         border-collapse: collapse !important;
@@ -67,6 +67,10 @@
     .report-header-table td {
         padding: 3px 8px;
         vertical-align: top;
+    }
+
+    .ui-sortable-column .ui-sortable-column-icon {
+        display: none !important;
     }
 
 }
