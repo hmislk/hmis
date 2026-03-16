@@ -630,6 +630,17 @@ public class PharmacyStockTakeController implements Serializable {
             billFacade.edit(snapshotBill);
         }
         JsfUtil.addSuccessMessage("Stock count bill saved");
+        // Populate snapshotBillDisplay so the print page can show the Complete button
+        snapshotBillDisplay = new com.divudi.core.light.common.PharmacySnapshotBillLight(
+                snapshotBill.getId(),
+                snapshotBill.getDeptId(),
+                snapshotBill.getCreatedAt(),
+                snapshotBill.getInstitution() != null ? snapshotBill.getInstitution().getName() : null,
+                snapshotBill.getDepartment() != null ? snapshotBill.getDepartment().getName() : null,
+                0L,
+                snapshotBill.getNetTotal(),
+                Boolean.FALSE
+        );
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
     }
 
@@ -1305,7 +1316,7 @@ public class PharmacyStockTakeController implements Serializable {
             }
 
             // Bulk pre-load snapshot entities with JOIN FETCH (eliminates N+1 queries)
-            java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferences(snapBillItemIds);
+            java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferencesEntities(snapBillItemIds);
 
             physicalCountBill = new Bill();
             physicalCountBill.setBillType(BillType.PharmacyPhysicalCountBill);
@@ -1547,9 +1558,9 @@ public class PharmacyStockTakeController implements Serializable {
 
                 System.out.println("PERF: Found " + snapBillItemIds.size() + " unique snapshot bill item IDs");
 
-                // Bulk pre-load snapshot entities with JOIN FETCH (eliminates N+1 queries)
+                // Scalar pre-load: fetch only the 5 fields we need (no entity graphs)
                 long preloadStartTime = System.currentTimeMillis();
-                java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferences(snapBillItemIds);
+                java.util.Map<Long, SnapBillItemData> snapBillItemMap = preLoadSnapshotReferences(snapBillItemIds);
                 System.out.println("PERF: Snapshot references pre-loaded in " + (System.currentTimeMillis() - preloadStartTime) + "ms");
 
                 // Resolve columns by header name so layout changes never break the upload
@@ -1583,33 +1594,24 @@ public class PharmacyStockTakeController implements Serializable {
                         continue;
                     }
 
-                    // Use pre-loaded entities (no DB query)
-                    BillItem snapBillItem = snapBillItemMap.get(snapShotBillItemId);
-                    if (snapBillItem == null) {
+                    // Use scalar pre-loaded data (no entity traversal)
+                    SnapBillItemData snapData = snapBillItemMap.get(snapShotBillItemId);
+                    if (snapData == null) {
                         skippedNoMatch++;
                         continue;
                     }
 
-                    double physical = physicalObj;
                     processed++;
                     matched++;
 
                     // Collect data for bulk SQL operations
                     StockCountRowData rowData = new StockCountRowData();
-                    rowData.physicalQty = physical;
-                    rowData.itemId = snapBillItem.getItem().getId();
-                    rowData.referanceBillItemId = snapBillItem.getId();
-
-                    PharmaceuticalBillItem snapPbi = snapBillItem.getPharmaceuticalBillItem();
-                    Stock currentStock = (snapPbi != null) ? snapPbi.getStock() : null;
-                    double currentStockQty = (currentStock != null && currentStock.getStock() != null)
-                            ? currentStock.getStock() : snapBillItem.getQty();
-                    rowData.adjustedValue = physical - currentStockQty;
-
-                    if (snapPbi != null) {
-                        rowData.itemBatchId = snapPbi.getItemBatch() != null ? snapPbi.getItemBatch().getId() : null;
-                        rowData.stockId = snapPbi.getStock() != null ? snapPbi.getStock().getId() : null;
-                    }
+                    rowData.physicalQty = physicalObj;
+                    rowData.itemId = snapData.itemId;
+                    rowData.referanceBillItemId = snapShotBillItemId;
+                    rowData.adjustedValue = physicalObj - snapData.currentStockQty;
+                    rowData.itemBatchId = snapData.itemBatchId;
+                    rowData.stockId = snapData.stockId;
 
                     stockCountData.add(rowData);
                 }
@@ -1653,12 +1655,13 @@ public class PharmacyStockTakeController implements Serializable {
             System.out.println("PERF: Total native SQL upload completed in " + (System.currentTimeMillis() - startTime) + "ms");
             System.out.println("PERF: *** NATIVE SQL IMPLEMENTATION COMPLETE - MAXIMUM PERFORMANCE ACHIEVED ***");
 
-            // Store bill ID for DTO-based review (no entity loading for maximum performance)
+            // Store bill ID and load entity for review page
             nativeSqlBillId = billId;
             nativeSqlItemCount = stockCountData.size();
+            physicalCountBill = billFacade.find(billId);
 
-            JsfUtil.addSuccessMessage("Upload processed successfully with Native SQL (Ultra-Fast). Items processed: " + stockCountData.size());
-            return "/pharmacy/pharmacy_stock_take_review_native?faces-redirect=true";
+            JsfUtil.addSuccessMessage("Upload processed successfully. Items processed: " + stockCountData.size());
+            return "/pharmacy/pharmacy_stock_take_review?faces-redirect=true";
 
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR: Native SQL upload failed");
@@ -1772,42 +1775,38 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Creates PharmaceuticalBillItems using direct SQL with subquery approach.
-     * Links to BillItems created in the current transaction using bill_id and item matching.
+     * Creates PharmaceuticalBillItems using a single bulk INSERT ... SELECT.
+     * Avoids N individual SQL round trips by joining against the just-inserted billitem rows.
      */
     private void createPharmaceuticalBillItemsWithDirectSQL(Long billId, java.util.List<StockCountRowData> stockCountData) throws Exception {
-        System.out.println("PERF: Starting PharmaceuticalBillItem creation using direct SQL approach for " + stockCountData.size() + " items");
+        System.out.println("PERF: Starting bulk PharmaceuticalBillItem creation for " + stockCountData.size() + " items");
+        if (stockCountData.isEmpty()) return;
 
-        // Use a direct INSERT with SELECT to link PharmaceuticalBillItems to BillItems
-        // This approach avoids needing to track individual BillItem IDs
-        String directInsertSQL =
-            "INSERT INTO pharmaceuticalbillitem (billItem_id, itemBatch_id, stock_id, qty, freeQty) " +
-            "SELECT bi.id, ?, ?, ?, 0.0 " +
-            "FROM billitem bi " +
-            "WHERE bi.bill_id = ? AND bi.item_id = ? AND bi.referanceBillItem_id = ? " +
-            "ORDER BY bi.searialNo LIMIT 1";
+        int batchSize = 50;
+        for (int i = 0; i < stockCountData.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, stockCountData.size());
+            java.util.List<StockCountRowData> batch = stockCountData.subList(i, end);
 
-        System.out.println("PERF: Creating PharmaceuticalBillItems one by one with direct SQL linking...");
-
-        for (int i = 0; i < stockCountData.size(); i++) {
-            StockCountRowData rowData = stockCountData.get(i);
-
+            StringBuilder sql = new StringBuilder(
+                "INSERT INTO pharmaceuticalbillitem (billItem_id, itemBatch_id, stock_id, qty, freeQty) VALUES ");
             java.util.List<Object> params = new java.util.ArrayList<>();
-            params.add(rowData.itemBatchId);
-            params.add(rowData.stockId);
-            params.add(rowData.physicalQty);
-            params.add(billId);
-            params.add(rowData.itemId);
-            params.add(rowData.referanceBillItemId);
-
-            pharmaceuticalBillItemFacade.executeNativeSql(directInsertSQL, params);
-
-            if ((i + 1) % 100 == 0) {
-                System.out.println("PERF: Processed " + (i + 1) + "/" + stockCountData.size() + " PharmaceuticalBillItems");
+            for (int j = 0; j < batch.size(); j++) {
+                if (j > 0) sql.append(", ");
+                // Subselect to resolve the billitem.id created in Phase 2 for this row
+                sql.append("((SELECT bi.id FROM billitem bi WHERE bi.bill_id = ? AND bi.referanceBillItem_id = ? ORDER BY bi.id LIMIT 1), ?, ?, ?, 0.0)");
+                StockCountRowData r = batch.get(j);
+                params.add(billId);
+                params.add(r.referanceBillItemId);
+                params.add(r.itemBatchId);
+                params.add(r.stockId);
+                params.add(r.physicalQty);
             }
+
+            pharmaceuticalBillItemFacade.executeNativeSql(sql.toString(), params);
+            System.out.println("PERF: PharmaceuticalBillItem batch " + (i / batchSize + 1) + " done (" + batch.size() + " rows)");
         }
 
-        System.out.println("PERF: All PharmaceuticalBillItems created successfully using direct SQL");
+        System.out.println("PERF: All PharmaceuticalBillItems created successfully (bulk batches)");
     }
 
     /**
@@ -2268,46 +2267,77 @@ public class PharmacyStockTakeController implements Serializable {
      * @param snapBillItemIds Set of BillItem IDs to pre-load
      * @return Map of BillItem ID to fully loaded BillItem entity with associations
      */
-    private java.util.Map<Long, BillItem> preLoadSnapshotReferences(java.util.Set<Long> snapBillItemIds) {
+    /**
+     * Scalar pre-load: fetches only the 4 fields needed from snapshot BillItems.
+     * No JPA entity graph loading — eliminates EAGER association overhead entirely.
+     */
+    private java.util.Map<Long, SnapBillItemData> preLoadSnapshotReferences(java.util.Set<Long> snapBillItemIds) {
         if (snapBillItemIds == null || snapBillItemIds.isEmpty()) {
             return new java.util.HashMap<>();
         }
 
-        // Build JPQL with JOIN FETCH to load all associations in single query
-        // This eliminates the N+1 query problem completely
-        String jpql = "select bi from BillItem bi " +
-                      "join fetch bi.pharmaceuticalBillItem pbi " +
-                      "join fetch pbi.itemBatch ib " +
-                      "join fetch ib.item i " +
-                      "left join fetch pbi.stock s " +
+        // Single scalar query: bi.id, item.id, itemBatch.id, stock.id, stock.stock (current qty)
+        // COALESCE(s.stock, bi.qty) mirrors the original fallback logic
+        String jpql = "select bi.id, i.id, ib.id, s.id, COALESCE(s.stock, bi.qty) " +
+                      "from BillItem bi " +
+                      "join bi.pharmaceuticalBillItem pbi " +
+                      "join pbi.itemBatch ib " +
+                      "join ib.item i " +
+                      "left join pbi.stock s " +
                       "where bi.id in :ids";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("ids", snapBillItemIds);
 
         try {
-            // Execute single query to load all entities with associations
             @SuppressWarnings("unchecked")
-            List<BillItem> preLoadedItems = (List<BillItem>) billItemFacade.findByJpql(jpql, params);
+            List<Object[]> rows = billItemFacade.findObjectArrayByJpql(jpql, params, null);
 
-            // Build lookup map for O(1) access during processing
-            java.util.Map<Long, BillItem> snapBillItemMap = new java.util.HashMap<>();
-            for (BillItem bi : preLoadedItems) {
-                if (bi != null && bi.getId() != null) {
-                    snapBillItemMap.put(bi.getId(), bi);
+            java.util.Map<Long, SnapBillItemData> map = new java.util.HashMap<>(rows.size() * 2);
+            for (Object[] r : rows) {
+                Long biId   = r[0] != null ? ((Number) r[0]).longValue() : null;
+                Long iId    = r[1] != null ? ((Number) r[1]).longValue() : null;
+                Long ibId   = r[2] != null ? ((Number) r[2]).longValue() : null;
+                Long sId    = r[3] != null ? ((Number) r[3]).longValue() : null;
+                double sQty = r[4] != null ? ((Number) r[4]).doubleValue() : 0.0;
+                if (biId != null) {
+                    map.put(biId, new SnapBillItemData(iId, ibId, sId, sQty));
                 }
             }
 
-            System.out.println("DEBUG: Bulk pre-loaded " + snapBillItemMap.size() +
-                             " snapshot entities out of " + snapBillItemIds.size() + " requested");
-
-            return snapBillItemMap;
+            System.out.println("PERF: Scalar pre-load: " + map.size() + " snapshot refs from " + snapBillItemIds.size() + " IDs");
+            return map;
 
         } catch (Exception e) {
-            System.err.println("ERROR: Failed to bulk pre-load snapshot references: " + e.getMessage());
+            System.err.println("ERROR: Failed to scalar pre-load snapshot references: " + e.getMessage());
             e.printStackTrace();
+            return new java.util.HashMap<>();
+        }
+    }
 
-            // Fallback: return empty map to prevent NPE (individual loads will occur)
+    /** Entity-loading preload used by optimized JPA path (still needed for JPA BillItem creation). */
+    private java.util.Map<Long, BillItem> preLoadSnapshotReferencesEntities(java.util.Set<Long> snapBillItemIds) {
+        if (snapBillItemIds == null || snapBillItemIds.isEmpty()) {
+            return new java.util.HashMap<>();
+        }
+        String jpql = "select bi from BillItem bi " +
+                      "join fetch bi.pharmaceuticalBillItem pbi " +
+                      "join fetch pbi.itemBatch ib " +
+                      "join fetch ib.item i " +
+                      "left join fetch pbi.stock s " +
+                      "where bi.id in :ids";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ids", snapBillItemIds);
+        try {
+            @SuppressWarnings("unchecked")
+            List<BillItem> preLoadedItems = (List<BillItem>) billItemFacade.findByJpql(jpql, params);
+            java.util.Map<Long, BillItem> map = new java.util.HashMap<>(preLoadedItems.size() * 2);
+            for (BillItem bi : preLoadedItems) {
+                if (bi != null && bi.getId() != null) map.put(bi.getId(), bi);
+            }
+            return map;
+        } catch (Exception e) {
+            System.err.println("ERROR: preLoadSnapshotReferencesEntities failed: " + e.getMessage());
             return new java.util.HashMap<>();
         }
     }
@@ -4899,6 +4929,20 @@ public class PharmacyStockTakeController implements Serializable {
         double adjustedValue;
         Long itemBatchId;
         Long stockId;
+    }
+
+    /** Scalar snapshot reference — replaces full BillItem entity pre-load. */
+    private static class SnapBillItemData {
+        final Long itemId;
+        final Long itemBatchId;
+        final Long stockId;
+        final double currentStockQty;
+        SnapBillItemData(Long itemId, Long itemBatchId, Long stockId, double currentStockQty) {
+            this.itemId = itemId;
+            this.itemBatchId = itemBatchId;
+            this.stockId = stockId;
+            this.currentStockQty = currentStockQty;
+        }
     }
 
     /**

@@ -64,10 +64,9 @@
 
                             <!-- Failure Status -->
                             <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress.failed}">
-                                <p:messages severity="error">
-                                    <p:message severity="error" summary="Generation Failed"
-                                              detail="#{pharmacyStockTakeController.generationProgress.errorMessage}"/>
-                                </p:messages>
+                                <div class="alert alert-danger">
+                                    <strong>Generation Failed:</strong> <h:outputText value="#{pharmacyStockTakeController.generationProgress.errorMessage}"/>
+                                </div>
                                 <p:commandButton
                                     value="Back to Stock Take"
                                     action="/pharmacy/pharmacy_stock_take?faces-redirect=true"
@@ -87,10 +86,9 @@
 
                         <!-- No Progress Found -->
                         <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress eq null}">
-                            <p:messages severity="warn">
-                                <p:message severity="warn" summary="No Generation in Progress"
-                                          detail="No stock count generation job found."/>
-                            </p:messages>
+                            <div class="alert alert-warning">
+                                No stock count generation job found.
+                            </div>
                             <p:commandButton
                                 value="Back to Stock Take"
                                 action="/pharmacy/pharmacy_stock_take?faces-redirect=true"
