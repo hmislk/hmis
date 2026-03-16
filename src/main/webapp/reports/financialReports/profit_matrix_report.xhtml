@@ -177,8 +177,25 @@
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF" />
+                                value="PDF"
+                                rendered="#{empty reportController.reportType or reportController.reportType eq 'summery'}">
+                                <p:dataExporter
+                                    type="pdf"
+                                    target="summeryWise"
+                                    fileName="profit_matrix_summary" />
+                            </p:commandButton>
 
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                rendered="#{reportController.reportType eq 'detail'}">
+                                <p:dataExporter
+                                    type="pdf"
+                                    target="detailWise"
+                                    fileName="profit_matrix_detail" />
+                            </p:commandButton>
                         </div>
 
                         <h:panelGroup id="printPanel" >
