@@ -119,6 +119,25 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Executes a native SELECT returning a single scalar value (e.g. a count or sequence value).
+     * Returns null if no rows found.
+     */
+    public Object nativeScalarQuery(String sql, List<Object> parameters) {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+        Query query = getEntityManager().createNativeQuery(sql);
+        if (parameters != null) {
+            for (int i = 0; i < parameters.size(); i++) {
+                query.setParameter(i + 1, parameters.get(i));
+            }
+        }
+        query.setMaxResults(1);
+        List<?> results = query.getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     public void flush() {
         getEntityManager().flush();
 
@@ -1773,6 +1792,30 @@ public abstract class AbstractFacade<T> {
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute JPQL update: " + jpql, e);
         }
+    }
+
+    /**
+     * Executes a native SQL SELECT and returns raw Object[] rows.
+     * Each element in the returned list is an Object[] of column values
+     * in the order they appear in the SELECT clause.
+     *
+     * Parameters are set positionally: the first element of the list maps
+     * to ?1, the second to ?2, etc.
+     *
+     * @param sql    Native SQL SELECT statement with ? placeholders
+     * @param params Positional parameter values (may be null or empty)
+     * @return List of Object[] rows, never null
+     */
+    public List<Object[]> findByNativeQuery(String sql, List<Object> params) {
+        Query q = getEntityManager().createNativeQuery(sql);
+        if (params != null) {
+            for (int i = 0; i < params.size(); i++) {
+                q.setParameter(i + 1, params.get(i));
+            }
+        }
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = q.getResultList();
+        return rows != null ? rows : new ArrayList<>();
     }
 
 }

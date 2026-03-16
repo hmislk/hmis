@@ -8,99 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css" />
                 <h:form >
-                    <style>
-                            @media screen{
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 2.0;
-                                }
-                                
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-                                
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 8pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-                                
-                            }
-
-                            @media screen, print {
-
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-
-                                .table-item {
-                                    width: 99.9%;
-                                    font-size: 8pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-
-                                .table-batch {
-                                    width: 99.9%;
-                                    font-size: 8pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-                                
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-
-                                /* Hide PrimeFaces sort icons in datatable headers */
-                                .ui-sortable-column .ui-sortable-column-icon,
-                                .ui-sortable-column .ui-sortable-icon,
-                                .ui-sortable-column .pi-sort,
-                                .ui-sortable-column .ui-sort-up,
-                                .ui-sortable-column .ui-sort-down,
-                                .ui-sortable-column .ui-column-title .pi-sort {
-                                    display: none !important;
-                                }
-                            }
-                            
-                        </style>
                         <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'itemWise'}">
                             <p:panel header="#{reportController.reportTemplateFileIndexName}" styleClass="my-2" >
                                 <f:facet name="header">
@@ -192,7 +101,8 @@
                                             var="p"
                                             rowIndexVar="n"
                                             rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                            styleClass="table-item table-sm">
+                                            styleClass="table-sm table"
+                                            style="font-size: 8pt!important; ">
                                             <p:column headerText="S.No" width="10mm" styleClass="text-end">
                                                 <h:outputText value="#{n+1}"/>
                                                 <f:facet name="footer">
@@ -391,7 +301,8 @@
                                     var="f"
                                     rowIndexVar="n"
                                     rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
-                                    styleClass="table-sm table-batch">
+                                    styleClass="table"
+                                    style="font-size: 8pt!important">
                                     <p:column headerText="S.No" width="8mm" styleClass="text-end">
                                         <h:outputText value="#{n+1}"/>
                                         <f:facet name="footer">
