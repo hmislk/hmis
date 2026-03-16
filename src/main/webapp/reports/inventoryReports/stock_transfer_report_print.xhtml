@@ -111,7 +111,7 @@
                                              rowKey="#{s.departmentName}_#{s.issuedDeptName}_#{s.receivedDeptName}_#{n}"
                                              rowIndexVar="n"
                                              rendered="#{not empty pharmacyController.departmentSummaries}"
-                                             styleClass="table table-small"
+                                             styleClass="table"
                                              style="font-size: 8pt!important;">
 
                                     <!-- Expand/Collapse Column -->
@@ -394,7 +394,7 @@
                                     </div>
 
                                     <p:dataTable value="#{deptEntry.value}" var="i" style="width:100%; margin-bottom:10px; font-size: 8pt!important"
-                                                 tableStyle="border-collapse:collapse;" styleClass="table table-small">
+                                                 tableStyle="border-collapse:collapse;" styleClass="table">
 
                                         <p:column headerText="Bill No" width="22mm">
                                             <h:outputText value="#{i.billItem.bill.deptId}" class="billNo" style="font-size: 10px !important;"/>
