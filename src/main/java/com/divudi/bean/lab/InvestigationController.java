@@ -292,11 +292,19 @@ public class InvestigationController implements Serializable {
         return "/admin/lims/investigation_single?faces-redirect=true";
     }
 
-    public String navigateToManageInvestigation() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing to delete");
+    public String navigateToManageInvestigation(Long investigationId) {
+        if (investigationId == null) {
+            JsfUtil.addErrorMessage("Error in Selected Investigation");
             return "";
         }
+        
+        current = ejbFacade.findWithoutCache(investigationId);
+        
+        if(current == null){
+            JsfUtil.addErrorMessage("Not Found Investigation");
+            return "";
+        }
+        
         return "/admin/lims/investigation?faces-redirect=true";
     }
 

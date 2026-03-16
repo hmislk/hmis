@@ -1871,9 +1871,12 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            i.setAllowedForBillingPriority(true);
-            itemFacade.edit(i);
+            Item item = itemFacade.findWithoutCache(i.getId());
+                
+            item.setAllowedForBillingPriority(true);
+            itemFacade.editAndCommit(item);
         }
+        fillItemsWithInvestigationsAndServices();
         JsfUtil.addSuccessMessage("All Items Marked for Allowed Priority for Billing");
     }
 
@@ -1883,9 +1886,12 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            i.setAllowedForBillingPriority(false);
-            itemFacade.edit(i);
+            Item item = itemFacade.findWithoutCache(i.getId());
+                
+            item.setAllowedForBillingPriority(false);
+            itemFacade.editAndCommit(item);
         }
+        fillItemsWithInvestigationsAndServices();
         JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Priority for Billing");
     }
 
