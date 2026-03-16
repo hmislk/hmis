@@ -2654,7 +2654,7 @@ public class PharmacyStockTakeController implements Serializable {
                 + "ORDER BY bi.descreption";
         HashMap<String, Object> sp = new HashMap<>();
         sp.put("billId", snapshotBill.getId());
-        List<Object[]> snapRows = (List<Object[]>) billItemFacade.findByJpql(jpqlSnap, sp);
+        List<Object[]> snapRows = billItemFacade.findObjectArrayByJpql(jpqlSnap, sp, javax.persistence.TemporalType.TIMESTAMP);
 
         java.util.Map<Long, VarianceRow> map = new java.util.HashMap<>();
         if (snapRows != null) {
@@ -2694,7 +2694,7 @@ public class PharmacyStockTakeController implements Serializable {
         HashMap<String, Object> bp = new HashMap<>();
         bp.put("bt", BillType.PharmacyPhysicalCountBill);
         bp.put("rbId", snapshotBill.getId());
-        List<Object> billIdObjs = (List<Object>) billFacade.findByJpql(jpqlBillIds, bp);
+        List<Object> billIdObjs = billFacade.findObjects(jpqlBillIds, bp);
         if (billIdObjs == null || billIdObjs.isEmpty()) {
             return;
         }
@@ -2713,7 +2713,7 @@ public class PharmacyStockTakeController implements Serializable {
                 + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
         HashMap<String, Object> pp = new HashMap<>();
         pp.put("pbs", physBillIds);
-        List<Object[]> physRows = (List<Object[]>) billItemFacade.findByJpql(jpqlPhys, pp);
+        List<Object[]> physRows = billItemFacade.findObjectArrayByJpql(jpqlPhys, pp, javax.persistence.TemporalType.TIMESTAMP);
         if (physRows == null) {
             return;
         }
@@ -4639,6 +4639,33 @@ public class PharmacyStockTakeController implements Serializable {
     // Removed legacy getters/setters for snapshotBills
     public List<VarianceRow> getVarianceRows() {
         return varianceRows;
+    }
+
+    public double getVarianceTotalAtCostRate() {
+        if (varianceRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceRow r : varianceRows) {
+            total += (r.getSumVariance() != null ? r.getSumVariance() : 0.0) * r.getCostRate();
+        }
+        return total;
+    }
+
+    public double getVarianceTotalAtPurchaseRate() {
+        if (varianceRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceRow r : varianceRows) {
+            total += (r.getSumVariance() != null ? r.getSumVariance() : 0.0) * r.getPurchaseRate();
+        }
+        return total;
+    }
+
+    public double getVarianceTotalAtRetailRate() {
+        if (varianceRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceRow r : varianceRows) {
+            total += (r.getSumVariance() != null ? r.getSumVariance() : 0.0) * r.getRetailRate();
+        }
+        return total;
     }
 
     // Start asynchronous approval so it completes even if browser closes
