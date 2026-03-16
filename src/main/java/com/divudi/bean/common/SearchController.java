@@ -22615,7 +22615,6 @@ public class SearchController implements Serializable {
             if (dates != null && !dates.isEmpty()) {
                 fileName += "_" + dates;
             }
-            System.out.println("getOpdProfessionalFeePaymentsAsPdf: Generated file name - " + fileName);
             pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForOpdProfessionalFeePaymentsReport(),  fileName);
         } catch (IOException e) {
             logger.error("getOpdProfessionalFeePaymentsAsPdf: Error creating pdfSc via pdfController.createPdfForOpdProfessionalFeePayments", e);
