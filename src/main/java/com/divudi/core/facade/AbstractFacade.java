@@ -124,12 +124,16 @@ public abstract class AbstractFacade<T> {
      * Returns null if no rows found.
      */
     public Object nativeScalarQuery(String sql, List<Object> parameters) {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
         Query query = getEntityManager().createNativeQuery(sql);
         if (parameters != null) {
             for (int i = 0; i < parameters.size(); i++) {
                 query.setParameter(i + 1, parameters.get(i));
             }
         }
+        query.setMaxResults(1);
         List<?> results = query.getResultList();
         return results.isEmpty() ? null : results.get(0);
     }

@@ -12,6 +12,12 @@
                 <h:form>
                     <f:event type="preRenderView" listener="#{pharmacyStockTakeController.listPendingPhysicalCounts}"/>
                     <div class="container-fluid">
+                        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyStockTakeApprove')}">
+                            <div class="alert alert-danger" role="alert">
+                                You do not have permission to view pending physical count approvals.
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h2 class="mb-0">Pending Physical Count Approvals</h2>
@@ -62,6 +68,7 @@
                                 </p:dataTable>
                             </div>
                         </div>
+                        </h:panelGroup>
                     </div>
                 </h:form>
             </ui:define>

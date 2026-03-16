@@ -1633,7 +1633,7 @@ public class PharmacyStockTakeController implements Serializable {
 
             // Step 3: Create PharmaceuticalBillItems with direct SQL linking
             long pharmacyItemsStartTime = System.currentTimeMillis();
-            createPharmaceuticalBillItemsWithDirectSQL(billId, stockCountData);
+            createPharmaceuticalBillItemsWithDirectSQL(billItemIds, stockCountData);
             System.out.println("PERF: PharmaceuticalBillItems creation completed in " + (System.currentTimeMillis() - pharmacyItemsStartTime) + "ms");
 
             System.out.println("PERF: Total native SQL upload completed in " + (System.currentTimeMillis() - startTime) + "ms");
@@ -1714,24 +1714,28 @@ public class PharmacyStockTakeController implements Serializable {
      */
     /**
      * Allocates a contiguous block of IDs from EclipseLink's SEQUENCE table.
-     * Atomically increments SEQ_COUNT by the required count and returns the first ID in the block.
+     * Uses MySQL's LAST_INSERT_ID() trick: the UPDATE sets LAST_INSERT_ID() to the new
+     * SEQ_COUNT value on this connection, then SELECT LAST_INSERT_ID() returns *this
+     * connection's* value — not another concurrent connection's — making it safe under
+     * concurrent uploads without a separate lock.
      * EclipseLink uses SEQ_NAME='SEQ_GEN', allocation size 50.
      */
     private long allocateIdBlock(int count) throws Exception {
-        // Round up to nearest 50 to keep in sync with EclipseLink's allocation size
         int allocationSize = 50;
         int blocks = (count + allocationSize - 1) / allocationSize;
         int toReserve = blocks * allocationSize;
 
-        // Atomically increment SEQ_COUNT and read the new value
         java.util.List<Object> updateParams = new java.util.ArrayList<>();
         updateParams.add(toReserve);
-        billItemFacade.executeNativeSql("UPDATE sequence SET SEQ_COUNT = SEQ_COUNT + ? WHERE SEQ_NAME = 'SEQ_GEN'", updateParams);
+        // LAST_INSERT_ID(expr) stores expr in the connection-local last_insert_id register
+        billItemFacade.executeNativeSql(
+                "UPDATE sequence SET SEQ_COUNT = LAST_INSERT_ID(SEQ_COUNT + ?) WHERE SEQ_NAME = 'SEQ_GEN'",
+                updateParams);
 
-        Object result = billItemFacade.nativeScalarQuery("SELECT SEQ_COUNT FROM sequence WHERE SEQ_NAME = 'SEQ_GEN'", null);
-        if (result == null) throw new IllegalStateException("Cannot read SEQ_COUNT from sequence table");
+        // SELECT LAST_INSERT_ID() is connection-local — safe under concurrent access
+        Object result = billItemFacade.nativeScalarQuery("SELECT LAST_INSERT_ID()", null);
+        if (result == null) throw new IllegalStateException("Cannot read LAST_INSERT_ID() after sequence update");
         long newMax = ((Number) result).longValue();
-        // IDs for our block: (newMax - toReserve + 1) .. newMax
         return newMax - toReserve + 1;
     }
 
@@ -1783,37 +1787,36 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Creates PharmaceuticalBillItems with explicit IDs (required — no AUTO_INCREMENT).
-     * Resolves billitem IDs via the referanceBillItem_id lookup against the just-inserted rows.
+     * Uses pre-allocated billItem IDs from createBillItemsWithBulkSQL to guarantee a
+     * deterministic 1-to-1 link — no subquery that could match the wrong row.
      */
-    private void createPharmaceuticalBillItemsWithDirectSQL(Long billId, java.util.List<StockCountRowData> stockCountData) throws Exception {
+    private void createPharmaceuticalBillItemsWithDirectSQL(java.util.List<Long> billItemIds, java.util.List<StockCountRowData> stockCountData) throws Exception {
         System.out.println("PERF: Starting bulk PharmaceuticalBillItem creation for " + stockCountData.size() + " items");
         if (stockCountData.isEmpty()) return;
 
-        long firstId = allocateIdBlock(stockCountData.size());
-        System.out.println("PERF: Allocated PharmaceuticalBillItem ID block starting at " + firstId);
+        long firstPbiId = allocateIdBlock(stockCountData.size());
+        System.out.println("PERF: Allocated PharmaceuticalBillItem ID block starting at " + firstPbiId);
 
         int batchSize = 50;
         for (int i = 0; i < stockCountData.size(); i += batchSize) {
             int end = Math.min(i + batchSize, stockCountData.size());
-            java.util.List<StockCountRowData> batch = stockCountData.subList(i, end);
 
             StringBuilder sql = new StringBuilder(
                 "INSERT INTO pharmaceuticalbillitem (ID, billItem_id, itemBatch_id, stock_id, qty, freeQty) VALUES ");
             java.util.List<Object> params = new java.util.ArrayList<>();
-            for (int j = 0; j < batch.size(); j++) {
-                if (j > 0) sql.append(", ");
-                sql.append("(?, (SELECT bi.id FROM billitem bi WHERE bi.bill_id = ? AND bi.referanceBillItem_id = ? ORDER BY bi.id LIMIT 1), ?, ?, ?, 0.0)");
-                StockCountRowData r = batch.get(j);
-                params.add(firstId + i + j);
-                params.add(billId);
-                params.add(r.referanceBillItemId);
+            for (int j = i; j < end; j++) {
+                if (j > i) sql.append(", ");
+                sql.append("(?, ?, ?, ?, ?, 0.0)");
+                StockCountRowData r = stockCountData.get(j);
+                params.add(firstPbiId + j);       // pbi ID
+                params.add(billItemIds.get(j));    // deterministic billItem_id
                 params.add(r.itemBatchId);
                 params.add(r.stockId);
                 params.add(r.physicalQty);
             }
 
             pharmaceuticalBillItemFacade.executeNativeSql(sql.toString(), params);
-            System.out.println("PERF: PharmaceuticalBillItem batch " + (i / batchSize + 1) + " done (" + batch.size() + " rows)");
+            System.out.println("PERF: PharmaceuticalBillItem batch " + (i / batchSize + 1) + " done (" + (end - i) + " rows)");
         }
 
         System.out.println("PERF: All PharmaceuticalBillItems created successfully (bulk batches)");

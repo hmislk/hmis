@@ -64,7 +64,7 @@
 
                             <!-- Failure Status -->
                             <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress.failed}">
-                                <div class="alert alert-danger">
+                                <div class="alert alert-danger" role="alert" aria-live="assertive" aria-atomic="true">
                                     <strong>Generation Failed:</strong> <h:outputText value="#{pharmacyStockTakeController.generationProgress.errorMessage}"/>
                                 </div>
                                 <p:commandButton
@@ -86,7 +86,7 @@
 
                         <!-- No Progress Found -->
                         <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress eq null}">
-                            <div class="alert alert-warning">
+                            <div class="alert alert-warning" role="alert" aria-live="polite" aria-atomic="true">
                                 No stock count generation job found.
                             </div>
                             <p:commandButton
