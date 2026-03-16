@@ -155,12 +155,6 @@
                                         <h:outputText value="#{d.itemsCount}"/>
                                     </p:column>
 
-                                    <p:column headerText="Net Total" style="width: 120px; text-align: right;">
-                                        <h:outputText value="#{d.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </p:column>
-
                                     <p:column headerText="Status" sortBy="#{d.completed}" filterBy="#{d.completed}" style="width: 100px; text-align: center;">
                                         <h:outputText value="#{d.statusText}"
                                                       style="#{d.completed ? 'color: #28a745; font-weight: bold;' : 'color: #ffc107; font-weight: bold;'}"/>

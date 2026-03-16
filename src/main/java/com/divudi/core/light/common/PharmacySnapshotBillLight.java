@@ -145,7 +145,7 @@ public class PharmacySnapshotBillLight implements Serializable {
     }
 
     public Boolean getCompleted() {
-        return completed;
+        return completed != null ? completed : Boolean.FALSE;
     }
 
     public void setCompleted(Boolean completed) {

@@ -33,6 +33,7 @@ import com.divudi.service.pharmacy.StockTakeApprovalService;
 import com.divudi.service.pharmacy.ApprovalProgressTracker;
 import com.divudi.service.pharmacy.StockCountGenerationService;
 import com.divudi.service.pharmacy.StockCountGenerationTracker;
+import com.divudi.service.pharmacy.StockTakePersistService;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -103,10 +104,14 @@ public class PharmacyStockTakeController implements Serializable {
     @EJB
     private StockCountGenerationTracker stockCountGenerationTracker;
     @EJB
+    private StockTakePersistService stockTakePersistService;
+    @EJB
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
     private Bill snapshotBill;
     private PharmacySnapshotBillLight snapshotBillDisplay; // DTO for display purposes only
+    /** Holds snapshot items as plain DTOs — no JPA entities, no EclipseLink EAGER triggers */
+    private List<com.divudi.core.data.dto.SnapshotBillItemDTO> snapshotItems;
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
@@ -120,6 +125,7 @@ public class PharmacyStockTakeController implements Serializable {
     private List<VarianceRow> varianceRows; // aggregated variance report rows
     private String approvalJobId; // background approval job id
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
+    private com.divudi.core.entity.Category selectedDosageForm; // for dosage-form-specific downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
@@ -599,24 +605,30 @@ public class PharmacyStockTakeController implements Serializable {
             //LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
-        // Ensure fresh persistence for a new bill: null out IDs if bill is new
+        Department dept = snapshotBill.getDepartment();
         if (snapshotBill.getId() == null) {
-            if (snapshotBill.getBillItems() != null) {
+            String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
+            snapshotBill.setInsId(deptId);
+            snapshotBill.setDeptId(deptId);
+
+            long tSettle0 = System.currentTimeMillis();
+            System.out.println("[settleStockCount] Starting fast batch persist. Items=" + snapshotBill.getBillItems().size());
+            try {
+                stockTakePersistService.persistSnapshotBill(snapshotBill);
+                System.out.println("[settleStockCount] Batch persist complete. ms=" + (System.currentTimeMillis() - tSettle0));
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed, falling back to JPA cascade", e);
+                System.out.println("[settleStockCount] Fallback to JPA cascade. ms=" + (System.currentTimeMillis() - tSettle0));
+                // Ensure fresh IDs for fallback JPA path
                 for (BillItem bi : snapshotBill.getBillItems()) {
                     bi.setId(null);
                     if (bi.getPharmaceuticalBillItem() != null) {
                         bi.getPharmaceuticalBillItem().setId(null);
                     }
                 }
+                billFacade.create(snapshotBill);
+                System.out.println("[settleStockCount] JPA cascade complete. ms=" + (System.currentTimeMillis() - tSettle0));
             }
-        }
-        Department dept = snapshotBill.getDepartment();
-        if (snapshotBill.getId() == null) {
-            String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
-            snapshotBill.setInsId(deptId);
-            snapshotBill.setDeptId(deptId);
-            // Cascade will persist bill items and pharmaceutical bill items
-            billFacade.create(snapshotBill);
         } else {
             // Existing bill: update only
             billFacade.edit(snapshotBill);
@@ -772,6 +784,14 @@ public class PharmacyStockTakeController implements Serializable {
                 }
             }
 
+            Cell hDf = header.createCell(col++);
+            if (hDf != null) {
+                hDf.setCellValue("Dosage Form");
+                if (headerStyle != null) {
+                    hDf.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hBatch = header.createCell(col++);
             if (hBatch != null) {
                 hBatch.setCellValue("Batch");
@@ -841,180 +861,68 @@ public class PharmacyStockTakeController implements Serializable {
                 }
             }
 
-            // PERFORMANCE OPTIMIZATION: Use optimized lazy loading for BillItems
-            List<BillItem> items = getSnapshotBillItemsLazy();
-            if (items == null || items.isEmpty()) {
-                // Fallback: Direct database query if lazy loading fails
-                if (snapshotBill != null && snapshotBill.getId() != null) {
-                    HashMap<String, Object> p = new HashMap<>();
-                    p.put("b", snapshotBill);
-                    items = billItemFacade.findByJpql("select bi from BillItem bi where bi.bill=:b order by bi.id", p);
-                }
-            }
+            // Use already-loaded DTO list — no DB queries, no entity hydration
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
 
-            // Ensure items is not null
-            if (items == null) {
-                items = java.util.Collections.emptyList();
-            }
-
-            // Rows
             int rowNum = 1;
-            for (BillItem bi : items) {
-                // Null check for bill item
-                if (bi == null) {
-                    continue;
-                }
-
-                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                ItemBatch ib = pbi != null ? pbi.getItemBatch() : null;
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
                 Row row = sheet.createRow(rowNum++);
-                if (row == null) {
-                    continue;
-                }
-
                 int c = 0;
 
-                // BillItem ID
                 Cell cId = row.createCell(c++);
-                if (cId != null) {
-                    if (bi.getId() != null) {
-                        cId.setCellValue(bi.getId());
-                    } else {
-                        cId.setCellValue(0);
-                    }
-                    if (integerLocked != null) {
-                        cId.setCellStyle(integerLocked);
-                    }
-                }
+                cId.setCellValue(dto.getBillItemId() != null ? dto.getBillItemId() : 0L);
+                cId.setCellStyle(integerLocked);
 
-                // Code
+                // Code — not stored in SnapshotBillItemDTO
                 Cell cCode = row.createCell(c++);
-                if (cCode != null) {
-                    cCode.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getCode() != null ? ib.getItem().getCode() : "");
-                    if (textLocked != null) {
-                        cCode.setCellStyle(textLocked);
-                    }
-                }
+                cCode.setCellValue("");
+                cCode.setCellStyle(textLocked);
 
-                // Name
                 Cell cName = row.createCell(c++);
-                if (cName != null) {
-                    cName.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getName() != null ? ib.getItem().getName() : (bi.getDescreption() != null ? bi.getDescreption() : ""));
-                    if (textLocked != null) {
-                        cName.setCellStyle(textLocked);
-                    }
-                }
+                cName.setCellValue(dto.getItemName() != null ? dto.getItemName() : "");
+                cName.setCellStyle(textLocked);
 
-                // Category
                 Cell cCat = row.createCell(c++);
-                if (cCat != null) {
-                    cCat.setCellValue(bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null ? bi.getItem().getCategory().getName() : "");
-                    if (textLocked != null) {
-                        cCat.setCellStyle(textLocked);
-                    }
-                }
+                cCat.setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+                cCat.setCellStyle(textLocked);
 
-                // Batch
+                Cell cDf = row.createCell(c++);
+                cDf.setCellValue(dto.getDosageForm() != null ? dto.getDosageForm() : "");
+                cDf.setCellStyle(textLocked);
+
                 Cell cBatch = row.createCell(c++);
-                if (cBatch != null) {
-                    cBatch.setCellValue(ib != null && ib.getBatchNo() != null ? ib.getBatchNo() : "");
-                    if (textLocked != null) {
-                        cBatch.setCellStyle(textLocked);
-                    }
-                }
+                cBatch.setCellValue(dto.getBatchNo() != null ? dto.getBatchNo() : "");
+                cBatch.setCellStyle(textLocked);
 
-                // Expiry
                 Cell cExp = row.createCell(c++);
-                if (cExp != null) {
-                    if (ib != null && ib.getDateOfExpire() != null) {
-                        cExp.setCellValue(ib.getDateOfExpire());
-                        if (dateLocked != null) {
-                            cExp.setCellStyle(dateLocked);
-                        }
-                    } else {
-                        cExp.setCellValue("");
-                        if (textLocked != null) {
-                            cExp.setCellStyle(textLocked);
-                        }
-                    }
+                if (dto.getExpiryDate() != null) {
+                    cExp.setCellValue(dto.getExpiryDate());
+                    cExp.setCellStyle(dateLocked);
+                } else {
+                    cExp.setCellValue("");
+                    cExp.setCellStyle(textLocked);
                 }
 
-                // Rates - handle null returns from getter methods
-                double pr = 0.0;
-                double rr = 0.0;
-                double cr = 0.0;
+                double pr = dto.getPurchaseRate();
+                double rr = dto.getRetailRate();
+                double cr = dto.getCostRate();
+                double qty = dto.getQty() != null ? dto.getQty() : 0.0;
 
-                if (ib != null) {
-                    Double prObj = ib.getPurcahseRate();
-                    pr = (prObj != null) ? prObj : 0.0;
+                Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
+                Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
+                Cell cCR = row.createCell(c++); cCR.setCellValue(cr); cCR.setCellStyle(numberLocked);
 
-                    Double rrObj = ib.getRetailsaleRate();
-                    rr = (rrObj != null) ? rrObj : 0.0;
-
-                    Double crObj = ib.getCostRate();
-                    cr = (crObj != null) ? crObj : 0.0;
-                }
-
-                Cell cPR = row.createCell(c++);
-                if (cPR != null) {
-                    cPR.setCellValue(pr);
-                    if (numberLocked != null) {
-                        cPR.setCellStyle(numberLocked);
-                    }
-                }
-
-                Cell cRR = row.createCell(c++);
-                if (cRR != null) {
-                    cRR.setCellValue(rr);
-                    if (numberLocked != null) {
-                        cRR.setCellStyle(numberLocked);
-                    }
-                }
-
-                Cell cCR = row.createCell(c++);
-                if (cCR != null) {
-                    cCR.setCellValue(cr);
-                    if (numberLocked != null) {
-                        cCR.setCellStyle(numberLocked);
-                    }
-                }
-
-                // System Qty (optional) - handle null return from pbi.getQty()
                 if (includeSystemQty) {
-                    double sys = 0.0;
-                    if (pbi != null) {
-                        Double sysObj = pbi.getQty();
-                        sys = (sysObj != null) ? sysObj : 0.0;
-                    }
-                    Cell cSys = row.createCell(c++);
-                    if (cSys != null) {
-                        cSys.setCellValue(sys);
-                        if (integerLocked != null) {
-                            cSys.setCellStyle(integerLocked);
-                        }
-                    }
+                    Cell cSys = row.createCell(c++); cSys.setCellValue(qty); cSys.setCellStyle(integerLocked);
                 }
 
-                // Real Stock Qty (input - unlocked)
+                // Real Stock Qty (editable input)
                 Cell cReal = row.createCell(c++);
-                if (cReal != null && inputUnlocked != null) {
-                    cReal.setCellStyle(inputUnlocked);
-                }
+                cReal.setCellStyle(inputUnlocked);
 
-                // Line Value (system = cost rate * system qty) - handle null return from pbi.getQty()
-                double sysQtyForLV = 0.0;
-                if (includeSystemQty && pbi != null) {
-                    Double qtyObj = pbi.getQty();
-                    sysQtyForLV = (qtyObj != null) ? qtyObj : 0.0;
-                }
-                double lineValue = cr * sysQtyForLV;
                 Cell cLV = row.createCell(c++);
-                if (cLV != null) {
-                    cLV.setCellValue(lineValue);
-                    if (numberLocked != null) {
-                        cLV.setCellStyle(numberLocked);
-                    }
-                }
+                cLV.setCellValue(cr * qty);
+                cLV.setCellStyle(numberLocked);
             }
 
             // Autosize columns
@@ -1412,8 +1320,12 @@ public class PharmacyStockTakeController implements Serializable {
             physicalCountBill.setCreater(sessionController.getLoggedUser());
             physicalCountBill.setReferenceBill(billFacade.getReference(snapshotBillDisplay.getId()));
 
-            int colBillItemId = 0;
-            int colRealStock = 10;
+            Row headerRow = sheet.getRow(0);
+            int colBillItemId = headerRow != null ? findColumnIndex(headerRow, "BillItem ID") : 0;
+            int colRealStock = headerRow != null ? findColumnIndex(headerRow, "Real Stock Qty") : 11;
+            if (colBillItemId < 0) colBillItemId = 0;
+            if (colRealStock < 0) colRealStock = 11;
+            System.out.println("[Upload] colBillItemId=" + colBillItemId + " colRealStock=" + colRealStock);
             int processed = 0;
             int matched = 0;
             int skippedNoQty = 0;
@@ -1644,9 +1556,13 @@ public class PharmacyStockTakeController implements Serializable {
                 java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferences(snapBillItemIds);
                 System.out.println("PERF: Snapshot references pre-loaded in " + (System.currentTimeMillis() - preloadStartTime) + "ms");
 
-                // Excel column definitions (consistent with optimized method)
-                int colBillItemId = 0;  // Column 0 = BillItemId
-                int colRealStock = 10;  // Column 10 = Physical stock count
+                // Resolve columns by header name so layout changes never break the upload
+                Row nativeSqlHeaderRow = sheet.getRow(0);
+                int colBillItemId = nativeSqlHeaderRow != null ? findColumnIndex(nativeSqlHeaderRow, "BillItem ID") : 0;
+                int colRealStock = nativeSqlHeaderRow != null ? findColumnIndex(nativeSqlHeaderRow, "Real Stock Qty") : 11;
+                if (colBillItemId < 0) colBillItemId = 0;
+                if (colRealStock < 0) colRealStock = 11;
+                System.out.println("[Upload-NativeSQL] colBillItemId=" + colBillItemId + " colRealStock=" + colRealStock);
 
                 // Processing counters
                 int processed = 0;
@@ -2040,9 +1956,9 @@ public class PharmacyStockTakeController implements Serializable {
         java.util.HashMap<String, Object> params = new java.util.HashMap<>();
         StringBuilder j = new StringBuilder();
         j.append("select new com.divudi.core.light.common.PharmacyPhysicalCountLight(");
-        j.append(" b.id, b.deptId, b.createdAt, b.institution.name, b.department.name,");
+        j.append(" b.id, b.deptId, b.createdAt, ins.name, dept.name,");
         j.append(" (select count(bi) from BillItem bi where bi.bill=b) ) ");
-        j.append(" from Bill b where b.billType=:bt and b.approveAt is null");
+        j.append(" from Bill b left join b.institution ins left join b.department dept where b.billType=:bt and b.approveAt is null");
         params.put("bt", BillType.PharmacyPhysicalCountBill);
         j.append(" order by b.createdAt desc");
         @SuppressWarnings("unchecked")
@@ -2406,9 +2322,9 @@ public class PharmacyStockTakeController implements Serializable {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.light.common.PharmacySnapshotBillLight( ");
-        jpql.append(" b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, ");
+        jpql.append(" b.id, b.deptId, b.createdAt, ins.name, dept.name, ");
         jpql.append(" (select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed ) ");
-        jpql.append(" from Bill b where b.billType=:bt");
+        jpql.append(" from Bill b left join b.institution ins left join b.department dept where b.billType=:bt");
         params.put("bt", BillType.PharmacySnapshotBill);
         if (fromDate != null) {
             jpql.append(" and b.createdAt>=:fd");
@@ -2479,32 +2395,28 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        // PERFORMANCE OPTIMIZATION: Load lightweight DTO instead of full Bill entity
-        // This eliminates the N+1 lazy loading bottleneck that caused 10,330+ queries
-        // Using constructor with netTotal and itemsCount for complete display functionality
+        long t0 = System.currentTimeMillis();
+        System.out.println("[ViewSnapshot] START billId=" + billId);
+        snapshotItems = null; // clear any previously loaded items from a different bill
+
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
-                + "b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, "
+                + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
                 + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
-                + "from Bill b where b.id = :billId";
+                + "from Bill b "
+                + "left join b.institution ins "
+                + "left join b.department dept "
+                + "where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("billId", billId);
 
         List<PharmacySnapshotBillLight> results =
             (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
+        System.out.println("[ViewSnapshot] DTO query done ms=" + (System.currentTimeMillis() - t0));
 
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
-
-//            // Create entity proxy for backward compatibility (no DB hit)
-//            snapshotBill = billFacade.getReference(billId);
-//
-//            // Set institution and department references from the bill entity proxy
-//            if (snapshotBill != null) {
-//                this.department = snapshotBill.getDepartment();
-//                this.institution = snapshotBill.getInstitution();
-//            }
-
+            System.out.println("[ViewSnapshot] Done. Navigating to print page. ms=" + (System.currentTimeMillis() - t0));
             return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Snapshot Bill not found");
@@ -2578,9 +2490,9 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
-                + "b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, "
-                + "b.department.id, b.completed) "
-                + "from Bill b where b.id = :billId";
+                + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
+                + "dept.id, b.completed) "
+                + "from Bill b left join b.institution ins left join b.department dept where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("billId", billId);
@@ -2711,94 +2623,115 @@ public class PharmacyStockTakeController implements Serializable {
         if (billId == null) {
             return null;
         }
-        Bill b = billFacade.find(billId);
+        // Load only the bill header (no item collection) using scalar JPQL
+        String jpql = "SELECT b FROM Bill b "
+                + "LEFT JOIN FETCH b.institution ins "
+                + "LEFT JOIN FETCH b.department dept "
+                + "WHERE b.id = :bid";
+        HashMap<String, Object> p = new HashMap<>();
+        p.put("bid", billId);
+        List<?> rows = billFacade.findByJpql(jpql, p);
+        Bill b = (rows != null && !rows.isEmpty()) ? (Bill) rows.get(0) : billFacade.find(billId);
         return gotoViewVariance(b);
     }
 
-    // Build aggregated variance rows for the selected snapshot
+    // Build aggregated variance rows for the selected snapshot using scalar JPQL projections
     private void prepareVarianceRows() {
         varianceRows = new java.util.ArrayList<>();
-        if (snapshotBill == null || snapshotBill.getBillItems() == null) {
+        if (snapshotBill == null || snapshotBill.getId() == null) {
             return;
         }
 
-        // Map snapshot BillItem id -> row
+        // --- Step 1: load snapshot bill items as scalars (no BillItem entity creation) ---
+        String jpqlSnap = "SELECT bi.id, bi.qty, bi.descreption, "
+                + "pbi.purchaseRate, pbi.retailRate, pbi.costRate, "
+                + "ib.batchNo, it.code "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "LEFT JOIN ib.item it "
+                + "WHERE bi.bill.id = :billId "
+                + "ORDER BY bi.descreption";
+        HashMap<String, Object> sp = new HashMap<>();
+        sp.put("billId", snapshotBill.getId());
+        List<Object[]> snapRows = billItemFacade.findObjectArrayByJpql(jpqlSnap, sp, javax.persistence.TemporalType.TIMESTAMP);
+
         java.util.Map<Long, VarianceRow> map = new java.util.HashMap<>();
-        for (BillItem snapItem : snapshotBill.getBillItems()) {
-            VarianceRow vr = new VarianceRow();
-            vr.setSnapshotItem(snapItem);
-            vr.setInitialQty(snapItem.getQty() == null ? 0.0 : snapItem.getQty());
-            vr.setSumVariance(0.0);
-            vr.setLastPhysicalQty(null);
-            if (snapItem.getId() != null) {
-                map.put(snapItem.getId(), vr);
+        if (snapRows != null) {
+            for (Object[] r : snapRows) {
+                Long id = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+                Double qty = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
+                String itemName = r[2] != null ? r[2].toString() : null;
+                Double purchaseRate = r[3] instanceof Number ? ((Number) r[3]).doubleValue() : null;
+                Double retailRate = r[4] instanceof Number ? ((Number) r[4]).doubleValue() : null;
+                Double costRate = r[5] instanceof Number ? ((Number) r[5]).doubleValue() : null;
+                String batchNo = r[6] != null ? r[6].toString() : null;
+                String code = r[7] != null ? r[7].toString() : null;
+
+                VarianceRow vr = new VarianceRow();
+                vr.setBillItemId(id);
+                vr.setItemName(itemName);
+                vr.setCode(code);
+                vr.setBatchNo(batchNo);
+                vr.setPurchaseRate(purchaseRate);
+                vr.setRetailRate(retailRate);
+                vr.setCostRate(costRate);
+                vr.setInitialQty(qty != null ? qty : 0.0);
+                vr.setSumVariance(0.0);
+                vr.setLastPhysicalQty(null);
+                if (id != null) {
+                    map.put(id, vr);
+                }
+                varianceRows.add(vr);
             }
-            varianceRows.add(vr);
         }
 
-        // Fetch all physical count bills referencing this snapshot
-        String jpqlBills = "select b from Bill b where b.billType=:bt and b.referenceBill=:rb order by b.createdAt asc, b.id asc";
-        HashMap<String, Object> p = new HashMap<>();
-        p.put("bt", BillType.PharmacyPhysicalCountBill);
-        p.put("rb", snapshotBill);
-        List<Bill> physBills = billFacade.findByJpql(jpqlBills, p);
-        if (physBills == null || physBills.isEmpty()) {
+        // --- Step 2: load physical count bill items as scalars ---
+        // First get IDs of physical count bills referencing this snapshot
+        String jpqlBillIds = "SELECT b.id FROM Bill b "
+                + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
+                + "ORDER BY b.createdAt ASC, b.id ASC";
+        HashMap<String, Object> bp = new HashMap<>();
+        bp.put("bt", BillType.PharmacyPhysicalCountBill);
+        bp.put("rbId", snapshotBill.getId());
+        List<Object> billIdObjs = billFacade.findObjects(jpqlBillIds, bp);
+        if (billIdObjs == null || billIdObjs.isEmpty()) {
             return;
         }
+        List<Long> physBillIds = new java.util.ArrayList<>();
+        for (Object o : billIdObjs) {
+            if (o instanceof Number) {
+                physBillIds.add(((Number) o).longValue());
+            }
+        }
 
-        // Load all bill items of those physical bills in one go
-        String jpqlItems = "select bi from BillItem bi where bi.bill in :pbs and bi.referanceBillItem is not null";
+        // Load physical bill items as scalars: refBillItemId, qty, adjustedValue, billCreatedAt, billId
+        String jpqlPhys = "SELECT bi.referanceBillItem.id, bi.qty, bi.adjustedValue, "
+                + "bi.bill.createdAt, bi.bill.id "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.id IN :pbs AND bi.referanceBillItem IS NOT NULL "
+                + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
         HashMap<String, Object> pp = new HashMap<>();
-        pp.put("pbs", physBills);
-        List<BillItem> physItems = billItemFacade.findByJpql(jpqlItems, pp);
-        if (physItems == null) {
+        pp.put("pbs", physBillIds);
+        List<Object[]> physRows = billItemFacade.findObjectArrayByJpql(jpqlPhys, pp, javax.persistence.TemporalType.TIMESTAMP);
+        if (physRows == null) {
             return;
         }
-        // Sort by bill createdAt then id to determine the latest per snapshot item
-        physItems.sort((a, b2) -> {
-            Date da = a.getBill() != null ? a.getBill().getCreatedAt() : null;
-            Date db = b2.getBill() != null ? b2.getBill().getCreatedAt() : null;
-            int cmp;
-            if (da == null && db == null) {
-                cmp = 0;
-            } else if (da == null) {
-                cmp = -1;
-            } else if (db == null) {
-                cmp = 1;
-            } else {
-                cmp = da.compareTo(db);
-            }
-            if (cmp != 0) {
-                return cmp;
-            }
-            Long ia = a.getId();
-            Long ib = b2.getId();
-            if (ia == null && ib == null) {
-                return 0;
-            }
-            if (ia == null) {
-                return -1;
-            }
-            if (ib == null) {
-                return 1;
-            }
-            return ia.compareTo(ib);
-        });
 
-        // Aggregate
-        for (BillItem pbi : physItems) {
-            BillItem ref = pbi.getReferanceBillItem();
-            if (ref == null || ref.getId() == null) {
+        // Aggregate — rows already ordered ascending, last write wins for lastPhysicalQty
+        for (Object[] pr : physRows) {
+            Long refId = pr[0] instanceof Number ? ((Number) pr[0]).longValue() : null;
+            Double physQty = pr[1] instanceof Number ? ((Number) pr[1]).doubleValue() : null;
+            Double adjustedValue = pr[2] instanceof Number ? ((Number) pr[2]).doubleValue() : 0.0;
+            if (refId == null) {
                 continue;
             }
-            VarianceRow vr = map.get(ref.getId());
+            VarianceRow vr = map.get(refId);
             if (vr == null) {
                 continue;
             }
-            double var = pbi.getAdjustedValue() == 0 ? 0.0 : pbi.getAdjustedValue();
-            vr.setSumVariance(vr.getSumVariance() + var);
-            // keep updating; after sorted ascending, last iteration holds latest
-            vr.setLastPhysicalQty(pbi.getQty());
+            vr.setSumVariance(vr.getSumVariance() + (adjustedValue != null ? adjustedValue : 0.0));
+            vr.setLastPhysicalQty(physQty);
         }
     }
 
@@ -3074,62 +3007,72 @@ public class PharmacyStockTakeController implements Serializable {
      */
     private void loadSnapshotBillItemsLazily() {
         if (snapshotBill == null || snapshotBill.getId() == null) {
+            System.out.println("[LoadLazy] SKIP: snapshotBill or id is null");
             return;
         }
 
-        String jobId = "LAZY_LOAD-" + System.currentTimeMillis();
-        StockVerificationMetrics.PerformanceTimer timer
-                = StockVerificationMetrics.PerformanceTimer.start(jobId, "Lazy BillItems Loading");
+        long t0 = System.currentTimeMillis();
+        System.out.println("[LoadLazy] START billId=" + snapshotBill.getId());
 
         try {
-            LOGGER.log(Level.INFO, "[Performance] Lazy loading BillItems for snapshot billId={0}", snapshotBill.getId());
-
-            // Load BillItems with their PharmaceuticalBillItems
-            String jpql = "select bi from BillItem bi "
-                    + "left join fetch bi.pharmaceuticalBillItem pbi "
-                    + "left join fetch bi.item "
-                    + "left join fetch pbi.stock "
-                    + "left join fetch pbi.itemBatch ib "
-                    + "left join fetch ib.item "
-                    + "where bi.bill.id = :billId";
+            // JPQL scalar projection — JPA resolves entity/column names correctly on all
+            // platforms (case-insensitive). Selecting individual fields (not the entity itself)
+            // means EclipseLink returns raw Object[] rows and never hydrates BillItem entities,
+            // so EAGER relationships (billFees, patientInvestigation, etc.) never fire.
+            String jpql = "SELECT bi.id, bi.qty, bi.descreption, bi.catId, bi.netValue, "
+                    + "pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
+                    + "pbi.doe, pbi.stringValue, pbi.description "
+                    + "FROM BillItem bi "
+                    + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                    + "WHERE bi.bill.id = :billId "
+                    + "ORDER BY bi.catId, bi.descreption";
 
             HashMap<String, Object> params = new HashMap<>();
             params.put("billId", snapshotBill.getId());
 
-            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+            System.out.println("[LoadLazy] Running JPQL scalar... ms=" + (System.currentTimeMillis() - t0));
+            @SuppressWarnings("unchecked")
+            List<Object[]> rows = (List<Object[]>) (List<?>) billItemFacade.findByJpql(jpql, params);
+            System.out.println("[LoadLazy] JPQL done. rows=" + rows.size()
+                    + " ms=" + (System.currentTimeMillis() - t0));
 
-            // Handle lazy collection properly - use reflection or direct assignment
-            // Instead of modifying the lazy collection, we'll just work with the loaded list
-            // and let the HashMap optimization handle the lookups
-            // Store loaded items for HashMap indexing
-            if (billItems != null && !billItems.isEmpty()) {
-                // Force initialization of the lazy collection by accessing it
-                try {
-                    if (snapshotBill.getBillItems() == null) {
-                        // Collection is null, initialize with loaded items
-                        snapshotBill.setBillItems(billItems);
-                    } else {
-                        // Collection exists but might be lazy - try to access it safely
-                        snapshotBill.getBillItems().size(); // Force initialization
-                        snapshotBill.getBillItems().clear();
-                        snapshotBill.getBillItems().addAll(billItems);
-                    }
-                } catch (Exception lazyException) {
-                    // If lazy loading fails, set the collection directly
-                    LOGGER.log(Level.WARNING, "[Performance] Lazy collection access failed, using direct assignment", lazyException);
-                    snapshotBill.setBillItems(billItems);
-                }
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> dtos =
+                    new java.util.ArrayList<>(rows.size());
+            for (Object[] r : rows) {
+                Date expiry = r[8] instanceof java.util.Date ? new Date(((java.util.Date) r[8]).getTime()) : null;
+                dtos.add(new com.divudi.core.data.dto.SnapshotBillItemDTO(
+                        toLong(r[0]),          // billItemId
+                        toDouble(r[1]),        // qty
+                        r[2] != null ? r[2].toString() : null,  // itemName
+                        r[3] != null ? r[3].toString() : null,  // categoryName
+                        toDouble(r[4]),        // netValue
+                        toDouble(r[5]),        // costRate
+                        toDouble(r[6]),        // purchaseRate
+                        toDouble(r[7]),        // retailRate
+                        expiry,                // expiryDate
+                        r[9] != null ? r[9].toString() : null,  // batchNo
+                        r[10] != null ? r[10].toString() : null // dosageForm
+                ));
             }
 
-            timer.logCompletion(billItems != null ? billItems.size() : 0);
-
-            LOGGER.log(Level.INFO, "[Performance] Lazy loaded {0} BillItems for snapshot",
-                    billItems != null ? billItems.size() : 0);
+            snapshotItems = dtos;
+            System.out.println("[LoadLazy] DONE. items=" + dtos.size()
+                    + " ms=" + (System.currentTimeMillis() - t0));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[Performance] Error lazy loading BillItems for snapshot billId=" + snapshotBill.getId(), e);
-            timer.logCompletion(0);
+            LOGGER.log(Level.SEVERE, "[LoadLazy] Error loading snapshot items for billId="
+                    + snapshotBill.getId(), e);
         }
+    }
+
+    private static long toLong(Object o) {
+        if (o == null) return 0L;
+        return ((Number) o).longValue();
+    }
+
+    private static double toDouble(Object o) {
+        if (o == null) return 0.0;
+        return ((Number) o).doubleValue();
     }
 
     /**
@@ -3140,20 +3083,31 @@ public class PharmacyStockTakeController implements Serializable {
      * This method is called by JSF EL expressions like:
      * #{pharmacyStockTakeController.snapshotBillItemsLazy}
      */
-    public List<BillItem> getSnapshotBillItemsLazy() {
-        // Check if BillItems are already loaded
-        if (snapshotBill != null && snapshotBill.getBillItems() != null
-            && !snapshotBill.getBillItems().isEmpty()) {
-            return snapshotBill.getBillItems();
+    public List<com.divudi.core.data.dto.SnapshotBillItemDTO> getSnapshotItems() {
+        // Fast path — already loaded as plain DTOs, no EclipseLink involved
+        if (snapshotItems != null && !snapshotItems.isEmpty()) {
+            System.out.println("[GetLazy] CACHE HIT items=" + snapshotItems.size());
+            return snapshotItems;
         }
 
-        // Load BillItems on-demand using existing optimized infrastructure
+        System.out.println("[GetLazy] CACHE MISS — will load. snapshotBillDisplay="
+                + (snapshotBillDisplay != null ? snapshotBillDisplay.getId() : "null"));
+
         if (snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
-            // Use the existing lazy loading method which handles proper fetch joins
+            if (snapshotBill == null) {
+                snapshotBill = billFacade.getReference(snapshotBillDisplay.getId());
+                System.out.println("[GetLazy] Created proxy billId=" + snapshotBill.getId());
+            }
             loadSnapshotBillItemsLazily();
-            return snapshotBill != null ? snapshotBill.getBillItems() : new ArrayList<>();
+            return snapshotItems != null ? snapshotItems : new ArrayList<>();
         }
 
+        System.out.println("[GetLazy] No display bill set — returning empty list");
+        return new ArrayList<>();
+    }
+
+    /** Keep for backward compatibility with any other code that still calls this */
+    public List<BillItem> getSnapshotBillItemsLazy() {
         return new ArrayList<>();
     }
 
@@ -3168,8 +3122,71 @@ public class PharmacyStockTakeController implements Serializable {
             return snapshotBillDisplay.getItemsCount().intValue();
         }
 
-        // Fallback to actual collection size (triggers lazy loading if needed)
-        return getSnapshotBillItemsLazy().size();
+        // Fallback to DTO list size
+        return getSnapshotItems().size();
+    }
+
+    public double getSnapshotRetailTotal() {
+        double total = 0.0;
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+            total += dto.getRetailValue();
+        }
+        return total;
+    }
+
+    public double getSnapshotCostTotal() {
+        double total = 0.0;
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+            total += dto.getCostValue();
+        }
+        return total;
+    }
+
+    public double getSnapshotPurchaseTotal() {
+        double total = 0.0;
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+            total += dto.getPurchaseValue();
+        }
+        return total;
+    }
+
+    public double getInMemoryRetailTotal() {
+        double total = 0.0;
+        if (snapshotBill != null && snapshotBill.getBillItems() != null) {
+            for (BillItem bi : snapshotBill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getInMemoryCostTotal() {
+        double total = 0.0;
+        if (snapshotBill != null && snapshotBill.getBillItems() != null) {
+            for (BillItem bi : snapshotBill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getCostRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getInMemoryPurchaseTotal() {
+        double total = 0.0;
+        if (snapshotBill != null && snapshotBill.getBillItems() != null) {
+            for (BillItem bi : snapshotBill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null && bi.getQty() != null) {
+                    total += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getQty();
+                }
+            }
+        }
+        return total;
     }
 
     /**
@@ -3843,6 +3860,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Set printPreview to true to show the print section
         this.printPreview = true;
+        this.comments = null;
 
         JsfUtil.addSuccessMessage("Physical count approved");
     }
@@ -3896,6 +3914,7 @@ public class PharmacyStockTakeController implements Serializable {
      */
     public void resetStockTakingSession() {
         this.snapshotBill = null;
+        this.snapshotItems = null;
         this.physicalCountBill = null;
         this.file = null;
         this.printPreview = false;
@@ -3992,6 +4011,42 @@ public class PharmacyStockTakeController implements Serializable {
 
     public StreamedContent getDownloadCategoryBlindSheet() {
         return downloadCategoryBlindSheet();
+    }
+
+    public com.divudi.core.entity.Category getSelectedDosageForm() {
+        return selectedDosageForm;
+    }
+
+    public void setSelectedDosageForm(com.divudi.core.entity.Category selectedDosageForm) {
+        this.selectedDosageForm = selectedDosageForm;
+    }
+
+    public StreamedContent downloadFilteredGuidedSheet() {
+        if (selectedCategory == null && selectedDosageForm == null) {
+            JsfUtil.addErrorMessage("Please select at least a category or a dosage form");
+            return null;
+        }
+        String catPart = selectedCategory != null ? selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        String dfPart = selectedDosageForm != null ? selectedDosageForm.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        return generateFilteredSheet(true, "pharmacy_stock_guided_" + catPart + "_" + dfPart + ".xlsx");
+    }
+
+    public StreamedContent downloadFilteredBlindSheet() {
+        if (selectedCategory == null && selectedDosageForm == null) {
+            JsfUtil.addErrorMessage("Please select at least a category or a dosage form");
+            return null;
+        }
+        String catPart = selectedCategory != null ? selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        String dfPart = selectedDosageForm != null ? selectedDosageForm.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        return generateFilteredSheet(false, "pharmacy_stock_blind_" + catPart + "_" + dfPart + ".xlsx");
+    }
+
+    public StreamedContent getDownloadFilteredGuidedSheet() {
+        return downloadFilteredGuidedSheet();
+    }
+
+    public StreamedContent getDownloadFilteredBlindSheet() {
+        return downloadFilteredBlindSheet();
     }
 
     private StreamedContent generateCategorySheet(boolean includeSystemQty, String fileName) {
@@ -4115,6 +4170,14 @@ public class PharmacyStockTakeController implements Serializable {
                 hCat.setCellValue("Category");
                 if (headerStyle != null) {
                     hCat.setCellStyle(headerStyle);
+                }
+            }
+
+            Cell hDf = header.createCell(col++);
+            if (hDf != null) {
+                hDf.setCellValue("Dosage Form");
+                if (headerStyle != null) {
+                    hDf.setCellStyle(headerStyle);
                 }
             }
 
@@ -4407,9 +4470,202 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
+    /**
+     * Generate a filtered sheet by optional category and/or dosage form.
+     * Either or both filters may be null (null = no filter on that dimension).
+     * Reads rates from pbi fields (purchaseRate, retailRate, costRate) which are
+     * stored directly during snapshot generation — no itemBatch join needed.
+     */
+    private StreamedContent generateFilteredSheet(boolean includeSystemQty, String fileName) {
+        if (snapshotBill == null || snapshotBill.getId() == null) {
+            return null;
+        }
+        if (billItemFacade == null) {
+            return null;
+        }
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = "pharmacy_stock_filtered.xlsx";
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet("Stock");
+
+            CreationHelper creationHelper = wb.getCreationHelper();
+            DataFormat dataFormat = wb.createDataFormat();
+
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setLocked(true);
+
+            CellStyle textLocked = wb.createCellStyle();
+            textLocked.setLocked(true);
+
+            CellStyle dateLocked = wb.createCellStyle();
+            dateLocked.setLocked(true);
+            dateLocked.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd"));
+
+            CellStyle numberLocked = wb.createCellStyle();
+            numberLocked.setLocked(true);
+            numberLocked.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            CellStyle integerLocked = wb.createCellStyle();
+            integerLocked.setLocked(true);
+            integerLocked.setDataFormat(dataFormat.getFormat("#,##0"));
+
+            CellStyle inputUnlocked = wb.createCellStyle();
+            inputUnlocked.setLocked(false);
+            inputUnlocked.setDataFormat(dataFormat.getFormat("#,##0.######"));
+            inputUnlocked.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.LIGHT_YELLOW.getIndex());
+            inputUnlocked.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            // Header row
+            Row header = sheet.createRow(0);
+            int col = 0;
+            String[] headers = {"BillItem ID", "Code", "Category", "Dosage Form", "Name",
+                "Batch", "Expiry Date", "Purchase Rate", "Retail Rate", "Cost Rate"};
+            if (includeSystemQty) {
+                headers = new String[]{"BillItem ID", "Code", "Category", "Dosage Form", "Name",
+                    "Batch", "Expiry Date", "Purchase Rate", "Retail Rate", "Cost Rate", "System Qty", "Real Stock Qty", "Line Value"};
+            } else {
+                headers = new String[]{"BillItem ID", "Code", "Category", "Dosage Form", "Name",
+                    "Batch", "Expiry Date", "Purchase Rate", "Retail Rate", "Cost Rate", "Real Stock Qty", "Line Value"};
+            }
+            for (String h : headers) {
+                Cell c = header.createCell(col++);
+                c.setCellValue(h);
+                c.setCellStyle(headerStyle);
+            }
+
+            // Filter the already-loaded snapshotItems DTO list in memory — no DB hit
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> allItems = getSnapshotItems();
+            String catFilter = selectedCategory != null ? selectedCategory.getName() : null;
+            String dfFilter = selectedDosageForm != null ? selectedDosageForm.getName() : null;
+            List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = new java.util.ArrayList<>();
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : allItems) {
+                if (catFilter != null && !catFilter.equals(dto.getCategoryName())) continue;
+                if (dfFilter != null && !dfFilter.equals(dto.getDosageForm())) continue;
+                items.add(dto);
+            }
+
+            int rowNum = 1;
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : items) {
+                Row row = sheet.createRow(rowNum++);
+                int c = 0;
+
+                // BillItem ID
+                Cell cId = row.createCell(c++);
+                cId.setCellValue(dto.getBillItemId() != null ? dto.getBillItemId() : 0L);
+                cId.setCellStyle(integerLocked);
+
+                // Code — not stored in SnapshotBillItemDTO, leave blank
+                Cell cCode = row.createCell(c++);
+                cCode.setCellValue("");
+                cCode.setCellStyle(textLocked);
+
+                // Category
+                Cell cCat = row.createCell(c++);
+                cCat.setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+                cCat.setCellStyle(textLocked);
+
+                // Dosage Form
+                Cell cDf = row.createCell(c++);
+                cDf.setCellValue(dto.getDosageForm() != null ? dto.getDosageForm() : "");
+                cDf.setCellStyle(textLocked);
+
+                // Name
+                Cell cName = row.createCell(c++);
+                cName.setCellValue(dto.getItemName() != null ? dto.getItemName() : "");
+                cName.setCellStyle(textLocked);
+
+                // Batch
+                Cell cBatch = row.createCell(c++);
+                cBatch.setCellValue(dto.getBatchNo() != null ? dto.getBatchNo() : "");
+                cBatch.setCellStyle(textLocked);
+
+                // Expiry
+                Cell cExp = row.createCell(c++);
+                if (dto.getExpiryDate() != null) {
+                    cExp.setCellValue(dto.getExpiryDate());
+                    cExp.setCellStyle(dateLocked);
+                } else {
+                    cExp.setCellValue("");
+                    cExp.setCellStyle(textLocked);
+                }
+
+                double pr = dto.getPurchaseRate();
+                double rr = dto.getRetailRate();
+                double cr = dto.getCostRate();
+                double qty = dto.getQty() != null ? dto.getQty() : 0.0;
+
+                Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
+                Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
+                Cell cCR = row.createCell(c++); cCR.setCellValue(cr); cCR.setCellStyle(numberLocked);
+
+                if (includeSystemQty) {
+                    Cell cSys = row.createCell(c++); cSys.setCellValue(qty); cSys.setCellStyle(numberLocked);
+                }
+
+                // Real Qty (editable)
+                Cell cReal = row.createCell(c++);
+                cReal.setCellStyle(inputUnlocked);
+
+                // Line Value (cost-based)
+                Cell cLV = row.createCell(c++); cLV.setCellValue(cr * qty); cLV.setCellStyle(numberLocked);
+            }
+
+            for (int i = 0; i < col; i++) {
+                try { sheet.autoSizeColumn(i); } catch (Exception ignored) {}
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            wb.write(baos);
+            byte[] bytes = baos.toByteArray();
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> bais)
+                    .build();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating filtered sheet: " + e.getMessage());
+            return null;
+        }
+    }
+
     // Removed legacy getters/setters for snapshotBills
     public List<VarianceRow> getVarianceRows() {
         return varianceRows;
+    }
+
+    public double getVarianceTotalAtCostRate() {
+        if (varianceRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceRow r : varianceRows) {
+            total += (r.getSumVariance() != null ? r.getSumVariance() : 0.0) * r.getCostRate();
+        }
+        return total;
+    }
+
+    public double getVarianceTotalAtPurchaseRate() {
+        if (varianceRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceRow r : varianceRows) {
+            total += (r.getSumVariance() != null ? r.getSumVariance() : 0.0) * r.getPurchaseRate();
+        }
+        return total;
+    }
+
+    public double getVarianceTotalAtRetailRate() {
+        if (varianceRows == null) return 0.0;
+        double total = 0.0;
+        for (VarianceRow r : varianceRows) {
+            total += (r.getSumVariance() != null ? r.getSumVariance() : 0.0) * r.getRetailRate();
+        }
+        return total;
     }
 
     // Start asynchronous approval so it completes even if browser closes
@@ -4586,74 +4842,52 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_physical_count_pending?faces-redirect=true";
     }
 
-    // DTO for variance report
+    // DTO for variance report — no entity references, all scalar fields
     public static class VarianceRow implements Serializable {
 
-        private BillItem snapshotItem;
+        private Long billItemId;
+        private String code;
+        private String itemName;
+        private String batchNo;
+        private Double purchaseRate;
+        private Double retailRate;
+        private Double costRate;
         private Double initialQty;
         private Double sumVariance;
         private Double lastPhysicalQty;
 
-        public BillItem getSnapshotItem() {
-            return snapshotItem;
-        }
+        public Long getBillItemId() { return billItemId; }
+        public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
 
-        public void setSnapshotItem(BillItem snapshotItem) {
-            this.snapshotItem = snapshotItem;
-        }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
 
-        public Double getInitialQty() {
-            return initialQty;
-        }
+        public String getItemName() { return itemName; }
+        public void setItemName(String itemName) { this.itemName = itemName; }
 
-        public void setInitialQty(Double initialQty) {
-            this.initialQty = initialQty;
-        }
+        public String getBatchNo() { return batchNo; }
+        public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
 
-        public Double getSumVariance() {
-            return sumVariance;
-        }
+        public Double getPurchaseRate() { return purchaseRate != null ? purchaseRate : 0.0; }
+        public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
 
-        public void setSumVariance(Double sumVariance) {
-            this.sumVariance = sumVariance;
-        }
+        public Double getRetailRate() { return retailRate != null ? retailRate : 0.0; }
+        public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
 
-        public Double getLastPhysicalQty() {
-            return lastPhysicalQty;
-        }
+        public Double getCostRate() { return costRate != null ? costRate : 0.0; }
+        public void setCostRate(Double costRate) { this.costRate = costRate; }
 
-        public void setLastPhysicalQty(Double lastPhysicalQty) {
-            this.lastPhysicalQty = lastPhysicalQty;
-        }
+        public Double getInitialQty() { return initialQty; }
+        public void setInitialQty(Double initialQty) { this.initialQty = initialQty; }
 
-        // Convenience getters for table columns
-        public Long getBillItemId() {
-            return snapshotItem != null ? snapshotItem.getId() : null;
-        }
+        public Double getSumVariance() { return sumVariance; }
+        public void setSumVariance(Double sumVariance) { this.sumVariance = sumVariance; }
 
-        public String getCode() {
-            try {
-                return snapshotItem.getPharmaceuticalBillItem().getItemBatch().getItem().getCode();
-            } catch (Exception e) {
-                return null;
-            }
-        }
+        public Double getLastPhysicalQty() { return lastPhysicalQty; }
+        public void setLastPhysicalQty(Double lastPhysicalQty) { this.lastPhysicalQty = lastPhysicalQty; }
 
-        public String getItemName() {
-            try {
-                return snapshotItem.getItem().getName();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
-        public String getBatch() {
-            try {
-                return snapshotItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo();
-            } catch (Exception e) {
-                return null;
-            }
-        }
+        // Alias used in XHTML column: r.batch
+        public String getBatch() { return batchNo; }
     }
 
     /**
