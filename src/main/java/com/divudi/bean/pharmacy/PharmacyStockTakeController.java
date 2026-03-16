@@ -1320,8 +1320,12 @@ public class PharmacyStockTakeController implements Serializable {
             physicalCountBill.setCreater(sessionController.getLoggedUser());
             physicalCountBill.setReferenceBill(billFacade.getReference(snapshotBillDisplay.getId()));
 
-            int colBillItemId = 0;
-            int colRealStock = 10;
+            Row headerRow = sheet.getRow(0);
+            int colBillItemId = headerRow != null ? findColumnIndex(headerRow, "BillItem ID") : 0;
+            int colRealStock = headerRow != null ? findColumnIndex(headerRow, "Real Stock Qty") : 11;
+            if (colBillItemId < 0) colBillItemId = 0;
+            if (colRealStock < 0) colRealStock = 11;
+            System.out.println("[Upload] colBillItemId=" + colBillItemId + " colRealStock=" + colRealStock);
             int processed = 0;
             int matched = 0;
             int skippedNoQty = 0;
@@ -1552,9 +1556,13 @@ public class PharmacyStockTakeController implements Serializable {
                 java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferences(snapBillItemIds);
                 System.out.println("PERF: Snapshot references pre-loaded in " + (System.currentTimeMillis() - preloadStartTime) + "ms");
 
-                // Excel column definitions (consistent with optimized method)
-                int colBillItemId = 0;  // Column 0 = BillItemId
-                int colRealStock = 10;  // Column 10 = Physical stock count
+                // Resolve columns by header name so layout changes never break the upload
+                Row nativeSqlHeaderRow = sheet.getRow(0);
+                int colBillItemId = nativeSqlHeaderRow != null ? findColumnIndex(nativeSqlHeaderRow, "BillItem ID") : 0;
+                int colRealStock = nativeSqlHeaderRow != null ? findColumnIndex(nativeSqlHeaderRow, "Real Stock Qty") : 11;
+                if (colBillItemId < 0) colBillItemId = 0;
+                if (colRealStock < 0) colRealStock = 11;
+                System.out.println("[Upload-NativeSQL] colBillItemId=" + colBillItemId + " colRealStock=" + colRealStock);
 
                 // Processing counters
                 int processed = 0;
