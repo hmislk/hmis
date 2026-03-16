@@ -4668,20 +4668,6 @@ public class PharmacyStockTakeController implements Serializable {
         return total;
     }
 
-    public String getVarianceExcelFilename() {
-        String deptPart = (snapshotBill != null && snapshotBill.getDepartment() != null)
-                ? snapshotBill.getDepartment().getName().replaceAll("[^A-Za-z0-9_\\-]", "_")
-                : "Variance";
-        String datePart = "";
-        if (snapshotBill != null && snapshotBill.getCreatedAt() != null) {
-            datePart = "_" + new java.text.SimpleDateFormat("yyyy-MM-dd").format(snapshotBill.getCreatedAt());
-        }
-        String billPart = (snapshotBill != null && snapshotBill.getDeptId() != null)
-                ? "_" + snapshotBill.getDeptId().replaceAll("[^A-Za-z0-9_\\-]", "_")
-                : "";
-        return "StockTakeVariance_" + deptPart + datePart + billPart;
-    }
-
     // Start asynchronous approval so it completes even if browser closes
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
@@ -4804,20 +4790,22 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Generate a sanitized filename for variance report Excel export. Includes
-     * the snapshot bill number, sanitized to remove invalid filename
-     * characters.
+     * the snapshot date and bill number, sanitized to remove invalid filename characters.
      *
-     * @return sanitized filename with .xlsx extension
+     * @return sanitized filename without extension (PrimeFaces appends .xlsx)
      */
     public String getVarianceExcelFilename() {
-        if (snapshotBill == null || snapshotBill.getDeptId() == null || snapshotBill.getDeptId().trim().isEmpty()) {
-            return "pharmacy_stock_take_variance.xlsx";
+        if (snapshotBill == null) {
+            return "pharmacy_stock_take_variance";
         }
-        // Sanitize the bill number by replacing invalid filename characters with underscore
-        String sanitized = snapshotBill.getDeptId()
-                .replaceAll("[/\\\\:*?\"<>|,.-]", "_")
-                .trim();
-        return "pharmacy_stock_take_variance_" + sanitized;
+        String datePart = "";
+        if (snapshotBill.getCreatedAt() != null) {
+            datePart = "_" + new java.text.SimpleDateFormat("yyyy-MM-dd").format(snapshotBill.getCreatedAt());
+        }
+        String billPart = (snapshotBill.getDeptId() != null && !snapshotBill.getDeptId().trim().isEmpty())
+                ? "_" + snapshotBill.getDeptId().replaceAll("[/\\\\:*?\"<>|,. ]", "_").trim()
+                : "";
+        return "pharmacy_stock_take_variance" + datePart + billPart;
     }
 
     // Navigation methods
