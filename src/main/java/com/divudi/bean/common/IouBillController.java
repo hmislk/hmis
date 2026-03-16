@@ -319,9 +319,11 @@ public class IouBillController implements Serializable {
         String jpql = "select p "
                 + " from Payment p "
                 + " where p.retired=:ret "
-                + " and p.currentHolder=:user "
+                + " and (p.currentHolder=:user or (p.currentHolder is null and p.creater=:user)) "
                 + " and p.paymentMethod=:pm"
-                + " and p.cancelled=:can ";
+                + " and p.cancelled=:can "
+                + " and p.cancelledBill is null "
+                + " and p.paidValue > 0 ";
         Map params = new HashMap();
         params.put("ret", false);
         params.put("can", false);
@@ -401,6 +403,14 @@ public class IouBillController implements Serializable {
 
         drawerController.updateDrawerForOuts(iouReversals);
         drawerController.updateDrawerForIns(cashPayments);
+
+        // Mark original IOU payments as processed by linking to the conversion bill
+        // Using cancelledBill reference (without setting cancelled=true) to indicate
+        // this IOU has been converted, keeping it visible in cashier summaries
+        for (Payment iouPayment : settlingIuos) {
+            iouPayment.setCancelledBill(current);
+            paymentController.save(iouPayment);
+        }
 
         paymentsForsettlingIuos = cashPayments;
         JsfUtil.addSuccessMessage("IOUs converted to cash successfully");
