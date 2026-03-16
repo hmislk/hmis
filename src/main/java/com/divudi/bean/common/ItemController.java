@@ -1871,9 +1871,12 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            i.setAllowedForBillingPriority(true);
-            itemFacade.edit(i);
+            Item item = itemFacade.findWithoutCache(i.getId());
+                
+            item.setAllowedForBillingPriority(true);
+            itemFacade.editAndCommit(item);
         }
+        fillItemsWithInvestigationsAndServices();
         JsfUtil.addSuccessMessage("All Items Marked for Allowed Priority for Billing");
     }
 
@@ -1883,9 +1886,12 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            i.setAllowedForBillingPriority(false);
-            itemFacade.edit(i);
+            Item item = itemFacade.findWithoutCache(i.getId());
+                
+            item.setAllowedForBillingPriority(false);
+            itemFacade.editAndCommit(item);
         }
+        fillItemsWithInvestigationsAndServices();
         JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Priority for Billing");
     }
 
@@ -1898,14 +1904,17 @@ public class ItemController implements Serializable {
 
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
-                i.setAllowToSendSMS(true);
-                itemFacade.edit(i);
+                Item item = itemFacade.findWithoutCache(i.getId());
+                
+                item.setAllowToSendSMS(true);
+                itemFacade.editAndCommit(item);
                 updatedCount++;
             }
         }
         if (updatedCount == 0) {
             JsfUtil.addErrorMessage("No Investigation items selected.");
         } else {
+            fillItemsWithInvestigationsAndServices();
             JsfUtil.addSuccessMessage(updatedCount + " item(s) marked to allow report SMS.");
         }
     }
@@ -1919,15 +1928,17 @@ public class ItemController implements Serializable {
 
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
-                i.setAllowToSendSMS(false);
-                itemFacade.edit(i);
+                Item item = itemFacade.findWithoutCache(i.getId());
+                
+                item.setAllowToSendSMS(false);
+                itemFacade.editAndCommit(item);
                 updatedCount++;
-
             }
         }
         if (updatedCount == 0) {
             JsfUtil.addErrorMessage("No Investigation items selected.");
         } else {
+            fillItemsWithInvestigationsAndServices();
             JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
         }
     }
@@ -3758,7 +3769,7 @@ public class ItemController implements Serializable {
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
-        items = getFacade().findByJpql(temSql, h, TemporalType.TIME);
+        items = getFacade().findByJpql(temSql, h, TemporalType.TIMESTAMP);
     }
 
     public List<Item> getInwardItems() {

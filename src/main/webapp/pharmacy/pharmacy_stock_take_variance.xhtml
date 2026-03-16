@@ -5,7 +5,37 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <h:head />
+    <h:head>
+        <style type="text/css">
+            @media print {
+                /* Hide navigation, header, sidebar, buttons */
+                .layout-topbar, .layout-sidebar, .layout-menu,
+                .no-print, .card-header, .ui-paginator,
+                button, .ui-button { display: none !important; }
+
+                body, .layout-content, .container-fluid { margin: 0 !important; padding: 0 !important; }
+
+                /* Print header shown only when printing */
+                .print-header { display: block !important; margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+
+                /* Compact table for print */
+                .ui-datatable th, .ui-datatable td {
+                    font-size: 9pt !important;
+                    padding: 3px 5px !important;
+                }
+                .ui-datatable { width: 100% !important; }
+
+                /* Show footer totals */
+                .ui-datatable tfoot td { font-weight: bold; border-top: 1px solid #999; }
+
+                /* Force all pages to landscape */
+                @page { size: A4 landscape; margin: 10mm; }
+            }
+
+            /* Hide print header on screen */
+            .print-header { display: none; }
+        </style>
+    </h:head>
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
@@ -15,10 +45,10 @@
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h2 class="mb-0">Stock Take Variance Report</h2>
 
-                                <p:commandButton value="Print" icon="fa fa-print" ajax="false" style="margin-right: 8px;">
+                                <p:commandButton value="Print" icon="fa fa-print" styleClass="no-print" ajax="false" style="margin-right: 8px;">
                                     <p:printer target="variancePanel" />
                                 </p:commandButton>
-                                <p:commandButton value="Download" icon="fa fa-download" ajax="false">
+                                <p:commandButton value="Download" icon="fa fa-download" styleClass="no-print" ajax="false">
                                     <p:dataExporter type="xlsx" target="tblVariance" fileName="#{pharmacyStockTakeController.varianceExcelFilename}" />
                                 </p:commandButton>
 
@@ -30,6 +60,24 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
+
+                                        <!-- Print-only header with full details -->
+                                        <div class="print-header">
+                                            <h3 style="margin:0 0 6px 0;">Stock Take Variance Report</h3>
+                                            <table style="width:100%; font-size:10pt;">
+                                                <tr>
+                                                    <td style="width:50%;"><strong>Institution:</strong>&#160;<h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/></td>
+                                                    <td style="width:50%;"><strong>Department:</strong>&#160;<h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Snapshot Bill No:</strong>&#160;<h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}" style="font-family:monospace;"/></td>
+                                                    <td><strong>Snapshot Date:</strong>&#160;<h:outputText value="#{pharmacyStockTakeController.snapshotBill.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                    </h:outputText></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
                                         <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Institution:"/>
                                             <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/>
@@ -64,20 +112,20 @@
                                                 <h:outputText value="#{r.itemName}"/>
                                             </p:column>
                                             <p:column headerText="Batch" style="width: 120px; text-align:center;">
-                                                <h:outputText value="#{r.batch}"/>
+                                                <h:outputText value="#{r.batchNo}"/>
                                             </p:column>
                                             <p:column headerText="Purchase Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                                <h:outputText value="#{r.purchaseRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Retail Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                                <h:outputText value="#{r.retailRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Cost Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                <h:outputText value="#{r.costRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
@@ -91,15 +139,35 @@
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Sum of Variances at cost rate" style="width: 150px; text-align:right;">
-                                                <h:outputText value="#{r.sumVariance*r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                            <p:column headerText="Sum of Variances at Cost Rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.costRate}">
                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtCostRate}" style="font-weight:bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
                                             </p:column>
-                                            <p:column headerText="Last Physical Count" style="width: 160px; text-align:right;">
-                                                <h:outputText value="#{r.lastPhysicalQty}">
-                                                    <f:convertNumber integerOnly="true"/>
+                                            <p:column headerText="Sum of Variances at Purchase Rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.purchaseRate}">
+                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtPurchaseRate}" style="font-weight:bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Sum of Variances at Retail Rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.retailRate}">
+                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtRetailRate}" style="font-weight:bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
                                             </p:column>
                                         </p:dataTable>
 

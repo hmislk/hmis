@@ -14,18 +14,21 @@
     <ui:define name="admin">
         <h:panelGroup >
             <h:form  >
+                <p:growl id="growl" showDetail="true" />
                 <p:panel rendered="#{!cashRecieveBillController.printPreview}" class="m-1 w-100" >
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between">
                             <h:outputLabel value="CREDIT COMPANY PAYMENTS FOR INPATIENTS" class="mt-2 font-weight-bold" style="font-size:1.2rem;"/>
                             <div class="d-flex gap-2">
 
-                                <p:commandButton 
-                                    id="btnSettle" 
-                                    value="Settle" 
+                                <p:commandButton
+                                    id="btnSettle"
+                                    value="Settle"
                                     action="#{cashRecieveBillController.settleBillBht}"
                                     ajax="true"
-                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
+                                    process="@this cmbPs creditCard cheque slip txtComment"
+                                    update="@form"
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
                                     class="ui-button-success"
                                     icon="fa fa-check">
                                 </p:commandButton>
@@ -54,11 +57,13 @@
                                         </div>
                                         <div class="d-flex justify-content-end">
 
-                                            <p:commandButton 
-                                                id="btnAddIx" 
-                                                value="Add" 
-                                                action="#{cashRecieveBillController.addToBht()}" 
+                                            <p:commandButton
+                                                id="btnAddIx"
+                                                value="Add"
+                                                action="#{cashRecieveBillController.addToBht()}"
                                                 ajax="true"
+                                                process="@this acIx valToPay valPaying"
+                                                update="items tot valToPay valPaying growl"
                                                 icon="fa fa-plus"
                                                 class=" ui-button-success"/>
 
@@ -152,16 +157,22 @@
                                 <div class="row my-2">
                                     <div class="col-md-10">
                                         <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            <h:panelGroup id="creditCard">
+                                                <h:panelGroup rendered="#{cashRecieveBillController.current.paymentMethod eq 'Card'}">
+                                                    <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            <h:panelGroup id="cheque">
+                                                <h:panelGroup rendered="#{cashRecieveBillController.current.paymentMethod eq 'Cheque'}">
+                                                    <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            <h:panelGroup id="slip">
+                                                <h:panelGroup rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
+                                                    <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                     </div>
@@ -187,7 +198,7 @@
                                         <p:outputLabel value="Description" style="font-weight:bold;"/>
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100" rows="2" placeholder="Enter payment remarks if any"/>
+                                        <p:inputTextarea id="txtComment" value="#{cashRecieveBillController.comment}" class="w-100" rows="2" placeholder="Enter payment remarks if any"/>
                                     </div>
                                 </div>
                             </p:panel>

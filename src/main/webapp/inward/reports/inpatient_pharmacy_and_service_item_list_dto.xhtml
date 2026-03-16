@@ -1,0 +1,341 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="inpatientPharmacyAndServiceReportGrowl"></p:growl>
+            <p:panel>
+                <f:facet name="header">
+                    <h:outputText styleClass="fa fa-list-alt"></h:outputText>
+                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Pharmacy &amp; Services Summary" class="m-2"></p:outputLabel>
+
+                    <p:commandButton
+                        value="Back to Inpatient Profile"
+                        action="#{inwardReportControllerBht.navigateToAdmissionProfile()}"
+                        style="float: right;"
+                        ajax="false"
+                        class="ui-button-secondary m-1"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+
+                </f:facet>
+
+                <style>
+                    @media print {
+                        body {
+                            margin: 0px 5px;
+                        }
+                    }
+                </style>
+
+                <div class="row">
+                    <div class="col-3">
+                        <div class="m-1">
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.nameWithTitle}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.sex}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.ageAsString}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.mobile}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.phone}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty admissionController.current.patient.person.nic ? 'N/A' : admissionController.current.patient.person.nic}" /></div>
+                                </div>
+                            </p:panel>
+                        </div>
+                        <div class="m-1">
+                            <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                    </div>
+                    <div class="col-9">
+
+                        <!-- Pharmacy Issues Panel -->
+                        <p:panel class="mb-2">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa fa-pills"></h:outputText>
+                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;Pharmacy Issues" style="font-weight: bold"></p:outputLabel>
+
+                                <p:commandButton
+                                    value="Download"
+                                    ajax="false"
+                                    class="ui-button-primary m-1"
+                                    icon="fa fa-download">
+                                    <p:dataExporter fileName="Inpatient Medicine Issue" target="tblPharmacy" type="xlsx"></p:dataExporter>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    class="ui-button-primary m-1"
+                                    icon="fa fa-print">
+                                    <p:printer target="tblPharmacy"></p:printer>
+                                </p:commandButton>
+                            </f:facet>
+
+                            <p:dataTable
+                                id="tblPharmacy"
+                                rowIndexVar="rowIndex"
+                                value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounter}"
+                                var="dto">
+
+                                <f:facet name="header">
+                                    <h:panelGrid columns="5" style="width: 100%; text-align: left;">
+                                        <h:outputLabel value="Name:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Age:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+
+                                        <h:outputLabel value="Gender:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Room Number:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
+
+                                        <h:outputLabel value="Date of Admission:" />
+                                        <h:outputLabel>
+                                            <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Date of Discharge:" />
+                                        <h:outputLabel>
+                                            <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="BHT:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Phone Number:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column width="20em" style="padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.itemName}" />
+                                </p:column>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="QTY" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.qty : dto.qty}">
+                                        <f:convertNumber pattern="#0" />
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column width="3em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.rate}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.referenceBillItemId ne null and dto.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !dto.billCancelled ? 'ui-messages-warn' : dto.referenceBillItemId ne null and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.netValue : dto.netValue}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterNetTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                        <!-- Services Panel -->
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa fa-stethoscope"></h:outputText>
+                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;Services" style="font-weight: bold"></p:outputLabel>
+
+                                <p:commandButton
+                                    value="Download"
+                                    ajax="false"
+                                    class="ui-button-primary m-1"
+                                    icon="fa fa-download">
+                                    <p:dataExporter fileName="Inpatient Service Summary" target="tblServices" type="xlsx"></p:dataExporter>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    class="ui-button-primary m-1"
+                                    icon="fa fa-print">
+                                    <p:printer target="tblServices"></p:printer>
+                                </p:commandButton>
+                            </f:facet>
+
+                            <p:dataTable
+                                id="tblServices"
+                                rowIndexVar="rowIndex"
+                                value="#{inwardReportControllerBht.serviceIssueDtosToPatientEncounter}"
+                                var="dto">
+
+                                <f:facet name="header">
+                                    <h:panelGrid columns="5" style="width: 100%; text-align: left;">
+                                        <h:outputLabel value="Name:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Age:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+
+                                        <h:outputLabel value="Gender:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Room Number:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
+
+                                        <h:outputLabel value="Date of Admission:" />
+                                        <h:outputLabel>
+                                            <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Date of Discharge:" />
+                                        <h:outputLabel>
+                                            <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="BHT:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="Phone Number:" />
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column width="20em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Service Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.itemName}" />
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.departmentName}" />
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date" />
+                                    </f:facet>
+                                    <h:outputText value="#{dto.billCreatedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellation ? 0 - dto.netValue : dto.netValue}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.serviceIssueDtosToPatientEncounterNetTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                        <!-- Combined Total -->
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa fa-calculator"></h:outputText>
+                                <p:outputLabel value="&nbsp;&nbsp;&nbsp;Combined Total" style="font-weight: bold"></p:outputLabel>
+                            </f:facet>
+                            <div class="row">
+                                <div class="col-md-6 text-right font-weight-bold">
+                                    <p:outputLabel value="Pharmacy Total:" style="font-weight: bold; margin-right: 8px;" />
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterNetTotal}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-md-6 text-right font-weight-bold">
+                                    <p:outputLabel value="Services Total:" style="font-weight: bold; margin-right: 8px;" />
+                                    <h:outputLabel value="#{inwardReportControllerBht.serviceIssueDtosToPatientEncounterNetTotal}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-md-12 text-right" style="border-top: 2px solid #333; margin-top: 6px; padding-top: 6px;">
+                                    <p:outputLabel value="Grand Total:" style="font-weight: bold; font-size: 1.1em; margin-right: 8px;" />
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounterNetTotal + inwardReportControllerBht.serviceIssueDtosToPatientEncounterNetTotal}" style="font-weight: bold; font-size: 1.1em;">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                    </div>
+                </div>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -22,12 +22,14 @@
                                 <h:outputText value="Return Patient Deposit"/>
                             </div>
                             <div>
-                                <p:commandButton 
+                                <p:commandButton
                                     class="ui-button-success"
                                     icon="fas fa-check"
                                     id="btnSettle"
                                     value="Settle"
                                     action="#{patientController.settlePatientDepositReturn}"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     ajax="false"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                                 </p:commandButton>
