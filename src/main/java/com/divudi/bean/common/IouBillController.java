@@ -308,6 +308,107 @@ public class IouBillController implements Serializable {
         return "/cashier/settle_iou?faces-redirect=true";
     }
 
+    public String navigateToConvertIouToCash() {
+        recreateModel();
+        current = new Bill();
+        current.setBillType(BillType.IouSettle);
+        current.setBillTypeAtomic(BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        current.setDepartment(sessionController.getDepartment());
+        current.setInstitution(sessionController.getInstitution());
+        printPreview = false;
+        String jpql = "select p "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " and p.currentHolder=:user "
+                + " and p.paymentMethod=:pm"
+                + " and p.cancelled=:can ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("can", false);
+        params.put("pm", PaymentMethod.IOU);
+        params.put("user", sessionController.getLoggedUser());
+        myIousToSettle = paymentFacade.findByJpql(jpql, params);
+        settlingIuos = new ArrayList<>();
+        if (myIousToSettle == null || myIousToSettle.isEmpty()) {
+            JsfUtil.addErrorMessage("You do not have any IOUs to convert to cash");
+            return null;
+        }
+        return "/cashier/convert_iou_to_cash?faces-redirect=true";
+    }
+
+    public void convertSelectedIousToCash() {
+        if (settlingIuos == null || settlingIuos.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select at least one IOU to convert");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
+
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
+                BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.IouSettle);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        getCurrent().setDepartment(sessionController.getDepartment());
+        getCurrent().setInstitution(sessionController.getInstitution());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(sessionController.getLoggedUser());
+        getCurrent().setComments(comment);
+
+        double totalValue = 0.0;
+        for (Payment p : settlingIuos) {
+            totalValue += p.getPaidValue();
+        }
+        getCurrent().setTotal(totalValue);
+        getCurrent().setNetTotal(totalValue);
+
+        getBillFacade().create(getCurrent());
+
+        List<Payment> iouReversals = new ArrayList<>();
+        List<Payment> cashPayments = new ArrayList<>();
+        for (Payment iouPayment : settlingIuos) {
+            // Create a reversed IOU payment (negative value) to balance out
+            Payment iouReversal = new Payment();
+            iouReversal.setBill(current);
+            iouReversal.setPaymentMethod(PaymentMethod.IOU);
+            iouReversal.setPaidValue(0 - Math.abs(iouPayment.getPaidValue()));
+            iouReversal.setDepartment(sessionController.getDepartment());
+            iouReversal.setInstitution(sessionController.getInstitution());
+            iouReversal.setCreatedAt(new Date());
+            iouReversal.setCreater(sessionController.getLoggedUser());
+            iouReversal.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(iouReversal);
+            iouReversals.add(iouReversal);
+
+            // Create corresponding Cash payment (positive value)
+            Payment cashPayment = new Payment();
+            cashPayment.setBill(current);
+            cashPayment.setPaymentMethod(PaymentMethod.Cash);
+            cashPayment.setPaidValue(Math.abs(iouPayment.getPaidValue()));
+            cashPayment.setDepartment(sessionController.getDepartment());
+            cashPayment.setInstitution(sessionController.getInstitution());
+            cashPayment.setCreatedAt(new Date());
+            cashPayment.setCreater(sessionController.getLoggedUser());
+            cashPayment.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(cashPayment);
+            cashPayments.add(cashPayment);
+        }
+
+        drawerController.updateDrawerForOuts(iouReversals);
+        drawerController.updateDrawerForIns(cashPayments);
+
+        paymentsForsettlingIuos = cashPayments;
+        JsfUtil.addSuccessMessage("IOUs converted to cash successfully");
+        settlingIuos = null;
+        myIousToSettle = null;
+        printPreview = true;
+    }
+
     private void saveIouCreateBill() {
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
                 BillTypeAtomic.IOU_CASH_ISSUE);
