@@ -310,35 +310,35 @@
                                         <f:facet name="header">
                                             <h:outputText value="Admission No" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.patientEncounter.bhtNo}"/>
+                                        <h:outputText value="#{bi.bill.patientEncounter.bhtNo}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="MRNO" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.patientEncounter.patient.phn}"/>
+                                        <h:outputText value="#{bi.bill.patientEncounter.patient.phn}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Patient Name" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.patientEncounter.patient.person.nameWithTitle}"/>
+                                        <h:outputText value="#{bi.bill.patientEncounter.patient.person.nameWithTitle}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Visit Type" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.patientEncounter.patientEncounterType}"/>
+                                        <h:outputText value="#{bi.bill.patientEncounter.patientEncounterType}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Referring Doctor Name" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.patientEncounter.referringDoctor.person.name}"/>
+                                        <h:outputText value="#{bi.bill.patientEncounter.referringDoctor.person.name}"/>
                                     </p:column>
 
                                     <p:column width="8em">
@@ -368,7 +368,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Service Value" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.hospitalFee}">
+                                        <h:outputText value="#{bi.item.itemFee.fee}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
@@ -377,7 +377,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Profit Margin" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.grossValue - bi.netValue}">
+                                        <h:outputText value="#{bi.item.itemFee. - bi.netValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
