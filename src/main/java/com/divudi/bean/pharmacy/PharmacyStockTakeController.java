@@ -473,8 +473,7 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         snapshotBill.setNetTotal(total);
-        JsfUtil.addSuccessMessage("Preview generated. Please review and settle.");
-        return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+        return settleStockCount();
     }
 
     /**
@@ -572,12 +571,9 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill = progress.getGeneratedBill();
 
         if (snapshotBill != null) {
-            JsfUtil.addSuccessMessage("Stock count bill generated successfully with "
-                    + snapshotBill.getBillItems().size() + " items");
             stockCountGenerationTracker.remove(generationJobId);
             generationJobId = null;
-            // User can now review and click "Record/Settle Stock Count" to persist
-            return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+            return settleStockCount();
         }
 
         JsfUtil.addErrorMessage("Failed to retrieve generated bill");
