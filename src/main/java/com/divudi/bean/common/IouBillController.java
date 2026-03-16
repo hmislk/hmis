@@ -353,6 +353,7 @@ public class IouBillController implements Serializable {
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(BillType.IouSettle);
+        getCurrent().setBillClassType(BillClassType.BilledBill);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.IOU_TO_CASH_CONVERSION);
         getCurrent().setDepartment(sessionController.getDepartment());
         getCurrent().setInstitution(sessionController.getInstitution());

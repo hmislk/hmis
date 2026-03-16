@@ -2212,6 +2212,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBill = null;
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
+        fundTransferAvailablePayments = null;
         department = null;
         searchController.setBills(null);
     }
@@ -2224,6 +2225,7 @@ public class FinancialTransactionController implements Serializable {
         fundBillsForClosureBills = null;
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
+        fundTransferAvailablePayments = null;
         department = null;
 
     }
@@ -2237,6 +2239,7 @@ public class FinancialTransactionController implements Serializable {
         fundBillsForClosureBills = null;
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
+        fundTransferAvailablePayments = null;
     }
 
     public List<Payment> findPaymentsForBill(Bill b) {
@@ -2347,9 +2350,18 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No payments available");
             return;
         }
+        Set<Long> existingReferenceIds = new HashSet<>();
+        for (Payment existing : getCurrentBillPayments()) {
+            if (existing.getReferancePayment() != null && existing.getReferancePayment().getId() != null) {
+                existingReferenceIds.add(existing.getReferancePayment().getId());
+            }
+        }
         boolean anySelected = false;
         for (Payment p : fundTransferAvailablePayments) {
             if (p.isSelectedForHandover()) {
+                if (p.getId() != null && existingReferenceIds.contains(p.getId())) {
+                    continue;
+                }
                 Payment transferPayment = new Payment();
                 transferPayment.setPaymentMethod(p.getPaymentMethod());
                 transferPayment.setPaidValue(Math.abs(p.getPaidValue()));
@@ -2686,16 +2698,8 @@ public class FinancialTransactionController implements Serializable {
 
         billController.save(currentBill);
         double billTotal = 0.0;
+        List<Payment> originalsToMark = new ArrayList<>();
         for (Payment p : getCurrentBillPayments()) {
-            // Mark original non-cash payment as handing over started
-            if (p.getReferancePayment() != null
-                    && p.getPaymentMethod() != null
-                    && p.getPaymentMethod() != PaymentMethod.Cash) {
-                Payment originalPayment = p.getReferancePayment();
-                originalPayment.setHandingOverStarted(true);
-                originalPayment.setHandingOverCompleted(false);
-                paymentController.save(originalPayment);
-            }
             p.setBill(currentBill);
             p.setCreatedAt(new Date());
             p.setCreater(sessionController.getLoggedUser());
@@ -2705,6 +2709,17 @@ public class FinancialTransactionController implements Serializable {
             billTotal += p.getPaidValue();
             paymentController.save(p);
             drawerController.updateDrawerForOuts(p);
+            // Collect original non-cash payments to mark after transfer is persisted
+            if (p.getReferancePayment() != null
+                    && p.getPaymentMethod() != null
+                    && p.getPaymentMethod() != PaymentMethod.Cash) {
+                originalsToMark.add(p.getReferancePayment());
+            }
+        }
+        for (Payment originalPayment : originalsToMark) {
+            originalPayment.setHandingOverStarted(true);
+            originalPayment.setHandingOverCompleted(false);
+            paymentController.save(originalPayment);
         }
 
         currentBill.setTotal(billTotal);
