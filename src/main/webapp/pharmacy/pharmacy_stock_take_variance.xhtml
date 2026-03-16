@@ -64,20 +64,20 @@
                                                 <h:outputText value="#{r.itemName}"/>
                                             </p:column>
                                             <p:column headerText="Batch" style="width: 120px; text-align:center;">
-                                                <h:outputText value="#{r.batch}"/>
+                                                <h:outputText value="#{r.batchNo}"/>
                                             </p:column>
                                             <p:column headerText="Purchase Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                                <h:outputText value="#{r.purchaseRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Retail Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                                <h:outputText value="#{r.retailRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Cost Rate" style="width: 120px; text-align:right;">
-                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                <h:outputText value="#{r.costRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
@@ -91,15 +91,35 @@
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Sum of Variances at cost rate" style="width: 150px; text-align:right;">
-                                                <h:outputText value="#{r.sumVariance*r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                            <p:column headerText="Sum of Variances at Cost Rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.costRate}">
                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtCostRate}" style="font-weight:bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
                                             </p:column>
-                                            <p:column headerText="Last Physical Count" style="width: 160px; text-align:right;">
-                                                <h:outputText value="#{r.lastPhysicalQty}">
-                                                    <f:convertNumber integerOnly="true"/>
+                                            <p:column headerText="Sum of Variances at Purchase Rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.purchaseRate}">
+                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtPurchaseRate}" style="font-weight:bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Sum of Variances at Retail Rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.retailRate}">
+                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyStockTakeController.varianceTotalAtRetailRate}" style="font-weight:bold;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
                                             </p:column>
                                         </p:dataTable>
 
