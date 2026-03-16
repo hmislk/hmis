@@ -123,6 +123,7 @@ public class PharmacyStockTakeController implements Serializable {
     private List<VarianceRow> varianceRows; // aggregated variance report rows
     private String approvalJobId; // background approval job id
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
+    private com.divudi.core.entity.Category selectedDosageForm; // for dosage-form-specific downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
@@ -2049,9 +2050,9 @@ public class PharmacyStockTakeController implements Serializable {
         java.util.HashMap<String, Object> params = new java.util.HashMap<>();
         StringBuilder j = new StringBuilder();
         j.append("select new com.divudi.core.light.common.PharmacyPhysicalCountLight(");
-        j.append(" b.id, b.deptId, b.createdAt, b.institution.name, b.department.name,");
+        j.append(" b.id, b.deptId, b.createdAt, ins.name, dept.name,");
         j.append(" (select count(bi) from BillItem bi where bi.bill=b) ) ");
-        j.append(" from Bill b where b.billType=:bt and b.approveAt is null");
+        j.append(" from Bill b left join b.institution ins left join b.department dept where b.billType=:bt and b.approveAt is null");
         params.put("bt", BillType.PharmacyPhysicalCountBill);
         j.append(" order by b.createdAt desc");
         @SuppressWarnings("unchecked")
@@ -2415,9 +2416,9 @@ public class PharmacyStockTakeController implements Serializable {
         HashMap<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.light.common.PharmacySnapshotBillLight( ");
-        jpql.append(" b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, ");
+        jpql.append(" b.id, b.deptId, b.createdAt, ins.name, dept.name, ");
         jpql.append(" (select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed ) ");
-        jpql.append(" from Bill b where b.billType=:bt");
+        jpql.append(" from Bill b left join b.institution ins left join b.department dept where b.billType=:bt");
         params.put("bt", BillType.PharmacySnapshotBill);
         if (fromDate != null) {
             jpql.append(" and b.createdAt>=:fd");
@@ -2492,9 +2493,12 @@ public class PharmacyStockTakeController implements Serializable {
         // This eliminates the N+1 lazy loading bottleneck that caused 10,330+ queries
         // Using constructor with netTotal and itemsCount for complete display functionality
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
-                + "b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, "
+                + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
                 + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
-                + "from Bill b where b.id = :billId";
+                + "from Bill b "
+                + "left join b.institution ins "
+                + "left join b.department dept "
+                + "where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("billId", billId);
@@ -2504,15 +2508,6 @@ public class PharmacyStockTakeController implements Serializable {
 
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
-
-//            // Create entity proxy for backward compatibility (no DB hit)
-//            snapshotBill = billFacade.getReference(billId);
-//
-//            // Set institution and department references from the bill entity proxy
-//            if (snapshotBill != null) {
-//                this.department = snapshotBill.getDepartment();
-//                this.institution = snapshotBill.getInstitution();
-//            }
 
             return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
         } else {
@@ -2587,9 +2582,9 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
-                + "b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, "
-                + "b.department.id, b.completed) "
-                + "from Bill b where b.id = :billId";
+                + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
+                + "dept.id, b.completed) "
+                + "from Bill b left join b.institution ins left join b.department dept where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("billId", billId);
@@ -4081,6 +4076,42 @@ public class PharmacyStockTakeController implements Serializable {
         return downloadCategoryBlindSheet();
     }
 
+    public com.divudi.core.entity.Category getSelectedDosageForm() {
+        return selectedDosageForm;
+    }
+
+    public void setSelectedDosageForm(com.divudi.core.entity.Category selectedDosageForm) {
+        this.selectedDosageForm = selectedDosageForm;
+    }
+
+    public StreamedContent downloadFilteredGuidedSheet() {
+        if (selectedCategory == null && selectedDosageForm == null) {
+            JsfUtil.addErrorMessage("Please select at least a category or a dosage form");
+            return null;
+        }
+        String catPart = selectedCategory != null ? selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        String dfPart = selectedDosageForm != null ? selectedDosageForm.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        return generateFilteredSheet(true, "pharmacy_stock_guided_" + catPart + "_" + dfPart + ".xlsx");
+    }
+
+    public StreamedContent downloadFilteredBlindSheet() {
+        if (selectedCategory == null && selectedDosageForm == null) {
+            JsfUtil.addErrorMessage("Please select at least a category or a dosage form");
+            return null;
+        }
+        String catPart = selectedCategory != null ? selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        String dfPart = selectedDosageForm != null ? selectedDosageForm.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
+        return generateFilteredSheet(false, "pharmacy_stock_blind_" + catPart + "_" + dfPart + ".xlsx");
+    }
+
+    public StreamedContent getDownloadFilteredGuidedSheet() {
+        return downloadFilteredGuidedSheet();
+    }
+
+    public StreamedContent getDownloadFilteredBlindSheet() {
+        return downloadFilteredBlindSheet();
+    }
+
     private StreamedContent generateCategorySheet(boolean includeSystemQty, String fileName) {
         // Null check for required parameters
         if (snapshotBill == null || selectedCategory == null) {
@@ -4490,6 +4521,187 @@ public class PharmacyStockTakeController implements Serializable {
         } catch (Exception e) {
             //LOGGER.log(Level.SEVERE, "Unexpected error generating category sheet", e);
             JsfUtil.addErrorMessage("Unexpected error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Generate a filtered sheet by optional category and/or dosage form.
+     * Either or both filters may be null (null = no filter on that dimension).
+     * Reads rates from pbi fields (purchaseRate, retailRate, costRate) which are
+     * stored directly during snapshot generation — no itemBatch join needed.
+     */
+    private StreamedContent generateFilteredSheet(boolean includeSystemQty, String fileName) {
+        if (snapshotBill == null || snapshotBill.getId() == null) {
+            return null;
+        }
+        if (billItemFacade == null) {
+            return null;
+        }
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = "pharmacy_stock_filtered.xlsx";
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet("Stock");
+
+            CreationHelper creationHelper = wb.getCreationHelper();
+            DataFormat dataFormat = wb.createDataFormat();
+
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+
+            CellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setFont(headerFont);
+            headerStyle.setLocked(true);
+
+            CellStyle textLocked = wb.createCellStyle();
+            textLocked.setLocked(true);
+
+            CellStyle dateLocked = wb.createCellStyle();
+            dateLocked.setLocked(true);
+            dateLocked.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd"));
+
+            CellStyle numberLocked = wb.createCellStyle();
+            numberLocked.setLocked(true);
+            numberLocked.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            CellStyle integerLocked = wb.createCellStyle();
+            integerLocked.setLocked(true);
+            integerLocked.setDataFormat(dataFormat.getFormat("#,##0"));
+
+            CellStyle inputUnlocked = wb.createCellStyle();
+            inputUnlocked.setLocked(false);
+            inputUnlocked.setDataFormat(dataFormat.getFormat("#,##0.######"));
+            inputUnlocked.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.LIGHT_YELLOW.getIndex());
+            inputUnlocked.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            // Header row
+            Row header = sheet.createRow(0);
+            int col = 0;
+            String[] headers = {"BillItem ID", "Code", "Category", "Dosage Form", "Name",
+                "Batch", "Expiry Date", "Purchase Rate", "Retail Rate", "Cost Rate"};
+            if (includeSystemQty) {
+                headers = new String[]{"BillItem ID", "Code", "Category", "Dosage Form", "Name",
+                    "Batch", "Expiry Date", "Purchase Rate", "Retail Rate", "Cost Rate", "System Qty", "Real Stock Qty", "Line Value"};
+            } else {
+                headers = new String[]{"BillItem ID", "Code", "Category", "Dosage Form", "Name",
+                    "Batch", "Expiry Date", "Purchase Rate", "Retail Rate", "Cost Rate", "Real Stock Qty", "Line Value"};
+            }
+            for (String h : headers) {
+                Cell c = header.createCell(col++);
+                c.setCellValue(h);
+                c.setCellStyle(headerStyle);
+            }
+
+            // Build JPQL with optional filters — use catId and pbi.description stored during generation
+            StringBuilder jpql = new StringBuilder(
+                "select bi from BillItem bi "
+                + "left join fetch bi.pharmaceuticalBillItem pbi "
+                + "where bi.bill.id = :billId");
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("billId", snapshotBill.getId());
+
+            if (selectedCategory != null) {
+                jpql.append(" and bi.catId = :catName");
+                params.put("catName", selectedCategory.getName());
+            }
+            if (selectedDosageForm != null) {
+                jpql.append(" and pbi.description = :dfName");
+                params.put("dfName", selectedDosageForm.getName());
+            }
+            jpql.append(" order by bi.catId, bi.descreption");
+
+            List<BillItem> items = billItemFacade.findByJpql(jpql.toString(), params);
+            if (items == null) {
+                items = java.util.Collections.emptyList();
+            }
+
+            int rowNum = 1;
+            for (BillItem bi : items) {
+                if (bi == null) continue;
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                Row row = sheet.createRow(rowNum++);
+                int c = 0;
+
+                // BillItem ID
+                Cell cId = row.createCell(c++);
+                if (bi.getId() != null) { cId.setCellValue(bi.getId()); cId.setCellStyle(integerLocked); }
+                else { cId.setCellValue(""); cId.setCellStyle(textLocked); }
+
+                // Code — use item if loaded, else blank
+                Cell cCode = row.createCell(c++);
+                cCode.setCellValue(bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "");
+                cCode.setCellStyle(textLocked);
+
+                // Category (from catId field)
+                Cell cCat = row.createCell(c++);
+                cCat.setCellValue(bi.getCatId() != null ? bi.getCatId() : "");
+                cCat.setCellStyle(textLocked);
+
+                // Dosage Form (from pbi.description)
+                Cell cDf = row.createCell(c++);
+                cDf.setCellValue(pbi != null && pbi.getDescription() != null ? pbi.getDescription() : "");
+                cDf.setCellStyle(textLocked);
+
+                // Name
+                Cell cName = row.createCell(c++);
+                cName.setCellValue(bi.getDescreption() != null ? bi.getDescreption() : "");
+                cName.setCellStyle(textLocked);
+
+                // Batch (from pbi.stringValue)
+                Cell cBatch = row.createCell(c++);
+                cBatch.setCellValue(pbi != null && pbi.getStringValue() != null ? pbi.getStringValue() : "");
+                cBatch.setCellStyle(textLocked);
+
+                // Expiry (from pbi.doe)
+                Cell cExp = row.createCell(c++);
+                if (pbi != null && pbi.getDoe() != null) {
+                    cExp.setCellValue(pbi.getDoe());
+                    cExp.setCellStyle(dateLocked);
+                } else {
+                    cExp.setCellValue("");
+                    cExp.setCellStyle(textLocked);
+                }
+
+                // Rates from pbi fields
+                double pr = pbi != null ? pbi.getPurchaseRate() : 0.0;
+                double rr = pbi != null ? pbi.getRetailRate() : 0.0;
+                double cr = pbi != null ? pbi.getCostRate() : 0.0;
+                double qty = bi.getQty() != null ? bi.getQty() : 0.0;
+
+                Cell cPR = row.createCell(c++); cPR.setCellValue(pr); cPR.setCellStyle(numberLocked);
+                Cell cRR = row.createCell(c++); cRR.setCellValue(rr); cRR.setCellStyle(numberLocked);
+                Cell cCR = row.createCell(c++); cCR.setCellValue(cr); cCR.setCellStyle(numberLocked);
+
+                if (includeSystemQty) {
+                    Cell cSys = row.createCell(c++); cSys.setCellValue(qty); cSys.setCellStyle(numberLocked);
+                }
+
+                // Real Qty (editable)
+                Cell cReal = row.createCell(c++);
+                cReal.setCellStyle(inputUnlocked);
+
+                // Line Value (cost-based)
+                Cell cLV = row.createCell(c++); cLV.setCellValue(cr * qty); cLV.setCellStyle(numberLocked);
+            }
+
+            for (int i = 0; i < col; i++) {
+                try { sheet.autoSizeColumn(i); } catch (Exception ignored) {}
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            wb.write(baos);
+            byte[] bytes = baos.toByteArray();
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> bais)
+                    .build();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating filtered sheet: " + e.getMessage());
             return null;
         }
     }

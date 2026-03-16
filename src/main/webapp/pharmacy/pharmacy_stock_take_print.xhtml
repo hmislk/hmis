@@ -17,6 +17,7 @@
                         <div class="card-body">
                             <h:form>
                                 <!-- Display status badge -->
+                                <h:panelGroup rendered="#{pharmacyStockTakeController.snapshotBillDisplay != null}">
                                 <div class="row mb-3">
                                     <div class="col-12">
                                         <div class="alert" style="#{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'background-color: #d4edda; border-color: #c3e6cb; color: #155724;' : 'background-color: #fff3cd; border-color: #ffeaa7; color: #856404;'}">
@@ -54,6 +55,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                </h:panelGroup>
 
                                 <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
                                     <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check"/>
@@ -158,15 +160,15 @@
                                                     </table>
                                                 </div>
                                             </div>
-                                            <!-- Category-specific download section -->
+                                            <!-- Filtered download section -->
                                             <div class="card mt-3">
                                                 <div class="card-header">
-                                                    <h:outputText value="Download by Category" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
+                                                    <h:outputText value="Download by Category / Dosage Form" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
                                                 </div>
                                                 <div class="card-body">
-                                                    <div class="row align-items-end">
-                                                        <div class="col-lg-4">
-                                                            <h:outputLabel for="categoryFilter" value="Select Category:" styleClass="form-label font-weight-bold"/>
+                                                    <div class="row mb-2">
+                                                        <div class="col-lg-6">
+                                                            <h:outputLabel for="categoryFilter" value="Category (optional):" styleClass="form-label font-weight-bold"/>
                                                             <p:autoComplete id="categoryFilter"
                                                                             value="#{pharmacyStockTakeController.selectedCategory}"
                                                                             completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
@@ -179,27 +181,46 @@
                                                                             styleClass="w-100"
                                                                             inputStyleClass="w-100"
                                                                             placeholder="Type to search categories...">
-                                                                <p:ajax event="itemSelect" update="categoryDownloadButtons"/>
+                                                                <p:ajax event="itemSelect" update="filteredDownloadButtons"/>
+                                                                <p:ajax event="itemUnselect" update="filteredDownloadButtons"/>
                                                             </p:autoComplete>
                                                         </div>
-                                                        <div class="col-lg-8">
-                                                            <h:panelGroup id="categoryDownloadButtons">
-                                                                <div class="btn-group" role="group" aria-label="Category Download Actions">
-                                                                    <p:commandButton value="Download Category Guided Sheet"
-                                                                                     ajax="false"
-                                                                                     styleClass="ui-button-success mx-1"
-                                                                                     icon="fa fa-download"
-                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
-                                                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryGuidedSheet}" />
-                                                                    </p:commandButton>
-                                                                    <p:commandButton value="Download Category Blind Sheet"
-                                                                                     ajax="false"
-                                                                                     styleClass="ui-button-warning mx-1"
-                                                                                     icon="fa fa-download"
-                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
-                                                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryBlindSheet}" />
-                                                                    </p:commandButton>
-                                                                </div>
+                                                        <div class="col-lg-6">
+                                                            <h:outputLabel for="dosageFormFilter" value="Dosage Form (optional):" styleClass="form-label font-weight-bold"/>
+                                                            <p:autoComplete id="dosageFormFilter"
+                                                                            value="#{pharmacyStockTakeController.selectedDosageForm}"
+                                                                            completeMethod="#{dosageFormController.completeCategory}"
+                                                                            var="df"
+                                                                            itemLabel="#{df.name}"
+                                                                            itemValue="#{df}"
+                                                                            cache="false"
+                                                                            queryDelay="300"
+                                                                            minQueryLength="2"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            placeholder="Type to search dosage forms...">
+                                                                <p:ajax event="itemSelect" update="filteredDownloadButtons"/>
+                                                                <p:ajax event="itemUnselect" update="filteredDownloadButtons"/>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-12">
+                                                            <h:panelGroup id="filteredDownloadButtons">
+                                                                <p:commandButton value="Download Guided Sheet"
+                                                                                 ajax="false"
+                                                                                 styleClass="ui-button-success mx-1"
+                                                                                 icon="fa fa-download"
+                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null}">
+                                                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadFilteredGuidedSheet}" />
+                                                                </p:commandButton>
+                                                                <p:commandButton value="Download Blind Sheet"
+                                                                                 ajax="false"
+                                                                                 styleClass="ui-button-warning mx-1"
+                                                                                 icon="fa fa-download"
+                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null}">
+                                                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadFilteredBlindSheet}" />
+                                                                </p:commandButton>
                                                             </h:panelGroup>
                                                         </div>
                                                     </div>

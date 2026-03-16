@@ -94,6 +94,10 @@ public class StockTakePersistService {
             items.get(i).setId(billItemIds[i]);
         }
 
+        // Detach all managed entities before the next allocateIds flush.
+        // EclipseLink would otherwise reject the ID writes above as "primary key updates".
+        em.clear();
+
         // -----------------------------------------------------------------------
         // Step 3: Allocate IDs for PharmaceuticalBillItems, then bulk-insert
         // -----------------------------------------------------------------------
