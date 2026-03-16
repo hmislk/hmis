@@ -119,7 +119,7 @@
                                 <p:ajax  event="toggleSelect" process="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
                                          update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
 
-                                <p:column selectionBox="true" width="20"></p:column>
+                                <p:column selectionBox="true" width="10"></p:column>
 
 
                                 <p:column headerText="Bill Id" width="9em;">
@@ -158,6 +158,14 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
+                                
+                                <p:column width="3em">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="MRN"/>
+                                    </f:facet>    
+                                    <h:outputLabel value="#{bf.bill.patient.phn}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
+                                    <h:outputLabel value="#{bf.bill.patientEncounter.patient.phn}"/>                                    
+                                </p:column>
 
                                 <p:column headerText="Patient" width="5em">
                                     <f:facet name="header">
@@ -182,7 +190,7 @@
                                     <h:outputLabel value="-" rendered="#{bf.bill.comments eq null or bf.bill.comments eq ''}"/>
                                 </p:column>
 
-                                <p:column headerText="Charge" width="5em;">
+                                <p:column headerText="Charge" width="3em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
                                     </f:facet>
@@ -203,9 +211,6 @@
                             <p:panel   >
                                 <f:facet name="header">
                                     <h:outputLabel value="Payment Details" class="mt-2" />
-
-
-
                                     <p:commandButton 
                                         id="btnPay"
                                         ajax="false"
@@ -216,7 +221,6 @@
                                     </p:commandButton>
                                     <p:defaultCommand target="btnPay"/>
                                 </f:facet>
-
 
                                 <div class="row" >
                                     <div class="col " >
