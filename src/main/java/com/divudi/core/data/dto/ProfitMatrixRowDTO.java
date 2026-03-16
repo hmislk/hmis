@@ -2,7 +2,7 @@ package com.divudi.core.data.dto;
 
 import com.divudi.core.data.inward.PatientEncounterType;
 
-public class ProfitMatrixSummaryRowDTO {
+public class ProfitMatrixRowDTO {
 
     private String invoiceNo;
     private String admissionNo;
@@ -14,7 +14,12 @@ public class ProfitMatrixSummaryRowDTO {
     private Double finalAmount;
     private Double profitMargin;
 
-    public ProfitMatrixSummaryRowDTO(String invoiceNo,
+    private String serviceName;
+    private String serviceDepartment;
+    private Double serviceValue;
+    private Double matrixPercentage;
+
+    public ProfitMatrixRowDTO(String invoiceNo,
             String admissionNo,
             String mrn,
             String patientName,
@@ -34,7 +39,42 @@ public class ProfitMatrixSummaryRowDTO {
         );
     }
 
-    public ProfitMatrixSummaryRowDTO(String invoiceNo,
+    public ProfitMatrixRowDTO(String invoiceNo,
+            String admissionNo,
+            String mrn,
+            String patientName,
+            PatientEncounterType visitType,
+            String referringDoctorName,
+            String serviceName,
+            String serviceDepartment,
+            Double invoiceAmount,
+            Double serviceValue,
+            Double finalAmount) {
+
+        this.invoiceNo = invoiceNo;
+        this.admissionNo = admissionNo;
+        this.mrn = mrn;
+        this.patientName = patientName;
+        this.visitType = visitType != null ? visitType.toString() : null;
+        this.referringDoctorName = referringDoctorName;
+        this.serviceName = serviceName;
+        this.serviceDepartment = serviceDepartment;
+        this.invoiceAmount = invoiceAmount;
+        this.serviceValue = serviceValue;
+        this.finalAmount = finalAmount;
+
+        if (invoiceAmount != null && finalAmount != null) {
+            this.profitMargin = invoiceAmount - finalAmount;
+            this.matrixPercentage = invoiceAmount != 0.0
+                    ? (this.profitMargin * 100.0 / invoiceAmount)
+                    : null;
+        } else {
+            this.profitMargin = null;
+            this.matrixPercentage = null;
+        }
+    }
+
+    public ProfitMatrixRowDTO(String invoiceNo,
             String admissionNo,
             String mrn,
             String patientName,
@@ -89,5 +129,21 @@ public class ProfitMatrixSummaryRowDTO {
 
     public Double getProfitMargin() {
         return profitMargin;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public String getServiceDepartment() {
+        return serviceDepartment;
+    }
+
+    public Double getServiceValue() {
+        return serviceValue;
+    }
+
+    public Double getMatrixPercentage() {
+        return matrixPercentage;
     }
 }

@@ -276,10 +276,11 @@
                             <p:panel header="Type: Detail"
                                      styleClass="m-3"
                                      rendered="#{reportController.reportType eq 'detail'}">
+
                                 <p:dataTable
                                     id="detailWise"
-                                    value="#{reportController.billItems}"
-                                    var="bi"
+                                    value="#{reportController.profitMatrixDetailRows}"
+                                    var="row"
                                     rowIndexVar="n"
                                     paginator="true"
                                     paginatorPosition="bottom"
@@ -303,63 +304,63 @@
                                         <f:facet name="header">
                                             <h:outputText value="Invoice No" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.bill.deptId}"/>
+                                        <h:outputText value="#{row.invoiceNo}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Admission No" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.bill.patientEncounter.bhtNo}"/>
+                                        <h:outputText value="#{row.admissionNo}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="MRNO" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.bill.patientEncounter.patient.phn}"/>
+                                        <h:outputText value="#{row.mrn}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Patient Name" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.bill.patientEncounter.patient.person.nameWithTitle}"/>
+                                        <h:outputText value="#{row.patientName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Visit Type" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.bill.patientEncounter.patientEncounterType}"/>
+                                        <h:outputText value="#{row.visitType}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Referring Doctor Name" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.bill.patientEncounter.referringDoctor.person.name}"/>
+                                        <h:outputText value="#{row.referringDoctorName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Service Name" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.item.name}"/>
+                                        <h:outputText value="#{row.serviceName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Service Department" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.item.department.name}"/>
+                                        <h:outputText value="#{row.serviceDepartment}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header">
                                             <h:outputText value="Invoice Amount" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.grossValue}">
+                                        <h:outputText value="#{row.invoiceAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
@@ -368,7 +369,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Service Value" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.item.itemFee.fee}">
+                                        <h:outputText value="#{row.serviceValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
@@ -377,7 +378,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Profit Margin" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.grossValue - bi.netValue}">
+                                        <h:outputText value="#{row.profitMargin}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
@@ -386,8 +387,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Matrix Percentage" />
                                         </f:facet>
-                                        <h:outputText
-                                            value="#{bi.grossValue ne 0 ? ((bi.grossValue - bi.netValue) * 100.0 / bi.grossValue) : 0}">
+                                        <h:outputText value="#{row.matrixPercentage}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
@@ -396,7 +396,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Final Amount" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.netValue}">
+                                        <h:outputText value="#{row.finalAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">

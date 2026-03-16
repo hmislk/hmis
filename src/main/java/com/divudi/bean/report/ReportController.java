@@ -41,7 +41,7 @@ import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
 import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
 import com.divudi.core.data.dto.PharmacySaleItemDTO;
-import com.divudi.core.data.dto.ProfitMatrixSummaryRowDTO;
+import com.divudi.core.data.dto.ProfitMatrixRowDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
 import com.divudi.core.entity.inward.RoomCategory;
@@ -2584,7 +2584,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     private List<PatientEncounter> inPatientBillList;
-    private List<ProfitMatrixSummaryRowDTO> profitMatrixSummaryRows;
+    private List<ProfitMatrixRowDTO> profitMatrixSummaryRows;
+    private List<ProfitMatrixRowDTO> profitMatrixDetailRows;
 
     public void createProfitMatrixReport() {
         // reset results
@@ -2603,15 +2604,15 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixSummaryRowDTO(")
-                .append("fb.deptId, ") 
-                .append("pe.bhtNo, ") 
-                .append("pat.phn, ") 
-                .append("per.name, ") 
+        jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixRowDTO(")
+                .append("fb.deptId, ")
+                .append("pe.bhtNo, ")
+                .append("pat.phn, ")
+                .append("per.name, ")
                 .append("pe.patientEncounterType, ")
-                .append("rdPer.name, ") 
-                .append("pe.grantTotal, ") 
-                .append("pe.netTotal") 
+                .append("rdPer.name, ")
+                .append("pe.grantTotal, ")
+                .append("pe.netTotal")
                 .append(") ")
                 .append("FROM PatientEncounter pe ")
                 .append("LEFT JOIN pe.finalBill fb ")
@@ -2677,7 +2678,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
-        profitMatrixSummaryRows = (List<ProfitMatrixSummaryRowDTO>) peFacade.findLightsByJpql(
+        profitMatrixSummaryRows = (List<ProfitMatrixRowDTO>) peFacade.findLightsByJpql(
                 jpql.toString(),
                 params,
                 TemporalType.TIMESTAMP
@@ -2685,7 +2686,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         totalNetTotal = 0.0;
         if (profitMatrixSummaryRows != null) {
-            for (ProfitMatrixSummaryRowDTO row : profitMatrixSummaryRows) {
+            for (ProfitMatrixRowDTO row : profitMatrixSummaryRows) {
                 if (row.getFinalAmount() != null) {
                     totalNetTotal += row.getFinalAmount();
                 }
@@ -2697,10 +2698,29 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("SELECT bi ")
+        jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixRowDTO(")
+                .append("b.deptId, ")
+                .append("pe.bhtNo, ")
+                .append("pat.phn, ")
+                .append("per.name, ")
+                .append("pe.patientEncounterType, ")
+                .append("rdPer.name, ")
+                .append("bi.item.name, ")
+                .append("bi.item.department.name, ")
+                .append("bi.grossValue, ")
+                .append("itemFee.fee, ") // service value
+                .append("bi.netValue ")
+                .append(") ")
                 .append("FROM BillItem bi ")
                 .append("JOIN bi.bill b ")
                 .append("JOIN b.patientEncounter pe ")
+                .append("LEFT JOIN pe.patient pat ")
+                .append("LEFT JOIN pat.person per ")
+                .append("LEFT JOIN pe.referringDoctor rd ")
+                .append("LEFT JOIN rd.person rdPer ")
+                .append("LEFT JOIN bi.item i ")
+                .append("LEFT JOIN i.department iDept ")
+                .append("LEFT JOIN i.itemFeesAuto itemFee ") // <-- fixed line
                 .append("WHERE bi.retired = :ret ")
                 .append("AND b.retired = :bret ")
                 .append("AND b.cancelled = :can ")
@@ -2747,23 +2767,25 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql.append("AND (LOWER(pe.patient.person.name) LIKE :pn ")
-                    .append("OR LOWER(pe.patient.phn) LIKE :pn) ");
+            jpql.append("AND (LOWER(per.name) LIKE :pn ")
+                    .append("OR LOWER(pat.phn) LIKE :pn) ");
             params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
         }
 
-        jpql.append("ORDER BY pe.dateOfAdmission, b.deptId, bi.item.name ");
+        jpql.append("ORDER BY pe.dateOfAdmission, b.deptId, i.name ");
 
-        billItems = billItemFacade.findByJpql(
+        profitMatrixDetailRows = (List<ProfitMatrixRowDTO>) billItemFacade.findLightsByJpql(
                 jpql.toString(),
                 params,
                 TemporalType.TIMESTAMP
         );
 
         totalNetTotal = 0.0;
-        if (billItems != null) {
-            for (BillItem bi : billItems) {
-                totalNetTotal += bi.getNetValue();
+        if (profitMatrixDetailRows != null) {
+            for (ProfitMatrixRowDTO row : profitMatrixDetailRows) {
+                if (row.getFinalAmount() != null) {
+                    totalNetTotal += row.getFinalAmount();
+                }
             }
         }
     }
@@ -3139,12 +3161,20 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.inPatientBillList = inPatientBillList;
     }
 
-    public List<ProfitMatrixSummaryRowDTO> getProfitMatrixSummaryRows() {
+    public List<ProfitMatrixRowDTO> getProfitMatrixSummaryRows() {
         return profitMatrixSummaryRows;
     }
 
-    public void setProfitMatrixSummaryRows(List<ProfitMatrixSummaryRowDTO> profitMatrixSummaryRows) {
+    public void setProfitMatrixSummaryRows(List<ProfitMatrixRowDTO> profitMatrixSummaryRows) {
         this.profitMatrixSummaryRows = profitMatrixSummaryRows;
+    }
+
+    public List<ProfitMatrixRowDTO> getProfitMatrixDetailRows() {
+        return profitMatrixDetailRows;
+    }
+
+    public void setProfitMatrixDetailRows(List<ProfitMatrixRowDTO> profitMatrixDetailRows) {
+        this.profitMatrixDetailRows = profitMatrixDetailRows;
     }
 
     private static class ExcelStyleBundle {
