@@ -187,8 +187,8 @@
                                      rendered="#{empty reportController.reportType or reportController.reportType eq 'summery'}">
                                 <p:dataTable
                                     id="summeryWise"
-                                    value="#{reportController.inPatientBillList}"
-                                    var="pe"
+                                    value="#{reportController.profitMatrixSummaryRows}"
+                                    var="row"
                                     rowIndexVar="n"
                                     paginator="true"
                                     paginatorPosition="bottom"
@@ -207,41 +207,41 @@
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Invoice No"/></f:facet>
-                                        <h:outputText value="#{pe.finalBill.deptId}"/>
+                                        <h:outputText value="#{row.invoiceNo}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Admission No"/></f:facet>
-                                        <h:outputText value="#{pe.bhtNo}"/>
+                                        <h:outputText value="#{row.admissionNo}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="MRNO"/></f:facet>
-                                        <h:outputText value="#{pe.patient.phn}"/>
+                                        <h:outputText value="#{row.mrn}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Patient Name"/></f:facet>
-                                        <h:outputText value="#{pe.patient.person.nameWithTitle}"/>
+                                        <h:outputText value="#{row.patientName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Visit Type"/></f:facet>
-                                        <h:outputText value="#{pe.patientEncounterType}"/>
+                                        <h:outputText value="#{row.visitType}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Referring Doctor Name"/></f:facet>
-                                        <h:outputText value="#{pe.referringDoctor.person.name}"/>
+                                        <h:outputText value="#{row.referringDoctorName}"/>
                                     </p:column>
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Invoice Amount"/></f:facet>
-                                        <h:outputText value="#{pe.grantTotal}">
+                                        <h:outputText value="#{row.invoiceAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputText >
+                                            <h:outputText>
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
@@ -249,11 +249,11 @@
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Profit Margin"/></f:facet>
-                                        <h:outputText value="#{pe.grantTotal - pe.netTotal}">
+                                        <h:outputText value="#{row.profitMargin}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
-                                            <h:outputText >
+                                            <h:outputText>
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </f:facet>
@@ -261,7 +261,7 @@
 
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Final Amount"/></f:facet>
-                                        <h:outputText value="#{pe.netTotal}">
+                                        <h:outputText value="#{row.finalAmount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                         <f:facet name="footer">
@@ -377,7 +377,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Profit Margin" />
                                         </f:facet>
-                                        <h:outputText value="#{bi.item.itemFee. - bi.netValue}">
+                                        <h:outputText value="#{bi.grossValue - bi.netValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
