@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h:outputText value="Review Uploaded Stock Count" style="font-size: 1.5rem; font-weight: bold; color: #495057;"/>
+                        </div>
+                        <div class="card-body">
+                            <h:form>
+                                <div class="row mb-4">
+                                    <div class="col-lg-8">
+                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank"
+                                                     columnClasses="text-right pr-3 font-weight-bold,text-left">
+                                            <h:outputText value="Summary:" style="font-weight:bold; color: #6c757d;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.nativeSqlSummary}"
+                                                          style="color: #495057;"/>
+                                        </p:panelGrid>
+                                    </div>
+                                    <div class="col-lg-4 text-right">
+                                        <div class="btn-group" role="group">
+                                            <p:commandButton value="Back" ajax="false"
+                                                             styleClass="ui-button-secondary mx-2"
+                                                             icon="fa fa-arrow-left"
+                                                             action="/pharmacy/pharmacy_stock_take_upload?faces-redirect=true"/>
+                                            <p:commandButton value="Confirm and Apply Stock Adjustment" ajax="false"
+                                                             styleClass="ui-button-success mx-2"
+                                                             icon="fa fa-check"
+                                                             action="#{pharmacyStockTakeController.approvePhysicalCount}">
+                                                <p:confirm header="Confirm Stock Adjustment"
+                                                           message="Are you sure you want to apply this stock adjustment? This will update stock levels based on the uploaded counts."
+                                                           icon="fa fa-exclamation-triangle"/>
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fa fa-check"/>
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times"/>
+                                </p:confirmDialog>
+
+                                <p:separator/>
+
+                                <p:dataTable value="#{pharmacyStockTakeController.nativeSqlReviewData}"
+                                             var="row"
+                                             rows="25"
+                                             paginator="true"
+                                             paginatorPosition="both"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="10,25,50,100"
+                                             styleClass="ui-datatable-striped ui-datatable-gridlines"
+                                             emptyMessage="No stock items found in uploaded count."
+                                             sortMode="multiple">
+
+                                    <p:column headerText="Code" sortBy="#{row.itemCode}"
+                                              filterBy="#{row.itemCode}" filterMatchMode="contains"
+                                              style="width: 100px;">
+                                        <h:outputText value="#{row.itemCode}" style="color: #6c757d; font-family: monospace;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Item" sortBy="#{row.itemName}"
+                                              filterBy="#{row.itemName}" filterMatchMode="contains"
+                                              style="min-width: 200px;">
+                                        <h:outputText value="#{row.itemName}" style="color: #495057; font-weight: 500;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Batch No." sortBy="#{row.batchNumber}"
+                                              filterBy="#{row.batchNumber}" filterMatchMode="contains"
+                                              style="width: 110px; text-align: center;">
+                                        <h:outputText value="#{row.batchNumber}" style="color: #6c757d; font-family: monospace;"/>
+                                    </p:column>
+
+                                    <p:column headerText="Expiry Date" sortBy="#{row.expiryDate}"
+                                              style="width: 110px; text-align: center;">
+                                        <h:outputText value="#{row.expiryDate}" style="color: #6c757d;">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="System Qty" sortBy="#{row.systemQty}"
+                                              style="width: 100px; text-align: right;">
+                                        <h:outputText value="#{row.systemQty}" style="color: #6c757d;">
+                                            <f:convertNumber pattern="#,##0.##"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Physical Qty" sortBy="#{row.physicalQty}"
+                                              style="width: 100px; text-align: right;">
+                                        <h:outputText value="#{row.physicalQty}" style="color: #495057; font-weight: 500;">
+                                            <f:convertNumber pattern="#,##0.##"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Variance" sortBy="#{row.adjustedValue}"
+                                              style="width: 100px; text-align: right;">
+                                        <h:outputText value="#{row.adjustedValue}"
+                                                      style="color: #{row.adjustedValue lt 0 ? '#721c24' : (row.adjustedValue gt 0 ? '#155724' : '#6c757d')}; font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.##"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Cost Rate" sortBy="#{row.costRate}"
+                                              style="width: 100px; text-align: right;">
+                                        <h:outputText value="#{row.costRate}" style="color: #6c757d;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Retail Rate" sortBy="#{row.retailRate}"
+                                              style="width: 100px; text-align: right;">
+                                        <h:outputText value="#{row.retailRate}" style="color: #6c757d;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -143,6 +143,11 @@ public abstract class AbstractFacade<T> {
 
     }
 
+    public void flushAndClear() {
+        getEntityManager().flush();
+        getEntityManager().clear();
+    }
+
     public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {
         return getEntityManager().createQuery(jpqlQuery, entityType).getResultList();
     }
