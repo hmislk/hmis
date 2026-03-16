@@ -1316,7 +1316,7 @@ public class PharmacyStockTakeController implements Serializable {
             }
 
             // Bulk pre-load snapshot entities with JOIN FETCH (eliminates N+1 queries)
-            java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferencesEntities(snapBillItemIds);
+            java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferencesEntities(snapBillItemIds, snapshotBillDisplay.getId());
 
             physicalCountBill = new Bill();
             physicalCountBill.setBillType(BillType.PharmacyPhysicalCountBill);
@@ -2356,7 +2356,7 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /** Entity-loading preload used by optimized JPA path (still needed for JPA BillItem creation). */
-    private java.util.Map<Long, BillItem> preLoadSnapshotReferencesEntities(java.util.Set<Long> snapBillItemIds) {
+    private java.util.Map<Long, BillItem> preLoadSnapshotReferencesEntities(java.util.Set<Long> snapBillItemIds, Long snapshotBillId) {
         if (snapBillItemIds == null || snapBillItemIds.isEmpty()) {
             return new java.util.HashMap<>();
         }
@@ -2365,9 +2365,10 @@ public class PharmacyStockTakeController implements Serializable {
                       "join fetch pbi.itemBatch ib " +
                       "join fetch ib.item i " +
                       "left join fetch pbi.stock s " +
-                      "where bi.id in :ids";
+                      "where bi.id in :ids and bi.bill.id = :snapshotBillId";
         HashMap<String, Object> params = new HashMap<>();
         params.put("ids", snapBillItemIds);
+        params.put("snapshotBillId", snapshotBillId);
         try {
             @SuppressWarnings("unchecked")
             List<BillItem> preLoadedItems = (List<BillItem>) billItemFacade.findByJpql(jpql, params);
