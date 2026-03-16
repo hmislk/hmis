@@ -4668,6 +4668,20 @@ public class PharmacyStockTakeController implements Serializable {
         return total;
     }
 
+    public String getVarianceExcelFilename() {
+        String deptPart = (snapshotBill != null && snapshotBill.getDepartment() != null)
+                ? snapshotBill.getDepartment().getName().replaceAll("[^A-Za-z0-9_\\-]", "_")
+                : "Variance";
+        String datePart = "";
+        if (snapshotBill != null && snapshotBill.getCreatedAt() != null) {
+            datePart = "_" + new java.text.SimpleDateFormat("yyyy-MM-dd").format(snapshotBill.getCreatedAt());
+        }
+        String billPart = (snapshotBill != null && snapshotBill.getDeptId() != null)
+                ? "_" + snapshotBill.getDeptId().replaceAll("[^A-Za-z0-9_\\-]", "_")
+                : "";
+        return "StockTakeVariance_" + deptPart + datePart + billPart;
+    }
+
     // Start asynchronous approval so it completes even if browser closes
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
