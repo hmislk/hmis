@@ -34,33 +34,22 @@
                                                                      icon="fa fa-check-circle"
                                                                      styleClass="ui-button-success"
                                                                      action="#{pharmacyStockTakeController.completeStockTaking}"
-                                                                     update="@form"
-                                                                     rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}">
-                                                        <p:confirm header="Complete Stock Taking"
-                                                                   message="Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed."
-                                                                   icon="fa fa-exclamation-triangle"/>
-                                                    </p:commandButton>
+                                                                     ajax="false"
+                                                                     onclick="return confirm('Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed.');"
+                                                                     rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}"/>
                                                     <p:commandButton value="Reverse Completion"
                                                                      icon="fa fa-undo"
                                                                      styleClass="ui-button-warning mx-2"
                                                                      action="#{pharmacyStockTakeController.reverseStockTakingCompletion}"
-                                                                     update="@form"
-                                                                     rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed and webUserController.hasPrivilege('Developers')}">
-                                                        <p:confirm header="Reverse Completion"
-                                                                   message="Are you sure you want to reverse the completion of this stock taking session? This will allow further uploads again."
-                                                                   icon="fa fa-exclamation-triangle"/>
-                                                    </p:commandButton>
+                                                                     ajax="false"
+                                                                     onclick="return confirm('Are you sure you want to reverse the completion of this stock taking session? This will allow further uploads again.');"
+                                                                     rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed and webUserController.hasPrivilege('Developers')}"/>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 </h:panelGroup>
-
-                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
-                                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check"/>
-                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times"/>
-                                </p:confirmDialog>
 
                                 <div class="row mb-4">
                                     <div class="col-lg-8">
