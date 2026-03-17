@@ -1019,12 +1019,15 @@ public class ServiceSummery implements Serializable {
             // Calculate the proportion of this payment relative to the bill's net total
             double proportion = paidValue / billNetTotal;
 
-            // Proportionally allocate total and discount
-            boolean isCancelledBill = bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill);
+            // Proportionally allocate total and discount.
+            // fixDiscountsAndMarginsInRows() already normalises signs via Math.abs():
+            //   BilledBill discount is negative, CancelledBill/RefundBill discount is positive.
+            // For cancelled/refund bills proportion = paidValue/netTotal = negative/negative = positive,
+            // so billProportionalDiscount is already correctly signed — no special case needed.
             double billProportionalDiscount = billDiscount * proportion;
 
             totalBill += billTotal * proportion;
-            discountBill += isCancelledBill ? (billProportionalDiscount > 0 ? -billProportionalDiscount:billProportionalDiscount) : billProportionalDiscount;
+            discountBill += billProportionalDiscount;
             netTotalBill += paidValue; // The payment amount is already the proportional net
         }
     }

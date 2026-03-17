@@ -2284,9 +2284,10 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String fetchWikiDdlVersion() {
+        java.net.HttpURLConnection conn = null;
         try {
             java.net.URL url = new java.net.URL(WIKI_DDL_URL);
-            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn = (java.net.HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(10000);
@@ -2307,6 +2308,10 @@ public class DataAdministrationController implements Serializable {
             }
         } catch (Exception e) {
             // Network or parse failure — return null so caller falls back to legacy
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }
@@ -2350,6 +2355,22 @@ public class DataAdministrationController implements Serializable {
         configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, wikiDdlVersion);
         databaseMigrationService.markMigrationComplete();
         JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Migration banner cleared.");
+    }
+
+    private void markSchemaAsCurrentSilently(boolean executionPerformed) {
+        if (!executionPerformed) {
+            return;
+        }
+        try {
+            String version = fetchWikiDdlVersion();
+            if (version != null) {
+                configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+                databaseMigrationService.markMigrationComplete();
+                wikiDdlVersion = version;
+            }
+        } catch (Exception e) {
+            // Schema operations succeeded; version tracking is secondary — swallow silently
+        }
     }
 
     public String getStoredDdlVersion() {
@@ -2606,13 +2627,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             createTablesOnDatabase(itemFacade, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
+            executionPerformed = true;
         }
-        markSchemaAsCurrent();
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2709,13 +2733,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             runSqlOnDatabase(itemFacade, suggestedSql, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
+            executionPerformed = true;
         }
-        markSchemaAsCurrent();
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {

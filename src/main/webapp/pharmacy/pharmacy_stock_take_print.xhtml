@@ -17,6 +17,7 @@
                         <div class="card-body">
                             <h:form>
                                 <!-- Display status badge -->
+                                <h:panelGroup rendered="#{pharmacyStockTakeController.snapshotBillDisplay != null}">
                                 <div class="row mb-3">
                                     <div class="col-12">
                                         <div class="alert" style="#{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'background-color: #d4edda; border-color: #c3e6cb; color: #155724;' : 'background-color: #fff3cd; border-color: #ffeaa7; color: #856404;'}">
@@ -33,32 +34,22 @@
                                                                      icon="fa fa-check-circle"
                                                                      styleClass="ui-button-success"
                                                                      action="#{pharmacyStockTakeController.completeStockTaking}"
-                                                                     update="@form"
-                                                                     rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}">
-                                                        <p:confirm header="Complete Stock Taking"
-                                                                   message="Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed."
-                                                                   icon="fa fa-exclamation-triangle"/>
-                                                    </p:commandButton>
+                                                                     ajax="false"
+                                                                     onclick="return confirm('Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed.');"
+                                                                     rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}"/>
                                                     <p:commandButton value="Reverse Completion"
                                                                      icon="fa fa-undo"
                                                                      styleClass="ui-button-warning mx-2"
                                                                      action="#{pharmacyStockTakeController.reverseStockTakingCompletion}"
-                                                                     update="@form"
-                                                                     rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed and webUserController.hasPrivilege('Developers')}">
-                                                        <p:confirm header="Reverse Completion"
-                                                                   message="Are you sure you want to reverse the completion of this stock taking session? This will allow further uploads again."
-                                                                   icon="fa fa-exclamation-triangle"/>
-                                                    </p:commandButton>
+                                                                     ajax="false"
+                                                                     onclick="return confirm('Are you sure you want to reverse the completion of this stock taking session? This will allow further uploads again.');"
+                                                                     rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed and webUserController.hasPrivilege('Developers')}"/>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
-                                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check"/>
-                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times"/>
-                                </p:confirmDialog>
+                                </h:panelGroup>
 
                                 <div class="row mb-4">
                                     <div class="col-lg-8">
@@ -123,25 +114,50 @@
                                             </div>
                                         </div>
                                         <div class="col-lg-6">
-                                            <div class="card bg-success text-white">
-                                                <div class="card-body text-center">
-                                                    <h:outputText value="Total Stock Value" 
-                                                                  style="font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
-                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.netTotal}"
-                                                                  style="font-weight: bold; font-size: 2rem;">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
+                                            <div class="card">
+                                                <div class="card-header" style="background-color: #495057; color: white;">
+                                                    <h:outputText value="Total Stock Value" style="font-weight: bold;"/>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <table class="table table-sm mb-0">
+                                                        <tbody>
+                                                            <tr style="background-color: #d4edda;">
+                                                                <td style="font-weight: bold; color: #155724; padding: 10px 15px;">Cost Value</td>
+                                                                <td style="font-weight: bold; color: #155724; text-align: right; font-size: 1.2rem; padding: 10px 15px;">
+                                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotCostTotal}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                            <tr style="background-color: #cce5ff;">
+                                                                <td style="font-weight: bold; color: #004085; padding: 10px 15px;">Purchase Value</td>
+                                                                <td style="font-weight: bold; color: #004085; text-align: right; font-size: 1.2rem; padding: 10px 15px;">
+                                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotPurchaseTotal}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                            <tr style="background-color: #fff3cd;">
+                                                                <td style="font-weight: bold; color: #856404; padding: 10px 15px;">Retail Value</td>
+                                                                <td style="font-weight: bold; color: #856404; text-align: right; font-size: 1.2rem; padding: 10px 15px;">
+                                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotRetailTotal}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
-                                            <!-- Category-specific download section -->
+                                            <!-- Filtered download section -->
                                             <div class="card mt-3">
                                                 <div class="card-header">
-                                                    <h:outputText value="Download by Category" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
+                                                    <h:outputText value="Download by Category / Dosage Form" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
                                                 </div>
                                                 <div class="card-body">
-                                                    <div class="row align-items-end">
-                                                        <div class="col-lg-4">
-                                                            <h:outputLabel for="categoryFilter" value="Select Category:" styleClass="form-label font-weight-bold"/>
+                                                    <div class="row mb-2">
+                                                        <div class="col-lg-6">
+                                                            <h:outputLabel for="categoryFilter" value="Category (optional):" styleClass="form-label font-weight-bold"/>
                                                             <p:autoComplete id="categoryFilter"
                                                                             value="#{pharmacyStockTakeController.selectedCategory}"
                                                                             completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
@@ -154,27 +170,46 @@
                                                                             styleClass="w-100"
                                                                             inputStyleClass="w-100"
                                                                             placeholder="Type to search categories...">
-                                                                <p:ajax event="itemSelect" update="categoryDownloadButtons"/>
+                                                                <p:ajax event="itemSelect" update="filteredDownloadButtons"/>
+                                                                <p:ajax event="itemUnselect" update="filteredDownloadButtons"/>
                                                             </p:autoComplete>
                                                         </div>
-                                                        <div class="col-lg-8">
-                                                            <h:panelGroup id="categoryDownloadButtons">
-                                                                <div class="btn-group" role="group" aria-label="Category Download Actions">
-                                                                    <p:commandButton value="Download Category Guided Sheet"
-                                                                                     ajax="false"
-                                                                                     styleClass="ui-button-success mx-1"
-                                                                                     icon="fa fa-download"
-                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
-                                                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryGuidedSheet}" />
-                                                                    </p:commandButton>
-                                                                    <p:commandButton value="Download Category Blind Sheet"
-                                                                                     ajax="false"
-                                                                                     styleClass="ui-button-warning mx-1"
-                                                                                     icon="fa fa-download"
-                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
-                                                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryBlindSheet}" />
-                                                                    </p:commandButton>
-                                                                </div>
+                                                        <div class="col-lg-6">
+                                                            <h:outputLabel for="dosageFormFilter" value="Dosage Form (optional):" styleClass="form-label font-weight-bold"/>
+                                                            <p:autoComplete id="dosageFormFilter"
+                                                                            value="#{pharmacyStockTakeController.selectedDosageForm}"
+                                                                            completeMethod="#{dosageFormController.completeCategory}"
+                                                                            var="df"
+                                                                            itemLabel="#{df.name}"
+                                                                            itemValue="#{df}"
+                                                                            cache="false"
+                                                                            queryDelay="300"
+                                                                            minQueryLength="2"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            placeholder="Type to search dosage forms...">
+                                                                <p:ajax event="itemSelect" update="filteredDownloadButtons"/>
+                                                                <p:ajax event="itemUnselect" update="filteredDownloadButtons"/>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-12">
+                                                            <h:panelGroup id="filteredDownloadButtons">
+                                                                <p:commandButton value="Download Guided Sheet"
+                                                                                 ajax="false"
+                                                                                 styleClass="ui-button-success mx-1"
+                                                                                 icon="fa fa-download"
+                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null}">
+                                                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadFilteredGuidedSheet}" />
+                                                                </p:commandButton>
+                                                                <p:commandButton value="Download Blind Sheet"
+                                                                                 ajax="false"
+                                                                                 styleClass="ui-button-warning mx-1"
+                                                                                 icon="fa fa-download"
+                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null}">
+                                                                    <p:fileDownload value="#{pharmacyStockTakeController.downloadFilteredBlindSheet}" />
+                                                                </p:commandButton>
                                                             </h:panelGroup>
                                                         </div>
                                                     </div>
@@ -186,11 +221,11 @@
 
                                     <p:separator style="margin: 2rem 0;"/>
 
-                                    <p:dataTable id="tbl" 
-                                                 widgetVar="tbl" 
-                                                 value="#{pharmacyStockTakeController.snapshotBillItemsLazy}" 
-                                                 var="bi" 
-                                                 rows="25" 
+                                    <p:dataTable id="tbl"
+                                                 widgetVar="tbl"
+                                                 value="#{pharmacyStockTakeController.snapshotItems}"
+                                                 var="bi"
+                                                 rows="25"
                                                  paginator="true"
                                                  paginatorPosition="both"
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -199,84 +234,105 @@
                                                  emptyMessage="No stock items found for this bill."
                                                  sortMode="multiple">
 
-                                        <p:column headerText="Bill Item ID" sortBy="#{bi.id}"
-                                                  filterBy="#{bi.id}" filterMatchMode="exact"
+                                        <p:column headerText="Bill Item ID" sortBy="#{bi.billItemId}"
+                                                  filterBy="#{bi.billItemId}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
-                                            <h:outputText value="#{bi.id}" 
+                                            <h:outputText value="#{bi.billItemId}"
                                                           style="color: #6c757d; font-family: monospace;"/>
                                         </p:column>
 
-                                        <p:column headerText="Category" sortBy="#{bi.item.category.name}" 
-                                                  filterBy="#{bi.item.category.name}" filterMatchMode="contains"
+                                        <p:column headerText="Category" sortBy="#{bi.categoryName}"
+                                                  filterBy="#{bi.categoryName}" filterMatchMode="contains"
                                                   style="width: 120px;">
-                                            <h:outputText value="#{bi.item.category.name}" 
+                                            <h:outputText value="#{bi.categoryName}"
                                                           style="color: #495057;"/>
                                         </p:column>
 
-                                        <p:column headerText="Item Description" sortBy="#{bi.descreption}" 
-                                                  filterBy="#{bi.descreption}" filterMatchMode="contains"
+                                        <p:column headerText="Dosage Form" sortBy="#{bi.dosageForm}"
+                                                  filterBy="#{bi.dosageForm}" filterMatchMode="contains"
+                                                  style="width: 120px;">
+                                            <h:outputText value="#{bi.dosageForm}"
+                                                          style="color: #6c757d;"/>
+                                        </p:column>
+
+                                        <p:column headerText="Item Description" sortBy="#{bi.itemName}"
+                                                  filterBy="#{bi.itemName}" filterMatchMode="contains"
                                                   style="min-width: 200px;">
-                                            <h:outputText value="#{bi.descreption}" 
+                                            <h:outputText value="#{bi.itemName}"
                                                           style="color: #495057; font-weight: 500;"/>
                                         </p:column>
 
-                                        <p:column headerText="Batch No." sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
-                                                  filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" filterMatchMode="contains"
+                                        <p:column headerText="Batch No." sortBy="#{bi.batchNo}"
+                                                  filterBy="#{bi.batchNo}" filterMatchMode="contains"
                                                   style="width: 100px; text-align: center;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
+                                            <h:outputText value="#{bi.batchNo}"
                                                           style="color: #6c757d; font-family: monospace;"/>
                                         </p:column>
 
-                                        <p:column headerText="Expiry Date" sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
-                                                  filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" filterMatchMode="contains"
+                                        <p:column headerText="Expiry Date" sortBy="#{bi.expiryDate}"
                                                   style="width: 110px; text-align: center;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
+                                            <h:outputText value="#{bi.expiryDate}"
                                                           style="color: #6c757d;">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Quantity" sortBy="#{bi.qty}" 
+                                        <p:column headerText="Quantity" sortBy="#{bi.qty}"
                                                   filterBy="#{bi.qty}" filterMatchMode="exact"
                                                   style="width: 80px; text-align: right;">
-                                            <h:outputText value="#{bi.qty}" 
+                                            <h:outputText value="#{bi.qty}"
                                                           style="color: #495057; font-weight: 500;">
                                                 <f:convertNumber integerOnly="true"/>
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Purchase Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
-                                                  filterBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" filterMatchMode="exact"
+                                        <p:column headerText="Purchase Rate" sortBy="#{bi.purchaseRate}"
+                                                  filterBy="#{bi.purchaseRate}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
+                                            <h:outputText value="#{bi.purchaseRate}"
                                                           style="color: #6c757d;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Retail Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
-                                                  filterBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" filterMatchMode="exact"
+                                        <p:column headerText="Retail Rate" sortBy="#{bi.retailRate}"
+                                                  filterBy="#{bi.retailRate}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
+                                            <h:outputText value="#{bi.retailRate}"
                                                           style="color: #6c757d;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Cost Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
-                                                  filterBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" filterMatchMode="exact"
+                                        <p:column headerText="Cost Rate" sortBy="#{bi.costRate}"
+                                                  filterBy="#{bi.costRate}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
+                                            <h:outputText value="#{bi.costRate}"
                                                           style="color: #6c757d;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Line Value" sortBy="#{bi.netValue}" 
-                                                  filterBy="#{bi.netValue}" filterMatchMode="exact"
+                                        <p:column headerText="Purchase Value"
                                                   style="width: 120px; text-align: right;">
-                                            <h:outputText value="#{bi.netValue}" 
-                                                          style="color: #28a745; font-weight: bold;">
+                                            <h:outputText value="#{bi.purchaseValue}"
+                                                          style="color: #004085;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Cost Value"
+                                                  style="width: 120px; text-align: right;">
+                                            <h:outputText value="#{bi.costValue}"
+                                                          style="color: #155724; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Retail Value"
+                                                  style="width: 120px; text-align: right;">
+                                            <h:outputText value="#{bi.retailValue}"
+                                                          style="color: #856404;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
@@ -289,17 +345,31 @@
                                         <div class="col-lg-4">
                                             <div class="card bg-light">
                                                 <div class="card-body text-right">
-                                                    <h:outputText value="Report Summary" 
+                                                    <h:outputText value="Report Summary"
                                                                   style="font-weight: bold; color: #6c757d; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
-                                                    <h:outputText value="Total Items: " 
+                                                    <h:outputText value="Total Items: "
                                                                   style="font-weight: bold; color: #6c757d;"/>
                                                     <h:outputText value="#{pharmacyStockTakeController.snapshotBillItemsCount}"
                                                                   style="color: #495057; font-weight: bold;"/>
+                                                    <br/><br/>
+                                                    <h:outputText value="Cost Total: "
+                                                                  style="font-weight: bold; color: #155724;"/>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotCostTotal}"
+                                                                  style="font-weight: bold; color: #155724; font-size: 1.2rem;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
                                                     <br/>
-                                                    <h:outputText value="Net Total: " 
-                                                                  style="font-weight: bold; color: #6c757d;"/>
-                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.netTotal}"
-                                                                  style="font-weight: bold; color: #28a745; font-size: 1.3rem;">
+                                                    <h:outputText value="Purchase Total: "
+                                                                  style="font-weight: bold; color: #004085;"/>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotPurchaseTotal}"
+                                                                  style="font-weight: bold; color: #004085; font-size: 1.2rem;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <br/>
+                                                    <h:outputText value="Retail Total: "
+                                                                  style="font-weight: bold; color: #856404;"/>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotRetailTotal}"
+                                                                  style="font-weight: bold; color: #856404; font-size: 1.2rem;">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </div>

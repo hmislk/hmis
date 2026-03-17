@@ -73,6 +73,7 @@ import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.data.dto.BillListReportDTO;
+import com.divudi.core.data.dto.OpdBillItemDTO;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
@@ -433,6 +434,7 @@ public class SearchController implements Serializable {
     private ReportTemplateRowBundle bundle;
     private ReportTemplateRowBundle bundleBillItems;
     private List<OpdSaleSummaryDTO> opdSaleSummaryDtos;
+    private List<OpdBillItemDTO> opdBillItemDtos;
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
@@ -2584,6 +2586,14 @@ public class SearchController implements Serializable {
         this.bundleBillItems = bundleBillItems;
     }
 
+    public List<OpdBillItemDTO> getOpdBillItemDtos() {
+        return opdBillItemDtos;
+    }
+
+    public void setOpdBillItemDtos(List<OpdBillItemDTO> opdBillItemDtos) {
+        this.opdBillItemDtos = opdBillItemDtos;
+    }
+
     public List<OpdSaleSummaryDTO> getOpdSaleSummaryDtos() {
         return opdSaleSummaryDtos;
     }
@@ -3841,6 +3851,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql.append(" and b.deptId like :billNo");
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            jpql.append(" and b.invoiceNumber like :requestNo");
+            m.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
@@ -16413,6 +16428,16 @@ public class SearchController implements Serializable {
         return "/cashier/cash_book_summery_site";
     }
 
+    public String navigateToListCashBookEntryDepartmentSummary() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_summery_department";
+    }
+
+    public String navigateToListCashBookEntryInstitutionSummary() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_summery_institution";
+    }
+
     public String navigateToPatientReportSearch() {
         patientInvestigations = new ArrayList<>();
         return "/lab/patient_reports_search?faces-redirect=true";
@@ -16428,7 +16453,98 @@ public class SearchController implements Serializable {
     }
 
     public void generateOpdServicesByBillItem() {
-        bundleBillItems = generateOpdServiceByBillItems();
+        opdBillItemDtos = generateOpdServicesByBillItemDto();
+    }
+
+    public List<OpdBillItemDTO> generateOpdServicesByBillItemDto() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.OpdBillItemDTO("
+                + "bi.id, "
+                + "bill.id, "
+                + "bill.deptId, "
+                + "bill.billTypeAtomic, "
+                + "bill.billClassType, "
+                + "bill.createdAt, "
+                + "bill.cancelled, "
+                + "bill.refunded, "
+                + "bill.paymentMethod, "
+                + "ps.name, "
+                + "toIns.name, "
+                + "cc.name, "
+                + "pat.name, "
+                + "pat.title, "
+                + "pat.dob, "
+                + "pat.sex, "
+                + "pat.phone, "
+                + "cat.name, "
+                + "itm.name, "
+                + "creater.name, "
+                + "cb.createdAt, "
+                + "cbCreater.name, "
+                + "rb.createdAt, "
+                + "rbCreater.name, "
+                + "bi.grossValue, "
+                + "bi.discount, "
+                + "bi.netValue, "
+                + "doc.name, "
+                + "doc.title, "
+                + "bref.id"
+                + ") "
+                + "FROM BillItem bi "
+                + "JOIN bi.bill bill "
+                + "LEFT JOIN bill.toInstitution toIns "
+                + "LEFT JOIN bill.creditCompany cc "
+                + "LEFT JOIN bill.patient patient "
+                + "LEFT JOIN patient.person pat "
+                + "LEFT JOIN bi.item itm "
+                + "LEFT JOIN itm.category cat "
+                + "LEFT JOIN bill.creater createrUser "
+                + "LEFT JOIN createrUser.webUserPerson creater "
+                + "LEFT JOIN bill.paymentScheme ps "
+                + "LEFT JOIN bill.cancelledBill cb "
+                + "LEFT JOIN cb.creater cbCreaterUser "
+                + "LEFT JOIN cbCreaterUser.webUserPerson cbCreater "
+                + "LEFT JOIN bill.refundedBill rb "
+                + "LEFT JOIN rb.creater rbCreaterUser "
+                + "LEFT JOIN rbCreaterUser.webUserPerson rbCreater "
+                + "LEFT JOIN bill.fromStaff fromStaff "
+                + "LEFT JOIN fromStaff.person doc "
+                + "LEFT JOIN bill.backwardReferenceBill bref "
+                + "WHERE bill.retired = :br "
+                + "AND bill.createdAt BETWEEN :fd AND :td ";
+
+        if (!btas.isEmpty()) {
+            jpql += "AND bill.billTypeAtomic IN :bts ";
+            m.put("bts", btas);
+        }
+        if (category != null) {
+            jpql += "AND cat.id = :catId ";
+            m.put("catId", category.getId());
+        }
+        if (item != null) {
+            jpql += "AND itm.id = :itemId ";
+            m.put("itemId", item.getId());
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            m.put("site", site);
+        }
+
+        return (List<OpdBillItemDTO>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void createItemizedSalesSummary() {
@@ -17509,9 +17625,13 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
         jpql = "select d from Drawer d "
-                + " where d.retired=:ret"
-                + " order by d.drawerUser.name ";
+                + " where d.retired=:ret";
         params.put("ret", false);
+        if (webUser != null) {
+            jpql += " and d.drawerUser=:wu";
+            params.put("wu", webUser);
+        }
+        jpql += " order by d.drawerUser.name ";
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 

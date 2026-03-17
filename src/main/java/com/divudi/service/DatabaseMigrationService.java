@@ -17,6 +17,8 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
  * Singleton startup EJB that controls access to the migration page (mf.xhtml).
@@ -44,6 +46,7 @@ public class DatabaseMigrationService {
     private volatile boolean migrationPending = true;
 
     @PostConstruct
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void init() {
         try {
             String storedVersion = readStoredDdlVersion();
@@ -76,9 +79,10 @@ public class DatabaseMigrationService {
     }
 
     private String fetchWikiDdlVersion() {
+        HttpURLConnection conn = null;
         try {
             URL url = new URL(WIKI_DDL_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(10000);
@@ -97,10 +101,15 @@ public class DatabaseMigrationService {
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "DatabaseMigrationService: Could not fetch wiki DDL version.", e);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public boolean isMigrationPending() {
         return migrationPending;
     }
