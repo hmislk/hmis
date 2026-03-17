@@ -8,95 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
                 <h:form >
-                    <style>
-                            @media screen{
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 2.0;
-                                }
-                                
-                                
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 8pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-                                
-                            }
-
-                            @media screen, print {
-
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-
-                                .table-detail {
-                                    width: 99%;
-                                    font-size: 6pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                    table-layout: fixed;
-                                }
-
-                                .table-stock-list {
-                                    width: 99%;
-                                    font-size: 8pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                    table-layout: fixed;
-                                }
-
-                                .table-item-list {
-                                    width: 99%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                    table-layout: fixed;
-                                }
-                                
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-                            }
-                            
-                        </style>
                         <h:panelGroup rendered="#{pharmacyReportController.expiryReportType eq 'detailed'}">
                             <p:panel header="Expiry Item Report" styleClass="my-2" >
                                 <f:facet name="header">
@@ -190,7 +103,8 @@
                                             value="#{entry.value.entrySet()}"
                                             var="map"
                                             rowIndexVar="n"
-                                            styleClass="table-detail">
+                                            styleClass="table"
+                                            style="font-size: 6pt!important; table-layout: fixed;">
 
                                             <p:columnGroup type="header">
                                                 <p:row>
@@ -482,7 +396,8 @@
                                         id="stockListTable"
                                         value="#{pharmacyReportController.expiryStockListDtos}"
                                         var="stock"
-                                        styleClass="table-stock-list">
+                                        styleClass="table"
+                                        style="font-size: 8pt!important;">
 
                                         <p:column headerText="Department" width="25mm">
                                             <h:outputText value="#{stock.departmentName}"/>
@@ -657,7 +572,7 @@
                                         id="itemListTable"
                                         value="#{pharmacyReportController.expiryItemListDtos}"
                                         var="item"
-                                        styleClass="table-item-list">
+                                        styleClass="table">
 
                                         <p:column headerText="Department" width="25mm">
                                             <h:outputText value="#{item.departmentName}"/>
