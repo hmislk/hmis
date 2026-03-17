@@ -34,6 +34,7 @@
                                             <p:commandButton value="Confirm and Apply Stock Adjustment" ajax="false"
                                                              styleClass="ui-button-success mx-2"
                                                              icon="fa fa-check"
+                                                             rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
                                                              action="#{pharmacyStockTakeController.approvePhysicalCount}">
                                                 <p:confirm header="Confirm Stock Adjustment"
                                                            message="Are you sure you want to apply this stock adjustment? This will update stock levels based on the uploaded counts."

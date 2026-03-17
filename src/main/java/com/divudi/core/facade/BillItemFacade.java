@@ -39,15 +39,31 @@ public class BillItemFacade extends AbstractFacade<BillItem> {
      * Atomically reserves a block of IDs from the EclipseLink SEQUENCE table
      * and returns the first ID in the block.
      *
-     * Runs in REQUIRES_NEW so the UPDATE commits (and the row lock releases)
-     * immediately, before the caller's bulk-INSERT transaction begins.
-     * This prevents lock-wait timeouts when EclipseLink's own sequence
-     * allocation later tries to update the same SEQUENCE row.
+     * <p><b>MySQL-specific:</b> Uses {@code LAST_INSERT_ID(expr)} as an atomic
+     * read-modify-write on the {@code sequence} table row where
+     * {@code SEQ_NAME = 'SEQ_GEN'}. This row is EclipseLink's internal sequence
+     * counter; it must exist before this method is called. If the row is absent
+     * the UPDATE affects 0 rows, {@code LAST_INSERT_ID()} returns 0, and the
+     * method throws {@link IllegalStateException} — check that EclipseLink has
+     * been initialised (i.e. at least one JPA entity has been persisted) before
+     * using bulk inserts.</p>
      *
-     * EclipseLink allocation size is 50, so toReserve is always a multiple of 50.
+     * <p><b>Migration note:</b> This syntax is MySQL-only and will not work on
+     * PostgreSQL or other databases without rewriting the native queries.</p>
+     *
+     * <p>Runs in {@code REQUIRES_NEW} so the UPDATE commits (and the row lock
+     * releases) immediately, before the caller's bulk-INSERT transaction begins.
+     * This prevents lock-wait timeouts when EclipseLink's own sequence
+     * allocation later tries to update the same SEQUENCE row.</p>
+     *
+     * <p>EclipseLink allocation size is 50, so {@code toReserve} is always a
+     * multiple of 50.</p>
      *
      * @param count number of IDs needed
      * @return first ID in the allocated block
+     * @throws IllegalStateException if the SEQ_GEN row is missing or
+     *         LAST_INSERT_ID() returns null — ensure EclipseLink has persisted
+     *         at least one entity before calling this method
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public long allocateSequenceBlock(int count) {

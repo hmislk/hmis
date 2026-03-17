@@ -21,7 +21,7 @@
                                         <p:panelGrid columns="2" styleClass="ui-panelgrid-blank"
                                                      columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Institution:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"
+                                            <h:outputText value="#{empty pharmacyStockTakeController.snapshotBill or empty pharmacyStockTakeController.snapshotBill.institution ? 'N/A' : pharmacyStockTakeController.snapshotBill.institution.name}"
                                                           style="color: #495057;"/>
                                             <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
                                             <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"
@@ -52,6 +52,7 @@
                                             <p:commandButton value="Record Stock Counts to Start Stock Taking" ajax="false"
                                                              styleClass="ui-button-success mx-2"
                                                              icon="fa fa-check"
+                                                             rendered="#{webUserController.hasPrivilege('PharmacyStockTakeSettle')}"
                                                              action="#{pharmacyStockTakeController.settleStockCount}"/>
                                         </div>
                                     </div>
@@ -117,7 +118,7 @@
                                               style="width: 80px; text-align: right;">
                                         <h:outputText value="#{bi.qty}"
                                                       style="color: #495057; font-weight: 500;">
-                                            <f:convertNumber integerOnly="true"/>
+                                            <f:convertNumber pattern="#,##0.##"/>
                                         </h:outputText>
                                     </p:column>
 
