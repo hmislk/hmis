@@ -49,7 +49,6 @@ public class PageAdminController implements Serializable {
 
     private String selectedPagePath;
     private PageMetadata currentMetadata;
-    private java.util.List<ConfigOptionInfo> filteredConfigOptions;
 
     public PageAdminController() {
     }
@@ -318,14 +317,6 @@ public class PageAdminController implements Serializable {
 
     public void setCurrentMetadata(PageMetadata currentMetadata) {
         this.currentMetadata = currentMetadata;
-    }
-
-    public java.util.List<ConfigOptionInfo> getFilteredConfigOptions() {
-        return filteredConfigOptions;
-    }
-
-    public void setFilteredConfigOptions(java.util.List<ConfigOptionInfo> filteredConfigOptions) {
-        this.filteredConfigOptions = filteredConfigOptions;
     }
 
     public PageMetadataRegistry getMetadataRegistry() {

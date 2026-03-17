@@ -1338,6 +1338,12 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToShiftShortagePrint() {
+        if (currentBill == null
+                || currentBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                || currentBillPayments == null
+                || currentBillPayments.isEmpty()) {
+            return navigateToRecordShiftShortage();
+        }
         return "/cashier/record_shift_shortage_print?faces-redirect=true";
     }
 
