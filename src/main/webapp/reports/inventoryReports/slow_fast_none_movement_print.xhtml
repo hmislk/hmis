@@ -8,91 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
                 <h:form >
-                    <style>
-                            @media screen{
-                                .body {
-                                    background-color: #f0f0f0;
-                                }
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 2.0;
-                                    background-color: #ffffff;
-                                }
-
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 7pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-
-                            }
-
-                            @media screen, print {
-
-                                .table-sf {
-                                    width: 99.9%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                    table-layout: fixed;
-                                }
-
-                                .table-n {
-                                    width: 99.9%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                    table-layout: fixed;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                    font-size: 8pt!important;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-                            }
-                            
-                        </style>
                         <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'fmovement'}">
                             <p:panel header="Fast Movement Report" styleClass="my-2" >
                                 <f:facet name="header">
@@ -135,12 +52,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Date Range:" styleClass="label"/>
@@ -169,7 +86,7 @@
 
                                                 <!-- Row 4 -->
                                                 <h:outputText value="Item:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
+                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
                                                 <h:outputText value="Fast Movement"/>
@@ -189,7 +106,7 @@
                                          value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
                                          var="f"
                                          rowIndexVar="n"
-                                         styleClass="table-sf table-sm">
+                                         styleClass="table">
 
                                         <p:column headerText="Sl No." width="10mm">
                                             <h:outputText value="#{n+1}"/>
@@ -294,12 +211,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Date Range:" styleClass="label"/>
@@ -328,7 +245,7 @@
 
                                                 <!-- Row 4 -->
                                                 <h:outputText value="Item:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
+                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
                                                 <h:outputText value="Slow Movement"/>
@@ -348,7 +265,7 @@
                                          value="#{pharmacyReportController.sortType eq 'byvalue' ? pharmacyReportController.movementRecords : pharmacyReportController.movementRecordsQty }"
                                          var="s"
                                          rowIndexVar="n"
-                                         styleClass="table-sf table-sm">
+                                         styleClass="table">
 
                                         <p:column headerText="Sl No." width="10mm">
                                             <h:outputText value="#{n+1}"/>
@@ -453,12 +370,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{pharmacyReportController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Date Range:" styleClass="label"/>
@@ -487,7 +404,7 @@
 
                                                 <!-- Row 4 -->
                                                 <h:outputText value="Item:" styleClass="label"/>
-                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : ''}"/>
+                                                <h:outputText value="#{pharmacyReportController.selectedAmpDto != null ? pharmacyReportController.selectedAmpDto.name : 'All'}"/>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
                                                 <h:outputText value="Non Movement"/>
@@ -507,7 +424,7 @@
                                          value="#{pharmacyReportController.itemLastSuppliers}"
                                          var="no"
                                          rowIndexVar="n"
-                                         styleClass="table-n table-sm">
+                                         styleClass="table">
 
                                         <p:column headerText="Sl No." width="10mm">
                                             <h:outputText value="#{n+1}"/>

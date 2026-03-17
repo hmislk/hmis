@@ -1158,4 +1158,23 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
+
+    // Date range as string for file name
+    public static String dateRangeForFileName(Date from, Date to, String dateFormat) {
+        return dateRangeForFileName(from, to, dateFormat, false);
+    }
+
+    public static String dateRangeForFileName(Date from, Date to, String dateFormat, boolean singleDate) {
+        if (dateFormat == null || dateFormat.trim().isEmpty()) {
+            dateFormat = "dd-MM-yyyy";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        if (from != null && to != null) {
+            return sanitizeStringForDatabase(sdf.format(from) + "_to_" + sdf.format(to));
+        } else if (from != null && singleDate) {
+            return sanitizeStringForDatabase(sdf.format(from));
+        } else {
+            return "";
+        }
+    }
 }

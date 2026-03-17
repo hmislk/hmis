@@ -191,6 +191,22 @@
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
                                     </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Convert IOU to Cash"
+                                        icon="pi pi-money-bill"
+                                        ajax="false"
+                                        action="#{iouBillController.navigateToConvertIouToCash()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My IOU Conversions"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{iouBillController.navigateToMyIouConversions()}" >
+                                    </p:commandButton>
                                 </p:tab>
 
                                 <p:tab title="Income &amp; Expense Management">
@@ -281,15 +297,31 @@
 
                                 <p:tab title="Cash Book">
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="my-1 w-100"
                                         value="Site Cashbook Daily Summary"
                                         icon=""
-                                        ajax="false" 
+                                        ajax="false"
                                         action="#{searchController.navigateToListCashBookEntrySiteSummary}" >
                                     </p:commandButton>
 
-                                    <p:commandButton 
+                                    <p:commandButton
+                                        class="my-1 w-100"
+                                        value="Department Cashbook Daily Summary"
+                                        icon=""
+                                        ajax="false"
+                                        action="#{searchController.navigateToListCashBookEntryDepartmentSummary}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100"
+                                        value="Institution Cashbook Daily Summary"
+                                        icon=""
+                                        ajax="false"
+                                        action="#{searchController.navigateToListCashBookEntryInstitutionSummary}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="my-1 w-100"
                                         value="Cash Book Entries"
                                         icon=""

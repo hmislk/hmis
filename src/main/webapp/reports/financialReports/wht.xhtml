@@ -301,7 +301,7 @@
                                     <p:outputLabel value="#{row.bill.id}" />
                                 </p:column>
 
-                                <p:column headerText="Type" width="10em"   rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <p:column headerText="Type" width="10em"   rendered="#{webUserController.hasPrivilege('Developers')}" style="word-break: break-word; white-space: normal;">
                                     <p:outputLabel value="#{row.bill.billTypeAtomic}" >
                                     </p:outputLabel>
                                 </p:column>

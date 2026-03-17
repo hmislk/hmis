@@ -178,6 +178,16 @@
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6">
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Residency Status:</strong><br/>
+                                                        <p:badge 
+                                                            value="#{patientController.current.person.foreigner?'Foreigner':'Local'}"
+                                                            severity="#{patientController.current.person.foreigner?'warning':'info'}"
+                                                            size="large"
+                                                            style="width: 8em;">
+                                                        </p:badge>
+                                                    </h:panelGroup>
+
                                                     <h:panelGroup rendered="#{not empty patientController.current.person.nic}" layout="block" styleClass="mb-3">
                                                         <strong class="text-muted">NIC / Passport:</strong><br/>
                                                         <h:outputText value="#{patientController.current.person.nic}" styleClass="fw-bold"/>
@@ -236,11 +246,6 @@
                                                                  severity="#{patientController.current.blacklisted eq true ? 'danger' : 'success'}"/>
                                                     </div>
 
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}" layout="block" styleClass="mb-3">
-                                                        <strong class="text-muted">Residency Status:</strong><br/>
-                                                        <p:badge value="#{patientController.current.person.foreigner?'Foreigner':'Local'}"
-                                                                 severity="#{patientController.current.person.foreigner?'warning':'info'}"/>
-                                                    </h:panelGroup>
                                                 </div>
                                             </div>
                                         </div>

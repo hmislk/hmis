@@ -1359,7 +1359,6 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setTotal(getCurrent().getNetTotal());
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        updateReferanceBills();
         saveBillItemBht();
 
 
