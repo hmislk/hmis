@@ -4335,6 +4335,7 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition",
+
                 "attachment; filename=Purchase_Return_Report.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
@@ -4649,10 +4650,12 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition",
+
                 "attachment; filename=Purchase_Return_Report.pdf");
 
         String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
         SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
 
         try (OutputStream out = response.getOutputStream()) {
 
@@ -5147,6 +5150,7 @@ public class PharmacyReportController implements Serializable {
     public void exportStockAdjustmentIssueToExcel() {
 
         FacesContext context = FacesContext.getCurrentInstance();
+
         HttpServletResponse response
                 = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -5939,13 +5943,16 @@ public class PharmacyReportController implements Serializable {
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
             Row dateRow = sheet.createRow(rowIndex++);
             Cell dateCell = dateRow.createCell(0);
             dateCell.setCellValue(
                     "From Date : "
-                    + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(fromDate) : "-")
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
                     + " | To Date : "
-                    + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(toDate) : "-")
+                    + (toDate != null ? sdf.format(toDate) : "-")
             );
             dateCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
@@ -5998,7 +6005,7 @@ public class PharmacyReportController implements Serializable {
 
                 Cell d0 = row.createCell(0);
                 d0.setCellValue(
-                        new SimpleDateFormat("dd/MM/yyyy").format(bi.getBill().getCreatedAt()));
+                        sdf.format(bi.getBill().getCreatedAt()));
                 d0.setCellStyle(dataStyle);
 
                 Cell d1 = row.createCell(1);
@@ -6106,7 +6113,8 @@ public class PharmacyReportController implements Serializable {
         response.setHeader("Content-Disposition",
                 "attachment; filename=IP_Drug_Return_Report.pdf");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
 
         try (OutputStream out = response.getOutputStream()) {
 
@@ -6172,7 +6180,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidthPercentage(100);
 
             float[] widths = {
-                3f, 6f, 3f, 5f, 5f,
+                5f, 6f, 3f, 5f, 5f,
                 2f, 3f,
                 3f, 3f,
                 3f, 3f,
@@ -14738,8 +14746,10 @@ public class PharmacyReportController implements Serializable {
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
+
         response.reset();
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());    
+
 
         String fileName = "";
 
