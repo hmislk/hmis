@@ -5563,17 +5563,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.pharmacySaleDepartments = pharmacySaleDepartments;
     }
 
-    // Dates for fileName generation
-    private String getFromToDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-
-        if (fromDate != null && toDate != null) {
-            return sdf.format(fromDate) + "_to_" + sdf.format(toDate);
-        } else {
-            return "";
-        }
-    }
-
     // Get filters for petty_cash_payment report
     private Map<String, Object> getFiltersForPettyCasgPaymentReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
@@ -5845,6 +5834,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         return null;
     }
+
     // PostProcessor for bill_wise_item_movement_report excel export
     public void postProcessBillWiseItemMovementReportExcel(Object document) {
         if (document == null) {
@@ -5862,12 +5852,24 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         workbook.setSheetName(0, "Bill Wise Item Movement Report");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 5);
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForBillWiseItemMovementReport();
+
         if (filters != null && !filters.isEmpty()) {
             pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Bill Wise Item Movement Report", filters);
         }
+    }
+
+    public String getBillWiseItemMovementReportFileName() {
+        StringBuilder fileName = new StringBuilder("Bill_Wise_Item_Movement_Report");
+
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName.append("_").append(dates);
+        }
+
+        return fileName.toString();
     }
 
     // Filters for bill_wise_item_movement_report
