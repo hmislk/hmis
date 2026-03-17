@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
@@ -35,6 +36,9 @@ public class ConfigOptionApplicationController implements Serializable {
 
     @EJB
     private ConfigOptionFacade optionFacade;
+
+    @Inject
+    private EnumController enumController;
 
     private List<ConfigOption> options;
 //    private List<Denomination> denominations;
@@ -113,6 +117,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
             loadAiChatConfigurationDefaults();
+            enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
         }

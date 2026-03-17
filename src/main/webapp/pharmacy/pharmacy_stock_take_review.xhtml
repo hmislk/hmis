@@ -63,7 +63,7 @@
                                                          ajax="false"
                                                          rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
                                                          onclick="return confirm('Approve this physical count and post stock adjustments?');"
-                                                         action="#{pharmacyStockTakeController.approvePhysicalCount}"/>
+                                                         action="#{pharmacyStockTakeController.confirmUploadAndApprove}"/>
                                     </p:panelGrid>
 
                                     <p:separator/>

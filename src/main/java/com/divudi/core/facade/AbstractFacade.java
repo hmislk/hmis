@@ -119,9 +119,45 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Executes a native SELECT returning a single scalar value (e.g. a count or sequence value).
+     * Returns null if no rows found.
+     */
+    public Object nativeScalarQuery(String sql, List<Object> parameters) {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+        Query query = getEntityManager().createNativeQuery(sql);
+        if (parameters != null) {
+            for (int i = 0; i < parameters.size(); i++) {
+                query.setParameter(i + 1, parameters.get(i));
+            }
+        }
+        query.setMaxResults(1);
+        List<?> results = query.getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     public void flush() {
         getEntityManager().flush();
 
+    }
+
+    /**
+     * Flushes pending changes to the database and then clears the persistence
+     * context (EclipseLink L1 cache).
+     *
+     * <p><b>Warning:</b> after this call every previously managed entity
+     * becomes <em>detached</em>. Any subsequent access to a lazy-loaded
+     * association on those detached instances will throw a
+     * {@link javax.persistence.EntityNotFoundException} or cause a
+     * {@code LazyInitializationException}. Re-attach entities with
+     * {@code em.merge()} or {@code em.find()} / {@code getReference()} before
+     * accessing their lazy relations.</p>
+     */
+    public void flushAndClear() {
+        getEntityManager().flush();
+        getEntityManager().clear();
     }
 
     public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {

@@ -147,12 +147,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{searchController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{searchController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
@@ -190,7 +190,7 @@
                                         var="row" 
                                         styleClass="table-individual">
 
-                                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" width="10mm" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
+                                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" width="10mm" sortBy="#{row.bill.deptId}">
                                             <h:outputText value="#{row.bill.id}" />
                                         </p:column>
 
@@ -213,16 +213,16 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Receipt No" width="23mm" style="text-align: left;" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
+                                        <p:column headerText="Receipt No" width="23mm" style="text-align: left;" sortBy="#{row.bill.deptId}">
                                             <h:outputText value="#{row.bill.deptId}" />
-                                            <p:badge value="Cancelled" rendered="#{row.bill.cancelled}" styleClass="ui-badge-danger" style="width: auto; font-size: 6pt;"></p:badge>
-                                            <p:badge value="Refunded" rendered="#{row.bill.refunded}" styleClass="ui-badge-secondary" style="width: auto; font-size: 6pt;"></p:badge>
+                                            <br/>
+                                            <h:outputText value="(Cancelled)" rendered="#{row.bill.cancelled}" style="font-weight: 800; color: red;"/>
+                                            <h:outputText value="(Refunded)" rendered="#{row.bill.refunded}" style="font-weight: 800; color: gold;"/>
                                         </p:column>
 
 
                                         <p:column headerText="Cashier" width="25mm" style="text-align: left;" 
-                                                sortBy="#{row.bill.creater.webUserPerson.name}" 
-                                                filterBy="#{row.bill.creater.webUserPerson.name}">
+                                                sortBy="#{row.bill.creater.webUserPerson.name}">
                                             <h:outputText value="#{row.bill.creater.webUserPerson.name}" />
                                             <h:outputText value="&nbsp;(#{row.bill.creater.name})" />
                                         </p:column>
@@ -234,8 +234,6 @@
                                         <p:column 
                                             headerText="Speciality" 
                                             sortBy="#{row.bill.toStaff.speciality.name}"
-                                            filterBy="#{row.bill.toStaff.speciality.name}"
-                                            filterMatchMode="contains"
                                             style="text-align: left;"
                                             width="22mm">
                                             <h:outputText value="#{row.bill.toStaff.speciality.name}" />
@@ -244,14 +242,13 @@
                                         <p:column 
                                             headerText="Staff" 
                                             sortBy="#{row.bill.staff.person.name}"
-                                            filterBy="#{row.bill.staff.person.name}"
                                             filterMatchMode="contains"
                                             style="text-align: left;"
                                             width="25mm">
                                             <h:outputText value="#{row.bill.toStaff.person.name}" />
                                         </p:column>
 
-                                        <p:column style="text-align: right;" headerText="Gross" sortBy="#{row.bill.total}" filterBy="#{row.bill.total}" width="20mm">                              
+                                        <p:column style="text-align: right;" headerText="Gross" sortBy="#{row.bill.total}" width="20mm">                              
                                             <h:outputText value="#{row.bill.total}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputText>
@@ -265,7 +262,7 @@
                                         <p:column 
                                             style="text-align: right;" 
                                             headerText="WHT" 
-                                            sortBy="#{row.bill.tax}" filterBy="#{row.bill.tax}" 
+                                            sortBy="#{row.bill.tax}"
                                             width="20mm">                              
                                             <h:outputText value="#{row.bill.tax}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -279,7 +276,7 @@
 
                                         <p:column 
                                             style="text-align: right;" headerText="Value" 
-                                            sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" 
+                                            sortBy="#{row.bill.netTotal}"
                                             width="20mm">                              
                                             <h:outputText value="#{row.bill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -342,12 +339,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{searchController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{searchController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>
@@ -473,12 +470,12 @@
                                                 <!-- Row 1 -->
                                                 <h:outputText value="From Date:" styleClass="label"/>
                                                 <h:outputText value="#{searchController.fromDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="To Date:" styleClass="label"/>
                                                 <h:outputText value="#{searchController.toDate}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
                                                 <h:outputText value="Report Type:" styleClass="label"/>

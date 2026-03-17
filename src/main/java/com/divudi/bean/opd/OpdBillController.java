@@ -3030,6 +3030,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
@@ -3315,7 +3316,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
-                //  //System.err.println("ttttt");
                 checkAge = true;
                 break;
             }
@@ -3458,16 +3458,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 // Use helper method to get only the selected payment method's value
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
+
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+
+            if (differenceOfBillTotalAndPaymentValue != 0.0) {
+                JsfUtil.addErrorMessage("The sum of multiple payments does not match the total of the bill.");
                 return true;
             }
+
             if (cashPaid == 0.0) {
                 setCashPaid(multiplePaymentMethodTotalValue);
             }
-
         }
 
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
