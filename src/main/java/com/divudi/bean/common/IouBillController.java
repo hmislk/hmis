@@ -23,9 +23,11 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -94,6 +96,13 @@ public class IouBillController implements Serializable {
 
     private double settlingIouTotal = 0.0;
     private double paymentTotal = 0.0;
+
+    // My IOU Conversions list and cancellation
+    private List<Bill> myIouConversionBills;
+    private Bill selectedIouConversionBill;
+    private String cancellationComment;
+    private Date myConversionsFromDate;
+    private Date myConversionsToDate;
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -670,6 +679,151 @@ public class IouBillController implements Serializable {
         return true;
     }
 
+    public String navigateToMyIouConversions() {
+        myConversionsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        myConversionsToDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyIouConversionBills();
+        return "/cashier/my_iou_conversions?faces-redirect=true";
+    }
+
+    public void fillMyIouConversionBills() {
+        String jpql = "select b from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.creater=:usr "
+                + " and b.createdAt between :fd and :td "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        params.put("usr", sessionController.getLoggedUser());
+        params.put("fd", myConversionsFromDate);
+        params.put("td", myConversionsToDate);
+        myIouConversionBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public String navigateToViewIouConversion(Bill bill) {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No conversion bill selected");
+            return null;
+        }
+        selectedIouConversionBill = bill;
+        cancellationComment = null;
+        return "/cashier/view_iou_conversion?faces-redirect=true";
+    }
+
+    public String cancelIouConversion() {
+        if (selectedIouConversionBill == null) {
+            JsfUtil.addErrorMessage("No conversion bill selected");
+            return null;
+        }
+        if (cancellationComment == null || cancellationComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a cancellation comment");
+            return null;
+        }
+        // Refresh from database to get current state
+        Bill freshBill = billFacade.find(selectedIouConversionBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Conversion bill not found");
+            return null;
+        }
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This conversion has already been cancelled");
+            return null;
+        }
+
+        // Create cancellation bill
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.setBillType(BillType.IouSettle);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED);
+        cancellationBill.setDepartment(freshBill.getDepartment());
+        cancellationBill.setInstitution(freshBill.getInstitution());
+        cancellationBill.setCreater(sessionController.getLoggedUser());
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setBillDate(new Date());
+        cancellationBill.setBillTime(new Date());
+        cancellationBill.setComments(cancellationComment);
+        cancellationBill.setBilledBill(freshBill);
+        cancellationBill.setTotal(freshBill.getTotal());
+        cancellationBill.setNetTotal(freshBill.getNetTotal());
+
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED);
+        cancellationBill.setDeptId(deptId);
+        cancellationBill.setInsId(deptId);
+        billFacade.create(cancellationBill);
+
+        // Find all payments on the original conversion bill
+        String paymentJpql = "select p from Payment p where p.bill=:bill and p.retired=:ret";
+        Map<String, Object> pParams = new HashMap<>();
+        pParams.put("bill", freshBill);
+        pParams.put("ret", false);
+        List<Payment> conversionPayments = paymentFacade.findByJpql(paymentJpql, pParams);
+
+        List<Payment> newIouPayments = new ArrayList<>();
+        List<Payment> reversedCashPayments = new ArrayList<>();
+
+        for (Payment p : conversionPayments) {
+            if (p.getPaymentMethod() == PaymentMethod.IOU) {
+                // Reverse the IOU reversal: create positive IOU payment to restore IOU balance
+                Payment restoredIou = new Payment();
+                restoredIou.setBill(cancellationBill);
+                restoredIou.setPaymentMethod(PaymentMethod.IOU);
+                restoredIou.setPaidValue(Math.abs(p.getPaidValue()));
+                restoredIou.setDepartment(sessionController.getDepartment());
+                restoredIou.setInstitution(sessionController.getInstitution());
+                restoredIou.setCreatedAt(new Date());
+                restoredIou.setCreater(sessionController.getLoggedUser());
+                restoredIou.setCurrentHolder(sessionController.getLoggedUser());
+                paymentController.save(restoredIou);
+                newIouPayments.add(restoredIou);
+            } else if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                // Reverse the cash payment: create negative cash payment
+                Payment reversedCash = new Payment();
+                reversedCash.setBill(cancellationBill);
+                reversedCash.setPaymentMethod(PaymentMethod.Cash);
+                reversedCash.setPaidValue(0 - Math.abs(p.getPaidValue()));
+                reversedCash.setDepartment(sessionController.getDepartment());
+                reversedCash.setInstitution(sessionController.getInstitution());
+                reversedCash.setCreatedAt(new Date());
+                reversedCash.setCreater(sessionController.getLoggedUser());
+                reversedCash.setCurrentHolder(sessionController.getLoggedUser());
+                paymentController.save(reversedCash);
+                reversedCashPayments.add(reversedCash);
+            }
+        }
+
+        // Update drawer: restored IOUs come in, cash goes out
+        drawerController.updateDrawerForIns(newIouPayments);
+        drawerController.updateDrawerForOuts(reversedCashPayments);
+
+        // Clear cancelledBill reference on original IOU payments so they are available again
+        String origIouJpql = "select p from Payment p where p.cancelledBill=:bill and p.retired=:ret";
+        Map<String, Object> origParams = new HashMap<>();
+        origParams.put("bill", freshBill);
+        origParams.put("ret", false);
+        List<Payment> originalIouPayments = paymentFacade.findByJpql(origIouJpql, origParams);
+        for (Payment origIou : originalIouPayments) {
+            origIou.setCancelledBill(null);
+            paymentController.save(origIou);
+        }
+
+        // Mark original conversion bill as cancelled
+        freshBill.setCancelled(true);
+        freshBill.setCancelledBill(cancellationBill);
+        billFacade.edit(freshBill);
+
+        selectedIouConversionBill = freshBill;
+        JsfUtil.addSuccessMessage("IOU conversion cancelled successfully");
+        return null;
+    }
+
+    public String navigateBackToMyIouConversions() {
+        fillMyIouConversionBills();
+        return "/cashier/my_iou_conversions?faces-redirect=true";
+    }
+
     public void recreateModle() {
         returnAmount = 0.0;
         printPreview = false;
@@ -949,6 +1103,46 @@ public class IouBillController implements Serializable {
 
     public void setPaymentTotal(double paymentTotal) {
         this.paymentTotal = paymentTotal;
+    }
+
+    public List<Bill> getMyIouConversionBills() {
+        return myIouConversionBills;
+    }
+
+    public void setMyIouConversionBills(List<Bill> myIouConversionBills) {
+        this.myIouConversionBills = myIouConversionBills;
+    }
+
+    public Bill getSelectedIouConversionBill() {
+        return selectedIouConversionBill;
+    }
+
+    public void setSelectedIouConversionBill(Bill selectedIouConversionBill) {
+        this.selectedIouConversionBill = selectedIouConversionBill;
+    }
+
+    public String getCancellationComment() {
+        return cancellationComment;
+    }
+
+    public void setCancellationComment(String cancellationComment) {
+        this.cancellationComment = cancellationComment;
+    }
+
+    public Date getMyConversionsFromDate() {
+        return myConversionsFromDate;
+    }
+
+    public void setMyConversionsFromDate(Date myConversionsFromDate) {
+        this.myConversionsFromDate = myConversionsFromDate;
+    }
+
+    public Date getMyConversionsToDate() {
+        return myConversionsToDate;
+    }
+
+    public void setMyConversionsToDate(Date myConversionsToDate) {
+        this.myConversionsToDate = myConversionsToDate;
     }
 
 }
