@@ -21,7 +21,7 @@
                                         <p:panelGrid columns="2" styleClass="ui-panelgrid-blank"
                                                      columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Institution:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"
+                                            <h:outputText value="#{empty pharmacyStockTakeController.snapshotBill or empty pharmacyStockTakeController.snapshotBill.institution ? 'N/A' : pharmacyStockTakeController.snapshotBill.institution.name}"
                                                           style="color: #495057;"/>
                                             <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
                                             <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"
@@ -45,13 +45,14 @@
                                     </div>
                                     <div class="col-lg-4 text-right">
                                         <div class="btn-group" role="group">
-                                            <p:commandButton value="Back" ajax="false" 
-                                                             styleClass="ui-button-secondary mx-2" 
-                                                             icon="fa fa-arrow-left" 
+                                            <p:commandButton value="Back" ajax="false"
+                                                             styleClass="ui-button-secondary mx-2"
+                                                             icon="fa fa-arrow-left"
                                                              action="pharmacy_stock_take?faces-redirect=true"/>
-                                            <p:commandButton value="Record Stock Counts to Start Stock Taking" ajax="false" 
-                                                             styleClass="ui-button-success mx-2" 
-                                                             icon="fa fa-check" 
+                                            <p:commandButton value="Record Stock Counts to Start Stock Taking" ajax="false"
+                                                             styleClass="ui-button-success mx-2"
+                                                             icon="fa fa-check"
+                                                             rendered="#{webUserController.hasPrivilege('PharmacyStockTakeSettle')}"
                                                              action="#{pharmacyStockTakeController.settleStockCount}"/>
                                         </div>
                                     </div>
@@ -60,9 +61,9 @@
 
                                 <p:separator/>
 
-                                <p:dataTable value="#{pharmacyStockTakeController.snapshotBill.billItems}" 
-                                             var="bi" 
-                                             rows="25" 
+                                <p:dataTable value="#{pharmacyStockTakeController.snapshotBill.billItems}"
+                                             var="bi"
+                                             rows="25"
                                              paginator="true"
                                              paginatorPosition="both"
                                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -112,12 +113,12 @@
 
 
 
-                                    <p:column headerText="Quantity" sortBy="#{bi.qty}" 
+                                    <p:column headerText="Quantity" sortBy="#{bi.qty}"
                                               filterBy="#{bi.qty}" filterMatchMode="exact"
                                               style="width: 80px; text-align: right;">
-                                        <h:outputText value="#{bi.qty}" 
+                                        <h:outputText value="#{bi.qty}"
                                                       style="color: #495057; font-weight: 500;">
-                                            <f:convertNumber integerOnly="true"/>
+                                            <f:convertNumber pattern="#,##0.##"/>
                                         </h:outputText>
                                     </p:column>
 
