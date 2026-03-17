@@ -88,6 +88,21 @@ import software.xdev.chartjs.model.options.elements.Fill;
 import software.xdev.chartjs.model.options.scale.Scales;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearScaleOptions;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearTickOptions;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.*;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
 
 /**
  *
@@ -215,6 +230,14 @@ public class InwardReportController implements Serializable {
 
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
+
+    private String specialtyLineChartImage;
+    private String specialtyBarChartImage;
+    private String doctorLineChartImage;
+    private String doctorBarChartImage;
+
+    private Date admissionReportProcessedAt;
+    private String admissionReportProcessedBy;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -1406,6 +1429,23 @@ public class InwardReportController implements Serializable {
 
     private List<InwardAdmissionDTO> list;
 
+    public void clearAdmissionCountConsultantWiseReport() {
+        list = null;
+        specialtyLineChartImage = null;
+        specialtyBarChartImage = null;
+        doctorLineChartImage = null;
+        doctorBarChartImage = null;
+        admissionReportProcessedAt = null;
+        admissionReportProcessedBy = null;
+        specialtyLineChartModel = null;
+        specialtyBarChartModel = null;
+        lineChartModel = null;
+        barChartModel = null;
+        fromYearStartDate = null;
+        toYearEndDate = null;
+        currentSpeciality = null;
+    }
+
     public void processAdmissionCountConsultantWiseReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -1496,6 +1536,13 @@ public class InwardReportController implements Serializable {
         list.add(grandTotal);
 
         createAdmissionCountCharts();
+        admissionReportProcessedAt = new Date();
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            com.divudi.core.entity.WebUser u = sessionController.getLoggedUser();
+            String personName = (u.getWebUserPerson() != null && u.getWebUserPerson().getName() != null)
+                    ? u.getWebUserPerson().getName() : null;
+            admissionReportProcessedBy = (personName != null && !personName.isBlank()) ? personName : u.getName();
+        }
     }
 
     public void createAdmissionCountCharts() {
@@ -1538,7 +1585,7 @@ public class InwardReportController implements Serializable {
         LineOptions lineOptionsObj = new LineOptions();
         Plugins plugins = new Plugins();
         plugins.setTitle(new Title().setDisplay(true).setText("Doctor Wise Count"));
-        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
         lineOptionsObj.setPlugins(plugins);
         Scales scales = new Scales();
         scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(1)));
@@ -1618,7 +1665,7 @@ public class InwardReportController implements Serializable {
         LineOptions lineOptionsObj = new LineOptions();
         Plugins plugins = new Plugins();
         plugins.setTitle(new Title().setDisplay(true).setText("Specialty Wise Count"));
-        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
         lineOptionsObj.setPlugins(plugins);
         Scales scales = new Scales();
         scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
@@ -2923,6 +2970,227 @@ public class InwardReportController implements Serializable {
         }
     }
 
+    public StreamedContent getAdmissionCountPdf() {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            pdfDoc.setDefaultPageSize(PageSize.A4.rotate());
+            HtmlConverter.convertToPdf(buildAdmissionCountHtml(), pdfDoc, new ConverterProperties());
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("Admission_Count_Doctor_Wise.pdf")
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String buildAdmissionCountHtml() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        SimpleDateFormat sdtf = new SimpleDateFormat("dd/MMM/yyyy HH:mm:ss");
+        String fromDate = fromYearStartDate != null ? sdf.format(fromYearStartDate) : "";
+        String toDate = toYearEndDate != null ? sdf.format(toYearEndDate) : "";
+        String institutionName = (sessionController != null && sessionController.getInstitution() != null)
+                ? sessionController.getInstitution().getName() : "";
+        String processedBy = admissionReportProcessedBy != null ? admissionReportProcessedBy : "";
+        String processedAt = admissionReportProcessedAt != null ? sdtf.format(admissionReportProcessedAt) : "";
+        String printedBy = "";
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            com.divudi.core.entity.WebUser u = sessionController.getLoggedUser();
+            String personName = (u.getWebUserPerson() != null && u.getWebUserPerson().getName() != null
+                    && !u.getWebUserPerson().getName().isBlank())
+                    ? u.getWebUserPerson().getName() : null;
+            printedBy = personName != null ? personName : u.getName();
+        }
+        String printedAt = sdtf.format(new Date());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>")
+                .append("<style>")
+                .append("body{font-family:Arial,sans-serif;font-size:10px;margin:8mm;}")
+                .append("h1{text-align:center;font-size:15px;margin:0 0 2px 0;}")
+                .append("h2{text-align:center;font-size:12px;margin:0 0 4px 0;}")
+                .append(".dates{text-align:center;font-size:10px;margin-bottom:6px;}")
+                .append("table{border-collapse:collapse;width:100%;font-size:9px;}")
+                .append("th,td{border:1px solid #000;padding:2px 3px;}")
+                .append("th{background-color:#c8c8c8;font-weight:bold;text-align:center;}")
+                .append(".name{text-align:left;}")
+                .append(".num{text-align:center;}")
+                .append(".subtotal td{font-weight:bold;background-color:#ebebef;}")
+                .append(".grandtotal td{font-weight:bold;background-color:#d0d0d0;font-size:10px;}")
+                .append(".total{background-color:#a0a0a0;font-weight:bold;text-align:center;}")
+                .append(".meta{font-size:9px;margin-bottom:6px;border-collapse:collapse;width:100%;}")
+                .append(".meta td{border:none;padding:1px 4px;vertical-align:top;}")
+                .append("</style></head><body>");
+
+        sb.append("<h1>").append(escapeHtml(institutionName)).append("</h1>");
+        sb.append("<h2>Doctor Wise Admission Count Report</h2>");
+        sb.append("<div class='dates'>From: <b>").append(fromDate)
+                .append("</b>&nbsp;&nbsp;&nbsp;To: <b>").append(toDate).append("</b></div>");
+
+        sb.append("<table><thead><tr>")
+                .append("<th class='name'>Doctor Name</th>")
+                .append("<th class='name'>Speciality</th>");
+        for (String m : new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}) {
+            sb.append("<th>").append(m).append("</th>");
+        }
+        sb.append("<th>Total</th></tr></thead><tbody>");
+
+        if (list != null) {
+            for (InwardAdmissionDTO dto : list) {
+                boolean sub = dto.isSubtotal();
+                boolean grand = dto.isGrandTotal();
+                sb.append("<tr class='").append(grand ? "grandtotal" : sub ? "subtotal" : "").append("'>");
+                if (!sub && !grand) {
+                    sb.append("<td class='name'>").append(escapeHtml(dto.getNameWithTitle())).append("</td>");
+                    sb.append("<td class='name'>").append(escapeHtml(dto.getSpecialityName())).append("</td>");
+                } else {
+                    sb.append("<td colspan='2' class='name'>").append(escapeHtml(dto.getNameWithTitle())).append("</td>");
+                }
+                int[] months = {dto.getJanuary(), dto.getFebruary(), dto.getMarch(), dto.getApril(),
+                    dto.getMay(), dto.getJune(), dto.getJuly(), dto.getAugust(),
+                    dto.getSeptember(), dto.getOctober(), dto.getNovember(), dto.getDecember()};
+                for (int v : months) {
+                    sb.append("<td class='num'>").append(v > 0 ? v : "").append("</td>");
+                }
+                sb.append("<td class='total'>").append(dto.getTotalAdmissions()).append("</td>");
+                sb.append("</tr>");
+            }
+        }
+        sb.append("</tbody></table>");
+
+        sb.append("<table class='meta'>")
+                .append("<tr>")
+                .append("<td>")
+                .append("<b>Processed By:</b> ").append(escapeHtml(processedBy)).append("<br/>")
+                .append("<b>Processed At:</b> ").append(escapeHtml(processedAt))
+                .append("</td>")
+                .append("<td style='text-align:right;'>")
+                .append("<b>Printed By:</b> ").append(escapeHtml(printedBy)).append("<br/>")
+                .append("<b>Printed At:</b> ").append(escapeHtml(printedAt))
+                .append("</td>")
+                .append("</tr>")
+                .append("</table>");
+
+        // Append charts if captured from the browser
+        String[] chartTitles = {
+            "Specialty Wise Admission Trend",
+            "Specialty Wise Admission Count",
+            "Doctor Wise Admission Trend",
+            "Doctor Wise Admission Count"
+        };
+        String[] chartImages = {specialtyLineChartImage, specialtyBarChartImage, doctorLineChartImage, doctorBarChartImage};
+        boolean hasCharts = false;
+        for (String img : chartImages) {
+            if (img != null && img.startsWith("data:image/png;base64,")) {
+                hasCharts = true;
+                break;
+            }
+        }
+        if (hasCharts) {
+            sb.append("<div style='page-break-before:always; margin-top:10px;'>")
+                    .append("<h2>Admission Count Visual Reports</h2>")
+                    .append("<table style='border:none; width:100%;'>");
+            int col = 0;
+            for (int i = 0; i < chartImages.length; i++) {
+                if (col % 2 == 0) {
+                    if (col > 0) {
+                        sb.append("</tr>");
+                    }
+                    sb.append("<tr>");
+                }
+                sb.append("<td style='border:none; width:50%; padding:5px; text-align:center; vertical-align:top;'>");
+                String img = chartImages[i];
+                if (img != null && img.startsWith("data:image/png;base64,")) {
+                    sb.append("<div style='font-weight:bold; margin-bottom:4px;'>").append(chartTitles[i]).append("</div>");
+                    sb.append("<img src='").append(img).append("' style='width:100%;'/>");
+                }
+                sb.append("</td>");
+                col++;
+            }
+            sb.append("</tr></table></div>");
+        }
+
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    public StreamedContent getAdmissionCountExcelWithCharts() {
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            // --- Sheet 1: Data table ---
+            XSSFSheet dataSheet = wb.createSheet("Admission Data");
+            String[] headers = {"Doctor Name", "Speciality", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Total"};
+            Row headerRow = dataSheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+            int rowNum = 1;
+            for (InwardAdmissionDTO dto : list) {
+                Row row = dataSheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(dto.getNameWithTitle() != null ? dto.getNameWithTitle() : "");
+                row.createCell(1).setCellValue(!dto.isSubtotal() && !dto.isGrandTotal() && dto.getSpecialityName() != null ? dto.getSpecialityName() : "");
+                row.createCell(2).setCellValue(dto.getJanuary());
+                row.createCell(3).setCellValue(dto.getFebruary());
+                row.createCell(4).setCellValue(dto.getMarch());
+                row.createCell(5).setCellValue(dto.getApril());
+                row.createCell(6).setCellValue(dto.getMay());
+                row.createCell(7).setCellValue(dto.getJune());
+                row.createCell(8).setCellValue(dto.getJuly());
+                row.createCell(9).setCellValue(dto.getAugust());
+                row.createCell(10).setCellValue(dto.getSeptember());
+                row.createCell(11).setCellValue(dto.getOctober());
+                row.createCell(12).setCellValue(dto.getNovember());
+                row.createCell(13).setCellValue(dto.getDecember());
+                row.createCell(14).setCellValue(dto.getTotalAdmissions());
+            }
+
+            // --- Charts appended below the data table on the same sheet ---
+            XSSFDrawing drawing = dataSheet.createDrawingPatriarch();
+            // Leave 2 blank rows as a gap after the last data row
+            int chartStartRow = rowNum + 2;
+            String[][] chartDefs = {
+                {specialtyLineChartImage, "Specialty Wise Line Chart"},
+                {specialtyBarChartImage, "Specialty Wise Bar Chart"},
+                {doctorLineChartImage, "Doctor Wise Line Chart"},
+                {doctorBarChartImage, "Doctor Wise Bar Chart"}
+            };
+            for (String[] def : chartDefs) {
+                String b64 = def[0];
+                String title = def[1];
+                if (b64 != null && b64.startsWith("data:image/png;base64,")) {
+                    b64 = b64.substring("data:image/png;base64,".length());
+                    byte[] imgBytes = Base64.getDecoder().decode(b64);
+                    int picIdx = wb.addPicture(imgBytes, Workbook.PICTURE_TYPE_PNG);
+                    dataSheet.createRow(chartStartRow).createCell(0).setCellValue(title);
+                    XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, 0, chartStartRow + 1, 15, chartStartRow + 31);
+                    drawing.createPicture(anchor, picIdx);
+                    chartStartRow += 33;
+                }
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("Admission_Count_Doctor_Wise.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -3461,6 +3729,54 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryWiseBarChartModel(String surgeryWiseBarChartModel) {
         this.surgeryWiseBarChartModel = surgeryWiseBarChartModel;
+    }
+
+    public String getSpecialtyLineChartImage() {
+        return specialtyLineChartImage;
+    }
+
+    public void setSpecialtyLineChartImage(String specialtyLineChartImage) {
+        this.specialtyLineChartImage = specialtyLineChartImage;
+    }
+
+    public String getSpecialtyBarChartImage() {
+        return specialtyBarChartImage;
+    }
+
+    public void setSpecialtyBarChartImage(String specialtyBarChartImage) {
+        this.specialtyBarChartImage = specialtyBarChartImage;
+    }
+
+    public String getDoctorLineChartImage() {
+        return doctorLineChartImage;
+    }
+
+    public void setDoctorLineChartImage(String doctorLineChartImage) {
+        this.doctorLineChartImage = doctorLineChartImage;
+    }
+
+    public String getDoctorBarChartImage() {
+        return doctorBarChartImage;
+    }
+
+    public void setDoctorBarChartImage(String doctorBarChartImage) {
+        this.doctorBarChartImage = doctorBarChartImage;
+    }
+
+    public Date getAdmissionReportProcessedAt() {
+        return admissionReportProcessedAt;
+    }
+
+    public void setAdmissionReportProcessedAt(Date admissionReportProcessedAt) {
+        this.admissionReportProcessedAt = admissionReportProcessedAt;
+    }
+
+    public String getAdmissionReportProcessedBy() {
+        return admissionReportProcessedBy;
+    }
+
+    public void setAdmissionReportProcessedBy(String admissionReportProcessedBy) {
+        this.admissionReportProcessedBy = admissionReportProcessedBy;
     }
 
     public class IncomeByCategoryRecord {
