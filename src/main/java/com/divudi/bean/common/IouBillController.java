@@ -727,6 +727,16 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("Conversion bill not found");
             return null;
         }
+        if (freshBill.getBillTypeAtomic() != BillTypeAtomic.IOU_TO_CASH_CONVERSION) {
+            JsfUtil.addErrorMessage("Invalid conversion bill type");
+            return null;
+        }
+        if (freshBill.getCreater() == null
+                || sessionController.getLoggedUser() == null
+                || !freshBill.getCreater().getId().equals(sessionController.getLoggedUser().getId())) {
+            JsfUtil.addErrorMessage("You are not allowed to cancel this conversion");
+            return null;
+        }
         if (freshBill.isCancelled()) {
             JsfUtil.addErrorMessage("This conversion has already been cancelled");
             return null;
