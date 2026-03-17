@@ -5642,13 +5642,17 @@ public class PharmacyController implements Serializable {
         response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Stock Transfer Detail Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Stock Transfer Detail Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -11201,13 +11205,17 @@ public class PharmacyController implements Serializable {
 
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         BaseColor mainRow = new BaseColor(240, 240, 240);  
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Stock Transfer Summary Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Stock Transfer Summary Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -11314,13 +11322,17 @@ public class PharmacyController implements Serializable {
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Stock Transfer Report By Bill", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Stock Transfer Report By Bill", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -11699,7 +11711,7 @@ public class PharmacyController implements Serializable {
         }
 
         workbook.setSheetName(0, "Stock Transfer Report By Bill");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+        sheet.shiftRows(0, sheet.getLastRowNum(), 8);
 
         Map<String, Object> filters = getFiltersForStockTrasnferReport();
         if (filters != null && !filters.isEmpty()) {
@@ -12022,6 +12034,25 @@ public class PharmacyController implements Serializable {
         CellStyle metaStyleBold = wb.createCellStyle();
         metaStyleBold.setFont(metaFontBold);
 
+        CellStyle instStyle = wb.createCellStyle();
+        Font instFont = wb.createFont();
+        instFont.setFontHeightInPoints((short) 16);
+        instFont.setBold(true);
+        instStyle.setFont(instFont);
+        instStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "";
+
+        if (!institutionName.isEmpty()) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
+            Row institutionRow = sheet.createRow(rowIndex++);
+            Cell institutionCell = institutionRow.createCell(0);
+            institutionCell.setCellValue(institutionName);
+            institutionCell.setCellStyle(instStyle);
+        }
+
         if (title != null && !title.isEmpty()) {
             sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
             Row titleRow = sheet.createRow(rowIndex++);
@@ -12132,13 +12163,17 @@ public class PharmacyController implements Serializable {
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("GRN Return Variance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("GRN Return Variance Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -12308,13 +12343,17 @@ public class PharmacyController implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
         com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Before Stock Taking Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Before Stock Taking Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -12386,7 +12425,7 @@ public class PharmacyController implements Serializable {
         }
 
         workbook.setSheetName(0, "Before Stock Taking Report");
-        sheet.shiftRows(0, sheet.getLastRowNum(), 4);
+        sheet.shiftRows(0, sheet.getLastRowNum(), 5);
 
         Map<String, Object> filters = getFiltersBeforeStockTakingReport();
         if (filters != null && !filters.isEmpty()) {
@@ -12419,14 +12458,18 @@ public class PharmacyController implements Serializable {
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
-        BaseColor mainRow = new BaseColor(240, 240, 240);  
+        BaseColor mainRow = new BaseColor(240, 240, 240);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";  
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Stock Transfer Breakdown Summary Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Stock Transfer Breakdown Summary Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
