@@ -621,15 +621,18 @@ public class PharmacyStockTakeController implements Serializable {
                 stockTakePersistService.persistSnapshotBill(snapshotBill);
                 System.out.println("[settleStockCount] Batch persist complete. ms=" + (System.currentTimeMillis() - tSettle0));
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed, falling back to JPA cascade", e);
-                System.out.println("[settleStockCount] Fallback to JPA cascade. ms=" + (System.currentTimeMillis() - tSettle0));
-                // Ensure fresh IDs for fallback JPA path
-                for (BillItem bi : snapshotBill.getBillItems()) {
-                    bi.setId(null);
-                    if (bi.getPharmaceuticalBillItem() != null) {
-                        bi.getPharmaceuticalBillItem().setId(null);
-                    }
+                LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed", e);
+                // If the bill header was already persisted (snapshotBill.getId() != null),
+                // do NOT fall back to billFacade.create() — that would cascade-insert all
+                // BillItems into the already-existing bill, producing duplicate rows.
+                // Surface the error so the user can retry with a clean snapshot.
+                if (snapshotBill.getId() != null) {
+                    JsfUtil.addErrorMessage("Stock count save failed after bill header was created (ID="
+                            + snapshotBill.getId() + "). Please contact support.");
+                    return null;
                 }
+                // Bill header was never persisted — safe to fall back to JPA cascade.
+                LOGGER.log(Level.WARNING, "[settleStockCount] Falling back to JPA cascade (header not yet persisted)");
                 billFacade.create(snapshotBill);
                 System.out.println("[settleStockCount] JPA cascade complete. ms=" + (System.currentTimeMillis() - tSettle0));
             }
@@ -1631,6 +1634,31 @@ public class PharmacyStockTakeController implements Serializable {
         physicalCountBill.setInsId(deptId);
         physicalCountBill.setDeptId(deptId);
 
+        // Re-attach all JPA proxy references to the current persistence context.
+        // Proxies built in the upload request (via getReference()) are detached by the time
+        // this new request runs. EclipseLink tries to cascade-INSERT them and hits a PK collision.
+        // Calling getReference() again inside this transaction gives fresh, attached proxies.
+        if (physicalCountBill.getReferenceBill() != null && physicalCountBill.getReferenceBill().getId() != null) {
+            physicalCountBill.setReferenceBill(billFacade.getReference(physicalCountBill.getReferenceBill().getId()));
+        }
+        for (BillItem bi : physicalCountBill.getBillItems()) {
+            if (bi.getItem() != null && bi.getItem().getId() != null) {
+                bi.setItem(itemFacade.getReference(bi.getItem().getId()));
+            }
+            if (bi.getReferanceBillItem() != null && bi.getReferanceBillItem().getId() != null) {
+                bi.setReferanceBillItem(billItemFacade.getReference(bi.getReferanceBillItem().getId()));
+            }
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi != null) {
+                if (pbi.getItemBatch() != null && pbi.getItemBatch().getId() != null) {
+                    pbi.setItemBatch(itemBatchFacade.getReference(pbi.getItemBatch().getId()));
+                }
+                if (pbi.getStock() != null && pbi.getStock().getId() != null) {
+                    pbi.setStock(stockFacade.getReference(pbi.getStock().getId()));
+                }
+            }
+        }
+
         billFacade.create(physicalCountBill);
 
         doApprovalLogic();
@@ -1641,7 +1669,7 @@ public class PharmacyStockTakeController implements Serializable {
                     snapshotBillDisplay.getCreatedAt(),
                     snapshotBillDisplay.getInstitutionName(), snapshotBillDisplay.getDepartmentName(),
                     (long) physicalCountBill.getBillItems().size(),
-                    snapshotBillDisplay.getNetTotal(), Boolean.TRUE);
+                    snapshotBillDisplay.getNetTotal(), Boolean.FALSE);
         }
 
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
@@ -3085,6 +3113,23 @@ public class PharmacyStockTakeController implements Serializable {
                 ));
             }
 
+            // Deduplicate by (itemName, batchNo) — keep the row with the lowest billItemId.
+            // This guards against snapshot bills that were accidentally persisted twice
+            // (bill header created once, but BillItems inserted in two separate passes),
+            // which results in duplicate rows per batch in the database.
+            java.util.LinkedHashMap<String, com.divudi.core.data.dto.SnapshotBillItemDTO> seen = new java.util.LinkedHashMap<>();
+            for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : dtos) {
+                String key = (dto.getItemName() != null ? dto.getItemName() : "") + "||" + (dto.getBatchNo() != null ? dto.getBatchNo() : "");
+                com.divudi.core.data.dto.SnapshotBillItemDTO existing = seen.get(key);
+                if (existing == null || (dto.getBillItemId() != null && existing.getBillItemId() != null && dto.getBillItemId() < existing.getBillItemId())) {
+                    seen.put(key, dto);
+                }
+            }
+            if (seen.size() < dtos.size()) {
+                System.out.println("[LoadLazy] Deduplicated " + (dtos.size() - seen.size()) + " duplicate rows (snapshot bill persisted multiple times)");
+                dtos = new java.util.ArrayList<>(seen.values());
+            }
+
             snapshotItems = dtos;
             System.out.println("[LoadLazy] DONE. items=" + dtos.size()
                     + " ms=" + (System.currentTimeMillis() - t0));
@@ -3836,7 +3881,8 @@ public class PharmacyStockTakeController implements Serializable {
             PharmaceuticalBillItem apbi = new PharmaceuticalBillItem();
             apbi.setBillItem(abi);
             apbi.setItemBatch(bi.getPharmaceuticalBillItem().getItemBatch());
-            Stock stock = bi.getReferanceBillItem().getPharmaceuticalBillItem().getStock();
+            Stock stock = bi.getReferanceBillItem() != null && bi.getReferanceBillItem().getPharmaceuticalBillItem() != null
+                    ? bi.getReferanceBillItem().getPharmaceuticalBillItem().getStock() : null;
             apbi.setStock(stock);
             apbi.setQty(variance);
             if (stock != null) {
