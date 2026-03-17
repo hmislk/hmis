@@ -16428,6 +16428,16 @@ public class SearchController implements Serializable {
         return "/cashier/cash_book_summery_site";
     }
 
+    public String navigateToListCashBookEntryDepartmentSummary() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_summery_department";
+    }
+
+    public String navigateToListCashBookEntryInstitutionSummary() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_summery_institution";
+    }
+
     public String navigateToPatientReportSearch() {
         patientInvestigations = new ArrayList<>();
         return "/lab/patient_reports_search?faces-redirect=true";
