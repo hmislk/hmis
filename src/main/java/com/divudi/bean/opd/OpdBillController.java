@@ -67,6 +67,7 @@ import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -3029,6 +3030,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
@@ -3266,6 +3268,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return true;
         }
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Allowing the use of expired payment schemes", true)) {
+            if (paymentScheme != null && paymentScheme.getExpired()) {
+                Date expiredDate = paymentScheme.getExpiryDate();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd hh.mm a");
+                String formattedDate = formatter.format(expiredDate);
+                paymentScheme = null;
+                cashPaid = 0.0;
+                listnerForPaymentMethodChange();
+                JsfUtil.addErrorMessage("The selected discount scheme has expired since " + formattedDate);
+                return true;
+            }
+        }
+
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
             if (referredBy == null && referredByInstitution == null) {
                 JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
@@ -3301,7 +3316,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
-                //  //System.err.println("ttttt");
                 checkAge = true;
                 break;
             }
@@ -3444,16 +3458,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 // Use helper method to get only the selected payment method's value
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
+
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+
+            if (differenceOfBillTotalAndPaymentValue != 0.0) {
+                JsfUtil.addErrorMessage("The sum of multiple payments does not match the total of the bill.");
                 return true;
             }
+
             if (cashPaid == 0.0) {
                 setCashPaid(multiplePaymentMethodTotalValue);
             }
-
         }
 
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -3608,7 +3624,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
-        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+        List<BillComponent> currentBillComponents = getBillBean().billComponentsFromBillItem(bi);
+        addingEntry.setLstBillComponents(currentBillComponents);
 
         List<BillFee> allBillFees;
 
@@ -3627,7 +3644,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
 
+        if (allBillFees == null || allBillFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
+
         List<BillFeeBundleEntry> billItemBillFeeBundleEntries = getBillBean().bundleFeesByName(allBillFees);
+
+        if (billItemBillFeeBundleEntries == null || billItemBillFeeBundleEntries.isEmpty()) {
+            getLstBillEntries().remove(addingEntry);
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
 
         addingEntry.setLstBillFees(allBillFees);
 
@@ -3646,6 +3674,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+
+        if (bi.getNetValue() == 0.0) {
+            if (!bi.getItem().isUserChangable()) {
+                addingEntry.getLstBillFees().removeAll(allBillFees);
+                addingEntry.getLstBillComponents().addAll(currentBillComponents);
+                getLstBillEntries().remove(addingEntry);
+
+                JsfUtil.addErrorMessage("Item Fee is Zero ..! ");
+                return;
+            }
+        }
 
         calTotals();
 
@@ -3879,7 +3918,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             }
         }
-
+        getCashBalance();
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
@@ -4823,7 +4862,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCashPaid(double cashPaid) {
         this.cashPaid = cashPaid;
-//        cashBalance = cashPaid - getNetTotal();
     }
 
     public double getCashBalance() {

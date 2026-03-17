@@ -1164,6 +1164,9 @@
                                                                         <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                                                     </h:panelGroup>
 
+                                                                    <h:panelGroup id="iou" rendered="#{pharmacySaleController.paymentMethod eq 'IOU'}">
+                                                                        <pa:iouDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                                    </h:panelGroup>
 
                                                                     <h:panelGroup
                                                                         class="row my-1 w-100"
