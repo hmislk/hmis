@@ -790,7 +790,9 @@ public class CashBookEntryController implements Serializable {
         String jpql = "select distinct cbe.fromInstitution "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired = :ret "
-                + " and cbe.createdAt between :fd and :td";
+                + " and cbe.fromInstitution is not null"
+                + " and cbe.createdAt between :fd and :td"
+                + " order by cbe.fromInstitution.name";
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("fd", fd);
@@ -863,6 +865,8 @@ public class CashBookEntryController implements Serializable {
                 case Staff: return cbe.getFromInstitutionStaffBalanceAfter();
                 case Staff_Welfare: return cbe.getFromInstitutionStaffWelfareBalanceAfter();
                 case Voucher: return cbe.getFromInstitutionVoucherBalanceAfter();
+                case OnCall: return cbe.getFromInstitutionOnCallBalanceAfter();
+                case MultiplePaymentMethods: return cbe.getFromInstitutionMultiplePaymentMethodsBalanceAfter();
                 default: return cbe.getFromInstitutionBalanceAfter();
             }
         }
@@ -927,6 +931,8 @@ public class CashBookEntryController implements Serializable {
                 case Staff: return cbe.getFromInstitutionStaffBalanceAfter();
                 case Staff_Welfare: return cbe.getFromInstitutionStaffWelfareBalanceAfter();
                 case Voucher: return cbe.getFromInstitutionVoucherBalanceAfter();
+                case OnCall: return cbe.getFromInstitutionOnCallBalanceAfter();
+                case MultiplePaymentMethods: return cbe.getFromInstitutionMultiplePaymentMethodsBalanceAfter();
                 default: return cbe.getFromInstitutionBalanceAfter();
             }
         }
@@ -977,6 +983,8 @@ public class CashBookEntryController implements Serializable {
             case Staff: jpqlField = "staffValue"; break;
             case Staff_Welfare: jpqlField = "staffWelfareValue"; break;
             case Voucher: jpqlField = "voucherValue"; break;
+            case OnCall: jpqlField = "onCallValue"; break;
+            case MultiplePaymentMethods: jpqlField = "multiplePaymentMethodsValue"; break;
             default: jpqlField = "cashValue";
         }
         String jpql = "select sum(cbe." + jpqlField + ") "
