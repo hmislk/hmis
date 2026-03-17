@@ -191,7 +191,7 @@
                                 >
                             </p:commandButton>
                             <p:commandButton 
-                                ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                ajax="false" value="Download" icon="fas fa-file-excel" class="ui-button-success mx-1" >
                                 <p:dataExporter fileName="#{reportController.billWiseItemMovementReportFileName}" target="tbl" type="xlsx" postProcessor="#{reportController.postProcessBillWiseItemMovementReportExcel}"></p:dataExporter>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
