@@ -17,7 +17,9 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Person;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -103,6 +105,14 @@ public class IouBillController implements Serializable {
     private String cancellationComment;
     private Date myConversionsFromDate;
     private Date myConversionsToDate;
+
+    // Admin Reports: IOU Conversion Bill List and Payment List
+    private List<Bill> reportIouConversionBills;
+    private List<Payment> reportIouConversionPayments;
+    private Date reportFromDate;
+    private Date reportToDate;
+    private WebUser reportUser;
+    private Department reportDepartment;
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -834,6 +844,66 @@ public class IouBillController implements Serializable {
         return "/cashier/my_iou_conversions?faces-redirect=true";
     }
 
+    public String navigateToIouConversionBillReport() {
+        reportFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        reportToDate = CommonFunctions.getEndOfDay(new Date());
+        reportUser = null;
+        reportDepartment = null;
+        reportIouConversionBills = null;
+        return "/reports/cashier_reports/iou_conversion_bill_report?faces-redirect=true";
+    }
+
+    public String navigateToIouConversionPaymentReport() {
+        reportFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        reportToDate = CommonFunctions.getEndOfDay(new Date());
+        reportUser = null;
+        reportDepartment = null;
+        reportIouConversionPayments = null;
+        return "/reports/cashier_reports/iou_conversion_payment_report?faces-redirect=true";
+    }
+
+    public void fillIouConversionBillReport() {
+        StringBuilder jpql = new StringBuilder("select b from Bill b where b.retired=:ret"
+                + " and b.billTypeAtomic=:bta"
+                + " and b.createdAt between :fd and :td");
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        params.put("fd", reportFromDate);
+        params.put("td", reportToDate);
+        if (reportUser != null) {
+            jpql.append(" and b.creater=:usr");
+            params.put("usr", reportUser);
+        }
+        if (reportDepartment != null) {
+            jpql.append(" and b.department=:dept");
+            params.put("dept", reportDepartment);
+        }
+        jpql.append(" order by b.createdAt desc");
+        reportIouConversionBills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public void fillIouConversionPaymentReport() {
+        StringBuilder jpql = new StringBuilder("select p from Payment p where p.retired=:ret"
+                + " and p.bill.billTypeAtomic=:bta"
+                + " and p.createdAt between :fd and :td");
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.IOU_TO_CASH_CONVERSION);
+        params.put("fd", reportFromDate);
+        params.put("td", reportToDate);
+        if (reportUser != null) {
+            jpql.append(" and p.creater=:usr");
+            params.put("usr", reportUser);
+        }
+        if (reportDepartment != null) {
+            jpql.append(" and p.bill.department=:dept");
+            params.put("dept", reportDepartment);
+        }
+        jpql.append(" order by p.createdAt desc");
+        reportIouConversionPayments = paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     public void recreateModle() {
         returnAmount = 0.0;
         printPreview = false;
@@ -1153,6 +1223,54 @@ public class IouBillController implements Serializable {
 
     public void setMyConversionsToDate(Date myConversionsToDate) {
         this.myConversionsToDate = myConversionsToDate;
+    }
+
+    public List<Bill> getReportIouConversionBills() {
+        return reportIouConversionBills;
+    }
+
+    public void setReportIouConversionBills(List<Bill> reportIouConversionBills) {
+        this.reportIouConversionBills = reportIouConversionBills;
+    }
+
+    public List<Payment> getReportIouConversionPayments() {
+        return reportIouConversionPayments;
+    }
+
+    public void setReportIouConversionPayments(List<Payment> reportIouConversionPayments) {
+        this.reportIouConversionPayments = reportIouConversionPayments;
+    }
+
+    public Date getReportFromDate() {
+        return reportFromDate;
+    }
+
+    public void setReportFromDate(Date reportFromDate) {
+        this.reportFromDate = reportFromDate;
+    }
+
+    public Date getReportToDate() {
+        return reportToDate;
+    }
+
+    public void setReportToDate(Date reportToDate) {
+        this.reportToDate = reportToDate;
+    }
+
+    public WebUser getReportUser() {
+        return reportUser;
+    }
+
+    public void setReportUser(WebUser reportUser) {
+        this.reportUser = reportUser;
+    }
+
+    public Department getReportDepartment() {
+        return reportDepartment;
+    }
+
+    public void setReportDepartment(Department reportDepartment) {
+        this.reportDepartment = reportDepartment;
     }
 
 }

@@ -107,6 +107,12 @@
                                         action="#{financialTransactionController.navigateToActiveShiftsReport()}"
                                         value="8. Active Shifts" >
                                     </p:commandButton>
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="9. IOU Conversion Bills"
+                                        action="#{iouBillController.navigateToIouConversionBillReport()}" />
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="10. IOU Conversion Payments"
+                                        action="#{iouBillController.navigateToIouConversionPaymentReport()}" />
 
                                 </div>
                             </p:tab>
