@@ -2306,13 +2306,16 @@ public class PharmacyReportController implements Serializable {
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
             Row dateRow = sheet.createRow(rowIndex++);
             Cell dateCell = dateRow.createCell(0);
             dateCell.setCellValue(
                     "From Date : "
-                    + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(fromDate) : "-")
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
                     + " | To Date : "
-                    + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(toDate) : "-")
+                    + (toDate != null ? sdf.format(toDate) : "-")
             );
             dateCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
@@ -2365,7 +2368,7 @@ public class PharmacyReportController implements Serializable {
 
                 Cell d0 = row.createCell(0);
                 d0.setCellValue(
-                        new SimpleDateFormat("dd/MM/yyyy").format(bi.getBill().getCreatedAt()));
+                        sdf.format(bi.getBill().getCreatedAt()));
                 d0.setCellStyle(dataStyle);
 
                 Cell d1 = row.createCell(1);
@@ -2498,8 +2501,9 @@ public class PharmacyReportController implements Serializable {
         response.setHeader("Content-Disposition",
                 "attachment; filename=GRN_Cash_Report_COGS.pdf");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+        
         try (OutputStream out = response.getOutputStream()) {
 
             Document document = new Document(PageSize.A4.rotate());
@@ -4326,7 +4330,6 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-
     public void exportPurchaseReturnToExcel() {
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -5150,7 +5153,6 @@ public class PharmacyReportController implements Serializable {
     public void exportStockAdjustmentIssueToExcel() {
 
         FacesContext context = FacesContext.getCurrentInstance();
-
         HttpServletResponse response
                 = (HttpServletResponse) context.getExternalContext().getResponse();
 
