@@ -16,40 +16,40 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <h:panelGroup layout="block" styleClass="d-flex gap-2 w-100 mb-2" rendered="#{not empty cc.attrs.companyList}">
+            <div class="d-flex gap-2 w-100 mb-2">
 
-        <div class="d-flex gap-2 w-100 mb-2">
-            <p:panel header="Previous Credit Company" rendered="#{cc.attrs.companyList.size() ne 0}">
-                <p:dataTable var="cmp" value="#{cc.attrs.companyList}" rowIndexVar="i" >
-                    <p:column headerText="#" width="2em;" style="padding: 4px;">
-                        <h:outputText value="#{i+1}" />
-                    </p:column>
-                    
-                    <p:column headerText="Companies" style="padding: 4px;">
-                        <h:outputText value="#{cmp.companyname}" />
-                    </p:column>
+                <p:panel header="Previous Credit Company" rendered="#{not empty cc.attrs.companyList}">
+                    <p:dataTable var="cmp" value="#{cc.attrs.companyList}" rowIndexVar="i" >
+                        <p:column headerText="#" width="2em;" style="padding: 4px;">
+                            <h:outputText value="#{i+1}" />
+                        </p:column>
 
-                    <p:column headerText="Policy No" width="8em;" style="padding: 4px; text-align: center;">
-                        <h:outputText value="#{cmp.policyNo}" style="text-align: center;"/>
-                    </p:column>
+                        <p:column headerText="Companies" style="padding: 4px;">
+                            <h:outputText value="#{cmp.companyname}" />
+                        </p:column>
 
-                    <p:column headerText="Reference No" width="8em;" style="padding: 4px; text-align: center;">
-                        <h:outputText value="#{cmp.referenceNo}" />
-                    </p:column>
-                    
-                    <p:column headerText="Action" width="6em;" style="padding: 4px; text-align: center;">
-                        <p:commandButton
-                            value="Select"
-                            icon="pi pi-check"
-                            process="@this"
-                            update="@form"
-                            actionListener="#{cc.attrs.controller.selectCreditCompany(cmp)}">
-                        </p:commandButton>
-                    </p:column>
-                </p:dataTable>
-            </p:panel>
-        </div>
+                        <p:column headerText="Policy No" width="8em;" style="padding: 4px; text-align: center;">
+                            <h:outputText value="#{cmp.policyNo}" style="text-align: center;"/>
+                        </p:column>
 
+                        <p:column headerText="Reference No" width="8em;" style="padding: 4px; text-align: center;">
+                            <h:outputText value="#{cmp.referenceNo}" />
+                        </p:column>
 
+                        <p:column headerText="Action" width="6em;" style="padding: 4px; text-align: center;">
+                            <p:commandButton
+                                value="Select"
+                                icon="pi pi-check"
+                                process="@this"
+                                update="@form"
+                                actionListener="#{cc.attrs.controller.selectCreditCompany(cmp)}">
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </div>
+        </h:panelGroup>
 
         <div class="d-flex gap-2" >
             <p:autoComplete

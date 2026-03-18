@@ -469,9 +469,12 @@ public class CommonFunctions {
     }
     
     public static Date getPreviousDate(int yearsBack) {
+        if (yearsBack < 0) {
+            throw new IllegalArgumentException("yearsBack must be non-negative");
+        }
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.YEAR, -yearsBack);
-        return calendar.getTime();
+        return getStartOfDay(calendar.getTime());
     }
 
     public static Date getEndOfDay(Date d) {
