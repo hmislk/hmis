@@ -316,17 +316,14 @@ public class Person implements Serializable, RetirableEntity  {
         return nameWithTitle;
     }
     
-    public String getNameWithCapitalTitle() {
-        String temT;
-        Title t = getTitle();
-        if (t != null) {
-            temT = t.getCapitalLabel();
-        } else {
-            temT = "";
-        }
-        nameWithTitle = temT + " " + getName();
-
-        return nameWithTitle;
+    public String getCapitalNameWithTitle() {
+        nameWithTitle = getNameWithTitle();
+        return nameWithTitle.toUpperCase();
+    }
+    
+    public String getCapitalName() {
+        name = getName();
+        return name.toUpperCase();
     }
     
     public static Boolean checkAgeSex(Date dob, Sex sex, Title title) {
