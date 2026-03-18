@@ -94,7 +94,8 @@
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
+                                value="PDF"
+                                onclick="captureChartsForDownload();">
                                 <p:fileDownload value="#{inwardReportController.admissionCountPdf}"/>
                             </p:commandButton>
 
@@ -204,7 +205,7 @@
                                 </p:column>
 
                                 <p:column headerText="Total" styleClass="text-center" 
-                                          style="background-color: #a0a0a0; color: black; font-weight: bold;">
+                                          style="background-color: #adacac; color: black; font-weight: bold;">
                                     <h:outputText value="#{item.totalAdmissions}"/>
                                 </p:column>
                             </p:dataTable>
