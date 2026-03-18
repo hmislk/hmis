@@ -3128,6 +3128,10 @@ public class InwardReportController implements Serializable {
     }
 
     public StreamedContent getAdmissionCountExcelWithCharts() {
+        if (list == null || list.isEmpty()) {
+            JsfUtil.addErrorMessage("No admission data available to export.");
+            return null;
+        }
         try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             // --- Sheet 1: Data table ---
@@ -3195,6 +3199,22 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
             return null;
         }
+    }
+    
+    private static final int MAX_CHART_IMAGE_DATA_URL_LENGTH = 3000000;
+
+    private String sanitizeChartImage(String image) {
+        if (image == null || image.isBlank()) {
+            return null;
+        }
+        if (!image.startsWith("data:image/png;base64,")) {
+            return null;
+        }
+        if (image.length() > MAX_CHART_IMAGE_DATA_URL_LENGTH) {
+            JsfUtil.addErrorMessage("Chart image is too large to export.");
+            return null;
+        }
+        return image;
     }
 
     public Institution getInstitution() {
@@ -3742,7 +3762,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void setSpecialtyLineChartImage(String specialtyLineChartImage) {
-        this.specialtyLineChartImage = specialtyLineChartImage;
+        this.specialtyLineChartImage = sanitizeChartImage(specialtyLineChartImage);
     }
 
     public String getSpecialtyBarChartImage() {
@@ -3750,7 +3770,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void setSpecialtyBarChartImage(String specialtyBarChartImage) {
-        this.specialtyBarChartImage = specialtyBarChartImage;
+        this.specialtyBarChartImage = sanitizeChartImage(specialtyBarChartImage);
     }
 
     public String getDoctorLineChartImage() {
@@ -3758,7 +3778,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void setDoctorLineChartImage(String doctorLineChartImage) {
-        this.doctorLineChartImage = doctorLineChartImage;
+        this.doctorLineChartImage = sanitizeChartImage(doctorLineChartImage);
     }
 
     public String getDoctorBarChartImage() {
@@ -3766,7 +3786,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void setDoctorBarChartImage(String doctorBarChartImage) {
-        this.doctorBarChartImage = doctorBarChartImage;
+        this.doctorBarChartImage = sanitizeChartImage(doctorBarChartImage);
     }
 
     public Date getAdmissionReportProcessedAt() {
