@@ -2983,6 +2983,9 @@ public class InwardReportController implements Serializable {
                     .stream(() -> new ByteArrayInputStream(bytes))
                     .build();
         } catch (Exception e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "PDF generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
             return null;
         }
     }
@@ -3187,6 +3190,9 @@ public class InwardReportController implements Serializable {
                     .build();
 
         } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
             return null;
         }
     }
