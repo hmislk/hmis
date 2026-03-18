@@ -114,16 +114,23 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="info-item mb-2">
+                                                    <i class="fa fa-hashtag text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>ID:</strong>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.id}"
+                                                                  style="font-family: monospace; margin-left: 8px; font-weight: bold;"/>
+                                                </div>
+                                                <div class="info-item mb-2">
                                                     <i class="fa fa-file-alt text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Bill No:</strong>
-                                                    <span class="badge badge-secondary" style="font-family: monospace; margin-left: 8px;">#{pharmacyStockTakeController.snapshotBillDisplay.deptId}</span>
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.deptId}"
+                                                                  style="font-family: monospace; margin-left: 8px; font-weight: bold;"/>
                                                 </div>
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-calendar text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Created:</strong>
                                                     <span class="ml-2">
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.createdAt}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </span>
                                                 </div>
