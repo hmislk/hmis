@@ -1256,7 +1256,18 @@
                                                 layout="block"  
                                                 id="credit" 
                                                 rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
-                                                <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the past Credit Company List',false)}">
+                                                    <pa:credit_with_last_company 
+                                                        paymentMethodData="#{opdBillController.paymentMethodData}" 
+                                                        controller ="#{opdBillController}"
+                                                        companyList = "#{opdBillController.previousCreditCompany}">
+                                                    </pa:credit_with_last_company>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display the past Credit Company List',false)}">
+                                                    <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                
                                             </h:panelGroup>
                                             <h:panelGroup 
                                                 class="row my-1"
