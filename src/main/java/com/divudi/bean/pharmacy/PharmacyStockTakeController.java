@@ -1229,6 +1229,9 @@ public class PharmacyStockTakeController implements Serializable {
      * Uses feature flags to choose between native SQL, optimized JPA, and legacy implementations.
      */
     public String parseAndPersistNavigate() {
+        // Reset state from any previous upload so the review page shows fresh data
+        printPreview = false;
+        physicalCountBill = null;
         // Priority 1: Native SQL method for critical performance issues
         if (Boolean.TRUE.equals(useNativeSqlMethod)) {
             System.out.println("DEBUG: Using native SQL upload method (feature flag enabled)");
@@ -2736,7 +2739,7 @@ public class PharmacyStockTakeController implements Serializable {
         // --- Step 1: load snapshot bill items as scalars (no BillItem entity creation) ---
         String jpqlSnap = "SELECT bi.id, bi.qty, bi.descreption, "
                 + "pbi.purchaseRate, pbi.retailRate, pbi.costRate, "
-                + "ib.batchNo, it.code "
+                + "ib.batchNo, it.code, bi.catId, pbi.description "
                 + "FROM BillItem bi "
                 + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
                 + "LEFT JOIN pbi.itemBatch ib "
@@ -2758,12 +2761,16 @@ public class PharmacyStockTakeController implements Serializable {
                 Double costRate = r[5] instanceof Number ? ((Number) r[5]).doubleValue() : null;
                 String batchNo = r[6] != null ? r[6].toString() : null;
                 String code = r[7] != null ? r[7].toString() : null;
+                String category = r[8] != null ? r[8].toString() : null;
+                String dosageForm = r[9] != null ? r[9].toString() : null;
 
                 VarianceRow vr = new VarianceRow();
                 vr.setBillItemId(id);
                 vr.setItemName(itemName);
                 vr.setCode(code);
                 vr.setBatchNo(batchNo);
+                vr.setCategory(category);
+                vr.setDosageForm(dosageForm);
                 vr.setPurchaseRate(purchaseRate);
                 vr.setRetailRate(retailRate);
                 vr.setCostRate(costRate);
@@ -4943,6 +4950,8 @@ public class PharmacyStockTakeController implements Serializable {
         private String code;
         private String itemName;
         private String batchNo;
+        private String category;
+        private String dosageForm;
         private Double purchaseRate;
         private Double retailRate;
         private Double costRate;
@@ -4961,6 +4970,12 @@ public class PharmacyStockTakeController implements Serializable {
 
         public String getBatchNo() { return batchNo; }
         public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
+
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+
+        public String getDosageForm() { return dosageForm; }
+        public void setDosageForm(String dosageForm) { this.dosageForm = dosageForm; }
 
         public Double getPurchaseRate() { return purchaseRate != null ? purchaseRate : 0.0; }
         public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
