@@ -18,7 +18,7 @@
     <cc:implementation>
 
         <div class="d-flex gap-2 w-100 mb-2">
-            <p:panel header="Previous Credit Company">
+            <p:panel header="Previous Credit Company" rendered="#{cc.attrs.companyList.size() ne 0}">
                 <p:dataTable var="cmp" value="#{cc.attrs.companyList}" rowIndexVar="i" >
                     <p:column headerText="#" width="2em;" style="padding: 4px;">
                         <h:outputText value="#{i+1}" />
