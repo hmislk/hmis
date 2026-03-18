@@ -54,6 +54,7 @@ import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.dto.CreditCompanyDetailsDto;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.facade.FamilyFacade;
@@ -318,6 +319,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double currentBillItemQty;
     private PatientEncounter patientEncounter;
     private Priority currentBillItemPriority;
+
+    private List<CreditCompanyDetailsDto> previousCreditCompany;
 
     @PostConstruct
     public void init() {
@@ -4056,6 +4059,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 currentPatientMembershipScheme = null;
                 chiefHouseHolder = null;
                 currentPatientFamily = null;
+                previousCreditCompany = new ArrayList<>();
                 if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
                     referredBy = null;
                 }
@@ -4076,6 +4080,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             clearBillItemValues();
             clearBillValues();
             paymentMethodData = null;
+            previousCreditCompany = new ArrayList<>();
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             patientEncounter = null;
@@ -4719,8 +4724,100 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
             }
 
+        } else if (paymentMethod == PaymentMethod.Credit) {
+            previousCreditCompany = new ArrayList<>();
+            if (configOptionApplicationController.getBooleanValueByKey("Display the past Credit Company List", false)) {
+                if (patient.getId() == null) {
+                    System.out.println("Patient is Empty.");
+                    return;
+                } else {
+                    System.out.println("Patient Found. ----> " + patient.getId());
+
+                    String jpql = "SELECT new com.divudi.core.data.dto.CreditCompanyDetailsDto( "
+                            + " p.creditCompany.id, "
+                            + " p.creditCompany.name, "
+                            + " p.policyNo, "
+                            + " p.referenceNo "
+                            + " ) "
+                            + "FROM Payment p "
+                            + "WHERE p.retired = :ret "
+                            + "AND p.paymentMethod =:method "
+                            + "AND p.bill.cancelled =:can "
+                            + "AND p.bill.patient =:pt "
+                            + "AND p.creditCompany IS NOT NULL "
+                            + "AND p.createdAt between :fDate and :tDate "
+                            + "GROUP BY p.creditCompany, p.creditCompany.id, p.creditCompany.name, p.policyNo, p.referenceNo";
+
+                    Long previousYears = configOptionApplicationController.getLongValueByKey("How many years should you search back to find a credit company?", 5L);
+
+                    System.out.println("previousYears = " + previousYears);
+
+                    Date fDate = CommonFunctions.getPreviousDate(previousYears.intValue());
+                    Date tDate = CommonFunctions.getEndOfDay();
+
+                    System.out.println("fDate = " + fDate);
+                    System.out.println("tDate = " + tDate);
+
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("ret", false);
+                    m.put("can", false);
+                    m.put("pt", patient);
+                    m.put("method", PaymentMethod.Credit);
+                    m.put("fDate", fDate);
+                    m.put("tDate", tDate);
+
+                    System.out.println("jpql = " + jpql);
+                    System.out.println("m = " + m);
+
+                    previousCreditCompany = (List<CreditCompanyDetailsDto>) institutionFacade.findLightsByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
+
+                    System.out.println("previousCreditCompany = " + previousCreditCompany.size());
+                    int i = 1;
+                    for (CreditCompanyDetailsDto idto : previousCreditCompany) {
+                        System.out.println(i + ". Institution = " + idto.getCompanyname() + ", Policy No = " + idto.getPolicyNo() + ", Reference No + " + idto.getReferenceNo());
+                        i++;
+                    }
+
+                }
+            }
         }
         calTotals();
+    }
+
+    public void selectCreditCompany(CreditCompanyDetailsDto selectCompany) {
+        System.out.println("Start Run selectCreditCompany()");
+
+        if (selectCompany == null) {
+            System.out.println("Select Company is Null");
+            return;
+        }
+        
+        System.out.println("selectCompany = " + selectCompany);
+
+        System.out.println("Company Id = " + selectCompany.getCompanyId());
+        System.out.println("Company Name = " + selectCompany.getCompanyname());
+        System.out.println("Policy No = " + selectCompany.getPolicyNo());
+        System.out.println("Reference No = " + selectCompany.getReferenceNo());
+
+        Institution selectedCreditCompany = institutionFacade.findWithoutCache(selectCompany.getCompanyId());
+
+        if (selectedCreditCompany == null) {
+            System.out.println("Selected Credit Company is Null");
+            return;
+        } else {
+            System.out.println("Selected Credit Company = " + selectedCreditCompany);
+
+            getPaymentMethodData().getCredit().setInstitution(selectedCreditCompany);
+            getPaymentMethodData().getCredit().setReferralNo(selectCompany.getPolicyNo());
+            getPaymentMethodData().getCredit().setReferenceNo(selectCompany.getReferenceNo());
+                    
+            System.out.println("Selected Credit Company Date Update Succesfully");
+            
+            System.out.println("Updated Company Id = " + getPaymentMethodData().getCredit().getInstitution().getId());
+            System.out.println("Updated Company Name = " + getPaymentMethodData().getCredit().getInstitution().getName());
+            System.out.println("Updated Policy No = " + getPaymentMethodData().getCredit().getReferralNo());
+            System.out.println("Updated Reference No = " + getPaymentMethodData().getCredit().getReferenceNo());
+        }
     }
 
     @Override
@@ -5618,6 +5715,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCurrentBillItemPriority(Priority currentBillItemPriority) {
         this.currentBillItemPriority = currentBillItemPriority;
+    }
+
+    public List<CreditCompanyDetailsDto> getPreviousCreditCompany() {
+        return previousCreditCompany;
+    }
+
+    public void setPreviousCreditCompany(List<CreditCompanyDetailsDto> previousCreditCompany) {
+        this.previousCreditCompany = previousCreditCompany;
     }
 
 }
