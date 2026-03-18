@@ -114,6 +114,7 @@ public class PharmacyStockTakeController implements Serializable {
 
     private Bill snapshotBill;
     private PharmacySnapshotBillLight snapshotBillDisplay; // DTO for display purposes only
+    private Long viewBillId; // bound to f:viewParam on print page for state recovery
     /** Holds snapshot items as plain DTOs — no JPA entities, no EclipseLink EAGER triggers */
     private List<com.divudi.core.data.dto.SnapshotBillItemDTO> snapshotItems;
     private Bill physicalCountBill;
@@ -652,7 +653,7 @@ public class PharmacyStockTakeController implements Serializable {
                 snapshotBill.getNetTotal(),
                 Boolean.FALSE
         );
-        return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
+        return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true&billId=" + snapshotBill.getId();
     }
 
     // Convenience getters for EL to access downloads as properties
@@ -2475,10 +2476,40 @@ public class PharmacyStockTakeController implements Serializable {
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
             System.out.println("[ViewSnapshot] Done. Navigating to print page. ms=" + (System.currentTimeMillis() - t0));
-            return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
+            return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true&billId=" + billId;
         } else {
             JsfUtil.addErrorMessage("Snapshot Bill not found");
             return null;
+        }
+    }
+
+    /**
+     * preRenderView listener for the print page. Reloads snapshotBillDisplay
+     * from the viewBillId URL param when session state is missing (e.g. direct
+     * URL access, page refresh after session restart).
+     * The f:viewParam sets viewBillId before this listener fires.
+     */
+    public void onPreRenderView(javax.faces.event.ComponentSystemEvent event) {
+        if (viewBillId == null) {
+            return;
+        }
+        if (snapshotBillDisplay != null && Objects.equals(snapshotBillDisplay.getId(), viewBillId)) {
+            return; // already loaded for this bill
+        }
+        snapshotItems = null;
+        String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
+                + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
+                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed) "
+                + "from Bill b "
+                + "left join b.institution ins "
+                + "left join b.department dept "
+                + "where b.id = :billId";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("billId", viewBillId);
+        List<PharmacySnapshotBillLight> results =
+            (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
+        if (results != null && !results.isEmpty()) {
+            snapshotBillDisplay = results.get(0);
         }
     }
 
@@ -3617,13 +3648,13 @@ public class PharmacyStockTakeController implements Serializable {
      * department. An ongoing stock taking is one where bill.completed = false.
      */
     private boolean hasOngoingStockTaking(Department dept) {
-        if (dept == null) {
+        if (dept == null || dept.getId() == null) {
             return false;
         }
-        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department=:dept and (b.completed is null or b.completed=false)";
+        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and (b.completed is null or b.completed=false)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacySnapshotBill);
-        params.put("dept", dept);
+        params.put("deptId", dept.getId());
         Long count = billFacade.countByJpql(jpql, params);
         return count != null && count > 0;
     }
@@ -3958,6 +3989,14 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setSnapshotBillDisplay(PharmacySnapshotBillLight snapshotBillDisplay) {
         this.snapshotBillDisplay = snapshotBillDisplay;
+    }
+
+    public Long getViewBillId() {
+        return viewBillId;
+    }
+
+    public void setViewBillId(Long viewBillId) {
+        this.viewBillId = viewBillId;
     }
 
     /**
