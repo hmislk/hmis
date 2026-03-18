@@ -1199,6 +1199,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
                 tbi.setTmpQty(0);
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
+                JsfUtil.addErrorMessage(tbi.getItem().getName()
+                        + " - Could not deduct stock. Quantity set to zero. Another user may have already consumed this stock.");
             }
 
             getPreBill().getBillItems().add(tbi);
@@ -1276,6 +1278,29 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 
     }
 
+    private boolean checkAllBillItemStockAvailability() {
+        boolean hasIssue = false;
+        for (BillItem b : getPreBill().getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null || b.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            Stock freshStock = getStockFacade().findWithoutCache(b.getPharmaceuticalBillItem().getStock().getId());
+            if (freshStock == null) {
+                JsfUtil.addErrorMessage(b.getItem().getName() + " - Stock record not found.");
+                hasIssue = true;
+                continue;
+            }
+            double requiredQty = Math.abs(b.getPharmaceuticalBillItem().getQtyInUnit()) + b.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            if (freshStock.getStock() < requiredQty) {
+                JsfUtil.addErrorMessage(b.getItem().getName() + " - Insufficient stock. Available: "
+                        + (int) freshStock.getStock() + ", Required: " + (int) requiredQty
+                        + ". Another user may have already sold this stock.");
+                hasIssue = true;
+            }
+        }
+        return hasIssue;
+    }
+
     public void settlePreBill() {
         editingQty = null;
 
@@ -1283,10 +1308,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             return;
         }
 
-//        if (checkAllBillItem()) {
-//            //   Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
-//            return;
-//        }
+        if (checkAllBillItemStockAvailability()) {
+            return;
+        }
         if (errorCheckForPreBill()) {
             return;
         }
@@ -1438,9 +1462,9 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             }
         }
 
-//        if (checkAllBillItem()) {
-//            return;
-//        }
+        if (checkAllBillItemStockAvailability()) {
+            return;
+        }
         if (errorCheckForSaleBill()) {
             return;
         }
