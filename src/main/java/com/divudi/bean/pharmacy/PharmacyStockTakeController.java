@@ -2578,9 +2578,10 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("No Bill ID");
             return null;
         }
+        // Use same 8-arg constructor as listSnapshotBillRows (proven to work), then patch departmentId
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "dept.id, b.completed) "
+                + "0L, b.netTotal, b.completed) "
                 + "from Bill b left join b.institution ins left join b.department dept where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
@@ -2589,17 +2590,18 @@ public class PharmacyStockTakeController implements Serializable {
         List<PharmacySnapshotBillLight> results = (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
         if (results != null && !results.isEmpty()) {
             snapshotBillDisplay = results.get(0);
+            // Patch departmentId separately (needed for upload dept-match check)
+            String deptIdJpql = "select dept.id from Bill b join b.department dept where b.id = :billId";
+            List<?> deptIds = billFacade.findLightsByJpql(deptIdJpql, params);
+            if (deptIds != null && !deptIds.isEmpty()) {
+                snapshotBillDisplay.setDepartmentId(((Number) deptIds.get(0)).longValue());
+            }
 
-            // CRITICAL FIX: Use entity proxy for legacy method compatibility (no BillItems loaded)
             snapshotBill = billFacade.getReference(billId);
             if (snapshotBill == null) {
                 JsfUtil.addErrorMessage("Snapshot Bill reference not found");
                 return null;
             }
-
-            System.out.println("DEBUG: Navigation loaded snapshot - ID: " + billId +
-                             ", Display: " + (snapshotBillDisplay != null) +
-                             ", Entity: " + (snapshotBill != null));
         } else {
             JsfUtil.addErrorMessage("Snapshot Bill not found");
             return null;
