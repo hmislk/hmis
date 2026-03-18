@@ -11,10 +11,10 @@
             <ui:define name="content">
 
                 <h:form >
-                    <p:panel header="OP Drug Return Report Print" styleClass="w-100">
+                    <p:panel header="Transfer Receive Report Print" styleClass="w-100">
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
-                                <h:outputText value="OP Drug Return Report Print" class="mt-2"/>
+                                <h:outputText value="Transfer Receive Report Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
@@ -30,7 +30,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="op_drug_return?faces-redirect=true" >
+                                        action="transfer_receive?faces-redirect=true" >
                                     </p:commandButton>
                                 </div>
 
@@ -43,12 +43,12 @@
                                 .paper{
                                     position: static !important;
                                     width: 297mm!important;
-                                    zoom: 2.0;
+                                    zoom: 1.8;
                                 }
 
                                 table {
                                     border-collapse: collapse;
-                                    width: 99%;
+                                    width: 99.9%;
                                     font-size: 12px!important;
                                     margin-top: 1mm!important;
                                 }
@@ -171,7 +171,7 @@
 
                                     <!-- Report Name -->
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 12px; margin-top:5px;">
-                                        <h:outputText value="OP Drug Return Report" />
+                                        <h:outputText value="Transfer Receive Report" />
                                     </div>
 
                                 </div>
@@ -187,13 +187,16 @@
                                                     <h:outputText value="Item Name" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Code" style="margin-left:  1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Doc No" style="margin-left:  1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="Ref Doc No" style="margin-left:  1mm;"/>
+                                                    <h:outputText value="Reference Document No(Issue Doc No)" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Issue Department" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Code" style="margin-left:  1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="QTY" style=" margin-left:  1mm;"/>
@@ -205,106 +208,78 @@
                                                     <h:outputText value="Cost Value" style="margin-right: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="Purchase Rate" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="Purchase Value" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="MRP" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="MRP Value" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="Payment Mode" style="margin-right: 1mm;"/>
-                                                </th>
-                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
-                                                    <h:outputText value="Discount" style="margin-right: 1mm;"/>
+                                                    <h:outputText value="Sale Rate" style="margin-right: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Total" style="margin-right: 1mm;"/>
                                                 </th>
-
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Net Total" style="margin-right: 1mm;"/>
+                                                </th>
+                                                
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{pharmacyReportController.billItems}" var="row" varStatus="i">
+                                            <ui:repeat value="#{pharmacyReportController.billItems}" var="f" varStatus="i">
                                                 <tr>
                                                     <td style="width: 32mm; text-align: left;" >
-                                                        <h:outputText value="#{row.createdAt}" >
+                                                        <h:outputText value="#{f.bill.createdAt}" >
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.item.name}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{f.item.name}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.item.code}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{f.bill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.deptId}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{empty f.bill.backwardReferenceBill ? f.bill.referenceBill.deptId : f.bill.backwardReferenceBill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.referenceBill.deptId}" rendered="#{row.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS'}" style="margin-left: 1mm;"/>
-                                                        <h:outputText value="#{row.bill.referenceBill.referenceBill.referenceBill.deptId}" rendered="#{row.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS'}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{f.bill.fromDepartment.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{f.item.code}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{f.qty}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate * row.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{f.bill.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
-                                                    <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: center;">
-                                                        <h:outputText value="#{row.bill.paymentMethod}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.discount}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                    </td>
-                                                    <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.rate * row.qty}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                    </td>
-
+                                                    
                                                 </tr>
                                             </ui:repeat>
                                         </tbody>
                                         <tfoot>
                                             <tr>
                                                 <td style="width: 32mm; text-align: left;" >
-                                                    <h:outputLabel value="Net Amount :" style="margin-left:1mm;font-weight: bold;" />
+                                                    <h:outputLabel value=" Net Amount " style="margin-left:1mm;font-weight: bold;" />
                                                 </td>
                                                 <td style="width: 17mm; text-align: left;"/>
                                                 <td style="width: 17mm; text-align: left;"/>
@@ -312,23 +287,8 @@
                                                 <td style="width: 17mm; text-align: right;"/>
                                                 <td style="width: 17mm; text-align: right;"/>
                                                 <td style="width: 17mm; text-align: right;"/>
-                                                <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
                                                 <td style="width: 17mm; text-align: right;"/>
-                                                <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
                                                 <td style="width: 17mm; text-align: right;"/>
-                                                <td style="width: 17mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
                                                 <td style="width: 17mm; text-align: right;"/>
                                                 <td style="width: 17mm; text-align: right;"/>
                                                 <td style="width: 17mm; text-align: right;">
@@ -336,6 +296,7 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
+                                               
                                             </tr>
                                         </tfoot>
                                     </table>
