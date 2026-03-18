@@ -28,6 +28,45 @@ public enum Title {
     Other,
     Baby_Of;
 
+    public String getCapitalLabel() {
+        switch (this) {
+            case Baby_Of:
+                return "BABY OF ";
+            case DrMiss:
+                return "DR. (MISS) ";
+            case DrMrs:
+                return "DR. (MRS) ";
+            case DrMs:
+                return "DR. (MS) ";
+            case Hon:
+                return "HON. ";
+            case Dr:
+                return "DR. ";
+            case Mr:
+                return "MR. ";
+            case Miss:
+                return "MISS. ";
+            case Mrs:
+                return "MRS. ";
+            case Ms:
+                return "MS. ";
+            case Prof:
+                return "PROF. ";
+            case ProfMrs:
+                return "PROF. (MRS) ";
+            case Rev:
+                return "REV. ";
+            case RtHon:
+                return "RT. HON. ";
+            case RtRev:
+                return "RT. REV. ";
+            case Other:
+                return "OTHER";
+            default:
+                return this.toString().toUpperCase();
+        }
+    }
+
     public String getLabel() {
         switch (this) {
             case Baby_Of:

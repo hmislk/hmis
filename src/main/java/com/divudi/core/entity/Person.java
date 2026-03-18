@@ -315,7 +315,20 @@ public class Person implements Serializable, RetirableEntity  {
 
         return nameWithTitle;
     }
+    
+    public String getNameWithCapitalTitle() {
+        String temT;
+        Title t = getTitle();
+        if (t != null) {
+            temT = t.getCapitalLabel();
+        } else {
+            temT = "";
+        }
+        nameWithTitle = temT + " " + getName();
 
+        return nameWithTitle;
+    }
+    
     public static Boolean checkAgeSex(Date dob, Sex sex, Title title) {
         Date toDate = Calendar.getInstance().getTime();
 
