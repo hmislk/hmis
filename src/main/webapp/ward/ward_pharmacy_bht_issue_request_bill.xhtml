@@ -58,12 +58,12 @@
                                 </div>
                             </f:facet>
 
-                            <div class="d-flex gap-3 flex-wrap">
-                                <div class="d-flex flex-column">
-                                    <h:outputLabel value="Requesting Department"/>
+                            <div class="row d-flex gap-4 flex-wrap align-item-center justify-content-center">
+                                <div class="d-flex flex-column mx-4 col-6">
+                                    <h:outputLabel style="font-weight: bold; font-size: 18px" value="Requesting Department"/>
                                     <p:autoComplete
                                         value="#{pharmacyRequestForBhtController.department}"
-                                        class="col-md-12 mx-2"
+                                        class="col-12 mx-2"
                                         inputStyleClass="form-control"
                                         forceSelection="true"
                                         disabled="#{pharmacyRequestForBhtController.department ne null}"
@@ -78,8 +78,8 @@
                                     </p:autoComplete>
                                 </div>
 
-                                <div class="d-flex flex-column">
-                                    <h:outputLabel value="Patient Name or BHT or PHN No"/>
+                                <div class="d-flex flex-column col-6">
+                                    <h:outputLabel style="font-weight: bold; font-size: 18px" value="Patient Name or BHT or PHN No"/>
                                     <p:autoComplete
                                         widgetVar="aPt2"
                                         id="acPt2"
@@ -117,13 +117,7 @@
                                     </p:autoComplete>
                                 </div>
 
-                                <div class="d-flex flex-column justify-content-end">
-                                    <p:commandButton
-                                        ajax="false"
-                                        class="ui-button-success"
-                                        value="Proceed" >
-                                    </p:commandButton>
-                                </div>
+
 
                                 <style>
                                     .discharged-badge {
@@ -145,6 +139,17 @@
                                     }
                                 </style>
 
+                            </div>
+
+                            <div class="my-3 d-flex flex-column justify-content-end w-20">
+                                <div class="col-12 d-flex align-item-center justify-content-center">
+                                    <p:commandButton
+                                        ajax="false"
+                                        style="width: 250px; font-size: 17px"
+                                        class="ui-button-success px-5"
+                                        value="Proceed" >
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
 
