@@ -2489,7 +2489,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
-            System.out.println("Start oneOpdBillForEachDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -4728,11 +4727,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             previousCreditCompany = new ArrayList<>();
             if (configOptionApplicationController.getBooleanValueByKey("Display the past Credit Company List", false)) {
                 if (patient.getId() == null) {
-                    System.out.println("Patient is Empty.");
                     return;
                 } else {
-                    System.out.println("Patient Found. ----> " + patient.getId());
-
                     String jpql = "SELECT new com.divudi.core.data.dto.CreditCompanyDetailsDto( "
                             + " p.creditCompany.id, "
                             + " p.creditCompany.name, "
@@ -4750,13 +4746,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                     Long previousYears = configOptionApplicationController.getLongValueByKey("How many years should you search back to find a credit company?", 5L);
 
-                    System.out.println("previousYears = " + previousYears);
-
                     Date fDate = CommonFunctions.getPreviousDate(previousYears.intValue());
                     Date tDate = CommonFunctions.getEndOfDay();
-
-                    System.out.println("fDate = " + fDate);
-                    System.out.println("tDate = " + tDate);
 
                     Map<String, Object> m = new HashMap<>();
                     m.put("ret", false);
@@ -4766,17 +4757,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     m.put("fDate", fDate);
                     m.put("tDate", tDate);
 
-                    System.out.println("jpql = " + jpql);
-                    System.out.println("m = " + m);
-
                     previousCreditCompany = (List<CreditCompanyDetailsDto>) institutionFacade.findLightsByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
-
-                    System.out.println("previousCreditCompany = " + previousCreditCompany.size());
-                    int i = 1;
-                    for (CreditCompanyDetailsDto idto : previousCreditCompany) {
-                        System.out.println(i + ". Institution = " + idto.getCompanyname() + ", Policy No = " + idto.getPolicyNo() + ", Reference No + " + idto.getReferenceNo());
-                        i++;
-                    }
 
                 }
             }
@@ -4785,38 +4766,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void selectCreditCompany(CreditCompanyDetailsDto selectCompany) {
-        System.out.println("Start Run selectCreditCompany()");
-
         if (selectCompany == null) {
-            System.out.println("Select Company is Null");
             return;
         }
         
-        System.out.println("selectCompany = " + selectCompany);
-
-        System.out.println("Company Id = " + selectCompany.getCompanyId());
-        System.out.println("Company Name = " + selectCompany.getCompanyname());
-        System.out.println("Policy No = " + selectCompany.getPolicyNo());
-        System.out.println("Reference No = " + selectCompany.getReferenceNo());
-
         Institution selectedCreditCompany = institutionFacade.findWithoutCache(selectCompany.getCompanyId());
 
         if (selectedCreditCompany == null) {
-            System.out.println("Selected Credit Company is Null");
             return;
         } else {
-            System.out.println("Selected Credit Company = " + selectedCreditCompany);
-
             getPaymentMethodData().getCredit().setInstitution(selectedCreditCompany);
             getPaymentMethodData().getCredit().setReferralNo(selectCompany.getPolicyNo());
             getPaymentMethodData().getCredit().setReferenceNo(selectCompany.getReferenceNo());
-                    
-            System.out.println("Selected Credit Company Date Update Succesfully");
-            
-            System.out.println("Updated Company Id = " + getPaymentMethodData().getCredit().getInstitution().getId());
-            System.out.println("Updated Company Name = " + getPaymentMethodData().getCredit().getInstitution().getName());
-            System.out.println("Updated Policy No = " + getPaymentMethodData().getCredit().getReferralNo());
-            System.out.println("Updated Reference No = " + getPaymentMethodData().getCredit().getReferenceNo());
         }
     }
 
