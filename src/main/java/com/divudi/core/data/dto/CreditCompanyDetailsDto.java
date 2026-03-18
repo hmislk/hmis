@@ -59,7 +59,7 @@ public class CreditCompanyDetailsDto implements Serializable {
 
     @Override
     public String toString() {
-        return "InstitutionDto{id=" + companyId + ", name='" + companyname + "'}";
+        return "CreditCompanyDetailsDto{id=" + companyId + ", name='" + companyname + "'}";
     }
 
     @Override
