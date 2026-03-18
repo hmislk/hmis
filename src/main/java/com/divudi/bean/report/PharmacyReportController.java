@@ -4104,7 +4104,8 @@ public class PharmacyReportController implements Serializable {
                     .append("b.netTotal, ")
                     .append("b.paymentMethod, ")
                     .append("b.discount, ")
-                    .append("b.id) ")
+                    .append("b.id ")
+                    .append(" ) ")
                     .append("FROM Bill b ")
                     .append("WHERE b.retired = false ")
                     .append("AND ").append(billTypeField).append(" IN :billTypes ")
@@ -4124,7 +4125,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(billJpql, billParams, "b.paymentMethod", "pmFilter", this.paymentMethod);
 
             cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
-
+            System.out.println("-------------------------------------------");
+            System.out.println("billJpql = " + billJpql);
+            System.out.println("billParams = " + billParams);
+            System.out.println("cogsBillDtos.isEmpty() = " + cogsBillDtos.isEmpty());
+            System.out.println("-------------------------------------------");
             // STEP 2: Collect all Bill IDs from the results.
             List<Long> billIds = cogsBillDtos.stream()
                     .map(CostOfGoodSoldBillDTO::getBillId)
@@ -4153,10 +4158,14 @@ public class PharmacyReportController implements Serializable {
             itemParams.put("billIds", billIds);
 
             List<BillItemDTO> allBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
-
+            System.out.println("-------------------------------------------");
+            System.out.println("itemJpql = " + itemJpql);
+            System.out.println("itemParams = " + itemParams);
+            System.out.println("allBillItems.isEmpty() = " + allBillItems.isEmpty());
+            System.out.println("-------------------------------------------");
             // STEP 4: Group the fetched BillItems by their parent Bill's ID.
             Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
-
+        
             // STEP 5: Attach the grouped items to their corresponding parent bills.
             for (CostOfGoodSoldBillDTO billDto : cogsBillDtos) {
                 // 1. Accumulate the grand netTotal directly from the bill
@@ -4189,17 +4198,17 @@ public class PharmacyReportController implements Serializable {
 
                     // 2. Accumulate the grand total for Cost
                     totalCostValue += billCost;
-
+                    System.out.println("totalCostValue = " + totalCostValue);
                     // 3. Accumulate the grand total for Purchase
                     totalPurchaseValue += billPurchase;
-
+                    System.out.println("totalPurchaseValue = " + totalPurchaseValue);
                     double billRetail = itemsForThisBill.stream()
                             .filter(item -> item.getRetailRate() != null && item.getQty() != null)
                             .mapToDouble(item -> item.getRetailRate() * item.getQty())
                             .sum();
 
                     totalRetailValue += billRetail;
-
+                    System.out.println("totalRetailValue = " + totalRetailValue);
                     // Calculate Sale Value for THIS bill (same as billRetail calculation)
                     double billSaleValue = itemsForThisBill.stream()
                             .filter(item -> item.getRetailRate() != null && item.getQty() != null)
@@ -4207,6 +4216,7 @@ public class PharmacyReportController implements Serializable {
                             .sum();
 
                     totalSaleValue += billSaleValue;
+                    System.out.println("totalSaleValue = " + totalSaleValue);
                 }
             }
         } catch (Exception e) {
@@ -11055,12 +11065,13 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportPharmacySalesToPdf() {
+        exportExpireItemStockListToPDF();
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Pharmacy_Sales_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Pharmacy_Sales_Report_"+dates+".pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
 
@@ -11068,25 +11079,25 @@ public class PharmacyReportController implements Serializable {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
-
-            document.add(new Paragraph("Pharmacy Sales Report",
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
-            if (fromDate != null && toDate != null) {
-                document.add(new Paragraph("Period: " + sdf.format(fromDate) + " to " + sdf.format(toDate),
-                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
-            }
+            String institutionName= sessionController.getInstitution()!= null ? sessionController.getInstitution().getName(): "No Logged Institution";
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Sale Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
-            if (cogsBillDtos == null || cogsBillDtos.isEmpty()) {
-                document.add(new Paragraph("No sales data available for the selected period.",
-                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
-                document.close();
-                context.responseComplete();
-                return;
+//            if (cogsBillDtos == null || cogsBillDtos.isEmpty()) {
+//                document.add(new Paragraph("No sales data available for the selected period.",
+//                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+//                document.close();
+//                context.responseComplete();
+//                return;
+//            }
+            Map<String, Object> filters = getFiltersForCostOfGoodSoldSaleReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
             }
-
+            
             PdfPTable table = new PdfPTable(15);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10);
@@ -12957,26 +12968,50 @@ public class PharmacyReportController implements Serializable {
             totalNetHosFee += twc.getHosFee() - twc.getDiscount();
         }
     }
+    
+    public Map<String, Object> getFiltersForCostOfGoodSoldSaleReport(){
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("Department Type", getSelectedDepartmentTypesString());
+        filters.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+
+        return filters;
+    }
 
     public void exportBillsToExcel(String fileName, List<CostOfGoodSoldBillDTO> bills) {
-        if (bills == null || bills.isEmpty()) {
-            return;
-        }
-
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = facesContext.getExternalContext();
-        externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
-
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Pharmacy Sales Report");
-
+//        if (bills == null || bills.isEmpty()) {
+//            return;
+//        }
+        System.out.println("this is starting of the excel method");
+//        exportExpireItemStockListToExcel();
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + dates+".xlsx\"");
+        Map<String, Object> filters = getFiltersForCostOfGoodSoldSaleReport();
+        System.out.println("filters = " + filters);
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Pharmacy Sales Report");
+            int rowIndex=0;
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Cost of Good Sold-Sale Report", filters);
+            }
             createHeaderRow(sheet);
+            System.out.println("Created headers");
             populateDataRows(sheet, bills);
+            System.out.println("populate the sheet");
 
-            OutputStream outputStream = externalContext.getResponseOutputStream();
-            workbook.write(outputStream);
-            facesContext.responseComplete();
+//            OutputStream outputStream = externalContext.getResponseOutputStream();
+            workbook.write(out);
+            context.responseComplete();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -12989,15 +13024,17 @@ public class PharmacyReportController implements Serializable {
             "COST VALUE", "RATE", "VALUE", "Net Total", "Payment Mode/Modes",
             "MRP", "MRP Value", "Discount"
         };
-        Row headerRow = sheet.createRow(0);
+        Row headerRow = sheet.createRow(6);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
         }
+        System.out.println("headers.length = " + headers.length);
     }
 
     private void populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills) {
-        AtomicInteger rowNum = new AtomicInteger(1);
+        System.out.println("populate inside method");
+        AtomicInteger rowNum = new AtomicInteger(7);
         for (CostOfGoodSoldBillDTO bill : bills) {
             List<BillItemDTO> billItems = bill.getBillItems();
             if (billItems == null || billItems.isEmpty()) {
