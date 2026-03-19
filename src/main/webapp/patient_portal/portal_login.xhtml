@@ -569,6 +569,54 @@
                 text-decoration: underline !important;
             }
 
+            /* ── OTP COUNTDOWN ───────────────────────────────────── */
+            .portal-error-msg {
+                display: block;
+                background: #fff5f5;
+                color: #c0392b;
+                border: 1px solid #f5c6cb;
+                padding: 0.6rem 0.9rem;
+                border-radius: 6px;
+                font-size: 0.88rem;
+                margin-bottom: 1rem;
+                font-family: inherit;
+                text-align: center;
+            }
+            .otp-countdown-wrap {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                margin-bottom: 1.25rem;
+            }
+            .otp-countdown-label {
+                font-size: 0.82rem;
+                color: var(--text-muted);
+            }
+            .otp-countdown-timer {
+                font-family: 'Syne', sans-serif;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--forest-mid);
+                background: #e8f5ee;
+                border: 1.5px solid var(--border);
+                border-radius: 8px;
+                padding: 0.2rem 0.7rem;
+                min-width: 3.5rem;
+                text-align: center;
+                transition: color 0.3s, background 0.3s, border-color 0.3s;
+            }
+            .otp-countdown-timer.warning {
+                color: #b45309;
+                background: #fef3c7;
+                border-color: #fcd34d;
+            }
+            .otp-countdown-timer.expired {
+                color: #dc2626;
+                background: #fee2e2;
+                border-color: #fca5a5;
+            }
+
             /* ── FOOTER NOTE ─────────────────────────────────────── */
             .portal-footer-note {
                 display: flex;
@@ -746,6 +794,34 @@
                 margin-bottom: 1.25rem;
             }
         </style>
+        <script type="text/javascript">
+            //<![CDATA[
+            var otpCountdownInterval = null;
+
+            function startOtpCountdown(expiryEpochMs) {
+                clearInterval(otpCountdownInterval);
+                var el = document.getElementById('otpCountdownTimer');
+                if (!el) return;
+                function tick() {
+                    var remaining = expiryEpochMs - Date.now();
+                    if (remaining <= 0) {
+                        clearInterval(otpCountdownInterval);
+                        el.textContent = 'Expired';
+                        el.className = 'otp-countdown-timer expired';
+                        var verifyBtn = document.querySelector('.btn-verify .ui-button');
+                        if (verifyBtn) verifyBtn.disabled = true;
+                        return;
+                    }
+                    var mins = Math.floor(remaining / 60000);
+                    var secs = Math.floor((remaining % 60000) / 1000);
+                    el.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                    el.className = 'otp-countdown-timer' + (remaining < 30000 ? ' warning' : '');
+                }
+                tick();
+                otpCountdownInterval = setInterval(tick, 1000);
+            }
+            //]]>
+        </script>
     </h:head>
 
     <h:body style="margin:0; padding:0;">
@@ -833,6 +909,9 @@
                                  class="mobile-logo-img"/>
                         </div>
 
+                        <!-- Main switchable content panel -->
+                        <h:panelGroup id="portalContentPanel" layout="block">
+
                         <!-- OTP Verification Card -->
                         <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}">
                             <div class="otp-card">
@@ -842,71 +921,84 @@
                                 </div>
 
                                 <div class="card-title">OTP Verification</div>
-                                <div class="card-subtitle">
-                                    Enter your registered mobile number to receive
-                                    a secure one-time password.
-                                </div>
 
-                                <!-- Step progress -->
-                                <div class="steps-bar">
-                                    <div class="step-item">
-                                        <div class="step-dot active">1</div>
-                                        <span class="step-label">Mobile Number</span>
-                                    </div>
-                                    <div class="step-connector"/>
-                                    <div class="step-item">
-                                        <div class="step-dot">2</div>
-                                        <span class="step-label">Verify OTP</span>
-                                    </div>
-                                </div>
+                                <h:panelGroup id="otpFormPanel">
 
-                                <!-- Step 1: Phone number -->
-                                <div class="field-group">
-                                    <label class="field-label">Mobile Number</label>
-                                    <div class="field-wrap">
-                                        <i class="fas fa-phone f-icon"/>
-                                        <p:inputText
-                                            value="#{patientPortalController.patientphoneNumber}"
-                                            placeholder="Enter your mobile number"/>
-                                    </div>
-                                </div>
+                                    <h:messages layout="table" showDetail="true" showSummary="false"
+                                                errorClass="portal-error-msg"
+                                                warnClass="portal-error-msg"
+                                                infoClass="portal-error-msg"/>
 
-                                <div class="btn-send">
-                                    <p:commandButton
-                                        ajax="false"
-                                        value="Send OTP"
-                                        icon="fas fa-paper-plane"
-                                        action="#{patientPortalController.sendOtp}"/>
-                                </div>
+                                    <!-- STEP 1: Mobile number + Send OTP (hidden after OTP sent) -->
+                                    <h:panelGroup rendered="#{empty patientPortalController.otp}">
+                                        <div class="card-subtitle">
+                                            Enter your registered mobile number to receive
+                                            a secure one-time password.
+                                        </div>
+                                        <div class="field-group">
+                                            <label class="field-label">Mobile Number</label>
+                                            <div class="field-wrap">
+                                                <i class="fas fa-phone f-icon"/>
+                                                <p:inputText
+                                                    value="#{patientPortalController.patientphoneNumber}"
+                                                    placeholder="Enter your mobile number"/>
+                                            </div>
+                                        </div>
+                                        <div class="btn-send">
+                                            <p:commandButton
+                                                value="Send OTP"
+                                                icon="fas fa-paper-plane"
+                                                action="#{patientPortalController.sendOtp}"
+                                                update="otpFormPanel"/>
+                                        </div>
+                                    </h:panelGroup>
 
-                                <div class="form-divider">
-                                    <span>enter OTP after receiving SMS</span>
-                                </div>
+                                    <!-- STEP 2: OTP entry (shown after OTP sent) -->
+                                    <h:panelGroup rendered="#{not empty patientPortalController.otp}">
+                                        <script type="text/javascript">
+                                            //<![CDATA[
+                                            startOtpCountdown(#{patientPortalController.otpExpiryEpochMs});
+                                            //]]>
+                                        </script>
+                                        <div class="card-subtitle">
+                                            OTP sent to <strong>#{patientPortalController.patientphoneNumber}</strong>.
+                                            Enter it below to continue.
+                                        </div>
 
-                                <!-- Step 2: OTP entry -->
-                                <div class="field-group">
-                                    <label class="field-label">One-Time Password</label>
-                                    <div class="field-wrap">
-                                        <i class="fas fa-key f-icon"/>
-                                        <p:inputText
-                                            value="#{patientPortalController.patientEnteredOtp}"
-                                            placeholder="Enter OTP"/>
-                                    </div>
-                                </div>
+                                        <!-- Countdown timer -->
+                                        <div class="otp-countdown-wrap">
+                                            <span class="otp-countdown-label">OTP expires in</span>
+                                            <span id="otpCountdownTimer" class="otp-countdown-timer">
+                                                #{patientPortalController.otpTimeoutMinutes}:00
+                                            </span>
+                                        </div>
 
-                                <div class="btn-verify">
-                                    <p:commandButton
-                                        ajax="false"
-                                        value="Verify OTP"
-                                        icon="fas fa-circle-check"
-                                        action="#{patientPortalController.otpVerification}"/>
-                                </div>
+                                        <div class="field-group">
+                                            <label class="field-label">One-Time Password</label>
+                                            <div class="field-wrap">
+                                                <i class="fas fa-key f-icon"/>
+                                                <p:inputText
+                                                    value="#{patientPortalController.patientEnteredOtp}"
+                                                    placeholder="Enter OTP"/>
+                                            </div>
+                                        </div>
+                                        <div class="btn-verify">
+                                            <p:commandButton
+                                                value="Verify OTP"
+                                                icon="fas fa-circle-check"
+                                                action="#{patientPortalController.otpVerification}"
+                                                update="portalContentPanel"/>
+                                        </div>
+                                        <div class="resend-wrap">
+                                            Didn't receive it?&#160;
+                                            <p:commandLink
+                                                value="Resend OTP"
+                                                action="#{patientPortalController.sendOtp}"
+                                                update="otpFormPanel"/>
+                                        </div>
+                                    </h:panelGroup>
 
-                                <!-- Resend link -->
-                                <div class="resend-wrap">
-                                    Didn't receive it?&#160;
-                                    <p:commandLink value="Resend OTP" action="#{patientPortalController.sendOtp}"/>
-                                </div>
+                                </h:panelGroup>
 
                             </div>
                         </h:panelGroup>
@@ -979,6 +1071,9 @@
 
                             </div>
                         </h:panelGroup>
+
+                        </h:panelGroup>
+                        <!-- END portalContentPanel -->
 
                         <!-- Security footer note -->
                         <div class="portal-footer-note">
