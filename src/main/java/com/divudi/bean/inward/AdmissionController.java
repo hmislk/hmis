@@ -43,6 +43,9 @@ import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientTransferRequestFacade;
+import com.divudi.core.entity.inward.PatientTransferRequest;
+import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
@@ -128,6 +131,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueFacade clinicalFindingValueFacade;
     @EJB
     ReservationFacade reservationFacade;
+    @EJB
+    private PatientTransferRequestFacade patientTransferRequestFacade;
 
     @Inject
     BhtEditController bhtEditController;
@@ -1810,6 +1815,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+                PatientTransferRequest handoverRequest = new PatientTransferRequest();
+                handoverRequest.setAdmission(getCurrent());
+                handoverRequest.setFromPatientRoom(null);
+                handoverRequest.setToRoomFacilityCharge(currentPatientRoom.getRoomFacilityCharge());
+                handoverRequest.setStatus(TransferRequestStatus.PENDING);
+                handoverRequest.setInitiatedAt(new Date());
+                handoverRequest.setInitiatedBy(getSessionController().getLoggedUser());
+                handoverRequest.setCreatedAt(new Date());
+                handoverRequest.setCreater(getSessionController().getLoggedUser());
+                patientTransferRequestFacade.create(handoverRequest);
+            }
         }
 
         if (currentReservation != null) {
@@ -1916,6 +1934,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+                PatientTransferRequest handoverRequest = new PatientTransferRequest();
+                handoverRequest.setAdmission(getCurrent());
+                handoverRequest.setFromPatientRoom(null);
+                handoverRequest.setToRoomFacilityCharge(currentPatientRoom.getRoomFacilityCharge());
+                handoverRequest.setStatus(TransferRequestStatus.PENDING);
+                handoverRequest.setInitiatedAt(new Date());
+                handoverRequest.setInitiatedBy(getSessionController().getLoggedUser());
+                handoverRequest.setCreatedAt(new Date());
+                handoverRequest.setCreater(getSessionController().getLoggedUser());
+                patientTransferRequestFacade.create(handoverRequest);
+            }
         }
 
         getFacade().edit(getCurrent());
