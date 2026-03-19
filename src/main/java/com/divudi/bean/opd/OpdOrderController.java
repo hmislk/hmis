@@ -3737,17 +3737,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        if (bf.getId() != null) {
-            BillFeePayment bfp = new BillFeePayment();
-            bfp.setBillFee(bf);
-            bfp.setAmount(amount);
-            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-            bfp.setCreater(getSessionController().getLoggedUser());
-            bfp.setCreatedAt(new Date());
-            bfp.setPayment(p);
-            billFeePaymentFacade.create(bfp);
-        }
+        // BillFeePayment is deprecated and no longer used
     }
 
     public double calBillPaidValue(Bill b) {

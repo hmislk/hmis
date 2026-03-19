@@ -79,6 +79,9 @@ public class AmppController implements Serializable {
     @Inject
     private AuditEventController auditEventController;
 
+    // List page DTO cache
+    private List<AmppDto> pharmacyAmppListDtos;
+
     // Filter state for active/inactive AMPPs
     private String filterStatus = "active"; // "active", "inactive", "all"
 
@@ -269,6 +272,7 @@ public class AmppController implements Serializable {
     public void refreshData() {
         recreateModel();
         amppDtos = null; // Clear DTO cache
+        pharmacyAmppListDtos = null;
 
         // Clear selection if current item doesn't match new filter
         if (current != null) {
@@ -610,6 +614,43 @@ public class AmppController implements Serializable {
 
     public void setEditable(boolean editable) {
         this.editable = editable;
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<AmppDto> getPharmacyAmppListDtos() {
+        if (pharmacyAmppListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.AmppDto("
+                    + "a.id, a.name, a.code, "
+                    + "a.retired, a.inactive, a.dblValue, "
+                    + "pu.name, amp.id, amp.name) "
+                    + "FROM Ampp a "
+                    + "LEFT JOIN a.amp amp "
+                    + "LEFT JOIN a.packUnit pu "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Pharmacy);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            pharmacyAmppListDtos = (List<AmppDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return pharmacyAmppListDtos;
+    }
+
+    public String navigateToAmppList() {
+        pharmacyAmppListDtos = null;
+        getPharmacyAmppListDtos();
+        return "/pharmacy/admin/ampp_list?faces-redirect=true";
     }
 
     /**

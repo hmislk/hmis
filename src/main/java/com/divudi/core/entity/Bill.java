@@ -13,6 +13,7 @@ import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
 import com.divudi.core.entity.hr.BankAccount;
 import com.divudi.core.entity.membership.MembershipScheme;
@@ -515,6 +516,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Patient chiefHouseHolder;
     @ManyToOne(fetch = FetchType.LAZY)
     private Family memberFamily;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
     public Bill() {
         if (status == null) {
@@ -529,6 +532,7 @@ public class Bill implements Serializable, RetirableEntity {
         billDate = new Date();
         billTime = new Date();
         createdAt = new Date();
+        priority = Priority.NORMAL;
     }
 
     public OnlineBooking getOnlineBooking() {
@@ -3128,6 +3132,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setMemberFamily(Family memberFamily) {
         this.memberFamily = memberFamily;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
 }

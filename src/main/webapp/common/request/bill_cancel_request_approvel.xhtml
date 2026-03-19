@@ -41,7 +41,7 @@
                                             id="commentsMenu"
                                             value="#{requestController.comment}"
                                             placeholder="Approval Comment"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
+                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}"
                                             style="float: right; width: 500px;"
                                             >
                                         </p:inputText>
@@ -51,7 +51,7 @@
                                             value="Approve" 
                                             icon="fa fa-check"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
+                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
                                             class="ui-button-success" 
                                             action="#{requestController.approveRequest()}">
                                         </p:commandButton>
@@ -61,7 +61,7 @@
                                             value="Reject" 
                                             icon="fa fa-times"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
+                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
                                             class="ui-button-danger" 
                                             action="#{requestController.rejectRequest()}">
                                         </p:commandButton>
@@ -72,7 +72,7 @@
                                             icon="fa fa-undo"
                                             class="ui-button-danger" 
                                             rendered="#{(requestController.currentRequest.status eq 'APPROVED')}"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
+                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
                                             action="#{requestController.cancelApprovel()}">
                                         </p:commandButton>
                                     </div>

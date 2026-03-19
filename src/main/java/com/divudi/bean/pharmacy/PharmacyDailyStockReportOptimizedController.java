@@ -141,6 +141,13 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println("✅ STEP 2A COMPLETED: " + stepDuration + "ms - Opening stock at cost rate: " + openingStockValueAtCostRate);
         dailyStockBalanceReport.setOpeningStockValueAtCostRate(openingStockValueAtCostRate);
 
+        // STEP 2B: Calculate Opening Stock at Purchase Rate
+        stepStartTime = System.currentTimeMillis();
+        double openingStockValueAtPurchaseRate = calculateStockValueAtPurchaseRateOptimized(fromDate, department);
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 2B COMPLETED: " + stepDuration + "ms - Opening stock at purchase rate: " + openingStockValueAtPurchaseRate);
+        dailyStockBalanceReport.setOpeningStockValueAtPurchaseRate(openingStockValueAtPurchaseRate);
+
         // STEP 3: Calculate date range
         stepStartTime = System.currentTimeMillis();
         System.out.println("\n🔄 STEP 3: Setting up date range...");
@@ -171,6 +178,13 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println(">>> Sales records found: " + (saleBundle != null ? saleBundle.getRows().size() : "null"));
         System.out.println(">>> Sales total: " + (saleBundle != null && saleBundle.getSummaryRow() != null ? saleBundle.getSummaryRow().getNetTotal() : "null"));
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
+
+        // STEP 4B: Fetch Pre-Bill Stock Movements (informational section)
+        // Covers PRE_TO_SETTLE_AT_CASHIER and CANCELLED_PRE — stock that moved
+        // within the day but whose financial settlement may not yet be recorded.
+        PharmacyBundle preBillBundle = pharmacyService.fetchPharmacyF15StockMovementBundleDto(
+                startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        dailyStockBalanceReport.setPreBillStockMovementsBundle(preBillBundle);
 
         // STEP 5: Fetch Purchase Data (only completed bills)
         stepStartTime = System.currentTimeMillis();
@@ -232,6 +246,13 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         stepDuration = System.currentTimeMillis() - stepStartTime;
         System.out.println("✅ STEP 8A COMPLETED: " + stepDuration + "ms - Closing stock at cost rate: " + closingStockValueAtCostRate);
         dailyStockBalanceReport.setClosingStockValueAtCostRate(closingStockValueAtCostRate);
+
+        // STEP 8B: Calculate Closing Stock at Purchase Rate
+        stepStartTime = System.currentTimeMillis();
+        double closingStockValueAtPurchaseRate = calculateStockValueAtPurchaseRateOptimized(toDate, department);
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 8B COMPLETED: " + stepDuration + "ms - Closing stock at purchase rate: " + closingStockValueAtPurchaseRate);
+        dailyStockBalanceReport.setClosingStockValueAtPurchaseRate(closingStockValueAtPurchaseRate);
 
         // OVERALL COMPLETION SUMMARY
         long totalDuration = System.currentTimeMillis() - overallStartTime;
@@ -356,6 +377,24 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             System.err.println("🚨 === STOCK CALCULATION (COST RATE) ERROR END ===");
 
             JsfUtil.addErrorMessage(e, "Error calculating stock value at cost rate for date: " + date);
+            return 0.0;
+        }
+    }
+
+    /**
+     * Calculates the stock value at purchase rate for a given date and department.
+     * Delegates to the facade method. Uses PURCAHSERATE with no fallback.
+     *
+     * @param date The date for which to calculate stock value
+     * @param dept The department for which to calculate stock value
+     * @return The total stock value at purchase rate, or 0.0 if calculation fails
+     */
+    private double calculateStockValueAtPurchaseRateOptimized(Date date, Department dept) {
+        try {
+            Long departmentId = (dept != null) ? dept.getId() : null;
+            return stockHistoryFacade.calculateStockValueAtPurchaseRateOptimized(date, departmentId);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock value at purchase rate for date: " + date);
             return 0.0;
         }
     }

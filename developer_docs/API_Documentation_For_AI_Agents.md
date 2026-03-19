@@ -2,11 +2,12 @@
 
 ## Overview
 
-This document provides comprehensive guidance for AI agents to interact with the Pharmacy Stock Management API system. The API consists of three main components:
+This document provides comprehensive guidance for AI agents to interact with the Pharmacy Stock Management API system. The API consists of four main components:
 
 1. **Search/Lookup APIs** - Find stocks, departments, and items using human-readable criteria
 2. **Adjustment APIs** - Modify stock quantities, retail rates, and expiry dates
 3. **Batch Creation APIs** - Create new AMPs (items) and ItemBatches with Stock entries
+4. **Backfill APIs** - Populate missing finance details on historical bills
 
 ## Base Configuration
 
@@ -14,6 +15,8 @@ This document provides comprehensive guidance for AI agents to interact with the
 - **API Base Paths**:
   - `/api/pharmacy_adjustments` (Stock adjustments)
   - `/api/pharmacy_batches` (Batch creation and AMP management)
+  - `/api/pharmacy/backfill_bfd` (Backfill BFD for adjustment bills)
+  - `/api/pharmacy/backfill_grn_bifd` (Backfill BIFD/BFD for GRN bills)
 - **Authentication**: API Key via `Finance` header
 - **Content Type**: `application/json`
 - **Date Format**: `yyyy-MM-dd` for input, `yyyy-MM-dd HH:mm:ss` for responses
@@ -1186,3 +1189,147 @@ if __name__ == "__main__":
 - Provide clear error messages for debugging
 
 This documentation provides everything an AI agent needs to successfully interact with the Pharmacy Stock Management APIs. The combination of search and adjustment capabilities allows for fully automated pharmacy stock management while maintaining proper audit trails and validation.
+
+---
+
+## Backfill APIs
+
+These endpoints correct historical bills that are missing finance detail records due to earlier
+system versions that did not create those records. All backfill operations are **idempotent** —
+they only write values that are still null and can be safely re-run.
+
+### 1. Backfill BFD for Adjustment Bills
+
+**Endpoint:** `POST /api/pharmacy/backfill_bfd`
+
+**Use when:** `PHARMACY_STOCK_ADJUSTMENT` or `PHARMACY_RETAIL_RATE_ADJUSTMENT` bills are missing
+`BillFinanceDetails` (BFD) records, causing them to appear as zero in F15 reports.
+
+**Request:**
+```json
+{
+  "billTypeAtomics": ["PHARMACY_STOCK_ADJUSTMENT", "PHARMACY_RETAIL_RATE_ADJUSTMENT"],
+  "departmentId": 485,
+  "fromDate": "2020-01-01",
+  "toDate": "2026-02-22",
+  "approvedBy": "Dr. Smith",
+  "auditComment": "Backfill BFDs missing before 2026-02-23 fix"
+}
+```
+
+**Parameters:**
+
+| Field | Required | Description |
+|---|---|---|
+| `fromDate` | Yes | Start date, format `yyyy-MM-dd`. |
+| `toDate` | Yes | End date, format `yyyy-MM-dd`. |
+| `auditComment` | Yes | Audit trail comment. |
+| `approvedBy` | Yes | Name of approver. |
+| `billTypeAtomics` | No | List of types to backfill. Omit for both adjustment types. |
+| `departmentId` | No | Filter to one department. Omit for all. |
+
+**Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "backfilledBills": 12,
+    "skipped": 2,
+    "errors": []
+  }
+}
+```
+
+---
+
+### 2. Backfill BIFD/BFD for GRN Bills
+
+**Endpoint:** `POST /api/pharmacy/backfill_grn_bifd`
+
+**Use when:** GRN reprint shows blank item columns (Purchase Rate, Line Net Value, Sale Rate,
+Cost Value). This means `BillItemFinanceDetails` (BIFD) records are missing for those bill items.
+
+**Request:**
+```json
+{
+  "fromDate": "2020-01-01",
+  "toDate": "2026-02-26",
+  "approvedBy": "Dr. Ariyaratne",
+  "auditComment": "Backfill missing BIFD for GRN reprints",
+  "departmentId": 485,
+  "billTypeAtomics": ["PHARMACY_GRN"]
+}
+```
+
+**Parameters:**
+
+| Field | Required | Description |
+|---|---|---|
+| `fromDate` | Yes | Start date, format `yyyy-MM-dd`. |
+| `toDate` | Yes | End date, format `yyyy-MM-dd`. |
+| `auditComment` | Yes | Audit trail comment. |
+| `approvedBy` | Yes | Name of approver. |
+| `departmentId` | No | Filter to one department. Omit for all. |
+| `billTypeAtomics` | No | GRN type names (see below). Omit for all GRN types. |
+
+**Supported `billTypeAtomics`:**
+`PHARMACY_GRN`, `PHARMACY_GRN_CANCELLED`, `PHARMACY_GRN_REFUND`, `PHARMACY_GRN_RETURN`,
+`PHARMACY_GRN_WHOLESALE`, `PHARMACY_DIRECT_PURCHASE`, `PHARMACY_DIRECT_PURCHASE_CANCELLED`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "totalBillsFound": 150,
+    "processedBills": 148,
+    "skippedBills": 2,
+    "processedItems": 620,
+    "skippedItems": 4,
+    "errors": []
+  }
+}
+```
+
+| Field | Description |
+|---|---|
+| `totalBillsFound` | Bills matched that had at least one item with null BIFD. |
+| `processedBills` | Bills where at least one item was successfully backfilled. |
+| `skippedBills` | Bills skipped (no usable `PharmaceuticalBillItem` data). |
+| `processedItems` | Individual BillItem records updated. |
+| `skippedItems` | Items skipped (no `PharmaceuticalBillItem` or no `ItemBatch`). |
+| `errors` | Per-bill error messages; other bills continue processing. |
+
+**For large date ranges — use the agent script:**
+
+```bash
+# Configure START_DATE, END_DATE, DEPARTMENT_ID in the script
+python tmp/backfill_grn_bifd.py
+```
+
+The script batches requests one month at a time with a 2-second pause between each to avoid
+server timeouts.
+
+**Verify after running:**
+
+```sql
+SELECT COUNT(*) FROM billitem bi
+JOIN bill b ON b.ID = bi.BILL_ID
+WHERE b.BILLTYPEATOMIC = 'PHARMACY_GRN'
+  AND b.RETIRED = 0 AND bi.RETIRED = 0
+  AND bi.BILLITEMFINANCEDETAILS_ID IS NULL;
+-- Expected: 0
+```
+
+---
+
+### Backfill API — Common Rules
+
+- All backfill endpoints require `Finance: <API_KEY>` header.
+- `auditComment` and `approvedBy` are **always required** — these are appended to `bill.comments`.
+- Backfill operations are idempotent: null-only writes, safe to re-run.
+- Each bill's items are processed independently; an error on one item does not abort others.
+- See `developer_docs/pharmacy/f15-bfd-backfill-guide.md` for full diagnostic queries and
+  step-by-step correction workflow.

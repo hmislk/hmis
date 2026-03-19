@@ -91,7 +91,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.15.4</version>
+            <version>2.18.6</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -474,7 +474,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.107</version> <!-- or the version compatible with your setup -->
+            <version>9.0.113</version> <!-- or the version compatible with your setup -->
         </dependency>
         <dependency>
             <groupId>com.github.hmislk</groupId>

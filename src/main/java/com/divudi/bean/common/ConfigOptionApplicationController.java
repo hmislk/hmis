@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 
@@ -35,6 +36,9 @@ public class ConfigOptionApplicationController implements Serializable {
 
     @EJB
     private ConfigOptionFacade optionFacade;
+
+    @Inject
+    private EnumController enumController;
 
     private List<ConfigOption> options;
 //    private List<Denomination> denominations;
@@ -112,6 +116,8 @@ public class ConfigOptionApplicationController implements Serializable {
             loadOpdBillingConfigurationDefaults();
             loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
+            loadAiChatConfigurationDefaults();
+            enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -140,6 +146,8 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Require Migration Confirmation", true);
         getBooleanValueByKey("Enable Migration Progress Tracking", true);
         getBooleanValueByKey("Log Migration Execution Details", true);
+        // Wiki DDL version tracking — UNCHECKED means not yet verified against wiki
+        getShortTextValueByKey("DATABASE_DDL_VERSION", "UNCHECKED");
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -1176,7 +1184,11 @@ public class ConfigOptionApplicationController implements Serializable {
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
-            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+            createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        } else {
+            option.setOptionValue(value);
+            optionFacade.edit(option);
+            loadApplicationOptions();
         }
     }
 
@@ -1515,6 +1527,14 @@ public class ConfigOptionApplicationController implements Serializable {
         }
 
         throw new IllegalArgumentException("Unsupported type conversion requested: " + type.getSimpleName() + " for value type " + valueType);
+    }
+
+    private void loadAiChatConfigurationDefaults() {
+        getBooleanValueByKey("AI Chat - Enabled", true);
+        getShortTextValueByKey("AI Chat - Claude API Key", "");
+        getShortTextValueByKey("AI Chat - Claude Model", "claude-opus-4-6");
+        getShortTextValueByKey("AI Chat - GitHub Branch", "development");
+        getIntegerValueByKey("AI Chat - Max Tokens", 4096);
     }
 
     public List<ConfigOption> getOptions() {

@@ -803,6 +803,14 @@ public class PharmacyBean {
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
+    public double getStockWithoutPurchaseValue(Item item) {
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(s.stock) from Stock s where s.itemBatch.item=:i";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
     public double getStockByPurchaseValue(Item item, Institution ins) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();

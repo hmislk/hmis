@@ -6,6 +6,8 @@
 
 package com.divudi.core.facade;
 
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.dto.StockHistoryDTO;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import java.util.Date;
 import java.util.List;
@@ -13,6 +15,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TemporalType;
+import java.util.Calendar;
 
 /**
  *
@@ -256,6 +259,135 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             e.printStackTrace();
             return 0.0;
         }
+    }
+
+
+    /**
+     * Calculates the stock value at purchase rate for a given date and department.
+     * Uses the historical purchase rate stored on STOCKHISTORY (PURCHASERATE column),
+     * falling back to ITEMBATCH.PURCAHSERATE (intentional DB typo) when the
+     * history row has no rate recorded.
+     *
+     * @param date The date for which to calculate stock value
+     * @param departmentId The department ID (can be null for all departments)
+     * @return The total stock value at purchase rate, or 0.0 if calculation fails
+     */
+    public double calculateStockValueAtPurchaseRateOptimized(Date date, Long departmentId) {
+        try {
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.purchase_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT  " +
+                "        sh.STOCKQTY, " +
+                "        COALESCE(NULLIF(sh.PURCHASERATE, 0), ib.PURCAHSERATE, 0.0) AS purchase_rate " +
+                "    FROM STOCKHISTORY sh " +
+                "    INNER JOIN ( " +
+                "        SELECT  " +
+                "            DEPARTMENT_ID, " +
+                "            ITEMBATCH_ID, " +
+                "            MAX(ID) AS max_id " +
+                "        FROM STOCKHISTORY " +
+                "        WHERE RETIRED = 0 " +
+                "        AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 " +
+                "    AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            }
+
+            Object result = query.getSingleResult();
+            if (result instanceof Number) {
+                return ((Number) result).doubleValue();
+            }
+            return 0.0;
+
+        } catch (Exception e) {
+            System.err.println("Error calculating stock value at purchase rate for date: " + date + " - " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
+
+    public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
+            HistoryType historyType, int maxResults) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT new com.divudi.core.data.dto.StockHistoryDTO(")
+                .append("sh.id, sh.createdAt, sh.stockAt, sh.historyType, ")
+                .append("item.id, item.name, ib.batchNo, ib.dateOfExpire, ")
+                .append("dept.id, dept.name, ")
+                .append("bill.id, bill.deptId, bill.billTypeAtomic, pb.qty, ")
+                .append("sh.stockQty, sh.instituionBatchQty, sh.totalBatchQty, ")
+                .append("sh.itemStock, sh.institutionItemStock, sh.totalItemStock, ")
+                .append("sh.retailRate, sh.purchaseRate, sh.costRate, ")
+                .append("sh.stockSaleValue, sh.stockPurchaseValue, sh.stockCostValue, ")
+                .append("sh.itemStockValueAtSaleRate, sh.itemStockValueAtPurchaseRate, sh.itemStockValueAtCostRate, ")
+                .append("sh.institutionBatchStockValueAtSaleRate, sh.institutionBatchStockValueAtPurchaseRate, sh.institutionBatchStockValueAtCostRate, ")
+                .append("sh.totalBatchStockValueAtSaleRate, sh.totalBatchStockValueAtPurchaseRate, sh.totalBatchStockValueAtCostRate")
+                .append(") ")
+                .append("FROM StockHistory sh ")
+                .append("LEFT JOIN sh.item item ")
+                .append("LEFT JOIN sh.itemBatch ib ")
+                .append("LEFT JOIN sh.department dept ")
+                .append("LEFT JOIN sh.pbItem pb ")
+                .append("LEFT JOIN pb.billItem bi ")
+                .append("LEFT JOIN bi.bill bill ")
+                .append("WHERE sh.retired = false ");
+
+        if (itemId != null) {
+            jpql.append("AND item.id = :itemId ");
+        }
+        if (departmentId != null) {
+            jpql.append("AND dept.id = :departmentId ");
+        }
+        if (billId != null) {
+            jpql.append("AND bill.id = :billId ");
+        }
+        if (fromDate != null) {
+            jpql.append("AND sh.createdAt >= :fromDate ");
+        }
+        if (toDate != null) {
+            jpql.append("AND sh.createdAt < :toDate ");
+        }
+        if (historyType != null) {
+            jpql.append("AND sh.historyType = :historyType ");
+        }
+
+        jpql.append("ORDER BY sh.id DESC");
+
+        javax.persistence.TypedQuery<StockHistoryDTO> query = getEntityManager().createQuery(jpql.toString(), StockHistoryDTO.class);
+
+        if (itemId != null) {
+            query.setParameter("itemId", itemId);
+        }
+        if (departmentId != null) {
+            query.setParameter("departmentId", departmentId);
+        }
+        if (billId != null) {
+            query.setParameter("billId", billId);
+        }
+        if (fromDate != null) {
+            query.setParameter("fromDate", fromDate, TemporalType.TIMESTAMP);
+        }
+        if (toDate != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(toDate);
+            cal.add(Calendar.SECOND, 1);
+            query.setParameter("toDate", cal.getTime(), TemporalType.TIMESTAMP);
+        }
+        if (historyType != null) {
+            query.setParameter("historyType", historyType);
+        }
+
+        query.setMaxResults(maxResults);
+        return query.getResultList();
     }
 
 }

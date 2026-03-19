@@ -80,6 +80,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private BilledBill bill;
     private List<BillItem> billItems;
     private BillItem currentBillItem;
+    private BillItem editingBillItem;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
     private BillItem currentExpense;
@@ -1094,6 +1095,56 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentBillItem = null;
     }
 
+    public void prepareEditBillItem(BillItem bi) {
+        this.editingBillItem = bi;
+    }
+
+    public void updateBillItem() {
+        if (editingBillItem == null) {
+            JsfUtil.addErrorMessage("No item selected for editing");
+            return;
+        }
+        BillItemFinanceDetails f = editingBillItem.getBillItemFinanceDetails();
+        if (f != null) {
+            Item item = editingBillItem.getItem();
+            PharmaceuticalBillItem pbi = editingBillItem.getPharmaceuticalBillItem();
+
+            // Sync retailSaleRatePerUnit from retailSaleRate (same logic as onRetailSaleRateChange)
+            if (f.getRetailSaleRate() != null) {
+                if (item instanceof Ampp) {
+                    double dblVal = item.getDblValue();
+                    BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+                    f.setRetailSaleRatePerUnit(f.getRetailSaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+                } else {
+                    f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
+                }
+            }
+
+            // Sync billItem.qty (pack-level quantity) - mirrors addItem() line 333
+            editingBillItem.setQty(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+
+            // Sync pack-level fields on PharmaceuticalBillItem - mirrors addItem() lines 302-313
+            if (pbi != null) {
+                if (item instanceof Ampp) {
+                    pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
+                    pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantity()).doubleValue());
+                    pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+                    pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
+                } else {
+                    pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
+                    pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
+                    pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getLineNetRate()).doubleValue());
+                    pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+                }
+            }
+        }
+        calculateItemTotals(editingBillItem);
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems();
+        recalculateProfitMarginsForAllItems();
+        editingBillItem = null;
+    }
+
     /**
      * Autocomplete method for items filtered by department type
      * When department type is set on the bill, only items of that type are returned
@@ -1690,6 +1741,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         bfd.setLineGrossTotal(grossTotalLines);
         bfd.setNetTotal(finalNet);
         bfd.setLineNetTotal(netTotalLines);
+        BigDecimal expensesNotForCosting = BigDecimal.valueOf(getBill().getExpensesTotalNotConsideredForCosting());
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.valueOf(getBill().getExpensesTotalConsideredForCosting()));
+        bfd.setBillExpensesNotConsideredForCosting(expensesNotForCosting);
+        bfd.setTotalBillValue(finalNet.add(expensesNotForCosting));
     }
 
     /**
@@ -2007,6 +2062,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setCurrentBillItem(BillItem currentBillItem) {
         this.currentBillItem = currentBillItem;
+    }
+
+    public BillItem getEditingBillItem() {
+        return editingBillItem;
+    }
+
+    public void setEditingBillItem(BillItem editingBillItem) {
+        this.editingBillItem = editingBillItem;
     }
 
     public List<BillItem> getBillItems() {

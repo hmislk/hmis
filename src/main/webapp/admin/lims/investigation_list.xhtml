@@ -73,9 +73,8 @@
                                 <p:commandButton 
                                     icon="pi pi-cog" 
                                     ajax="false" 
-                                    action="#{investigationController.navigateToManageInvestigation()}" 
+                                    action="#{investigationController.navigateToManageInvestigation(item.id)}" 
                                     styleClass="ui-button-icon-only ui-p-primeng">
-                                    <f:setPropertyActionListener value="#{item}" target="#{investigationController.current}"  />
                                 </p:commandButton>
                                 <p:commandButton 
                                     icon="pi pi-trash" 

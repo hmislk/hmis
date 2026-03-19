@@ -37,8 +37,30 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                             <p:spacer width="20"/>
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5"/>
+                                <p:outputLabel value="Department Type" class="mx-3" for="departmentTypeFilter"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5"/>
@@ -69,8 +91,10 @@
                                                itemValue="#{site}"/>
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
+                            
+                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group mx-5">
+                            <h:panelGroup layout="block" styleClass="form-group ">
                                 <h:outputText styleClass="fa fa-building ml-5"/>
                                 <p:outputLabel value="Department" class="mx-3" for="phmDept">
                                 </p:outputLabel>
@@ -84,7 +108,7 @@
                                     var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+                           
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-credit-card ml-5"/>
@@ -115,8 +139,10 @@
                                 completeMethod="#{dealerController.completeDealor}"
                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
                             </p:autoComplete>
+                            
+                             <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group mx-5">
+                            <h:panelGroup layout="block" styleClass="form-group ">
                                 <h:outputText styleClass="fa fa-list-alt ml-5"/>
                                 <p:outputLabel value="Type" class="mx-3" for="grnReportType">
                                 </p:outputLabel>
