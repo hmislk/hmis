@@ -1294,8 +1294,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_admission";
     }
 
-    public String navigateToAdmissionClaimableConfig() {
-        return configOptionController.navigateToApplicationOptionsWithFilter("Inward Admission");
+    public String navigateToAdmissionConfig() {
+        return configOptionController.navigateToApplicationOptionsWithFilter("Admission");
     }
 
     public boolean isClaimableAllowed() {
@@ -1599,6 +1599,63 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Add Reference No");
                 return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Mandatory Fields Enabled", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Medical Officer Required", false)) {
+                if (getCurrent().getOpdDoctor() == null) {
+                    JsfUtil.addErrorMessage("Medical Officer is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Primary Reason Required", false)) {
+                if (getCurrent().getPrimaryReason() == null) {
+                    JsfUtil.addErrorMessage("Primary Reason is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Comments Required", false)) {
+                if (getCurrent().getComments() == null || getCurrent().getComments().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Comments / Reference No is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
+                if (getCurrent().getReferringDoctor() == null) {
+                    JsfUtil.addErrorMessage("Doctor who referred the patient is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
+                if (getCurrent().getReferringStaff() == null) {
+                    JsfUtil.addErrorMessage("Staff who referred the patient is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
+                if (getCurrent().getReferredByInstitution() == null) {
+                    JsfUtil.addErrorMessage("Referral Institution is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Workplace Required", false)) {
+                if (getCurrent().getWorkplace() == null) {
+                    JsfUtil.addErrorMessage("Workplace is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
+                if (getCurrent().getReferralId() == null || getCurrent().getReferralId().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Referral Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
+                if (getCurrent().getReferringMethod() == null || getCurrent().getReferringMethod().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Referred From is Required");
+                    return true;
+                }
             }
         }
 
