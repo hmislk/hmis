@@ -7917,7 +7917,7 @@ public class PharmacyReportController implements Serializable {
                 d0.setCellStyle(dataStyle);
 
                 Cell d1 = row.createCell(1);
-                d1.setCellValue(f.getBill() != null && f.getBill().getToInstitution().getName() != null
+                d1.setCellValue(f.getBill() != null && f.getBill().getToInstitution() != null && f.getBill().getToInstitution().getName() != null
                         ? f.getBill().getToInstitution().getName()
                         : "");
                 d1.setCellStyle(dataStyle);
