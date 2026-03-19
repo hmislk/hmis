@@ -2,7 +2,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
     <h:head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
         <title>Patient Portal</title>
@@ -291,7 +293,13 @@
 
             .form-container {
                 width: 100%;
-                max-width: 430px;
+                max-width: 480px;
+            }
+
+            @media (min-width: 992px) {
+                .form-container {
+                    max-width: 700px;
+                }
             }
 
             /* Mobile-only brand header (hidden on desktop) */
@@ -585,6 +593,158 @@
             @media (max-width: 360px) {
                 .portal-form-panel { padding: 1.5rem 0.85rem; }
             }
+
+            /* ── PATIENT SELECTION CARD ──────────────────────────── */
+            .patient-select-card {
+                background: var(--white);
+                border-radius: 22px;
+                padding: 2.25rem 2rem;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border);
+                animation: fadeUp 0.45s ease forwards;
+                width: 100%;
+                max-width: 480px;
+            }
+
+            @media (min-width: 992px) {
+                .patient-select-card {
+                    max-width: 680px;
+                }
+            }
+
+            .patient-select-title {
+                font-family: 'Syne', sans-serif;
+                font-size: 1.4rem;
+                font-weight: 700;
+                color: var(--forest-deep);
+                margin-bottom: 0.3rem;
+            }
+
+            .patient-select-subtitle {
+                font-size: 0.87rem;
+                color: var(--text-muted);
+                margin-bottom: 1.5rem;
+                line-height: 1.6;
+            }
+
+            .patient-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+                max-height: 420px;
+                overflow-y: auto;
+                padding-right: 0.25rem;
+            }
+
+            .patient-list::-webkit-scrollbar { width: 4px; }
+            .patient-list::-webkit-scrollbar-track { background: var(--border); border-radius: 4px; }
+            .patient-list::-webkit-scrollbar-thumb { background: var(--emerald); border-radius: 4px; }
+
+            .patient-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.9rem 1rem;
+                border: 2px solid var(--border);
+                border-radius: var(--radius-sm);
+                background: #f8fbf9;
+                transition: all 0.2s ease;
+            }
+
+            .patient-row:hover {
+                border-color: var(--emerald);
+                background: #eef8f3;
+            }
+
+            .patient-avatar {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--forest-mid), var(--emerald));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .patient-info { flex: 1; min-width: 0; }
+
+            .patient-name {
+                font-family: 'Syne', sans-serif;
+                font-weight: 600;
+                font-size: 0.95rem;
+                color: var(--forest-deep);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .patient-meta {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                flex-wrap: wrap;
+                margin-top: 0.25rem;
+            }
+
+            .patient-meta-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                background: #f0f7f4;
+                border: 1px solid var(--border);
+                border-radius: 100px;
+                padding: 0.15rem 0.55rem;
+                font-weight: 500;
+            }
+
+            .patient-meta-pill i { font-size: 0.65rem; color: var(--emerald); }
+
+            .btn-select-patient .ui-button {
+                padding: 0.45rem 2.5rem !important;
+                background: linear-gradient(135deg, var(--forest-mid), var(--forest-bright)) !important;
+                border: none !important;
+                border-radius: 8px !important;
+                font-family: 'Syne', sans-serif !important;
+                font-weight: 600 !important;
+                font-size: 0.82rem !important;
+                color: white !important;
+                white-space: nowrap !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                box-shadow: 0 2px 8px rgba(27,67,50,0.22) !important;
+                min-width: unset !important;
+            }
+            .btn-select-patient .ui-button:hover {
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px rgba(27,67,50,0.3) !important;
+            }
+            .btn-select-patient .ui-button .ui-button-text { padding: 0 !important; }
+            .btn-select-patient .ui-button .ui-icon {
+                color: rgba(255,255,255,0.85) !important;
+                margin-right: 4px !important;
+            }
+
+            .no-patient-wrap {
+                text-align: center;
+                padding: 1.5rem 0 0.5rem;
+            }
+            .no-patient-wrap i {
+                font-size: 2.5rem;
+                color: var(--border);
+                margin-bottom: 0.75rem;
+                display: block;
+            }
+            .no-patient-wrap p {
+                font-size: 0.9rem;
+                color: var(--text-muted);
+                margin-bottom: 1.25rem;
+            }
         </style>
     </h:head>
 
@@ -747,6 +907,75 @@
                                     Didn't receive it?&#160;
                                     <p:commandLink value="Resend OTP" action="#{patientPortalController.sendOtp}"/>
                                 </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Patient Selection Card (shown after OTP verified) -->
+                        <h:panelGroup rendered="#{patientPortalController.otpVerify eq true}">
+                            <div class="patient-select-card">
+
+                                <div class="card-lead-icon">
+                                    <i class="fas fa-users"/>
+                                </div>
+
+                                <div class="patient-select-title">Select Your Profile</div>
+                                <div class="patient-select-subtitle">
+                                    Choose a patient profile registered to
+                                    <strong>#{patientPortalController.patientphoneNumber}</strong>
+                                </div>
+
+                                <!-- Patients found -->
+                                <h:panelGroup rendered="#{not empty patientPortalController.searchedPatients}">
+                                    <div class="patient-list">
+                                        <ui:repeat value="#{patientPortalController.searchedPatients}" var="pt">
+                                            <div class="patient-row">
+                                                <div class="patient-avatar">
+                                                    <i class="fas fa-user"/>
+                                                </div>
+                                                <div class="patient-info">
+                                                    <div class="patient-name">#{pt.person.nameWithTitle}</div>
+                                                    <div class="patient-meta">
+                                                        <span class="patient-meta-pill">
+                                                            <i class="fas fa-cake-candles"/>
+                                                            #{pt.person.ageYearsComponent}y #{pt.person.ageMonthsComponent}m
+                                                        </span>
+                                                        <span class="patient-meta-pill">
+                                                            <i class="fas fa-venus-mars"/>
+                                                            #{pt.person.sex.label}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="btn-select-patient">
+                                                    <p:commandButton
+                                                        value="Select"
+                                                        icon="fas fa-arrow-right"
+                                                        ajax="false"
+                                                        action="/channel/patient_portal.xhtml?faces-redirect=true">
+                                                        <f:setPropertyActionListener
+                                                            target="#{patientPortalController.patient}"
+                                                            value="#{pt}"/>
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </ui:repeat>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- No patients found -->
+                                <h:panelGroup rendered="#{empty patientPortalController.searchedPatients}">
+                                    <div class="no-patient-wrap">
+                                        <i class="fas fa-user-slash"/>
+                                        <p>No profiles found for this mobile number.</p>
+                                        <div class="btn-send">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Register New Patient"
+                                                icon="fas fa-user-plus"
+                                                action="#{patientPortalController.addNewPatientAction}"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
 
                             </div>
                         </h:panelGroup>
