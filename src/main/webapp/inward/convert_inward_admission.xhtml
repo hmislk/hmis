@@ -308,9 +308,10 @@
                                                                              class="w-100" 
                                                                              itemLabel="Mark as Foreigner"/>
 
-                                                    <p:outputLabel value="Claimable Status"
+                                                    <p:outputLabel for="claimableCheckbox" value="Claimable Status"
                                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}"/>
-                                                    <p:selectBooleanCheckbox value="#{admissionController.current.claimable}"
+                                                    <p:selectBooleanCheckbox id="claimableCheckbox"
+                                                                             value="#{admissionController.current.claimable}"
                                                                              styleClass="form-control w-100"
                                                                              class="w-100"
                                                                              itemLabel="Claimable"
