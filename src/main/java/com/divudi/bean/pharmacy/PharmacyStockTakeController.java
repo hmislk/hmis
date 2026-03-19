@@ -2825,6 +2825,12 @@ public class PharmacyStockTakeController implements Serializable {
             vr.setSumVariance(vr.getSumVariance() + (adjustedValue != null ? adjustedValue : 0.0));
             vr.setLastPhysicalQty(physQty);
         }
+
+        // Remove snapshot rows that were never uploaded (no physical count match) — these
+        // have sumVariance still at 0.0 and lastPhysicalQty null. Keeping them causes items
+        // with multiple batches to appear twice: once with the real variance, once as a
+        // zero-variance ghost row from the un-uploaded batch.
+        varianceRows.removeIf(vr -> vr.getLastPhysicalQty() == null);
     }
 
     /**
