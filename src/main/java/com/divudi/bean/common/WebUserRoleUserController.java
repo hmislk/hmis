@@ -87,14 +87,25 @@ public class WebUserRoleUserController implements Serializable {
         params.put("role", webUserRole);
         params.put("user", webUser);
         WebUserRoleUser roleUser = getFacade().findFirstByJpql(jpql, params);
+        
 
         if (roleUser == null) {
             roleUser = new WebUserRoleUser();
             roleUser.setDepartment(department);
             roleUser.setWebUser(webUser);
             roleUser.setWebUserRole(webUserRole);
+            
+            //Add Creater Details
+            roleUser.setCreater(sessionController.getLoggedUser());
+            roleUser.setCreatedAt(new Date());
+            //Add Last Editer Details
+            roleUser.setEditer(sessionController.getLoggedUser());
+            roleUser.setEditedAt(new Date());
             getFacade().create(roleUser);
         } else {
+            //Add Last Editer Details
+            roleUser.setEditer(sessionController.getLoggedUser());
+            roleUser.setEditedAt(new Date());
             roleUser.setRetired(false);
             getFacade().edit(roleUser);
         }
@@ -124,8 +135,6 @@ public class WebUserRoleUserController implements Serializable {
         WebUser user = roleUser.getWebUser();
         Department dept = roleUser.getDepartment();
         
-        // Clesr All Privileges
-        userPrivilageController.clearUserAllDepartmentPrivileges(user,dept);
         // Add Role Privillage
         updatePrivilegesToUserRole(roleUser.getWebUserRole(),user, dept);
         
@@ -289,7 +298,7 @@ public class WebUserRoleUserController implements Serializable {
         }
     }
 
-    public void removeUser(WebUserRoleUser roleUser) {
+    public void removeUserRole(WebUserRoleUser roleUser) {
         if(roleUser == null){
             JsfUtil.addErrorMessage("Error in UserRole");
                 return;

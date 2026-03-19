@@ -67,17 +67,17 @@
                         </p:selectOneMenu>
 
                     </p:panelGrid>
-                    
-                    <div class="d-flex justify-content-end">
-                            <p:commandButton
-                                value="Add Role Privileges to Department"
-                                icon="fa fa-plus"
-                                class="ui-button-success"
-                                action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
-                                ajax="false">
-                            </p:commandButton>
-                        </div>
 
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton
+                            value="Add Role Privileges to Department"
+                            icon="fa fa-plus"
+                            class="ui-button-success"
+                            action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
+                            ajax="false">
+                        </p:commandButton>
+                    </div>
+                    
                 </p:panel>
 
                 <p:dataTable
@@ -86,47 +86,68 @@
                     value="#{webUserRoleUserController.roleUsers}"
                     rowKey="#{user.id}"
                     id="tbl">
-                    
+
                     <p:column headerText="User" style="padding: 10px; width:150px;">
                         <h:outputText value="#{user.webUser.name}" />
                     </p:column>
-                    
+
                     <p:column headerText="Institution" style="padding: 10px; ">
                         <h:outputText value="#{user.department.institution.name}" />
                     </p:column>
-                    
+
                     <p:column headerText="Department" style="padding: 10px; ">
                         <h:outputText value="#{user.department.name}" />
                     </p:column>
-                    
+
                     <p:column headerText="Role" class="text-center" style="padding: 10px; width: 180px;">
                         <div class="card p-2">
-                            <h:outputText value="#{user.webUserRole.name}" class="d-flex justify-content-center" style="font-weight: 700;"/>
+                            <h:outputText id="role" value="#{user.webUserRole.name}" class="d-flex justify-content-center" style="font-weight: 700;"/>
                         </div>
+
+                        <p:tooltip for="role" showEffect="clip" hideEffect="fold" position="bottom" >
+                            <div style="width: 550px; font-size: 19px;" class="p-2">
+                                <div class="row">
+                                    <h:outputText value="Last Role Update" style="width: 250px;"/>
+                                    <h:outputText value=" : " style="width: 50px;"/>
+                                    <h:outputText value="#{user.webUserRole.lastUpdateAt eq null ? 'N/A' : user.webUserRole.lastUpdateAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
+                                    </h:outputText>
+                                </div>
+                                <div class="row">
+                                    <h:outputText value="Last User Role Update" style="width: 250px;"/>
+                                    <h:outputText value=" : " style="width: 50px;"/>
+                                    <h:outputText value="#{user.editedAt eq null ? 'N/A' : user.editedAt}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                        </p:tooltip>
                     </p:column>
-                    
+
                     <p:column headerText="Actions" class="text-center" style=" padding: 10px; width: 200px; " >
                         <h:panelGroup id="combinedActions" class="d-flex justify-content-center gap-2">
                             <p:commandButton
+
                                 value="Reset Privilege"
                                 icon="fa fa-refresh"
+                                disabled="#{!user.needUpdateUserRole}"
                                 class="ui-button-secondary"
                                 action="#{webUserRoleUserController.resetRolePrivileges(user)}"
                                 onclick="if (!confirm('Are you sure you want to Reset Privileges?'))
-                                                                return false;"
+                                            return false;"
                                 ajax="false">
                             </p:commandButton>
                             <p:commandButton
                                 id="remove"
                                 title="Remove User Role"
                                 icon="fa fa-trash"
-                                action="#{webUserRoleUserController.removeUser(user)}"
+                                action="#{webUserRoleUserController.removeUserRole(user)}"
                                 class="ui-button-danger"
                                 ajax="false" >
                             </p:commandButton>
                         </h:panelGroup>
                     </p:column>
-                    
+
                 </p:dataTable>
             </ui:define>
         </ui:composition>
