@@ -1310,7 +1310,7 @@ public class PharmacySummaryReportController implements Serializable {
         subRow.setHeightInPoints(18);
         XSSFCell subCell = subRow.createCell(0);
         java.text.SimpleDateFormat sdf =
-            new java.text.SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+            new java.text.SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         subCell.setCellValue("Date: " + sdf.format(new java.util.Date()));
         subCell.setCellStyle(dateStyle);
         sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, lastCol));
@@ -1415,7 +1415,7 @@ public class PharmacySummaryReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             // Landscape + small margins for wide tables
@@ -1424,7 +1424,7 @@ public class PharmacySummaryReportController implements Serializable {
             document.open();
             String intitutionName=sessionController.getInstitution()!= null ? sessionController.getInstitution().getName() : "No Logged Institution";
             document.add(new Paragraph(intitutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Pharmacy Income By Bill Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Income Report - By Bill", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
             
@@ -1541,7 +1541,7 @@ public class PharmacySummaryReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             // Landscape + small margins for wide tables
@@ -1550,7 +1550,7 @@ public class PharmacySummaryReportController implements Serializable {
             document.open();
             String institutionName= sessionController.getInstitution()!=null ? sessionController.getInstitution().getName() : "No Logged Institution";
             document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Pharmacy Income Report By Biil Type", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Income Report - By Biil Type", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
             
@@ -1673,7 +1673,7 @@ public class PharmacySummaryReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             // Landscape + small margins for wide tables
@@ -1682,7 +1682,10 @@ public class PharmacySummaryReportController implements Serializable {
             document.open();
             String institutionName=sessionController.getInstitution()!= null ? sessionController.getInstitution().getName() : "No Logger Institution" ;
             document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Pharmacy Income Report"+ columnTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            String reportTitle = reportViewType == BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+                    ? "Pharmacy Income Report - By Discount and Admission"
+                    : "Pharmacy Income Report - By Bill Type, Discount and Admission";
+            document.add(new Paragraph(reportTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
             
