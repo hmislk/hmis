@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa fa-check-circle fa-lg"/>
+                            <p:outputLabel value="Pending Patients for #{sessionController.department.name}" class="m-2"/>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Refresh"
+                                icon="fa fa-refresh"
+                                ajax="false"
+                                class="ui-button-info"
+                                action="#{patientTransferController.navigateToPatientAccept()}"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <p:dataTable value="#{patientTransferController.pendingRequests}" var="req" emptyMessage="No pending patients.">
+
+                    <p:column headerText="BHT No">
+                        <h:outputText value="#{req.admission.bhtNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient Name">
+                        <h:outputText value="#{req.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Type">
+                        <h:outputText value="#{req.fromPatientRoom == null ? 'Admission' : 'Transfer'}"/>
+                    </p:column>
+
+                    <p:column headerText="From">
+                        <h:outputText value="#{req.fromPatientRoom != null ? req.fromPatientRoom.roomFacilityCharge.name : 'Admission Desk'}"/>
+                    </p:column>
+
+                    <p:column headerText="To Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Initiated By">
+                        <h:outputText value="#{req.initiatedBy.webUserPerson.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Initiated At">
+                        <h:outputText value="#{req.initiatedAt}">
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Accepted At">
+                        <p:datePicker
+                            value="#{req.acceptedAt}"
+                            showTime="true"
+                            timeInput="true"
+                            pattern="dd MMM yyyy HH:mm:ss"/>
+                    </p:column>
+
+                    <p:column headerText="Actions">
+                        <div class="d-flex gap-1">
+                            <p:commandButton
+                                value="Accept"
+                                icon="fa fa-check"
+                                ajax="false"
+                                class="ui-button-success"
+                                action="#{patientTransferController.acceptTransfer(req)}"
+                                onclick="if (!confirm('Accept this patient?')) return false;"/>
+                            <p:commandButton
+                                value="Cancel"
+                                icon="fa fa-times"
+                                ajax="false"
+                                class="ui-button-danger"
+                                action="#{patientTransferController.cancelTransfer(req)}"
+                                onclick="if (!confirm('Cancel this transfer request?')) return false;"/>
+                        </div>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
