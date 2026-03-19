@@ -1822,13 +1822,20 @@
 
                     </p:submenu>
                 </p:submenu>
-                
+
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
+                </p:menuitem>
+
+                <p:menuitem 
+                    ajax="false" 
+                    action="/patient_portal/portal_login?faces-redirect=true" 
+                    value="Patient Portal"  
+                    icon="fa fa-user" >
                 </p:menuitem>
 
                 <!--            HR Section-->
