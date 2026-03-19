@@ -54,6 +54,7 @@ import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.dto.CreditCompanyDetailsDto;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.facade.FamilyFacade;
@@ -67,6 +68,7 @@ import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -317,6 +319,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double currentBillItemQty;
     private PatientEncounter patientEncounter;
     private Priority currentBillItemPriority;
+
+    private List<CreditCompanyDetailsDto> previousCreditCompany;
 
     @PostConstruct
     public void init() {
@@ -2485,7 +2489,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
-            System.out.println("Start oneOpdBillForEachDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -3029,6 +3032,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
     }
 
+    @Override
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
@@ -3266,6 +3270,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return true;
         }
 
+        if (!configOptionApplicationController.getBooleanValueByKey("Allowing the use of expired payment schemes", true)) {
+            if (paymentScheme != null && paymentScheme.getExpired()) {
+                Date expiredDate = paymentScheme.getExpiryDate();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd hh.mm a");
+                String formattedDate = formatter.format(expiredDate);
+                paymentScheme = null;
+                cashPaid = 0.0;
+                listnerForPaymentMethodChange();
+                JsfUtil.addErrorMessage("The selected discount scheme has expired since " + formattedDate);
+                return true;
+            }
+        }
+
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
             if (referredBy == null && referredByInstitution == null) {
                 JsfUtil.addErrorMessage("Please Select a Referring Doctor or a Referring Institute. It is Required for Investigations.");
@@ -3301,7 +3318,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
-                //  //System.err.println("ttttt");
                 checkAge = true;
                 break;
             }
@@ -3444,16 +3460,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 // Use helper method to get only the selected payment method's value
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
+
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+
+            if (differenceOfBillTotalAndPaymentValue != 0.0) {
+                JsfUtil.addErrorMessage("The sum of multiple payments does not match the total of the bill.");
                 return true;
             }
+
             if (cashPaid == 0.0) {
                 setCashPaid(multiplePaymentMethodTotalValue);
             }
-
         }
 
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -3608,7 +3626,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
-        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+        List<BillComponent> currentBillComponents = getBillBean().billComponentsFromBillItem(bi);
+        addingEntry.setLstBillComponents(currentBillComponents);
 
         List<BillFee> allBillFees;
 
@@ -3627,7 +3646,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
 
+        if (allBillFees == null || allBillFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
+
         List<BillFeeBundleEntry> billItemBillFeeBundleEntries = getBillBean().bundleFeesByName(allBillFees);
+
+        if (billItemBillFeeBundleEntries == null || billItemBillFeeBundleEntries.isEmpty()) {
+            getLstBillEntries().remove(addingEntry);
+            JsfUtil.addErrorMessage("Item Fees is Missing ..! ");
+            return;
+        }
 
         addingEntry.setLstBillFees(allBillFees);
 
@@ -3646,6 +3676,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+
+        if (bi.getNetValue() == 0.0) {
+            if (!bi.getItem().isUserChangable()) {
+                addingEntry.getLstBillFees().removeAll(allBillFees);
+                addingEntry.getLstBillComponents().addAll(currentBillComponents);
+                getLstBillEntries().remove(addingEntry);
+
+                JsfUtil.addErrorMessage("Item Fee is Zero ..! ");
+                return;
+            }
+        }
 
         calTotals();
 
@@ -3879,7 +3920,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             }
         }
-
+        getCashBalance();
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
@@ -4017,6 +4058,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 currentPatientMembershipScheme = null;
                 chiefHouseHolder = null;
                 currentPatientFamily = null;
+                previousCreditCompany = new ArrayList<>();
                 if (configOptionApplicationController.getBooleanValueByKey("OPD Billing - Clear Referring Doctor on New Bill", true)) {
                     referredBy = null;
                 }
@@ -4037,6 +4079,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             clearBillItemValues();
             clearBillValues();
             paymentMethodData = null;
+            previousCreditCompany = new ArrayList<>();
             paymentScheme = null;
             paymentMethod = PaymentMethod.Cash;
             patientEncounter = null;
@@ -4680,8 +4723,62 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
             }
 
+        } else if (paymentMethod == PaymentMethod.Credit) {
+            previousCreditCompany = new ArrayList<>();
+            if (configOptionApplicationController.getBooleanValueByKey("Display the past Credit Company List", false)) {
+                if (patient.getId() == null) {
+                    return;
+                } else {
+                    String jpql = "SELECT new com.divudi.core.data.dto.CreditCompanyDetailsDto( "
+                            + " p.creditCompany.id, "
+                            + " p.creditCompany.name, "
+                            + " p.policyNo, "
+                            + " p.referenceNo "
+                            + " ) "
+                            + "FROM Payment p "
+                            + "WHERE p.retired = :ret "
+                            + "AND p.paymentMethod =:method "
+                            + "AND p.bill.cancelled =:can "
+                            + "AND p.bill.patient =:pt "
+                            + "AND p.creditCompany IS NOT NULL "
+                            + "AND p.createdAt between :fDate and :tDate "
+                            + "GROUP BY p.creditCompany, p.creditCompany.id, p.creditCompany.name, p.policyNo, p.referenceNo";
+
+                    Long previousYears = configOptionApplicationController.getLongValueByKey("How many years should you search back to find a credit company?", 5L);
+
+                    Date fDate = CommonFunctions.getPreviousDate(previousYears.intValue());
+                    Date tDate = CommonFunctions.getEndOfDay();
+
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("ret", false);
+                    m.put("can", false);
+                    m.put("pt", patient);
+                    m.put("method", PaymentMethod.Credit);
+                    m.put("fDate", fDate);
+                    m.put("tDate", tDate);
+
+                    previousCreditCompany = (List<CreditCompanyDetailsDto>) institutionFacade.findLightsByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
+
+                }
+            }
         }
         calTotals();
+    }
+
+    public void selectCreditCompany(CreditCompanyDetailsDto selectCompany) {
+        if (selectCompany == null) {
+            return;
+        }
+        
+        Institution selectedCreditCompany = institutionFacade.findWithoutCache(selectCompany.getCompanyId());
+
+        if (selectedCreditCompany == null) {
+            return;
+        } else {
+            getPaymentMethodData().getCredit().setInstitution(selectedCreditCompany);
+            getPaymentMethodData().getCredit().setReferralNo(selectCompany.getPolicyNo());
+            getPaymentMethodData().getCredit().setReferenceNo(selectCompany.getReferenceNo());
+        }
     }
 
     @Override
@@ -4823,7 +4920,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCashPaid(double cashPaid) {
         this.cashPaid = cashPaid;
-//        cashBalance = cashPaid - getNetTotal();
     }
 
     public double getCashBalance() {
@@ -5580,6 +5676,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCurrentBillItemPriority(Priority currentBillItemPriority) {
         this.currentBillItemPriority = currentBillItemPriority;
+    }
+
+    public List<CreditCompanyDetailsDto> getPreviousCreditCompany() {
+        return previousCreditCompany;
+    }
+
+    public void setPreviousCreditCompany(List<CreditCompanyDetailsDto> previousCreditCompany) {
+        this.previousCreditCompany = previousCreditCompany;
     }
 
 }

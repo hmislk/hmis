@@ -77,7 +77,10 @@
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Patient Name" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/></div>
+                    <div class="col-7">
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName ne 'UPPERCASE'}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.capitalNameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName eq 'UPPERCASE'}"/>
+                    </div>
                 </div>
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice No" ></h:outputLabel></div>
