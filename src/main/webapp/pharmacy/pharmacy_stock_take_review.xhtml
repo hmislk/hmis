@@ -62,7 +62,7 @@
                                                          styleClass="ui-button-warning ui-button-lg"
                                                          ajax="false"
                                                          rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
-                                                         onclick="return confirm('Approve this physical count and post stock adjustments?');"
+                                                         onclick="if(!confirm('Approve this physical count and post stock adjustments?')){return false;} this.disabled=true; this.value='Processing...';"
                                                          action="#{pharmacyStockTakeController.confirmUploadAndApprove}"/>
                                     </p:panelGrid>
 
