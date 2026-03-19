@@ -1298,6 +1298,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return configOptionController.navigateToApplicationOptionsWithFilter("Inward Admission");
     }
 
+    public boolean isClaimableAllowed() {
+        if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)) {
+            return false;
+        }
+        String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
+                "Inward Admission - Claimable Required For", "Credit");
+        if ("None".equalsIgnoreCase(claimableRequiredFor)) {
+            return false;
+        }
+        PaymentMethod pm = getCurrent() != null ? getCurrent().getPaymentMethod() : null;
+        if ("All".equalsIgnoreCase(claimableRequiredFor)) {
+            return true;
+        } else if ("Credit".equalsIgnoreCase(claimableRequiredFor)) {
+            return pm == PaymentMethod.Credit;
+        } else if ("Cash".equalsIgnoreCase(claimableRequiredFor)) {
+            return pm == PaymentMethod.Cash;
+        }
+        return false;
+    }
+
     public void prepereToAdmitNewPatient() {
         current = null;
         patientRoom = null;
@@ -1429,18 +1449,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
-            String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
-                    "Inward Admission - Claimable Required For", "Credit");
-            boolean claimableRequired = false;
-            PaymentMethod pm = getCurrent().getPaymentMethod();
-            if ("All".equalsIgnoreCase(claimableRequiredFor)) {
-                claimableRequired = true;
-            } else if ("Credit".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Credit) {
-                claimableRequired = true;
-            } else if ("Cash".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Cash) {
-                claimableRequired = true;
+            boolean claimableAllowed = isClaimableAllowed();
+            if (!claimableAllowed && getCurrent().isClaimable()) {
+                getCurrent().setClaimable(false);
+                JsfUtil.addErrorMessage("Claimable is not applicable for the selected payment method");
+                return true;
             }
-            if (claimableRequired && !getCurrent().isClaimable()) {
+            if (claimableAllowed && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark the admission as Claimable");
                 return true;
             }

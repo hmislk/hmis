@@ -183,11 +183,17 @@ public class ConfigOptionController implements Serializable {
         department = null;
         webUser = null;
         if (filterKeyword != null && !filterKeyword.trim().isEmpty()) {
-            options = searchOptions(filterKeyword);
+            options = searchApplicationOptions(filterKeyword);
         } else {
             options = getApplicationOptions();
         }
         return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
+    }
+
+    private List<ConfigOption> searchApplicationOptions(String filterKeyword) {
+        List<ConfigOption> results = searchOptions(filterKeyword);
+        results.removeIf(o -> o.getDepartment() != null || o.getInstitution() != null || o.getWebUser() != null);
+        return results;
     }
 
     public String navigateToInstitutionOptions() {

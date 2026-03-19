@@ -314,6 +314,7 @@
                                                                              styleClass="form-control w-100"
                                                                              class="w-100"
                                                                              itemLabel="Claimable"
+                                                                             disabled="#{!admissionController.claimableAllowed}"
                                                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}" />
 
                                                     <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
