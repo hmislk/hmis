@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.AppointmentController;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
@@ -136,6 +137,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    private ConfigOptionController configOptionController;
 
     ////////////////////////////
     ///////////////////////
@@ -1291,6 +1294,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_admission";
     }
 
+    public String navigateToAdmissionClaimableConfig() {
+        return configOptionController.navigateToApplicationOptionsWithFilter("Inward Admission");
+    }
+
     public void prepereToAdmitNewPatient() {
         current = null;
         patientRoom = null;
@@ -1419,12 +1426,27 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return true;
         }
 
-        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
-            if (!getCurrent().isClaimable()) {
-                JsfUtil.addErrorMessage("Please mark as Claimable");
+        boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Show Claimable Field", true);
+        if (showClaimable) {
+            String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
+                    "Inward Admission - Claimable Required For", "Credit");
+            boolean claimableRequired = false;
+            PaymentMethod pm = getCurrent().getPaymentMethod();
+            if ("All".equalsIgnoreCase(claimableRequiredFor)) {
+                claimableRequired = true;
+            } else if ("Credit".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Credit) {
+                claimableRequired = true;
+            } else if ("Cash".equalsIgnoreCase(claimableRequiredFor) && pm == PaymentMethod.Cash) {
+                claimableRequired = true;
+            }
+            if (claimableRequired && !getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Please mark the admission as Claimable");
                 return true;
             }
+        }
 
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
             if (encounterCreditCompany.getInstitution() != null) {
                 getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
                 getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());

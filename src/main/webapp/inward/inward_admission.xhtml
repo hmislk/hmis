@@ -60,6 +60,15 @@
                                         ajax="false"
                                         styleClass="ui-button-secondary ms-5">
                                     </p:commandButton>
+                                    <p:commandButton
+                                        value="Claimable Config"
+                                        icon="fa fa-cog"
+                                        immediate="true"
+                                        title="Configure Claimable Field Settings"
+                                        action="#{admissionController.navigateToAdmissionClaimableConfig()}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ms-2">
+                                    </p:commandButton>
                                 </h:panelGroup>
                             </div>
                         </div>
@@ -415,12 +424,14 @@
                                             class="w-100"
                                             itemLabel="Mark as Foreigner"/>
 
-                                        <p:outputLabel value="Claimable Status"/>
-                                        <p:selectBooleanCheckbox 
+                                        <p:outputLabel value="Claimable Status"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}"/>
+                                        <p:selectBooleanCheckbox
                                             value="#{admissionController.current.claimable}"
                                             styleClass="form-control w-100"
                                             class="w-100"
-                                            itemLabel="Claimable" />
+                                            itemLabel="Claimable"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}" />
 
                                         <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
                                         <p:badge value="#{admissionController.lastCreditCompany.name}"
