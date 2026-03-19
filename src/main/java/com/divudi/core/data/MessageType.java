@@ -33,5 +33,6 @@ public enum MessageType {
     BulkPatientSms,
     BulkNumberSms,
     ConfirmationEmail,
-    CustomSMS
+    CustomSMS,
+    OTP
 }

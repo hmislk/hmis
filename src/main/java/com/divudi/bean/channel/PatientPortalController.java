@@ -1,5 +1,6 @@
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
@@ -68,6 +69,8 @@ public class PatientPortalController implements Serializable {
     BillSessionFacade billSessionFacade;
 
     @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
     private SessionController sessionController;
 
     @Inject
@@ -109,6 +112,7 @@ public class PatientPortalController implements Serializable {
     private boolean addNewProfile;
     private boolean addNewPatient;
     private boolean bookingCompleted;
+    private Date otpSentTime;
 
     private List<BillSession> pastBookings;
     private List<Payment> pastPayments;
@@ -197,6 +201,9 @@ public class PatientPortalController implements Serializable {
         bookingCompleted = false;
         addNewPatient = false;
         sessionInstances = null;
+        otp = null;
+        patientEnteredOtp = null;
+        otpSentTime = null;
     }
 
     public List<Staff> fillConsultants() {
@@ -284,7 +291,6 @@ public class PatientPortalController implements Serializable {
     public void sendOtp() {
         otpCodeConverter();
         if (PatientphoneNumber == null) {
-            JsfUtil.addErrorMessage("Pleace Enter Phone Number");
             return;
         }
 
@@ -295,17 +301,18 @@ public class PatientPortalController implements Serializable {
         e.setReceipientNumber(PatientphoneNumber);
         e.setSendingMessage("Your authentication code is " + otp);
         e.setPending(false);
+        e.setSmsType(MessageType.OTP);
         e.setOtp(otp);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
         if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
+            System.out.println("Successfuly OTP Send");
         } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
+            System.out.println("OTP SMS Failed");
         }
         e.setSentSuccessfully(sent);
         getSmsFacade().edit(e);
-
+        otpSentTime = new Date();
     }
 
     public Date getSessionStartDateTime(SessionInstance session) {
@@ -347,7 +354,23 @@ public class PatientPortalController implements Serializable {
         }
     }
 
+    public int getOtpTimeoutMinutes() {
+        return configOptionApplicationController.getIntegerValueByKey("Patient Portal OTP Timeout Minutes", 2);
+    }
+
+    public long getOtpExpiryEpochMs() {
+        if (otpSentTime == null) return 0;
+        return otpSentTime.getTime() + ((long) getOtpTimeoutMinutes() * 60 * 1000L);
+    }
+
     public void otpVerification() {
+        if (otpSentTime != null && System.currentTimeMillis() > getOtpExpiryEpochMs()) {
+            JsfUtil.addErrorMessage("OTP has expired. Please request a new OTP.");
+            otp = null;
+            patientEnteredOtp = null;
+            otpSentTime = null;
+            return;
+        }
         List<Sms> smss = new ArrayList<>();
         String j;
         Map m = new HashMap();
