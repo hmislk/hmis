@@ -62,11 +62,12 @@
                                 <div class="d-flex flex-column mx-4 col-6">
                                     <div class="d-flex align-items-center my-1">
                                         <i class="fa-solid fa-hospital me-2 text-primary"></i>
-                                        <h:outputLabel style="font-weight: bold" value="Requesting Department"/>
+                                        <h:outputLabel for="departmentId_input" style="font-weight: bold" value="Requesting Department"/>
                                     </div>
                                     
                                     
                                     <p:autoComplete
+                                        id="departmentId"
                                         value="#{pharmacyRequestForBhtController.department}"
                                         class="col-12 mx-2 my-1"
                                         inputStyleClass="form-control"
@@ -87,7 +88,7 @@
                                     
                                     <div class="d-flex align-items-center my-1">
                                         <i class="fa-solid fa-user me-2 text-primary"></i>
-                                        <h:outputLabel style="font-weight: bold" value="Patient Name or BHT or PHN No"/>
+                                        <h:outputLabel for="acPt2_input" style="font-weight: bold" value="Patient Name or BHT or PHN No"/>
                                     </div>
                                     
                                     <p:autoComplete
@@ -151,7 +152,7 @@
 
                             </div>
 
-                            <div class="my-3 d-flex flex-column justify-content-end w-20">
+                            <div class="my-3 d-flex flex-column justify-content-end">
                                 <div class="col-12 d-flex align-item-center justify-content-center">
                                     <p:commandButton
                                         ajax="false"
