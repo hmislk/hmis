@@ -156,14 +156,14 @@
 
                                         From Date :
                                         <h:outputText value="#{pharmacyReportController.fromDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
 
                                         |
 
                                         To Date :
                                         <h:outputText value="#{pharmacyReportController.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
 
                                     </div>
