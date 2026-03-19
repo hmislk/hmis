@@ -2777,9 +2777,11 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         // --- Step 2: load physical count bill items as scalars ---
-        // First get IDs of physical count bills referencing this snapshot
+        // Only include approved physical count bills (those that have a forwardReferenceBill = adjustment bill).
+        // Unapproved uploads (abandoned on the review page) must not contribute to the variance sum.
         String jpqlBillIds = "SELECT b.id FROM Bill b "
                 + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
+                + "AND b.forwardReferenceBill IS NOT NULL "
                 + "ORDER BY b.createdAt ASC, b.id ASC";
         HashMap<String, Object> bp = new HashMap<>();
         bp.put("bt", BillType.PharmacyPhysicalCountBill);
