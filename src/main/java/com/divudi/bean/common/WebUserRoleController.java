@@ -167,6 +167,7 @@ public class WebUserRoleController implements Serializable {
         String jpql = "Select r "
                 + " from WebUserRole r "
                 + " where r.retired=:ret "
+                + " and r.activated =:act"
                 + " order by r.name";
         Map m = new HashMap<>();
         m.put("ret", false);
