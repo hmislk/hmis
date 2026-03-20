@@ -3,6 +3,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.*;
 import com.divudi.bean.inward.InwardReportController;
 import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.reports.*;
 import com.divudi.core.entity.*;
 import com.divudi.core.util.JsfUtil;
@@ -69,6 +70,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.context.ExternalContext;
 import javax.inject.Inject;
@@ -5559,17 +5563,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.pharmacySaleDepartments = pharmacySaleDepartments;
     }
 
-    // Dates for fileName generation
-    private String getFromToDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-
-        if (fromDate != null && toDate != null) {
-            return sdf.format(fromDate) + "_to_" + sdf.format(toDate);
-        } else {
-            return "";
-        }
-    }
-
     // Get filters for petty_cash_payment report
     private Map<String, Object> getFiltersForPettyCasgPaymentReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
@@ -5825,4 +5818,60 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         return null;
     }
+
+    // PostProcessor for bill_wise_item_movement_report excel export
+    public void postProcessBillWiseItemMovementReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Bill Wise Item Movement Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForBillWiseItemMovementReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Bill Wise Item Movement Report", filters);
+        }
+    }
+
+    public String getBillWiseItemMovementReportFileName() {
+        StringBuilder fileName = new StringBuilder("Bill_Wise_Item_Movement_Report");
+
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        if (dates != null && !dates.isEmpty()) {
+            fileName.append("_").append(dates);
+        }
+
+        return fileName.toString();
+    }
+
+    // Filters for bill_wise_item_movement_report
+    private Map<String, Object> getFiltersForBillWiseItemMovementReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+        
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "N/A");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
+        filters.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        filters.put("Site", site != null ? site.getName() : "All Sites");
+        filters.put("Department", department != null ? department.getName() : "All Departments");
+        filters.put("To Institutions", toInstitution != null ? toInstitution.getName() : "All Institutions");
+        filters.put("To Departments", toDepartment != null ? toDepartment.getName() : "All Departments");
+        filters.put("Patient MRN", phn != null ? phn : "All");
+        filters.put("Category", category != null ? category.getName() : "All");
+        filters.put("Item", item != null ? item.getName() : "All");
+        return filters;
+    }
+
 }
