@@ -2599,19 +2599,17 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
-    private List<PatientEncounter> inPatientBillList;
     private List<ProfitMatrixRowDTO> profitMatrixSummaryRows;
     private List<ProfitMatrixRowDTO> profitMatrixDetailRows;
 
     public void createProfitMatrixReport() {
-        // reset results
         totalNetTotal = 0.0;
-        inPatientBillList = null;
-        billItems = null;
+        profitMatrixSummaryRows = null;
+        profitMatrixDetailRows = null;
 
         if ("detail".equalsIgnoreCase(reportType)) {
             createProfitMatrixDetailReport();
-        } else { // default = summary
+        } else { 
             createProfitMatrixSummaryReport();
         }
     }
@@ -3169,13 +3167,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.roomCategories = roomCategories;
     }
 
-    public List<PatientEncounter> getInPatientBillList() {
-        return inPatientBillList;
-    }
-
-    public void setInPatientBillList(List<PatientEncounter> inPatientBillList) {
-        this.inPatientBillList = inPatientBillList;
-    }
 
     public List<ProfitMatrixRowDTO> getProfitMatrixSummaryRows() {
         return profitMatrixSummaryRows;
