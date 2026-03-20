@@ -271,7 +271,7 @@
                                                     </td>   
                                                     <td style=" text-align: left;" >
                                                         <h:outputText value="#{i.dateOfExpire}" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style=" text-align: left;">
