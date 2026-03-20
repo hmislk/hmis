@@ -34,5 +34,7 @@ public enum MessageType {
     BulkNumberSms,
     ConfirmationEmail,
     CustomSMS,
-    OTP
+    @Deprecated
+    OTP,
+    PatinetPortalOTP
 }
