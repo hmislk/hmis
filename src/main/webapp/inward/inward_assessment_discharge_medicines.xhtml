@@ -56,7 +56,7 @@
                                     <div class="container-fluid m-0 p-0 w-100">
                                         <div class="d-flex flex-wrap w-100">
                                             <div class="m-1">
-                                                <label for="acDischargeMedicine" class="w-100">Medicine:</label>
+                                                <p:outputLabel for="acDischargeMedicine" styleClass="w-100" value="Medicine:" />
                                                 <p:autoComplete id="acDischargeMedicine"
                                                                 completeMethod="#{pharmaceuticalItemController.completeItem}"
                                                                 value="#{inpatientClinicalDataController.dischargeMedicine.prescription.item}"
@@ -70,7 +70,7 @@
                                                                 placeholder="Select Medicine" />
                                             </div>
                                             <div class="m-1 d-flex flex-column">
-                                                <label>Dose:</label>
+                                                <p:outputLabel value="Dose:" />
                                                 <div class="d-flex">
                                                     <p:inputText style="width: 6em;" id="txtDischargeDose"
                                                                  value="#{inpatientClinicalDataController.dischargeMedicine.prescription.dose}"
@@ -84,7 +84,7 @@
                                                 </div>
                                             </div>
                                             <div class="m-1 d-flex flex-column">
-                                                <label for="cmbDischargeFrequency">Frequency:</label>
+                                                <p:outputLabel for="cmbDischargeFrequency" value="Frequency:" />
                                                 <p:selectOneMenu id="cmbDischargeFrequency"
                                                                  value="#{inpatientClinicalDataController.dischargeMedicine.prescription.frequencyUnit}">
                                                     <f:selectItem itemLabel="Select" />
@@ -93,7 +93,7 @@
                                                 </p:selectOneMenu>
                                             </div>
                                             <div class="m-1 d-flex flex-column">
-                                                <label>Duration:</label>
+                                                <p:outputLabel value="Duration:" />
                                                 <div class="d-flex">
                                                     <p:inputText style="width: 6em;" id="txtDischargeDuration"
                                                                  value="#{inpatientClinicalDataController.dischargeMedicine.prescription.duration}"
@@ -107,9 +107,10 @@
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="w-100">&#160;</label>
+                                                <p:outputLabel value="&#160;" styleClass="w-100" />
                                                 <p:commandButton value="Add"
                                                                  id="btnAddDischargeRx"
+                                                                 disabled="#{inpatientClinicalDataController.current == null or inpatientClinicalDataController.current.id == null}"
                                                                  process="btnAddDischargeRx acDischargeMedicine txtDischargeDose cmbDischargeDose cmbDischargeFrequency txtDischargeDuration cmbDischargeDuration"
                                                                  update="panelDischargeMedicines"
                                                                  action="#{inpatientClinicalDataController.addDischargeMedicine}" />

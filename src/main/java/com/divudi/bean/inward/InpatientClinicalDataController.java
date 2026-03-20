@@ -1857,6 +1857,10 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void addEncounterMedicine() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
+            return;
+        }
         if (getEncounterMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
@@ -1881,6 +1885,10 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void addDischargeMedicine() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
+            return;
+        }
         if (getDischargeMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
