@@ -17,6 +17,7 @@ import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentGatewayTransaction;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.Speciality;
@@ -38,7 +39,6 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 import com.divudi.core.util.CommonFunctions;
-import org.primefaces.model.ScheduleModel;
 
 /**
  *
@@ -186,8 +186,44 @@ public class PatientPortalController implements Serializable {
     }
 
     public void saveNewPatient() {
+        if (patient == null || patient.getPerson() == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Error in Development.");
+            return;
+        }
+        
+        if (patient.getPerson().getTitle()== null ) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Title is Required.");
+            return;
+        }
+        
+        if (patient.getPerson().getName() == null || patient.getPerson().getName().trim().isEmpty()) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Patient Name is Required.");
+            return;
+        }
+        
+        if (patient.getPerson().getSex()== null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Patient Gender is Required.");
+            return;
+        }
+        
+        if (patient.getPerson().getDob() == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Patient DOB is Required.");
+            return;
+        }
+        
+        if (!Person.checkAgeSex(patient.getPerson().getDob(), patient.getPerson().getSex(), patient.getPerson().getTitle())) {
+            JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
+            return ;
+        }
+        
+        Long phoneAsLong = com.divudi.core.util.CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
+        patient.setPatientPhoneNumber(phoneAsLong);
+        patient.setPatientMobileNumber(phoneAsLong);
+        patient.getPerson().setPhone(patientphoneNumber);
+        patient.getPerson().setMobile(patientphoneNumber);
         patientController.save(patient);
         addNewPatient = false;
+        patientSelected = true;
     }
 
     public void selectPatientProfile(Patient selectedPt) {
@@ -238,11 +274,18 @@ public class PatientPortalController implements Serializable {
     }
 
     public void addNewPatientAction() {
+        com.divudi.core.entity.Person person = new com.divudi.core.entity.Person();
+        person.setPhone(patientphoneNumber);
+        person.setMobile(patientphoneNumber);
+        patient = new Patient();
+        patient.setPerson(person);
         addNewPatient = true;
+        patientSelected = false;
     }
 
     public void GoBackfromPatientAddAction() {
         addNewPatient = false;
+        patient = null;
     }
 
 //    public void addNewPatientAction() {
