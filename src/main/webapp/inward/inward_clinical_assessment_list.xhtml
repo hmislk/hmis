@@ -32,8 +32,9 @@
                         </div>
                     </div>
 
-                    <!-- ui:fragment is required here; rendered on plain <div> is ignored by JSF -->
-                    <ui:fragment rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                    <!-- h:panelGroup with layout="block" enforces the rendered attribute;
+                         plain <div rendered="..."> is silently ignored by JSF. -->
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"  >
                         <div class="row px-4 py-2">
                             <div class="col-12">
                                 <p:panel header="Patient Information" class="m-1">
@@ -111,10 +112,11 @@
                                 </p:panel>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </h:panelGroup>
 
-                    <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
-                    <ui:fragment rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                    <!-- h:panelGroup with layout="block" enforces the rendered attribute;
+                         plain <div rendered="..."> is silently ignored by JSF. -->
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
                         <div class="row px-4">
                             <div class="col-12">
                                 <p:panel class="m-1">
@@ -122,7 +124,7 @@
                                 </p:panel>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </h:panelGroup>
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -47,8 +47,9 @@
                         </div>
                     </div>
 
-                    <!-- ui:fragment is required here; rendered on plain <div> is ignored by JSF -->
-                    <ui:fragment rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                    <!-- h:panelGroup with layout="block" enforces the rendered attribute on block content;
+                         plain <div rendered="..."> is silently ignored by JSF. -->
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"  >
                         <div class="row">
                             <div class="col-12">
                                 <p:tabView id="tblAssessmentView">
@@ -183,8 +184,8 @@
                                     <p:tab title="Diagnoses">
                                         <div class="row p-2">
                                             <div class="col-12">
-                                                <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
-                                                <ui:fragment rendered="#{not inpatientClinicalDataController.viewOnly}">
+                                                <!-- h:panelGroup enforces the rendered attribute; plain <div rendered="..."> is ignored by JSF -->
+                                                <h:panelGroup layout="block" rendered="#{not inpatientClinicalDataController.viewOnly}">
                                                     <div class="row">
                                                         <div class="col-md-9">
                                                             <p:autoComplete
@@ -218,7 +219,7 @@
                                                         id="txtDx"
                                                         value="#{inpatientClinicalDataController.diagnosisComments}">
                                                     </p:inputTextarea>
-                                                </ui:fragment>
+                                                </h:panelGroup>
                                                 <h:panelGroup id="gpDx">
                                                     <p:dataTable
                                                         id="tblDx"
@@ -255,8 +256,8 @@
                                     <p:tab title="Procedures">
                                         <div class="row p-2">
                                             <div class="col-12">
-                                                <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
-                                                <ui:fragment rendered="#{not inpatientClinicalDataController.viewOnly}">
+                                                <!-- h:panelGroup enforces the rendered attribute; plain <div rendered="..."> is ignored by JSF -->
+                                                <h:panelGroup layout="block" rendered="#{not inpatientClinicalDataController.viewOnly}">
                                                     <div class="row">
                                                         <div class="col-md-9">
                                                             <p:autoComplete
@@ -291,7 +292,7 @@
                                                         id="txtSx"
                                                         value="#{inpatientClinicalDataController.encounterProcedure.lobValue}">
                                                     </p:inputTextarea>
-                                                </ui:fragment>
+                                                </h:panelGroup>
                                                 <h:panelGroup id="gpSx">
                                                     <p:dataTable
                                                         id="tblSx"
@@ -348,10 +349,11 @@
                                 </p:tabView>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </h:panelGroup>
 
-                    <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
-                    <ui:fragment rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                    <!-- h:panelGroup with layout="block" enforces the rendered attribute;
+                         plain <div rendered="..."> is silently ignored by JSF. -->
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
                         <div class="row px-4">
                             <div class="col-12">
                                 <p:panel class="m-1">
@@ -359,7 +361,7 @@
                                 </p:panel>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </h:panelGroup>
                 </h:form>
             </ui:define>
         </ui:composition>
