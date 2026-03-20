@@ -140,6 +140,10 @@ public class InpatientClinicalDataController implements Serializable {
     private List<PatientEncounter> items = null;
     List<PatientEncounter> encounters;
 
+    private PatientEncounter parentAdmission;
+    private List<PatientEncounter> clinicalAssessments;
+    private boolean viewOnly;
+
     @Inject
     private FavouriteController favouriteController;
 
@@ -1493,6 +1497,120 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         return "/inward/clinical_data";
+    }
+
+    public String navigateToAssessmentList(PatientEncounter admission) {
+        this.parentAdmission = admission;
+        fillClinicalAssessments();
+        return "/inward/inward_clinical_assessment_list";
+    }
+
+    public void fillClinicalAssessments() {
+        if (parentAdmission == null) {
+            clinicalAssessments = new ArrayList<>();
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("parent", parentAdmission);
+        m.put("type", PatientEncounterType.ClinicalAssessment);
+        m.put("ret", false);
+        String sql = "select e from PatientEncounter e "
+                + "where e.parentEncounter=:parent "
+                + "and e.patientEncounterType=:type "
+                + "and e.retired=:ret "
+                + "order by e.encounterDateTime desc";
+        clinicalAssessments = ejbFacade.findByJpql(sql, m);
+        if (clinicalAssessments == null) {
+            clinicalAssessments = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Clears session-scoped per-form helpers so that switching between
+     * assessments never leaks state from a previous assessment into the next.
+     */
+    private void resetAssessmentFormState() {
+        diagnosis = null;
+        diagnosisComments = "";
+        encounterProcedure = null;
+        removingCfv = null;
+    }
+
+    public String newClinicalAssessment() {
+        resetAssessmentFormState();
+        current = new PatientEncounter();
+        current.setParentEncounter(parentAdmission);
+        current.setPatient(parentAdmission.getPatient());
+        current.setPatientEncounterType(PatientEncounterType.ClinicalAssessment);
+        current.setEncounterDateTime(new Date());
+        current.setInstitution(sessionController.getInstitution());
+        current.setDepartment(sessionController.getDepartment());
+        viewOnly = false;
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        return "/inward/inward_clinical_assessment";
+    }
+
+    public String viewClinicalAssessment(PatientEncounter exam) {
+        resetAssessmentFormState();
+        current = exam;
+        viewOnly = true;
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        return "/inward/inward_clinical_assessment";
+    }
+
+    public String editClinicalAssessment(PatientEncounter exam) {
+        resetAssessmentFormState();
+        current = exam;
+        viewOnly = false;
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        return "/inward/inward_clinical_assessment";
+    }
+
+    public String saveClinicalAssessment() {
+        current.setDepartment(sessionController.getDepartment());
+        if (current.getId() != null) {
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Assessment Updated Successfully.");
+        } else {
+            current.setCreatedAt(new Date());
+            current.setCreater(sessionController.getLoggedUser());
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Assessment Saved Successfully.");
+        }
+        fillClinicalAssessments();
+        return "/inward/inward_clinical_assessment_list";
+    }
+
+    public String navigateToAssessmentListFromCapturePage() {
+        fillClinicalAssessments();
+        return "/inward/inward_clinical_assessment_list";
+    }
+
+    public PatientEncounter getParentAdmission() {
+        return parentAdmission;
+    }
+
+    public void setParentAdmission(PatientEncounter parentAdmission) {
+        this.parentAdmission = parentAdmission;
+    }
+
+    public List<PatientEncounter> getClinicalAssessments() {
+        return clinicalAssessments;
+    }
+
+    public void setClinicalAssessments(List<PatientEncounter> clinicalAssessments) {
+        this.clinicalAssessments = clinicalAssessments;
+    }
+
+    public boolean isViewOnly() {
+        return viewOnly;
+    }
+
+    public void setViewOnly(boolean viewOnly) {
+        this.viewOnly = viewOnly;
     }
 
     public String navigateToDiagnosisCard() {

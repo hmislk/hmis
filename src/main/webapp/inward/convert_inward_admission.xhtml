@@ -48,11 +48,11 @@
                                 </p:commandButton>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
-                                        value="Claimable Config"
+                                        value="Config"
                                         icon="fa fa-cog"
                                         immediate="true"
-                                        title="Configure Claimable Field Settings"
-                                        action="#{admissionController.navigateToAdmissionClaimableConfig()}"
+                                        title="Configure Admission Settings"
+                                        action="#{admissionController.navigateToAdmissionConfig()}"
                                         ajax="false"
                                         styleClass="ui-button-secondary ms-2">
                                     </p:commandButton>

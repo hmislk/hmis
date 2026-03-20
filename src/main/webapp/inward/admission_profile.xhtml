@@ -384,11 +384,19 @@
                                         value="#{admissionController.current.patient}"
                                         target="#{patientController.current}" />
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Curated Clinical Summary" 
-                                    action="#{admissionController.navigateToInpatientClinicalData}" 
+                                <p:commandButton
+                                    value="Curated Clinical Summary"
+                                    action="#{admissionController.navigateToInpatientClinicalData}"
                                     ajax="false"
-                                    icon="fa fa-chart-line"  
+                                    icon="fa fa-chart-line"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Clinical Assessments"
+                                    ajax="false"
+                                    action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
+                                    icon="fa fa-stethoscope"
+                                    rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton 
