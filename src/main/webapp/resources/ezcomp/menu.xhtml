@@ -1831,12 +1831,15 @@
                     icon="fa-solid fa-envelope">
                 </p:menuitem>
 
-                <p:menuitem 
-                    ajax="false" 
-                    action="/patient_portal/portal_login?faces-redirect=true" 
-                    value="Patient Portal"  
-                    icon="fa fa-user" >
-                </p:menuitem>
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Portal - Allow to Display Icon in Menu',false)}">
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/patient_portal/portal_login?faces-redirect=true" 
+                        title="Patient Portal"  
+                        icon="fas fa-id-card-clip" >
+                    </p:menuitem>
+                </h:panelGroup>
+
 
                 <!--            HR Section-->
                 <p:submenu 
