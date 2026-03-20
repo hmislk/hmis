@@ -5610,23 +5610,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             XSSFSheet sheet = workbook.createSheet("Petty Cash Payment Report");
             int rowIndex = 0;
-
-            // Institution name row
-            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
-            if (!institutionName.isEmpty()) {
-                CellStyle instStyle = workbook.createCellStyle();
-                org.apache.poi.ss.usermodel.Font instFont = workbook.createFont();
-                instFont.setFontHeightInPoints((short) 16);
-                instFont.setBold(true);
-                instStyle.setFont(instFont);
-                instStyle.setAlignment(HorizontalAlignment.CENTER);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
-                Row instRow = sheet.createRow(rowIndex++);
-                Cell instCell = instRow.createCell(0);
-                instCell.setCellValue(institutionName);
-                instCell.setCellStyle(instStyle);
-            }
-
+            
             if (filters != null && !filters.isEmpty()) {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Petty Cash Payment Report", filters);
             }
