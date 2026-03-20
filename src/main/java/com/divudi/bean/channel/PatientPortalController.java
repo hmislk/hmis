@@ -64,7 +64,6 @@ public class PatientPortalController implements Serializable {
     PatientFacade patientFacade;
     @EJB
     SmsFacade smsFacade;
-
     @EJB
     BillSessionFacade billSessionFacade;
 
@@ -72,7 +71,6 @@ public class PatientPortalController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
-
     @Inject
     PatientController patientController;
     @Inject
@@ -125,6 +123,10 @@ public class PatientPortalController implements Serializable {
     private PaymentGatewayTransaction currentPaymentGatewayTransaction;
 
     private ChannelBean channelBean;
+
+    private boolean allowLabaratory;
+    private boolean allowChannellinig;
+    boolean allowNavigation;
 
     public String navigateBookingMenue() {
         bookingControllerViewScope.fillBillSessions(Collections.singletonList(selectedSessionInstance));
@@ -190,32 +192,32 @@ public class PatientPortalController implements Serializable {
             com.divudi.core.util.JsfUtil.addErrorMessage("Error in Development.");
             return;
         }
-        
-        if (patient.getPerson().getTitle()== null ) {
+
+        if (patient.getPerson().getTitle() == null) {
             com.divudi.core.util.JsfUtil.addErrorMessage("Title is Required.");
             return;
         }
-        
+
         if (patient.getPerson().getName() == null || patient.getPerson().getName().trim().isEmpty()) {
             com.divudi.core.util.JsfUtil.addErrorMessage("Patient Name is Required.");
             return;
         }
-        
-        if (patient.getPerson().getSex()== null) {
+
+        if (patient.getPerson().getSex() == null) {
             com.divudi.core.util.JsfUtil.addErrorMessage("Patient Gender is Required.");
             return;
         }
-        
+
         if (patient.getPerson().getDob() == null) {
             com.divudi.core.util.JsfUtil.addErrorMessage("Patient DOB is Required.");
             return;
         }
-        
+
         if (!Person.checkAgeSex(patient.getPerson().getDob(), patient.getPerson().getSex(), patient.getPerson().getTitle())) {
             JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
-            return ;
+            return;
         }
-        
+
         Long phoneAsLong = com.divudi.core.util.CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
         patient.setPatientPhoneNumber(phoneAsLong);
         patient.setPatientMobileNumber(phoneAsLong);
@@ -243,10 +245,35 @@ public class PatientPortalController implements Serializable {
         addNewPatient = false;
         patientSelected = false;
         sessionInstances = null;
-        otp = null;
         otpSendSuccess = false;
         patientEnteredOtp = null;
         otpSentTime = null;
+        allowLabaratory = false;
+        allowChannellinig = false;
+        allowNavigation = false;
+        patientphoneNumber = null;
+        otp = null;
+    }
+
+    public void navigateToLabaratory() {
+        patientSelected = false;
+        allowLabaratory = true;
+        allowChannellinig = false;
+        allowNavigation = true;
+    }
+
+    public void navigateToChannellinig() {
+        patientSelected = false;
+        allowLabaratory = false;
+        allowChannellinig = true;
+        allowNavigation = true;
+    }
+
+    public void navigateToBackProfile() {
+        patientSelected = true;
+        allowLabaratory = false;
+        allowChannellinig = false;
+        allowNavigation = false;
     }
 
     public List<Staff> fillConsultants() {
@@ -349,7 +376,7 @@ public class PatientPortalController implements Serializable {
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
             e.setReceipientNumber(patientphoneNumber);
-            e.setSendingMessage("Your authentication code is " + otp);
+            e.setSendingMessage(smsBody(otp));
             e.setPending(false);
             e.setSmsType(MessageType.PatinetPortalOTP);
             e.setOtp(otp);
@@ -376,6 +403,24 @@ public class PatientPortalController implements Serializable {
             getSmsFacade().edit(e);
             otpSentTime = new Date();
         }
+    }
+
+    public String smsBody(String otp) {
+        String smsBody = "";
+        String otpSendingTemplate = configOptionApplicationController.getLongTextValueByKey("Patient Portal - Custom SMS Body Massage for Send OTP");
+        if (!otpSendingTemplate.equalsIgnoreCase("")) {
+            smsBody = replaceOTPSMSBody(otpSendingTemplate, otp);
+        } else {
+            smsBody = "Your authentication code is " + otp;
+        }
+        return smsBody;
+    }
+
+    public String replaceOTPSMSBody(String template, String otp) {
+        String output;
+        String processedTemplate = template.replace("\\n", "\n");
+        output = processedTemplate.replace("{otp}", otp);
+        return output;
     }
 
     public Date getSessionStartDateTime(SessionInstance session) {
@@ -464,15 +509,17 @@ public class PatientPortalController implements Serializable {
         if (sms == null) {
             System.out.println("Authentication Request SMS not Found.");
             otpVerify = false;
+            patientEnteredOtp = null;
             JsfUtil.addErrorMessage("Authentication Request SMS Fail.");
         } else {
             if (patientEnteredOtp.equalsIgnoreCase(sms.getOtp())) {
                 System.out.println("---> OTP Authentication Pass. <---");
                 otpVerify = true;
                 findPatients();
-            }else{
+            } else {
                 System.out.println("<--- OTP Authentication Fail. --->");
                 otpVerify = false;
+                patientEnteredOtp = null;
                 JsfUtil.addErrorMessage("Enter correct authentication code");
             }
         }
@@ -807,6 +854,30 @@ public class PatientPortalController implements Serializable {
 
     public void setOtpSendSuccess(boolean otpSendSuccess) {
         this.otpSendSuccess = otpSendSuccess;
+    }
+
+    public boolean isAllowLabaratory() {
+        return allowLabaratory;
+    }
+
+    public void setAllowLabaratory(boolean allowLabaratory) {
+        this.allowLabaratory = allowLabaratory;
+    }
+
+    public boolean isAllowChannellinig() {
+        return allowChannellinig;
+    }
+
+    public void setAllowChannellinig(boolean allowChannellinig) {
+        this.allowChannellinig = allowChannellinig;
+    }
+
+    public boolean isAllowNavigation() {
+        return allowNavigation;
+    }
+
+    public void setAllowNavigation(boolean allowNavigation) {
+        this.allowNavigation = allowNavigation;
     }
 
 }
