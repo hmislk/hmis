@@ -1525,7 +1525,19 @@ public class InpatientClinicalDataController implements Serializable {
         }
     }
 
+    /**
+     * Clears session-scoped per-form helpers so that switching between
+     * assessments never leaks state from a previous assessment into the next.
+     */
+    private void resetAssessmentFormState() {
+        diagnosis = null;
+        diagnosisComments = "";
+        encounterProcedure = null;
+        removingCfv = null;
+    }
+
     public String newClinicalAssessment() {
+        resetAssessmentFormState();
         current = new PatientEncounter();
         current.setParentEncounter(parentAdmission);
         current.setPatient(parentAdmission.getPatient());
@@ -1540,6 +1552,7 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public String viewClinicalAssessment(PatientEncounter exam) {
+        resetAssessmentFormState();
         current = exam;
         viewOnly = true;
         fillCurrentPatientLists(current.getPatient());
@@ -1548,6 +1561,7 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public String editClinicalAssessment(PatientEncounter exam) {
+        resetAssessmentFormState();
         current = exam;
         viewOnly = false;
         fillCurrentPatientLists(current.getPatient());

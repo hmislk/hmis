@@ -47,299 +47,319 @@
                         </div>
                     </div>
 
-                    <div class="row" rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
-                        <div class="col-12">
-                            <p:tabView id="tblAssessmentView">
+                    <!-- ui:fragment is required here; rendered on plain <div> is ignored by JSF -->
+                    <ui:fragment rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row">
+                            <div class="col-12">
+                                <p:tabView id="tblAssessmentView">
 
-                                <!-- Tab 1: Complaints & History -->
-                                <p:tab title="Complaints &amp; History">
-                                    <div class="row p-2">
-                                        <div class="col-12">
-                                            <p:outputLabel value="Assessment Date/Time: " />
-                                            <p:inputText
-                                                value="#{inpatientClinicalDataController.current.encounterDateTime}"
-                                                disabled="#{inpatientClinicalDataController.viewOnly}"
-                                                style="width:180px;">
-                                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-12 mt-2">
-                                            <p:outputLabel value="Complaints &amp; History:" />
-                                            <p:inputTextarea
-                                                id="txtComments"
-                                                value="#{inpatientClinicalDataController.current.comments}"
-                                                class="w-100"
-                                                autoResize="true"
-                                                rows="10"
-                                                placeholder="Enter complaints, history of presenting illness, past medical history, etc."
-                                                disabled="#{inpatientClinicalDataController.viewOnly}"
-                                                completeMethod="#{inpatientClinicalDataController.completeClinicalComments}"
-                                                minQueryLength="1">
-                                                <f:ajax event="keyup" execute="@this" />
-                                            </p:inputTextarea>
-                                        </div>
-                                    </div>
-                                </p:tab>
-
-                                <!-- Tab 2: Vital Signs -->
-                                <p:tab title="Vital Signs">
-                                    <div class="row p-2">
-                                        <div class="col-md-6">
-                                            <p:panel class="m-1">
-                                                <div class="row my-1">
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="Weight:" />
-                                                        <p:inputText
-                                                            id="txtWt"
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.weight}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}">
-                                                            <p:ajax event="keyup" process="txtWt" update="txtBmi" />
-                                                        </p:inputText>
-                                                        <p:outputLabel value=" kg" />
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="Height:" />
-                                                        <p:inputText
-                                                            id="txtHt"
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.height}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}">
-                                                            <p:ajax event="keyup" process="txtHt" update="txtBmi" />
-                                                        </p:inputText>
-                                                        <p:outputLabel value=" cm" />
-                                                    </div>
-                                                </div>
-                                                <div class="row my-1">
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="BMI:" />
-                                                        <p:inputText
-                                                            id="txtBmi"
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.bmi}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}">
-                                                            <f:convertNumber pattern="#0.0" />
-                                                        </p:inputText>
-                                                        <p:outputLabel value=" kg/m²" />
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="Temperature:" />
-                                                        <p:inputText
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.temperature}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                        <p:outputLabel value=" °C" />
-                                                    </div>
-                                                </div>
-                                                <div class="row my-1">
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="BP:" />
-                                                        <p:inputText
-                                                            style="width:4em;" maxlength="3"
-                                                            value="#{inpatientClinicalDataController.current.sbp}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                        <p:outputLabel value=" / " />
-                                                        <p:inputText
-                                                            style="width:4em;" maxlength="3"
-                                                            value="#{inpatientClinicalDataController.current.dbp}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                        <p:outputLabel value=" mmHg" />
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="PR:" />
-                                                        <p:inputText
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.pr}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                        <p:outputLabel value=" /min" />
-                                                    </div>
-                                                </div>
-                                                <div class="row my-1">
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="SpO2:" />
-                                                        <p:inputText
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.saturation}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                        <p:outputLabel value=" %" />
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p:outputLabel value="RR:" />
-                                                        <p:inputText
-                                                            style="width:5em;"
-                                                            value="#{inpatientClinicalDataController.current.respiratoryRate}"
-                                                            disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                        <p:outputLabel value=" /min" />
-                                                    </div>
-                                                </div>
-                                            </p:panel>
-                                        </div>
-                                    </div>
-                                </p:tab>
-
-                                <!-- Tab 3: Diagnoses -->
-                                <p:tab title="Diagnoses">
-                                    <div class="row p-2">
-                                        <div class="col-12">
-                                            <div class="row" rendered="#{not inpatientClinicalDataController.viewOnly}">
-                                                <div class="col-md-9">
-                                                    <p:autoComplete
-                                                        id="acDx"
-                                                        value="#{inpatientClinicalDataController.diagnosis}"
-                                                        completeMethod="#{diagnosisController.completeDiagnosis}"
-                                                        var="dx" forceSelection="true"
-                                                        itemLabel="#{dx.name}"
-                                                        itemValue="#{dx}"
-                                                        class="w-100"
-                                                        inputStyleClass="w-100">
-                                                    </p:autoComplete>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <p:commandButton
-                                                        ajax="true"
-                                                        id="btnAddDx"
-                                                        action="#{inpatientClinicalDataController.addDx}"
-                                                        process="acDx txtDx btnAddDx"
-                                                        update="acDx txtDx gpDx"
-                                                        icon="pi pi-plus">
-                                                    </p:commandButton>
-                                                </div>
+                                    <!-- Tab 1: Complaints & History -->
+                                    <p:tab title="Complaints &amp; History">
+                                        <div class="row p-2">
+                                            <div class="col-12">
+                                                <p:outputLabel value="Assessment Date/Time: " />
+                                                <p:inputText
+                                                    value="#{inpatientClinicalDataController.current.encounterDateTime}"
+                                                    disabled="#{inpatientClinicalDataController.viewOnly}"
+                                                    style="width:180px;">
+                                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                                </p:inputText>
                                             </div>
-                                            <p:inputTextarea
-                                                class="w-100" autoResize="true"
-                                                id="txtDx"
-                                                value="#{inpatientClinicalDataController.diagnosisComments}"
-                                                rendered="#{not inpatientClinicalDataController.viewOnly}">
-                                            </p:inputTextarea>
-                                            <h:panelGroup id="gpDx">
-                                                <p:dataTable
-                                                    id="tblDx"
-                                                    rendered="#{inpatientClinicalDataController.encounterDiagnoses ne null and inpatientClinicalDataController.encounterDiagnoses.size() > 0}"
-                                                    value="#{inpatientClinicalDataController.encounterDiagnoses}"
-                                                    emptyMessage="No Diagnosis Added Yet"
-                                                    rows="5"
-                                                    paginatorAlwaysVisible="false"
-                                                    paginator="true"
-                                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                    var="edx" class="w-100">
-                                                    <p:column headerText="Diagnosis">
-                                                        <h:outputLabel value="#{edx.itemValue.name}" />
-                                                        <p:commandLink
-                                                            id="clRemoveDx"
-                                                            value=" (X)"
-                                                            process="clRemoveDx"
-                                                            action="#{inpatientClinicalDataController.removeEncounterDiagnoses()}"
-                                                            update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId}"
-                                                            rendered="#{not inpatientClinicalDataController.viewOnly}">
-                                                            <f:setPropertyActionListener value="#{edx}" target="#{inpatientClinicalDataController.removingCfv}" />
-                                                        </p:commandLink>
-                                                    </p:column>
-                                                    <p:column headerText="Details">
-                                                        <h:outputLabel value="#{edx.lobValue}" />
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </h:panelGroup>
-                                        </div>
-                                    </div>
-                                </p:tab>
-
-                                <!-- Tab 4: Procedures -->
-                                <p:tab title="Procedures">
-                                    <div class="row p-2">
-                                        <div class="col-12">
-                                            <div class="row" rendered="#{not inpatientClinicalDataController.viewOnly}">
-                                                <div class="col-md-9">
-                                                    <p:autoComplete
-                                                        id="acSx"
-                                                        value="#{inpatientClinicalDataController.encounterProcedure.itemValue}"
-                                                        completeMethod="#{procedureController.completeProcedures}"
-                                                        var="sx" forceSelection="true"
-                                                        itemLabel="#{sx.name}"
-                                                        itemValue="#{sx}"
-                                                        class="w-100"
-                                                        inputStyleClass="w-100">
-                                                    </p:autoComplete>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <p:commandButton
-                                                        ajax="true"
-                                                        id="btnSx"
-                                                        action="#{inpatientClinicalDataController.addEncounterProcedure}"
-                                                        process="acSx txtSx btnSx"
-                                                        update="acSx txtSx gpSx"
-                                                        icon="pi pi-plus">
-                                                    </p:commandButton>
-                                                    <p:tooltip value="Add a procedure" for="btnSx" />
-                                                </div>
+                                            <div class="col-12 mt-2">
+                                                <p:outputLabel value="Complaints &amp; History:" />
+                                                <p:inputTextarea
+                                                    id="txtComments"
+                                                    value="#{inpatientClinicalDataController.current.comments}"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    rows="10"
+                                                    placeholder="Enter complaints, history of presenting illness, past medical history, etc."
+                                                    disabled="#{inpatientClinicalDataController.viewOnly}"
+                                                    completeMethod="#{inpatientClinicalDataController.completeClinicalComments}"
+                                                    minQueryLength="1">
+                                                    <f:ajax event="keyup" execute="@this" />
+                                                </p:inputTextarea>
                                             </div>
-                                            <p:inputTextarea
-                                                class="w-100" autoResize="true"
-                                                id="txtSx"
-                                                value="#{inpatientClinicalDataController.encounterProcedure.lobValue}"
-                                                rendered="#{not inpatientClinicalDataController.viewOnly}">
-                                            </p:inputTextarea>
-                                            <h:panelGroup id="gpSx">
-                                                <p:dataTable
-                                                    id="tblSx"
-                                                    rendered="#{inpatientClinicalDataController.encounterProcedures ne null and inpatientClinicalDataController.encounterProcedures.size() > 0}"
-                                                    value="#{inpatientClinicalDataController.encounterProcedures}"
-                                                    emptyMessage="No Procedure Added Yet"
-                                                    rows="5"
-                                                    paginatorAlwaysVisible="false"
-                                                    paginator="true"
-                                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                    var="sx" class="w-100">
-                                                    <p:column headerText="Procedure">
-                                                        <h:outputLabel value="#{sx.itemValue.name}" />
-                                                        <p:commandLink
-                                                            id="btnRemoveSx"
-                                                            ajax="true"
-                                                            action="#{inpatientClinicalDataController.removeCfv}"
-                                                            process="btnRemoveSx"
-                                                            update="tblSx"
-                                                            rendered="#{not inpatientClinicalDataController.viewOnly}">
-                                                            <f:setPropertyActionListener value="#{sx}" target="#{inpatientClinicalDataController.removingCfv}" />
-                                                            <h:outputText value=" (X)" />
-                                                        </p:commandLink>
-                                                    </p:column>
-                                                    <p:column headerText="Details">
-                                                        <h:outputLabel value="#{sx.lobValue}" />
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </h:panelGroup>
                                         </div>
-                                    </div>
-                                </p:tab>
+                                    </p:tab>
 
-                                <!-- Tab 5: Plan of Action -->
-                                <p:tab title="Plan of Action">
-                                    <div class="row p-2">
-                                        <div class="col-12">
-                                            <p:outputLabel value="Plan of Action / Management Plan:" />
-                                            <p:inputTextarea
-                                                id="txtPlanOfAction"
-                                                value="#{inpatientClinicalDataController.current.planOfAction}"
-                                                class="w-100"
-                                                autoResize="true"
-                                                rows="10"
-                                                placeholder="Enter management plan, follow-up instructions, referrals, etc."
-                                                disabled="#{inpatientClinicalDataController.viewOnly}">
-                                            </p:inputTextarea>
+                                    <!-- Tab 2: Vital Signs -->
+                                    <p:tab title="Vital Signs">
+                                        <div class="row p-2">
+                                            <div class="col-md-6">
+                                                <p:panel class="m-1">
+                                                    <div class="row my-1">
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="Weight:" />
+                                                            <p:inputText
+                                                                id="txtWt"
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.weight}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                                <p:ajax event="keyup" process="txtWt" update="txtBmi" />
+                                                            </p:inputText>
+                                                            <p:outputLabel value=" kg" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="Height:" />
+                                                            <p:inputText
+                                                                id="txtHt"
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.height}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                                <p:ajax event="keyup" process="txtHt" update="txtBmi" />
+                                                            </p:inputText>
+                                                            <p:outputLabel value=" cm" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="row my-1">
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="BMI:" />
+                                                            <p:inputText
+                                                                id="txtBmi"
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.bmi}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                                <f:convertNumber pattern="#0.0" />
+                                                            </p:inputText>
+                                                            <p:outputLabel value=" kg/m²" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="Temperature:" />
+                                                            <p:inputText
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.temperature}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                            <p:outputLabel value=" °C" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="row my-1">
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="BP:" />
+                                                            <p:inputText
+                                                                style="width:4em;" maxlength="3"
+                                                                value="#{inpatientClinicalDataController.current.sbp}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                            <p:outputLabel value=" / " />
+                                                            <p:inputText
+                                                                style="width:4em;" maxlength="3"
+                                                                value="#{inpatientClinicalDataController.current.dbp}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                            <p:outputLabel value=" mmHg" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="PR:" />
+                                                            <p:inputText
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.pr}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                            <p:outputLabel value=" /min" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="row my-1">
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="SpO2:" />
+                                                            <p:inputText
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.saturation}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                            <p:outputLabel value=" %" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p:outputLabel value="RR:" />
+                                                            <p:inputText
+                                                                style="width:5em;"
+                                                                value="#{inpatientClinicalDataController.current.respiratoryRate}"
+                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                            <p:outputLabel value=" /min" />
+                                                        </div>
+                                                    </div>
+                                                </p:panel>
+                                            </div>
                                         </div>
-                                    </div>
-                                </p:tab>
+                                    </p:tab>
 
-                            </p:tabView>
-                        </div>
-                    </div>
+                                    <!-- Tab 3: Diagnoses -->
+                                    <p:tab title="Diagnoses">
+                                        <div class="row p-2">
+                                            <div class="col-12">
+                                                <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
+                                                <ui:fragment rendered="#{not inpatientClinicalDataController.viewOnly}">
+                                                    <div class="row">
+                                                        <div class="col-md-9">
+                                                            <p:autoComplete
+                                                                id="acDx"
+                                                                value="#{inpatientClinicalDataController.diagnosis}"
+                                                                completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                                var="dx" forceSelection="true"
+                                                                itemLabel="#{dx.name}"
+                                                                itemValue="#{dx}"
+                                                                class="w-100"
+                                                                inputStyleClass="w-100">
+                                                            </p:autoComplete>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <!-- Disabled when current is unsaved (id==null) to prevent persisting
+                                                                 a ClinicalFindingValue against a transient PatientEncounter. -->
+                                                            <p:commandButton
+                                                                ajax="true"
+                                                                id="btnAddDx"
+                                                                action="#{inpatientClinicalDataController.addDx}"
+                                                                process="acDx txtDx btnAddDx"
+                                                                update="acDx txtDx gpDx"
+                                                                icon="pi pi-plus"
+                                                                disabled="#{inpatientClinicalDataController.current.id eq null}"
+                                                                title="Save the assessment first before adding diagnoses">
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                    <p:inputTextarea
+                                                        class="w-100" autoResize="true"
+                                                        id="txtDx"
+                                                        value="#{inpatientClinicalDataController.diagnosisComments}">
+                                                    </p:inputTextarea>
+                                                </ui:fragment>
+                                                <h:panelGroup id="gpDx">
+                                                    <p:dataTable
+                                                        id="tblDx"
+                                                        rendered="#{inpatientClinicalDataController.encounterDiagnoses ne null and inpatientClinicalDataController.encounterDiagnoses.size() > 0}"
+                                                        value="#{inpatientClinicalDataController.encounterDiagnoses}"
+                                                        emptyMessage="No Diagnosis Added Yet"
+                                                        rows="5"
+                                                        paginatorAlwaysVisible="false"
+                                                        paginator="true"
+                                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                        var="edx" class="w-100">
+                                                        <p:column headerText="Diagnosis">
+                                                            <h:outputLabel value="#{edx.itemValue.name}" />
+                                                            <p:commandLink
+                                                                id="clRemoveDx"
+                                                                value=" (X)"
+                                                                process="clRemoveDx"
+                                                                action="#{inpatientClinicalDataController.removeEncounterDiagnoses()}"
+                                                                update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId}"
+                                                                rendered="#{not inpatientClinicalDataController.viewOnly}">
+                                                                <f:setPropertyActionListener value="#{edx}" target="#{inpatientClinicalDataController.removingCfv}" />
+                                                            </p:commandLink>
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{edx.lobValue}" />
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </p:tab>
 
-                    <div class="row px-4" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
-                        <div class="col-12">
-                            <p:panel class="m-1">
-                                <h:outputText value="You do not have permission to access Clinical Assessments." />
-                            </p:panel>
+                                    <!-- Tab 4: Procedures -->
+                                    <p:tab title="Procedures">
+                                        <div class="row p-2">
+                                            <div class="col-12">
+                                                <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
+                                                <ui:fragment rendered="#{not inpatientClinicalDataController.viewOnly}">
+                                                    <div class="row">
+                                                        <div class="col-md-9">
+                                                            <p:autoComplete
+                                                                id="acSx"
+                                                                value="#{inpatientClinicalDataController.encounterProcedure.itemValue}"
+                                                                completeMethod="#{procedureController.completeProcedures}"
+                                                                var="sx" forceSelection="true"
+                                                                itemLabel="#{sx.name}"
+                                                                itemValue="#{sx}"
+                                                                class="w-100"
+                                                                inputStyleClass="w-100">
+                                                            </p:autoComplete>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <!-- Disabled when current is unsaved (id==null) to prevent persisting
+                                                                 a ClinicalFindingValue against a transient PatientEncounter. -->
+                                                            <p:commandButton
+                                                                ajax="true"
+                                                                id="btnSx"
+                                                                action="#{inpatientClinicalDataController.addEncounterProcedure}"
+                                                                process="acSx txtSx btnSx"
+                                                                update="acSx txtSx gpSx"
+                                                                icon="pi pi-plus"
+                                                                disabled="#{inpatientClinicalDataController.current.id eq null}"
+                                                                title="Save the assessment first before adding procedures">
+                                                            </p:commandButton>
+                                                            <p:tooltip value="Add a procedure" for="btnSx" />
+                                                        </div>
+                                                    </div>
+                                                    <p:inputTextarea
+                                                        class="w-100" autoResize="true"
+                                                        id="txtSx"
+                                                        value="#{inpatientClinicalDataController.encounterProcedure.lobValue}">
+                                                    </p:inputTextarea>
+                                                </ui:fragment>
+                                                <h:panelGroup id="gpSx">
+                                                    <p:dataTable
+                                                        id="tblSx"
+                                                        rendered="#{inpatientClinicalDataController.encounterProcedures ne null and inpatientClinicalDataController.encounterProcedures.size() > 0}"
+                                                        value="#{inpatientClinicalDataController.encounterProcedures}"
+                                                        emptyMessage="No Procedure Added Yet"
+                                                        rows="5"
+                                                        paginatorAlwaysVisible="false"
+                                                        paginator="true"
+                                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                        var="sx" class="w-100">
+                                                        <p:column headerText="Procedure">
+                                                            <h:outputLabel value="#{sx.itemValue.name}" />
+                                                            <!-- removeEncounterProcedure() is used (not generic removeCfv())
+                                                                 because it also refreshes the encounterProcedures list. -->
+                                                            <p:commandLink
+                                                                id="btnRemoveSx"
+                                                                ajax="true"
+                                                                action="#{inpatientClinicalDataController.removeEncounterProcedure()}"
+                                                                process="btnRemoveSx"
+                                                                update="gpSx"
+                                                                rendered="#{not inpatientClinicalDataController.viewOnly}">
+                                                                <f:setPropertyActionListener value="#{sx}" target="#{inpatientClinicalDataController.removingCfv}" />
+                                                                <h:outputText value=" (X)" />
+                                                            </p:commandLink>
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{sx.lobValue}" />
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <!-- Tab 5: Plan of Action -->
+                                    <p:tab title="Plan of Action">
+                                        <div class="row p-2">
+                                            <div class="col-12">
+                                                <p:outputLabel value="Plan of Action / Management Plan:" />
+                                                <p:inputTextarea
+                                                    id="txtPlanOfAction"
+                                                    value="#{inpatientClinicalDataController.current.planOfAction}"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    rows="10"
+                                                    placeholder="Enter management plan, follow-up instructions, referrals, etc."
+                                                    disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                </p:inputTextarea>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                </p:tabView>
+                            </div>
                         </div>
-                    </div>
+                    </ui:fragment>
+
+                    <!-- ui:fragment required: rendered on plain <div> is ignored by JSF -->
+                    <ui:fragment rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to access Clinical Assessments." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </ui:fragment>
                 </h:form>
             </ui:define>
         </ui:composition>

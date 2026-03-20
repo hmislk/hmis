@@ -376,6 +376,7 @@
                                     ajax="false"
                                     action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
                                     icon="fa fa-stethoscope"
+                                    rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton 
