@@ -4125,11 +4125,6 @@ public class PharmacyReportController implements Serializable {
             addFilter(billJpql, billParams, "b.paymentMethod", "pmFilter", this.paymentMethod);
 
             cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
-            System.out.println("-------------------------------------------");
-            System.out.println("billJpql = " + billJpql);
-            System.out.println("billParams = " + billParams);
-            System.out.println("cogsBillDtos.isEmpty() = " + cogsBillDtos.isEmpty());
-            System.out.println("-------------------------------------------");
             // STEP 2: Collect all Bill IDs from the results.
             List<Long> billIds = cogsBillDtos.stream()
                     .map(CostOfGoodSoldBillDTO::getBillId)
@@ -4158,11 +4153,6 @@ public class PharmacyReportController implements Serializable {
             itemParams.put("billIds", billIds);
 
             List<BillItemDTO> allBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
-            System.out.println("-------------------------------------------");
-            System.out.println("itemJpql = " + itemJpql);
-            System.out.println("itemParams = " + itemParams);
-            System.out.println("allBillItems.isEmpty() = " + allBillItems.isEmpty());
-            System.out.println("-------------------------------------------");
             // STEP 4: Group the fetched BillItems by their parent Bill's ID.
             Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
         
@@ -4198,17 +4188,14 @@ public class PharmacyReportController implements Serializable {
 
                     // 2. Accumulate the grand total for Cost
                     totalCostValue += billCost;
-                    System.out.println("totalCostValue = " + totalCostValue);
                     // 3. Accumulate the grand total for Purchase
                     totalPurchaseValue += billPurchase;
-                    System.out.println("totalPurchaseValue = " + totalPurchaseValue);
                     double billRetail = itemsForThisBill.stream()
                             .filter(item -> item.getRetailRate() != null && item.getQty() != null)
                             .mapToDouble(item -> item.getRetailRate() * item.getQty())
                             .sum();
 
                     totalRetailValue += billRetail;
-                    System.out.println("totalRetailValue = " + totalRetailValue);
                     // Calculate Sale Value for THIS bill (same as billRetail calculation)
                     double billSaleValue = itemsForThisBill.stream()
                             .filter(item -> item.getRetailRate() != null && item.getQty() != null)
@@ -4216,7 +4203,6 @@ public class PharmacyReportController implements Serializable {
                             .sum();
 
                     totalSaleValue += billSaleValue;
-                    System.out.println("totalSaleValue = " + totalSaleValue);
                 }
             }
         } catch (Exception e) {
@@ -12985,11 +12971,10 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportBillsToExcel(String fileName, List<CostOfGoodSoldBillDTO> bills) {
-//        if (bills == null || bills.isEmpty()) {
-//            return;
-//        }
-        System.out.println("this is starting of the excel method");
-//        exportExpireItemStockListToExcel();
+        if (bills == null || bills.isEmpty()) {
+            return;
+        }
+
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
         response.reset();
@@ -12997,7 +12982,7 @@ public class PharmacyReportController implements Serializable {
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + dates+".xlsx\"");
         Map<String, Object> filters = getFiltersForCostOfGoodSoldSaleReport();
-        System.out.println("filters = " + filters);
+
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Pharmacy Sales Report");
             int rowIndex=0;
@@ -13005,9 +12990,8 @@ public class PharmacyReportController implements Serializable {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Cost of Good Sold-Sale Report", filters);
             }
             createHeaderRow(sheet);
-            System.out.println("Created headers");
             populateDataRows(sheet, bills);
-            System.out.println("populate the sheet");
+
 
 //            OutputStream outputStream = externalContext.getResponseOutputStream();
             workbook.write(out);
@@ -13029,11 +13013,9 @@ public class PharmacyReportController implements Serializable {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
         }
-        System.out.println("headers.length = " + headers.length);
     }
 
     private void populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills) {
-        System.out.println("populate inside method");
         AtomicInteger rowNum = new AtomicInteger(7);
         for (CostOfGoodSoldBillDTO bill : bills) {
             List<BillItemDTO> billItems = bill.getBillItems();
