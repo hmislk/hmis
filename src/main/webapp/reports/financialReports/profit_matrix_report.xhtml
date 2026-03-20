@@ -171,7 +171,25 @@
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download" />
+                                value="Download"
+                                rendered="#{empty reportController.reportType or reportController.reportType eq 'summery'}">
+                                <p:dataExporter
+                                    type="xlsx"
+                                    target="summeryWise"
+                                    fileName="profit_matrix_summary" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download"
+                                rendered="#{reportController.reportType eq 'detail'}">
+                                <p:dataExporter
+                                    type="xlsx"
+                                    target="detailWise"
+                                    fileName="profit_matrix_detail" />
+                            </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1"
