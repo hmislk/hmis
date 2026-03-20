@@ -659,7 +659,9 @@
                                                 var="bi"
                                                 rowKey="#{bi.id}"
                                                 styleClass="nested-table">
-                                                <p:column headerText="Item Name"      style="width:22%;"/>
+                                                <p:column headerText="Item Name"      style="width:22%;">
+                                                    <h:outputText value="#{bi.item.name}"/>
+                                                </p:column>
                                                 <p:column headerText="Qty"            style="width:6%; text-align:right;">
                                                     <h:outputText value="#{bi.pharmaceuticalBillItem.qty}"/>
                                                 </p:column>
@@ -1057,7 +1059,9 @@
                                                 var="cbi"
                                                 rowKey="#{cbi.id}"
                                                 styleClass="nested-table">
-                                                <p:column headerText="Item Name"      style="width:22%;"/>
+                                                <p:column headerText="Item Name"      style="width:22%;">
+                                                    <h:outputText value="#{cbi.item.name}"/>
+                                                </p:column>
                                                 <p:column headerText="Qty"            style="width:6%; text-align:right;">
                                                     <h:outputText value="#{cbi.pharmaceuticalBillItem.qty}"/>
                                                 </p:column>

@@ -2450,7 +2450,7 @@ public class PharmacyController implements Serializable {
         filters.put("Department Type", getSelectedDepartmentTypesString());
         filters.put("Institution", institution != null ? institution.getName() : "All");
         filters.put("Site", site != null ? site.getName() : "All");
-        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Department", dept != null ? dept.getName() : "All");
         
         filters.put("Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All");
         filters.put("Supplier", fromInstitution != null ? fromInstitution.getName() : "All");
