@@ -80,6 +80,8 @@ public enum Privileges {
     WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
+    InwardRoomTransferInitiate("Inward Room Transfer Initiate"),
+    InwardRoomPatientAccept("Inward Room Patient Accept"),
     InwardServicesAndItems("Inward Services and Items"),
     InwardServicesAndItemsAddServices("Inward Add Services"),
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
