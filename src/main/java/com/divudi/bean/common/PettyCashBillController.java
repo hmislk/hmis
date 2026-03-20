@@ -270,6 +270,11 @@ public class PettyCashBillController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
+        if (current != null && current.getId() != null) {
+            JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
+            return;
+        }
+
         if (errorCheck()) {
             return;
         }

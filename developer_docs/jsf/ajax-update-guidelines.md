@@ -5,7 +5,7 @@
 **🚨 These rules MUST be followed when working on JSF/XHTML:**
 
 1. **AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
-2. **RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
+2. **RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use `h:panelGroup` with `layout="block"` instead. **Do NOT use `ui:fragment` for this purpose** — `ui:fragment` has known rendering issues in this project; always prefer `h:panelGroup layout="block"`
 3. **PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"`
 4. **AJAX SELECTORS**: NEVER use PrimeFaces CSS/jQuery selectors like `@(.class)`, `@(#id)`, `@parent`, etc. in `update` or `process` attributes. Use `@this`, `@form`, explicit component IDs, or `:#{p:resolveFirstComponentWithId('id',view).clientId}`
 
@@ -68,6 +68,34 @@ When using JSF AJAX updates (like `update="someId"` in PrimeFaces components), t
     <!-- your content -->
 </h:div>
 ```
+
+---
+
+## Conditional Rendering: Use h:panelGroup, NOT ui:fragment
+
+### ❌ WRONG — ui:fragment (has rendering issues in this project)
+```xhtml
+<ui:fragment rendered="#{bean.showSection}">
+    <div class="row">
+        <!-- content -->
+    </div>
+</ui:fragment>
+```
+
+### ✅ CORRECT — h:panelGroup with layout="block"
+```xhtml
+<h:panelGroup layout="block" rendered="#{bean.showSection}">
+    <div class="row">
+        <!-- content -->
+    </div>
+</h:panelGroup>
+```
+
+**Why `layout="block"`?**
+Without `layout="block"`, `h:panelGroup` renders as a `<span>`, which is an inline element wrapping block content — invalid HTML. Using `layout="block"` renders a `<div>` wrapper.
+
+**Why not `ui:fragment`?**
+`ui:fragment` has exhibited rendering issues in this project. Always use `h:panelGroup layout="block"` for conditional blocks.
 
 ## Common JSF Components for AJAX Updates
 

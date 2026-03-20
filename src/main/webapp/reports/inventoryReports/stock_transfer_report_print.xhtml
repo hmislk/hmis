@@ -8,103 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css" />
                 <h:form >
-                    <style>
-                        @media screen{
-                            .paper {
-                                position: static !important;
-                                width: 297mm!important;
-                                zoom: 2.0;
-                            }
-
-
-                        }
-
-                        @media print {
-                            @page {
-                                size: A4 landscape!important;
-                                @bottom-right {
-                                    content: "Page " counter(page) " of " counter(pages);
-                                    font-family: Arial, sans-serif;
-                                    font-size: 8pt;
-                                }
-                            }
-
-                            body {
-                                counter-reset: page;
-                            }
-
-                            .paper {
-                                position: static !important;
-                                width: 297mm!important;
-                            }
-
-                        }
-
-                        @media screen, print {
-
-                            .header{
-                                line-height: 1.1;
-                                margin: 0mm!important;
-                            }
-
-                            .table-summary {
-                                width: 99.9%;
-                                font-size: 8pt!important;
-                                margin-top: 3mm!important;
-                                border-collapse: collapse !important;
-                            }
-
-                            .table-detail {
-                                width: 99.9%;
-                                font-size: 8pt!important;
-                                margin-top: 3mm!important;
-                                border-collapse: collapse !important;
-                            }
-
-                            .table-byBill {
-                                width: 99.9%;
-                                font-size: 9pt!important;
-                                margin-top: 3mm!important;
-                                border-collapse: collapse !important;
-                            }
-
-                            .table-breakdown {
-                                width: 99%;
-                                font-size: 9pt!important;
-                                margin-top: 3mm!important;
-                                border-collapse: collapse !important;
-                            }
-
-                            th, td {
-                                border: 1pt solid #000000 !important;
-                                padding: 1pt!important;
-                                text-align: left;
-                                overflow-wrap: break-word;
-                                white-space: normal;
-                            }
-
-                            .report-header-table {
-                                border-collapse: collapse;
-                            }
-
-                            .report-header-table .label {
-                                font-weight: 600;
-                                padding-right: 5px;
-                                white-space: nowrap;
-                            }
-
-                            .report-header-table td {
-                                padding: 3px 8px;
-                                vertical-align: top;
-                            }
-
-                            .table-detail .billNo{
-                                font-size: 10px !important;
-                            }
-                        }
-
-                    </style>
                     <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                         <p:panel header="Stock Transfer Report" styleClass="my-2" >
                             <f:facet name="header">
@@ -206,7 +111,8 @@
                                              rowKey="#{s.departmentName}_#{s.issuedDeptName}_#{s.receivedDeptName}_#{n}"
                                              rowIndexVar="n"
                                              rendered="#{not empty pharmacyController.departmentSummaries}"
-                                             styleClass="table-summary table-small">
+                                             styleClass="table"
+                                             style="font-size: 8pt!important;">
 
                                     <!-- Expand/Collapse Column -->
                                     <p:column style="width:32px">
@@ -487,11 +393,11 @@
                                         <h:outputText value="#{deptEntry.key}" style="font-size:12px;"/>
                                     </div>
 
-                                    <p:dataTable value="#{deptEntry.value}" var="i" style="width:100%; margin-bottom:10px;"
-                                                 tableStyle="border-collapse:collapse;" styleClass="table-detail table-small">
+                                    <p:dataTable value="#{deptEntry.value}" var="i" style="width:100%; margin-bottom:10px; font-size: 8pt!important"
+                                                 tableStyle="border-collapse:collapse;" styleClass="table">
 
-                                        <p:column headerText="Bill No" width="20mm">
-                                            <h:outputText value="#{i.billItem.bill.deptId}" class="billNo"/>
+                                        <p:column headerText="Bill No" width="22mm">
+                                            <h:outputText value="#{i.billItem.bill.deptId}" class="billNo" style="font-size: 10px !important;"/>
                                         </p:column>
 
                                         <p:column headerText="Approval Date" width="16mm">
@@ -500,7 +406,7 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Ref Bill No" width="20mm">
+                                        <p:column headerText="Ref Bill No" width="22mm">
                                             <h:outputText value="#{i.billItem.bill.backwardReferenceBill.deptId}" class="billNo"/>
                                         </p:column>
 
@@ -526,7 +432,7 @@
                                             <h:outputText value="#{i.billItem.item.dosageForm.name}"/>
                                         </p:column>
 
-                                        <p:column headerText="Quantity" width="15mm" style="text-align: right; padding-right: 10px;">
+                                        <p:column headerText="Quantity" width="12mm" style="text-align: right; padding-right: 10px;">
                                             <h:outputText value="#{i.billItem.pharmaceuticalBillItem.qty}">
                                                 <f:convertNumber pattern="#,##0"/>
                                             </h:outputText>
@@ -737,7 +643,7 @@
                                 <p:dataTable id="tbl3" value="#{pharmacyController.departmentWiseBillList}"
                                              var="b"
                                              rowIndexVar="n"
-                                             styleClass="table-byBill table-sm">
+                                             styleClass="table">
                                     <p:column headerText="Issue/Receive Department">
                                         <h:outputText value="#{b.bill.toDepartment.name}"/>
                                     </p:column>
@@ -930,7 +836,7 @@
                                 </div>
 
                                 <h:panelGroup rendered="#{not empty pharmacyController.transferBreakdownGroups}">
-                                    <table class="table-breakdown table-sm">
+                                    <table class="table">
                                         <thead>
                                             <tr>
                                                 <th style="width: 75mm;">

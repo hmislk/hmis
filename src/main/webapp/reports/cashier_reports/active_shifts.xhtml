@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/reports/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="activeShiftsForm">
+                    <p:panel class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <p:outputLabel value="Currently Active Shifts" />
+                        </f:facet>
+
+                        <p:panelGrid columns="1" styleClass="m-3">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:commandButton
+                                    value="Refresh"
+                                    action="#{financialTransactionController.fillAllActiveShifts()}"
+                                    update="activeShiftsTable"
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-refresh"
+                                    />
+                            </h:panelGroup>
+                        </p:panelGrid>
+
+                        <p:dataTable
+                            id="activeShiftsTable"
+                            value="#{financialTransactionController.bundle.reportTemplateRows}"
+                            var="ssb"
+                            rowKey="#{ssb.id}"
+                            rowIndexVar="rowIndex"
+                            paginator="true"
+                            rows="20"
+                            rowsPerPageTemplate="10,20,50,100"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}"
+                            filterDelay="300"
+                            emptyMessage="No active shifts found.">
+
+                            <p:column headerText="#" width="3em" styleClass="text-center">
+                                <h:outputText value="#{rowIndex + 1}" />
+                            </p:column>
+
+                            <p:column headerText="Cashier Name"
+                                      filterBy="#{ssb.bill.staff.person.name}"
+                                      filterMatchMode="contains"
+                                      sortBy="#{ssb.bill.staff.person.name}">
+                                <h:outputText value="#{ssb.bill.staff.person.name}" rendered="#{ssb.bill.staff ne null}" />
+                            </p:column>
+
+                            <p:column headerText="Username"
+                                      filterBy="#{ssb.bill.creater.name}"
+                                      filterMatchMode="contains"
+                                      sortBy="#{ssb.bill.creater.name}">
+                                <h:outputText value="#{ssb.bill.creater.name}" rendered="#{ssb.bill.creater ne null}" />
+                            </p:column>
+
+                            <p:column headerText="Department"
+                                      filterBy="#{ssb.bill.department.name}"
+                                      filterMatchMode="contains"
+                                      sortBy="#{ssb.bill.department.name}">
+                                <h:outputText value="#{ssb.bill.department.name}" rendered="#{ssb.bill.department ne null}" />
+                            </p:column>
+
+                            <p:column headerText="Shift Started" width="12em"
+                                      sortBy="#{ssb.bill.createdAt}">
+                                <h:outputText value="#{ssb.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Duration" width="8em"
+                                      sortBy="#{ssb.bill.createdAt}">
+                                <h:outputText value="#{financialTransactionController.formatDuration(ssb.bill.createdAt)}" />
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

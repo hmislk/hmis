@@ -8,86 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
                 <h:form >
-                    <style>
-                            @media screen{
-                                /* page background */
-                                .body {
-                                    background-color: #f0f0f0;
-                                }
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 2.0;
-                                    background-color: #ffffff;
-                                }
-
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 10pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-
-                            }
-
-                            @media screen, print {
-                                .table-detail .billNo{
-                                    font-size: 10px !important;
-                                }
-
-                                table {
-                                    width: 99.9%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                    font-size: 8pt!important;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-                            }
-                            
-                        </style>
                         <h:panelGroup>
                             <p:panel>
                                 <f:facet name="header">
@@ -152,7 +74,7 @@
                                     <p:dataTable id="tbl1" value="#{pharmacyController.stockList}" 
                                          var="s" 
                                          rowKey="#{s.id}"
-                                         styleClass="table-small">
+                                         styleClass="table">
 
 
                                         <p:column 

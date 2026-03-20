@@ -140,11 +140,15 @@
 
                             <h:outputLabel
                                 class="form-label w-100"
-                                value="Change the case of the patient name "></h:outputLabel>
-                            <p:inputText value="#{sessionController.currentPreference.changeTextCasesPatientName}"/>
-
-
-
+                                value="Change the case of the patient name ">
+                            </h:outputLabel>
+                            <p:selectOneMenu class="w-100" value="#{sessionController.currentPreference.changeTextCasesPatientName}">
+                                <f:selectItem itemLabel="None"/>
+                                <f:selectItem itemValue="UPPERCASE" itemLabel="Upper Case" itemDescription="Ex : JOHN DOE"/>
+                                <f:selectItem itemValue="LOWERCASE" itemLabel="Lower Case" itemDescription="Ex : john doe"/>
+                                <f:selectItem itemValue="CAPITALIZE" itemLabel="Capitalize" itemDescription="Ex : John doe"/>
+                            </p:selectOneMenu>
+                            
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
@@ -162,11 +166,11 @@
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
-                
+
                 <p:tab title="Channelling" >
                     <p:panel header="Channelling" class="w-100" >
                         <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
-                            
+
 
                         </h:panelGrid>
                     </p:panel>

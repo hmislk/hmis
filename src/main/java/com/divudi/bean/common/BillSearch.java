@@ -1672,7 +1672,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
             double refundingValue = 0;
             for (BillFee refundingBillFees : refundingBillItem.getBillFees()) {
-                refundingValue += refundingBillFees.getFeeValue();
+                refundingValue += Math.abs(refundingBillFees.getFeeValue());
             }
             refundingBillItem.setNetValue(refundingValue);
             refundingBillItem.setGrossValue(refundingValue);
@@ -1719,9 +1719,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
 
             for (BillFee bf : bi.getBillFees()) {
-                // Convert all fee values to negative
-                double feeValue = bf.getFeeValue();
-                feeValue = -Math.abs(feeValue);
+                // Always treat user-entered value as positive magnitude, then negate for refund.
+                // Guards against over-enthusiastic users who enter a negative value directly.
+                double feeValue = -Math.abs(bf.getFeeValue());
+                bf.setFeeValue(feeValue);
 
                 if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                     billItemCcTotal += feeValue;
@@ -2146,8 +2147,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         if (refundingBill.getBillItems() != null) {
             for (BillItem refundingBillItemTmp : refundingBill.getBillItems()) {
                 for (BillFee refundingBillFeeTmp : refundingBillItemTmp.getBillFees()) {
-                    if (refundingBillFeeTmp.getReferenceBillFee().getFeeValue() < refundingBillFeeTmp.getFeeValue()) {
-                        JsfUtil.addErrorMessage("Pleace Enter Correct Value");
+                    if (Math.abs(refundingBillFeeTmp.getReferenceBillFee().getFeeValue()) < Math.abs(refundingBillFeeTmp.getFeeValue())) {
+                        JsfUtil.addErrorMessage("Refund amount cannot exceed the original fee value. Please enter a correct value.");
                         return "";
                     }
                 }
