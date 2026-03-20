@@ -1945,7 +1945,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
@@ -2020,7 +2024,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
