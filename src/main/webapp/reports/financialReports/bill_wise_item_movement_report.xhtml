@@ -183,7 +183,6 @@
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 ajax="false" 
-
                                 value="Process" 
                                 icon="fas fa-cogs" 
                                 class="ui-button-warning"
@@ -194,11 +193,8 @@
                                 ajax="false" value="Download" icon="fas fa-file-excel" class="ui-button-success mx-1" >
                                 <p:dataExporter fileName="#{reportController.billWiseItemMovementReportFileName}" target="tbl" type="xlsx" postProcessor="#{reportController.postProcessBillWiseItemMovementReportExcel}"></p:dataExporter>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
-                                <p:printer target="tbl" ></p:printer>
-                            </p:commandButton>
                             
-                            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+                            <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
                             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
                             <script>
                                     function generatePDF() {
@@ -207,7 +203,7 @@
                                         doc.autoTable({html: '#printTbl'});
                                         doc.save('bill_wice_item_movement_report.pdf');
                                     }
-                            </script>
+                            </script> -->
                         </h:panelGrid>
 
                         <p:dataTable
