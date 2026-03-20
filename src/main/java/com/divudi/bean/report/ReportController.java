@@ -1,6 +1,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
+import com.divudi.bean.inward.InwardReportController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.reports.*;
 import com.divudi.core.entity.*;
@@ -157,6 +158,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     PharmacyReportController pharmacyReportController;
     @Inject
     PharmacyController pharmacyController;
+    @Inject
+    InwardReportController inwardReportController;
 
     private int reportIndex;
     private Institution institution;
@@ -3646,7 +3649,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public String navigateToAdmissionCountConsultationWise() {
-
+        inwardReportController.clearAdmissionCountConsultantWiseReport();
         return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
     }
 

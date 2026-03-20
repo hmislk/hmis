@@ -5529,7 +5529,7 @@ public class PharmacyController implements Serializable {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = getFiltersForStockTrasnferReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
@@ -5611,6 +5611,28 @@ public class PharmacyController implements Serializable {
                     footerRow.createCell(12).setCellValue(departmentTotalsMap.get(departmentName)[1]);
                 }
             }
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+            boldStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            boldStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            rowIndex++; // Add an empty row before grand total
+            Row grandTotalRow = sheet.createRow(rowIndex++);
+            // footer table headers
+            grandTotalRow.createCell(0).setCellValue("");
+            createCell(grandTotalRow, 1, "Purchase Value", boldStyle);
+            createCell(grandTotalRow, 2, "Cost Value", boldStyle);
+            createCell(grandTotalRow, 3, "Retail Value", boldStyle);
+
+            // footer table values
+            Row grandTotalValueRow = sheet.createRow(rowIndex++);
+            createCell(grandTotalValueRow, 0, "Grand Total", boldStyle);
+            createCell(grandTotalValueRow, 1, totalPurchase, boldStyle);
+            createCell(grandTotalValueRow, 2, totalCostValue, boldStyle);
+            createCell(grandTotalValueRow, 3, totalRetailValue, boldStyle);
 
             workbook.write(out);
             context.responseComplete();
@@ -12634,13 +12656,17 @@ public class PharmacyController implements Serializable {
     private void createCell(Row row, int col, String value, CellStyle style) {
         Cell cell = row.createCell(col);
         cell.setCellValue(value != null ? value : "");
-        cell.setCellStyle(style);
+        if (style != null) {
+            cell.setCellStyle(style);
+        }
     }
 
     private void createCell(Row row, int col, double value, CellStyle style) {
         Cell cell = row.createCell(col);
         cell.setCellValue(value);
-        cell.setCellStyle(style);
+        if (style != null) {
+            cell.setCellStyle(style);
+        }
     }
 
     // PdfPCell Add to table
