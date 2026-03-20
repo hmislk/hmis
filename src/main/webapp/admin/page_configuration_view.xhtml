@@ -56,7 +56,9 @@
                                 rowsPerPageTemplate="5,10,15,25,50"
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} configurations">
 
-                                <p:column headerText="Configuration Key" style="width: 35%">
+                                <p:column headerText="Configuration Key" style="width: 35%"
+                                          filterBy="#{config.key}" filterMatchMode="contains"
+                                          filterStyle="width: 100%">
                                     <!-- Clean display for department-specific configs -->
                                     <h:outputText value="#{config.key.replace(' for [Department Name]', '')} (per department)"
                                                   styleClass="fw-bold"

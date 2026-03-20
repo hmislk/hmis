@@ -623,19 +623,11 @@ public class PharmacyStockTakeController implements Serializable {
                 System.out.println("[settleStockCount] Batch persist complete. ms=" + (System.currentTimeMillis() - tSettle0));
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed", e);
-                // If the bill header was already persisted (snapshotBill.getId() != null),
-                // do NOT fall back to billFacade.create() — that would cascade-insert all
-                // BillItems into the already-existing bill, producing duplicate rows.
-                // Surface the error so the user can retry with a clean snapshot.
-                if (snapshotBill.getId() != null) {
-                    JsfUtil.addErrorMessage("Stock count save failed after bill header was created (ID="
-                            + snapshotBill.getId() + "). Please contact support.");
-                    return null;
-                }
-                // Bill header was never persisted — safe to fall back to JPA cascade.
-                LOGGER.log(Level.WARNING, "[settleStockCount] Falling back to JPA cascade (header not yet persisted)");
-                billFacade.create(snapshotBill);
-                System.out.println("[settleStockCount] JPA cascade complete. ms=" + (System.currentTimeMillis() - tSettle0));
+                // Never fall back to billFacade.create() — if the bill header was already
+                // persisted (even partially), a JPA cascade would insert all BillItems again
+                // into the same bill, producing duplicate rows in the database.
+                JsfUtil.addErrorMessage("Stock count save failed. Please generate a new snapshot and try again.");
+                return null;
             }
         } else {
             // Existing bill: update only
@@ -2785,9 +2777,11 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         // --- Step 2: load physical count bill items as scalars ---
-        // First get IDs of physical count bills referencing this snapshot
+        // Only include approved physical count bills (those that have a forwardReferenceBill = adjustment bill).
+        // Unapproved uploads (abandoned on the review page) must not contribute to the variance sum.
         String jpqlBillIds = "SELECT b.id FROM Bill b "
                 + "WHERE b.billType = :bt AND b.referenceBill.id = :rbId "
+                + "AND b.forwardReferenceBill IS NOT NULL "
                 + "ORDER BY b.createdAt ASC, b.id ASC";
         HashMap<String, Object> bp = new HashMap<>();
         bp.put("bt", BillType.PharmacyPhysicalCountBill);
@@ -3153,13 +3147,17 @@ public class PharmacyStockTakeController implements Serializable {
                 ));
             }
 
-            // Deduplicate by (itemName, batchNo) — keep the row with the lowest billItemId.
+            // Deduplicate by (itemName, batchNo, expiryDate) — keep the row with the lowest billItemId.
             // This guards against snapshot bills that were accidentally persisted twice
             // (bill header created once, but BillItems inserted in two separate passes),
             // which results in duplicate rows per batch in the database.
+            // Expiry date is included in the key so that two legitimate batches with the same
+            // batch number but different expiry dates are NOT collapsed into one.
             java.util.LinkedHashMap<String, com.divudi.core.data.dto.SnapshotBillItemDTO> seen = new java.util.LinkedHashMap<>();
             for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : dtos) {
-                String key = (dto.getItemName() != null ? dto.getItemName() : "") + "||" + (dto.getBatchNo() != null ? dto.getBatchNo() : "");
+                String expiryStr = dto.getExpiryDate() != null
+                        ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(dto.getExpiryDate()) : "";
+                String key = (dto.getItemName() != null ? dto.getItemName() : "") + "||" + (dto.getBatchNo() != null ? dto.getBatchNo() : "") + "||" + expiryStr;
                 com.divudi.core.data.dto.SnapshotBillItemDTO existing = seen.get(key);
                 if (existing == null || (dto.getBillItemId() != null && existing.getBillItemId() != null && dto.getBillItemId() < existing.getBillItemId())) {
                     seen.put(key, dto);
