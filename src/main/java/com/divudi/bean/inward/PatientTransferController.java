@@ -184,8 +184,20 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("Please select a target room.");
             return;
         }
+        // Re-query DB to prevent race conditions with concurrent sessions
+        loadCurrentAdmissionRequests();
         if (!isCanInitiateTransfer()) {
             JsfUtil.addErrorMessage("Transfer cannot be initiated for this patient.");
+            return;
+        }
+        // Reject same-room transfers
+        PatientRoom currentRoom = current.getCurrentPatientRoom();
+        if (currentRoom != null
+                && currentRoom.getRoomFacilityCharge() != null
+                && currentRoom.getRoomFacilityCharge().getId() != null
+                && targetRoomFacilityCharge.getId() != null
+                && currentRoom.getRoomFacilityCharge().getId().equals(targetRoomFacilityCharge.getId())) {
+            JsfUtil.addErrorMessage("Please select a different target room.");
             return;
         }
 
@@ -213,13 +225,21 @@ public class PatientTransferController implements Serializable {
      * choose a different room and re-initiate).
      */
     public void cancelPendingAndReopen(PatientTransferRequest req) {
-        if (req == null) {
+        if (req == null || req.getId() == null) {
             return;
         }
-        req.setStatus(TransferRequestStatus.CANCELLED);
-        req.setCancelledAt(new Date());
-        req.setCancelledBy(sessionController.getLoggedUser());
-        patientTransferRequestFacade.edit(req);
+        // Re-fetch from DB to avoid acting on a stale session copy
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null || persisted.getStatus() != TransferRequestStatus.PENDING) {
+            lastInitiatedRequest = null;
+            loadCurrentAdmissionRequests();
+            JsfUtil.addErrorMessage("This transfer request is no longer pending and cannot be cancelled.");
+            return;
+        }
+        persisted.setStatus(TransferRequestStatus.CANCELLED);
+        persisted.setCancelledAt(new Date());
+        persisted.setCancelledBy(sessionController.getLoggedUser());
+        patientTransferRequestFacade.edit(persisted);
         lastInitiatedRequest = null;
         loadCurrentAdmissionRequests();
         JsfUtil.addSuccessMessage("Transfer request cancelled. You may now initiate a new one.");

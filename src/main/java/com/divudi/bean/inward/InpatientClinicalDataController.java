@@ -152,6 +152,7 @@ public class InpatientClinicalDataController implements Serializable {
     private Patient patient;
 
     private List<DocumentTemplate> userDocumentTemplates;
+    private List<DocumentTemplate> diagnosisCardTemplates;
     private DocumentTemplate selectedDocumentTemplate;
 
     private ClinicalFindingValue patientAllergy;
@@ -525,12 +526,13 @@ public class InpatientClinicalDataController implements Serializable {
         String pfr = e.getPfr() != null ? e.getPfr() + "" : "";
         String saturation = e.getSaturation() != null ? e.getSaturation() + "" : "";
 
-        // Vital sign series from clinical assessments (chronological)
-        String tempSeries = buildVitalSeries(a -> a.getTemperature() != null ? a.getTemperature().toString() : null);
-        String bpSeries = buildVitalSeries(a -> a.getBp());
-        String prSeries = buildVitalSeries(a -> a.getPr() != null ? a.getPr().toString() : null);
-        String rrSeries = buildVitalSeries(a -> a.getRespiratoryRate() != null ? a.getRespiratoryRate().toString() : null);
-        String satSeries = buildVitalSeries(a -> a.getSaturation() != null ? a.getSaturation().toString() : null);
+        // Vital sign series from clinical assessments belonging to this encounter (chronological)
+        List<PatientEncounter> assessmentsForEncounter = fillAssessmentsForEncounter(e);
+        String tempSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getTemperature() != null ? a.getTemperature().toString() : null);
+        String bpSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getBp());
+        String prSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getPr() != null ? a.getPr().toString() : null);
+        String rrSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getRespiratoryRate() != null ? a.getRespiratoryRate().toString() : null);
+        String satSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getSaturation() != null ? a.getSaturation().toString() : null);
         if (comments == null) {
             comments = "";
         }
@@ -600,8 +602,8 @@ public class InpatientClinicalDataController implements Serializable {
         for (ClinicalFindingValue pr : getEncounterProcedures()) {
             prAsString += pr.getItemValue().getName();
         }
-        if (prStart.equals(prStart)) {
-            prAsString = "No Procedures peformed ";
+        if (prAsString.equals(prStart)) {
+            prAsString = "No Procedures performed";
         }
         //
 
@@ -3354,27 +3356,44 @@ public class InpatientClinicalDataController implements Serializable {
         fillClinicalAssessments();
         fillCurrentPatientLists(admission.getPatient());
         fillCurrentEncounterLists(admission);
-        userDocumentTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+        diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
         return "/inward/inward_diagnosis_cards?faces-redirect=true";
     }
 
     public List<DocumentTemplate> getDiagnosisCardTemplates() {
-        if (userDocumentTemplates == null) {
-            userDocumentTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+        if (diagnosisCardTemplates == null) {
+            diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
         }
-        return userDocumentTemplates;
+        return diagnosisCardTemplates;
     }
 
     public void refreshDiagnosisCardTemplates() {
-        userDocumentTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+        diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
     }
 
-    public String buildVitalSeries(java.util.function.Function<PatientEncounter, String> extractor) {
-        if (clinicalAssessments == null || clinicalAssessments.isEmpty()) {
+    private List<PatientEncounter> fillAssessmentsForEncounter(PatientEncounter encounter) {
+        if (encounter == null || encounter.getId() == null) {
+            return new ArrayList<>();
+        }
+        java.util.Map<String, Object> m = new HashMap<>();
+        m.put("parent", encounter);
+        m.put("type", PatientEncounterType.ClinicalAssessment);
+        m.put("ret", false);
+        String sql = "select e from PatientEncounter e "
+                + "where e.parentEncounter=:parent "
+                + "and e.patientEncounterType=:type "
+                + "and e.retired=:ret "
+                + "order by e.encounterDateTime asc";
+        List<PatientEncounter> result = ejbFacade.findByJpql(sql, m);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    public String buildVitalSeries(List<PatientEncounter> assessments, Function<PatientEncounter, String> extractor) {
+        if (assessments == null || assessments.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
-        for (PatientEncounter a : clinicalAssessments) {
+        for (PatientEncounter a : assessments) {
             String val = extractor.apply(a);
             if (val != null && !val.trim().isEmpty()) {
                 if (sb.length() > 0) {

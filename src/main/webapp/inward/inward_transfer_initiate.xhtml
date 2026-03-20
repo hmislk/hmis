@@ -97,14 +97,14 @@
                                     <div class="col-5"><p:outputLabel value="Current Room"/></div>
                                     <div class="col-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                                     <div class="col-6">
-                                        <h:outputText value="#{patientTransferController.current.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        <h:outputText value="#{patientTransferController.current.currentPatientRoom != null and patientTransferController.current.currentPatientRoom.roomFacilityCharge != null ? patientTransferController.current.currentPatientRoom.roomFacilityCharge.name : 'Admission Desk'}"/>
                                     </div>
                                 </div>
                                 <div class="row mt-1">
                                     <div class="col-5"><p:outputLabel value="Current Department"/></div>
                                     <div class="col-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                                     <div class="col-6">
-                                        <h:outputText value="#{patientTransferController.current.currentPatientRoom.roomFacilityCharge.department.name}"/>
+                                        <h:outputText value="#{patientTransferController.current.currentPatientRoom != null and patientTransferController.current.currentPatientRoom.roomFacilityCharge != null and patientTransferController.current.currentPatientRoom.roomFacilityCharge.department != null ? patientTransferController.current.currentPatientRoom.roomFacilityCharge.department.name : '-'}"/>
                                     </div>
                                 </div>
                             </p:panel>
