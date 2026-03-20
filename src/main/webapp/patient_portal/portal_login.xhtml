@@ -1192,7 +1192,10 @@
                 inputEl.value = val;
                 if (val.length >= maxLen && nextId) {
                     var next = document.getElementById(nextId);
-                    if (next) { next.focus(); next.select(); }
+                    if (next) {
+                        next.focus();
+                        next.select();
+                    }
                 }
             }
 
@@ -1432,8 +1435,8 @@
                                                 <div class="field-wrap">
                                                     <i class="fas fa-user f-icon"/>
                                                     <p:inputText id="newPatientName"
-                                                        value="#{patientPortalController.patient.person.name}"
-                                                        placeholder="Enter full name"/>
+                                                                 value="#{patientPortalController.patient.person.name}"
+                                                                 placeholder="Enter full name"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -1599,7 +1602,7 @@
                                 </h:panelGroup>
 
                                 <!-- Patient Selection (shown after OTP verified, not adding new patient) -->
-                                <h:panelGroup rendered="#{patientPortalController.patientSelected eq false and not patientPortalController.addNewPatient}">
+                                <h:panelGroup rendered="#{patientPortalController.patientSelected eq false and not patientPortalController.addNewPatient and not patientPortalController.allowNavigation}">
                                     <div class="patient-select-card">
 
                                         <div class="card-lead-icon">
@@ -1625,7 +1628,7 @@
                                                             <div class="patient-meta">
                                                                 <span class="patient-meta-pill">
                                                                     <i class="fas fa-cake-candles"/>
-                                                                    #{pt.person.ageYearsComponent}y #{pt.person.ageMonthsComponent}m
+                                                                    #{pt.person.ageYearsComponent}Y #{pt.person.ageMonthsComponent}M
                                                                 </span>
                                                                 <span class="patient-meta-pill">
                                                                     <i class="fas fa-venus-mars"/>
@@ -1653,7 +1656,8 @@
                                                     value="Add New Patient"
                                                     icon="fas fa-user-plus"
                                                     styleClass="btn-add-patient-link"
-                                                    action="#{patientPortalController.addNewPatientAction}"/>
+                                                    action="#{patientPortalController.addNewPatientAction}">
+                                                </p:commandButton>
                                             </div>
                                         </h:panelGroup>
 
@@ -1667,10 +1671,20 @@
                                                         ajax="false"
                                                         value="Add New Patient"
                                                         icon="fas fa-user-plus"
-                                                        action="#{patientPortalController.addNewPatientAction}"/>
+                                                        action="#{patientPortalController.addNewPatientAction}">
+                                                    </p:commandButton>
                                                 </div>
                                             </div>
                                         </h:panelGroup>
+
+                                        <div class="btn-logout" style="margin-top:0.75rem; display:flex; justify-content:center;">
+                                            <p:commandButton
+                                                value="Logout"
+                                                icon="fas fa-right-from-bracket"
+                                                ajax="false"
+                                                action="#{patientPortalController.reset}">
+                                            </p:commandButton>
+                                        </div>
 
                                     </div>
                                 </h:panelGroup>
@@ -1701,24 +1715,31 @@
                                             Use the options below to manage your health information.
                                         </p>
                                         <div class="welcome-actions">
-                                            <div class="btn-send">
-                                                <p:commandButton
-                                                    value="Go to Laboratory"
-                                                    icon="fas fa-arrow-right"
-                                                    ajax="false">
-                                                </p:commandButton>
-                                            </div>
-                                            
-                                            <div class="btn-send">
-                                                <p:commandButton
-                                                    value="Go to Channelling"
-                                                    icon="fas fa-arrow-right"
-                                                    ajax="false">
-                                                </p:commandButton>
-                                            </div>
-                                            
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Portal - Allow to Laboratory',true)}">
+                                                <div class="btn-send">
+                                                    <p:commandButton
+                                                        value="Go to Laboratory"
+                                                        icon="fas fa-arrow-right"
+                                                        ajax="false"
+                                                        action="#{patientPortalController.navigateToLabaratory()}">
+                                                    </p:commandButton>
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Portal -  Allow to Channelling',true)}">
+                                                <div class="btn-send">
+                                                    <p:commandButton
+                                                        value="Go to Channelling"
+                                                        icon="fas fa-arrow-right"
+                                                        ajax="false"
+                                                        action="#{patientPortalController.navigateToChannellinig()}">
+                                                    </p:commandButton>
+                                                </div>
+                                            </h:panelGroup>
+
+
                                             <hr/>
-                                            
+
                                             <div class="btn-verify">
                                                 <p:commandButton
                                                     value="Switch Profile"
@@ -1741,12 +1762,65 @@
                                                     value="Logout"
                                                     icon="fas fa-right-from-bracket"
                                                     ajax="false"
-                                                    action="#{patientPortalController.reset}"/>
+                                                    action="#{patientPortalController.reset}">
+                                                </p:commandButton>
                                             </div>
                                         </div>
                                     </div>
                                 </h:panelGroup>
-                        
+
+                                <!-- Laboratory Section -->
+                                <h:panelGroup rendered="#{patientPortalController.allowLabaratory and patientPortalController.allowNavigation}" layout="block">
+                                    <div class="welcome-card">
+                                        <div class="welcome-avatar">
+                                            <i class="fas fa-flask"/>
+                                        </div>
+                                        <div class="welcome-greeting" style="font-size:2rem;">Laboratory</div>
+                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:#64748b;">
+                                            View your lab test results and reports
+                                        </div>
+                                        <div style="margin:1.5rem 0; padding:2rem 1.5rem; background:#fef9c3; border:2px solid #fde68a; border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:1rem; color:#92400e;">
+                                            <i class="fas fa-tools" style="font-size:3rem;"/>
+                                            <span style="font-size:1.15rem; font-weight:700;">Under Development</span>
+                                            <span style="font-size:0.9rem; font-weight:400; color:#a16207; text-align:center;">This section is currently under development. Coming soon!</span>
+                                        </div>
+                                        <div class="btn-verify">
+                                            <p:commandButton
+                                                value="Back to Profile"
+                                                icon="fas fa-arrow-left"
+                                                ajax="false"
+                                                action="#{patientPortalController.navigateToBackProfile()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Channelling Section -->
+                                <h:panelGroup rendered="#{patientPortalController.allowChannellinig and patientPortalController.allowNavigation}" layout="block">
+                                    <div class="welcome-card">
+                                        <div class="welcome-avatar">
+                                            <i class="fas fa-calendar-check"/>
+                                        </div>
+                                        <div class="welcome-greeting" style="font-size:2rem;">Channelling</div>
+                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:#64748b;">
+                                            Book and manage your doctor appointments
+                                        </div>
+                                        <div style="margin:1.5rem 0; padding:2rem 1.5rem; background:#fef9c3; border:2px solid #fde68a; border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:1rem; color:#92400e;">
+                                            <i class="fas fa-tools" style="font-size:3rem;"/>
+                                            <span style="font-size:1.15rem; font-weight:700;">Under Development</span>
+                                            <span style="font-size:0.9rem; font-weight:400; color:#a16207; text-align:center;">This section is currently under development. Coming soon!</span>
+                                        </div>
+                                        <div class="btn-verify">
+                                            <p:commandButton
+                                                value="Back to Profile"
+                                                icon="fas fa-arrow-left"
+                                                ajax="false"
+                                                action="#{patientPortalController.navigateToBackProfile()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
                             </h:panelGroup>
 
                         </h:panelGroup>
@@ -1754,8 +1828,7 @@
 
                         <!-- Security footer note -->
                         <div class="portal-footer-note">
-                            <i class="fas fa-lock"/>
-                            Secured with end-to-end encryption
+                            Powered by CareCode (Pvt) Ltd.
                         </div>
 
                     </div>
