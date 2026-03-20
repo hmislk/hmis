@@ -923,9 +923,7 @@ public class StaffController implements Serializable {
         if (speciality != null) {
             sql += " and p.speciality=:sp ";
             hm.put("sp", speciality);
-        } else {
-            sql += " and p.speciality is not null ";
-        }
+        } 
         sql += " order by p.person.name";
 
         ss = getFacade().findByJpql(sql, hm);

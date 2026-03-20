@@ -8,6 +8,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.hr.StaffController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.core.data.BillNumberSuffix;
@@ -239,6 +240,8 @@ public class SearchController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
+    @Inject
+    private StaffController staffController;
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
@@ -452,6 +455,9 @@ public class SearchController implements Serializable {
 
     private Department serviceDepartment;
     private Department billedDepartment;
+
+    // doctor list for filtering based on speciality change in the search criteria
+    private List<Staff> staffListBySpeciality;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigators">
@@ -1189,6 +1195,7 @@ public class SearchController implements Serializable {
 
     public String navigateToProfessionalFeePayments() {
         bundle = new ReportTemplateRowBundle();
+        recreateProPayementModel();
         return "/reports/professional_payment_reports/professional_fee_payments_opd?faces-redirect=true";
     }
 
@@ -1320,6 +1327,7 @@ public class SearchController implements Serializable {
         mrnNo = null;
         speciality = null;
         staff = null;
+        staffListBySpeciality = null;
     }
 
     public void listAllBills() {
@@ -1539,6 +1547,7 @@ public class SearchController implements Serializable {
         speciality = null;
         staff = null;
         webUser = null;
+        staffListBySpeciality = null;
     }
 
     public String navigatToAllCashierSummary() {
@@ -22136,6 +22145,10 @@ public class SearchController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
+
+        // to trigger the doctor list update based on speciality change in the search criteria
+        staffListBySpeciality = null;
+        getstaffListBySpeciality();
     }
 
     public PatientEncounter getPatientEncounter() {
@@ -22152,6 +22165,14 @@ public class SearchController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    // fetch staff list for filtering based on speciality change in the search criteria
+    public List<Staff> getstaffListBySpeciality() {
+        if (staffListBySpeciality == null) {
+            staffListBySpeciality = staffController.getSpecialityStaffOptional(speciality);
+        }
+        return staffListBySpeciality;   
     }
 
     public Item getItem() {

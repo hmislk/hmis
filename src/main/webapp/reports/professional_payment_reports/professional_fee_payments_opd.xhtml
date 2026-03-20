@@ -195,7 +195,7 @@
                                              styleClass="w-100 form-control">
                                 <f:selectItem itemLabel="Please Select" noSelectionOption="true" />
                                 <f:selectItems
-                                    value="#{staffController.getSpecialityStaffOptional(searchController.speciality)}" 
+                                    value="#{searchController.staffListBySpeciality}" 
                                     var="staff" 
                                     itemLabel="#{staff.person.nameWithTitle}" 
                                     itemValue="#{staff}" />
