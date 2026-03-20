@@ -952,6 +952,178 @@
                 margin-bottom: 1.25rem;
             }
 
+            /* ── NEW PATIENT FORM ────────────────────────────────── */
+            .new-patient-row {
+                display: flex;
+                gap: 0.75rem;
+            }
+            .new-patient-row .field-group {
+                min-width: 0;
+            }
+
+            /* Age + DOB single row */
+            .age-dob-row {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            .age-input-wrap {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                flex: 0 0 auto;
+            }
+            .age-input-wrap .ui-inputtext {
+                width: 52px !important;
+                padding: 0.7rem 0.5rem !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.9rem !important;
+                text-align: center !important;
+                background: #f6fbf8 !important;
+                min-width: unset !important;
+                box-shadow: none !important;
+            }
+            .age-input-wrap .ui-inputtext:focus {
+                border-color: var(--forest-bright) !important;
+                background: var(--white) !important;
+                box-shadow: 0 0 0 3px rgba(45,106,79,0.11) !important;
+                outline: none !important;
+            }
+            .age-unit {
+                font-size: 0.72rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                white-space: nowrap;
+            }
+            .dob-input-wrap {
+                flex: 1;
+                min-width: 130px;
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+            .dob-input-wrap .dob-icon {
+                position: absolute;
+                left: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--text-muted);
+                font-size: 0.82rem;
+                pointer-events: none;
+                z-index: 3;
+            }
+            /* PrimeFaces datePicker wrapper must stretch full width */
+            .dob-input-wrap .ui-datepicker {
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+            /* Ensure the actual input fills the wrapper and has icon clearance */
+            .dob-input-wrap .ui-datepicker-input,
+            .dob-input-wrap .portal-datepicker .ui-inputtext,
+            .dob-input-wrap .ui-inputtext {
+                flex: 1 !important;
+                width: 100% !important;
+                padding-left: 2.4rem !important;
+            }
+            @media (max-width: 480px) {
+                .age-dob-row {
+                    gap: 0.4rem;
+                }
+                .age-input-wrap .ui-inputtext {
+                    width: 44px !important;
+                }
+            }
+            /* SelectOneMenu — border/radius on outer div, padding on inner label */
+            .portal-form-panel .portal-select.ui-selectonemenu,
+            .portal-form-panel .field-wrap .ui-selectonemenu {
+                width: 100% !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                background: #f6fbf8 !important;
+                min-width: unset !important;
+                box-shadow: none !important;
+                transition: border-color 0.2s !important;
+            }
+            .portal-form-panel .portal-select.ui-selectonemenu:hover,
+            .portal-form-panel .field-wrap .ui-selectonemenu:hover {
+                border-color: var(--emerald) !important;
+            }
+            .portal-form-panel .portal-select .ui-selectonemenu-label,
+            .portal-form-panel .field-wrap .ui-selectonemenu-label {
+                padding: 0.8rem 1rem 0.8rem 2.6rem !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.97rem !important;
+                color: var(--text-dark) !important;
+                background: transparent !important;
+                border: none !important;
+            }
+            .portal-form-panel .portal-select .ui-selectonemenu-trigger,
+            .portal-form-panel .field-wrap .ui-selectonemenu-trigger {
+                border: none !important;
+                background: transparent !important;
+            }
+
+            /* DatePicker — padding on the actual input */
+            .portal-form-panel .portal-datepicker .ui-inputtext,
+            .portal-form-panel .field-wrap .ui-datepicker-input {
+                width: 100% !important;
+                padding: 0.8rem 1rem 0.8rem 2.6rem !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.97rem !important;
+                background: #f6fbf8 !important;
+                min-width: unset !important;
+                box-shadow: none !important;
+            }
+            .portal-form-panel .portal-datepicker .ui-inputtext:focus,
+            .portal-form-panel .field-wrap .ui-datepicker-input:focus {
+                border-color: var(--forest-bright) !important;
+                background: var(--white) !important;
+                box-shadow: 0 0 0 3px rgba(45,106,79,0.11) !important;
+            }
+            @media (max-width: 480px) {
+                .new-patient-row {
+                    flex-direction: column;
+                    gap: 0;
+                }
+            }
+
+            /* ── ADD NEW PATIENT BUTTON ───────────────────────────── */
+            .add-patient-wrap {
+                margin-top: 1rem;
+                text-align: center;
+            }
+            .btn-add-patient-link.ui-button {
+                background: transparent !important;
+                border: 1.5px dashed var(--emerald) !important;
+                color: var(--forest-bright) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                padding: 0.55rem 1.25rem !important;
+                width: 100% !important;
+                min-width: unset !important;
+                transition: all 0.2s ease !important;
+                box-shadow: none !important;
+            }
+            .btn-add-patient-link.ui-button:hover {
+                background: rgba(82,183,136,0.08) !important;
+                border-color: var(--forest-bright) !important;
+            }
+            .btn-add-patient-link.ui-button .ui-button-text {
+                padding: 0 !important;
+            }
+            .btn-add-patient-link.ui-button .ui-icon {
+                color: var(--emerald) !important;
+                margin-right: 5px !important;
+            }
+
             /* ── WELCOME CARD ────────────────────────────────────── */
             .welcome-card {
                 background: var(--white);
@@ -1015,6 +1187,15 @@
         </style>
         <script type="text/javascript">
             //<![CDATA[
+            function ageAutoFocus(inputEl, maxLen, nextId) {
+                var val = inputEl.value.replace(/\D/g, '');
+                inputEl.value = val;
+                if (val.length >= maxLen && nextId) {
+                    var next = document.getElementById(nextId);
+                    if (next) { next.focus(); next.select(); }
+                }
+            }
+
             var otpCountdownInterval = null;
 
             function startOtpCountdown(expiryEpochMs) {
@@ -1102,18 +1283,6 @@
                                 Secure OTP Authentication
                             </li>
                         </ul>
-                    </div>
-
-                    <!-- Logout at bottom of hero panel -->
-                    <div class="hero-footer">
-                        <div class="btn-logout">
-                            <p:commandButton
-                                value="Logout"
-                                icon="fas fa-right-from-bracket"
-                                ajax="false"
-                                action="#{patientPortalController.reset}"
-                                rendered="#{patientPortalController.otpVerify}"/>
-                        </div>
                     </div>
                 </div>
                 <!-- END HERO PANEL -->
@@ -1232,8 +1401,205 @@
                             <!-- OTP Verification - Pass -->
                             <h:panelGroup rendered="#{patientPortalController.otpVerify eq true}">
 
-                                <!-- Patient Selection (shown after OTP verified, multiple Patients Found) -->
-                                <h:panelGroup rendered="#{patientPortalController.patientSelected eq false}">
+                                <!-- New Patient Data Entry Form -->
+                                <h:panelGroup rendered="#{patientPortalController.addNewPatient}" layout="block">
+                                    <div class="otp-card">
+                                        <div class="card-lead-icon">
+                                            <i class="fas fa-user-plus"/>
+                                        </div>
+                                        <div class="card-title">New Patient Registration</div>
+                                        <div class="card-subtitle">
+                                            Register a new patient profile for
+                                            <strong>#{patientPortalController.patientphoneNumber}</strong>
+                                        </div>
+
+                                        <div class="new-patient-row">
+                                            <div class="field-group" style="flex:0 0 130px">
+                                                <label class="field-label">Title <span style="color:#e74c3c">*</span></label>
+                                                <div class="field-wrap">
+                                                    <i class="fas fa-id-badge f-icon"/>
+                                                    <p:selectOneMenu
+                                                        value="#{patientPortalController.patient.person.title}"
+                                                        styleClass="portal-select">
+                                                        <f:selectItem itemLabel="Select" itemValue=""/>
+                                                        <f:selectItems value="#{billController.title}" var="t"
+                                                                       itemLabel="#{t.label}" itemValue="#{t}"/>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="field-group" style="flex:1">
+                                                <label class="field-label">Full Name <span style="color:#e74c3c">*</span></label>
+                                                <div class="field-wrap">
+                                                    <i class="fas fa-user f-icon"/>
+                                                    <p:inputText id="newPatientName"
+                                                        value="#{patientPortalController.patient.person.name}"
+                                                        placeholder="Enter full name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label class="field-label">Gender <span style="color:#e74c3c">*</span></label>
+                                            <div class="field-wrap">
+                                                <i class="fas fa-venus-mars f-icon"/>
+                                                <p:selectOneMenu
+                                                    value="#{patientPortalController.patient.person.sex}"
+                                                    styleClass="portal-select">
+                                                    <f:selectItem itemLabel="Select" itemValue=""/>
+                                                    <f:selectItems value="#{billController.sex}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label class="field-label">Age &amp; Date of Birth <span style="color:#e74c3c">*</span></label>
+                                            <div class="age-dob-row">
+                                                <div class="age-input-wrap">
+                                                    <p:inputText
+                                                        id="ageYears"
+                                                        value="#{patientPortalController.patient.person.ageYearsComponent}"
+                                                        placeholder="YY"
+                                                        onfocus="this.select()"
+                                                        styleClass="age-input"
+                                                        maxlength="3"
+                                                        oninput="ageAutoFocus(this,3,'form:ageMonths')">
+                                                        <p:ajax event="blur" process="ageYears" update="newPatientDob"/>
+                                                    </p:inputText>
+                                                    <span class="age-unit">Yrs</span>
+                                                </div>
+                                                <div class="age-input-wrap">
+                                                    <p:inputText
+                                                        id="ageMonths"
+                                                        value="#{patientPortalController.patient.person.ageMonthsComponent}"
+                                                        placeholder="MM"
+                                                        onfocus="this.select()"
+                                                        styleClass="age-input"
+                                                        maxlength="2"
+                                                        oninput="ageAutoFocus(this,2,'form:ageDays')">
+                                                        <p:ajax event="blur" process="ageMonths" update="newPatientDob"/>
+                                                    </p:inputText>
+                                                    <span class="age-unit">Mos</span>
+                                                </div>
+                                                <div class="age-input-wrap">
+                                                    <p:inputText
+                                                        id="ageDays"
+                                                        value="#{patientPortalController.patient.person.ageDaysComponent}"
+                                                        placeholder="DD"
+                                                        onfocus="this.select()"
+                                                        styleClass="age-input"
+                                                        maxlength="2">
+                                                        <p:ajax event="blur" process="ageDays" update="newPatientDob"/>
+                                                    </p:inputText>
+                                                    <span class="age-unit">Days</span>
+                                                </div>
+                                                <div class="dob-input-wrap mx-3">
+                                                    <p:datePicker
+                                                        id="newPatientDob"
+                                                        value="#{patientPortalController.patient.person.dob}"
+                                                        placeholder="DD/MM/YYYY"
+                                                        pattern="dd/MM/yyyy"
+                                                        monthNavigator="true" 
+                                                        yearNavigator="true"
+                                                        styleClass="portal-datepicker">
+                                                    </p:datePicker>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label class="field-label">Mobile Number</label>
+                                            <div class="field-wrap">
+                                                <i class="fas fa-phone f-icon"/>
+                                                <p:inputText
+                                                    value="#{patientPortalController.patientphoneNumber}"
+                                                    disabled="true"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-2">
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">NIC / Passport No</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-id-card f-icon"/>
+                                                        <p:inputText
+                                                            id="newPatientNic"
+                                                            value="#{patientPortalController.patient.person.nic}"
+                                                            placeholder="Enter NIC or Passport number"
+                                                            autocomplete="off"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">Email</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-envelope f-icon"/>
+                                                        <p:inputText
+                                                            id="newPatientEmail"
+                                                            value="#{patientPortalController.patient.person.email}"
+                                                            placeholder="Enter email address"
+                                                            autocomplete="off"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-2">
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">Address</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-map-marker-alt f-icon"/>
+                                                        <p:inputText
+                                                            id="newPatientAddress"
+                                                            value="#{patientPortalController.patient.person.address}"
+                                                            placeholder="Enter address"
+                                                            autocomplete="off"
+                                                            style="width:100%"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">Area</label>
+                                                    <div class="field-wrap">
+                                                        <p:autoComplete
+                                                            id="newPatientArea"
+                                                            value="#{patientPortalController.patient.person.area}"
+                                                            completeMethod="#{areaController.completeArea}"
+                                                            var="pa"
+                                                            itemLabel="#{pa.name}"
+                                                            itemValue="#{pa}"
+                                                            forceSelection="true"
+                                                            placeholder="Search and select area"
+                                                            style="width:100%"
+                                                            inputStyleClass="form-control"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="btn-send" style="margin-top:1.25rem">
+                                            <p:commandButton
+                                                value="Save Patient"
+                                                icon="fas fa-floppy-disk"
+                                                action="#{patientPortalController.saveNewPatient}"
+                                                update="globalMessages portalContentPanel"/>
+                                        </div>
+                                        <div class="add-patient-wrap">
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-arrow-left"
+                                                styleClass="btn-add-patient-link"
+                                                action="#{patientPortalController.GoBackfromPatientAddAction}"
+                                                update="globalMessages portalContentPanel"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Patient Selection (shown after OTP verified, not adding new patient) -->
+                                <h:panelGroup rendered="#{patientPortalController.patientSelected eq false and not patientPortalController.addNewPatient}">
                                     <div class="patient-select-card">
 
                                         <div class="card-lead-icon">
@@ -1272,22 +1638,34 @@
                                                                 value="Select"
                                                                 icon="fas fa-arrow-right"
                                                                 action="#{patientPortalController.selectPatientProfile(pt)}"
-                                                                update=":form:globalMessages :form:portalContentPanel"/>
+                                                                update=":form:globalMessages :form:portalContentPanel :form:portalContentPanel"/>
                                                         </div>
                                                     </div>
                                                 </ui:repeat>
                                             </div>
                                         </h:panelGroup>
 
-                                        <!-- Add New Patient (shown after Patinets is Empty) -->
-                                        <h:panelGroup rendered="#{patientPortalController.addNewPatient}">
+                                        <!-- Add New Patient button (always visible in list) -->
+                                        <h:panelGroup rendered="#{not empty patientPortalController.searchedPatients}" layout="block">
+                                            <div class="add-patient-wrap">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Add New Patient"
+                                                    icon="fas fa-user-plus"
+                                                    styleClass="btn-add-patient-link"
+                                                    action="#{patientPortalController.addNewPatientAction}"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <!-- No patients found -->
+                                        <h:panelGroup rendered="#{empty patientPortalController.searchedPatients}" layout="block">
                                             <div class="no-patient-wrap">
                                                 <i class="fas fa-user-slash"/>
                                                 <p>No profiles found for this mobile number.</p>
                                                 <div class="btn-send">
                                                     <p:commandButton
                                                         ajax="false"
-                                                        value="Register New Patient"
+                                                        value="Add New Patient"
                                                         icon="fas fa-user-plus"
                                                         action="#{patientPortalController.addNewPatientAction}"/>
                                                 </div>
@@ -1310,8 +1688,8 @@
                                         <div class="welcome-meta">
                                             <span class="patient-meta-pill">
                                                 <i class="fas fa-cake-candles"/>
-                                                #{patientPortalController.patient.person.ageYearsComponent}y
-                                                #{patientPortalController.patient.person.ageMonthsComponent}m
+                                                #{patientPortalController.patient.person.ageYearsComponent}Y
+                                                #{patientPortalController.patient.person.ageMonthsComponent}M
                                             </span>
                                             <span class="patient-meta-pill">
                                                 <i class="fas fa-venus-mars"/>
@@ -1325,17 +1703,45 @@
                                         <div class="welcome-actions">
                                             <div class="btn-send">
                                                 <p:commandButton
-                                                    value="Go to Portal"
+                                                    value="Go to Laboratory"
                                                     icon="fas fa-arrow-right"
-                                                    ajax="false"
-                                                    action="/channel/patient_portal.xhtml?faces-redirect=true"/>
+                                                    ajax="false">
+                                                </p:commandButton>
                                             </div>
+                                            
+                                            <div class="btn-send">
+                                                <p:commandButton
+                                                    value="Go to Channelling"
+                                                    icon="fas fa-arrow-right"
+                                                    ajax="false">
+                                                </p:commandButton>
+                                            </div>
+                                            
+                                            <hr/>
+                                            
                                             <div class="btn-verify">
                                                 <p:commandButton
                                                     value="Switch Profile"
                                                     icon="fas fa-users"
                                                     action="#{patientPortalController.setPatientSelected(false)}"
-                                                    update="globalMessages portalContentPanel"/>
+                                                    update="globalMessages portalContentPanel">
+                                                </p:commandButton>
+                                            </div>
+                                            <div class="add-patient-wrap">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Add New Patient"
+                                                    icon="fas fa-user-plus"
+                                                    styleClass="btn-add-patient-link"
+                                                    action="#{patientPortalController.addNewPatientAction}">
+                                                </p:commandButton>
+                                            </div>
+                                            <div class="btn-logout" style="margin-top:0.75rem">
+                                                <p:commandButton
+                                                    value="Logout"
+                                                    icon="fas fa-right-from-bracket"
+                                                    ajax="false"
+                                                    action="#{patientPortalController.reset}"/>
                                             </div>
                                         </div>
                                     </div>
