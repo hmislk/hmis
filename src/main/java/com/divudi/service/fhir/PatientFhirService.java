@@ -15,9 +15,7 @@ import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.service.PatientService;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.hl7.fhir.r5.model.Bundle;
@@ -32,7 +30,7 @@ import org.hl7.fhir.r5.model.Identifier;
 @Stateless
 public class PatientFhirService {
 
-    static final FhirContext FHIR_CTX = FhirContext.forR5();
+    public static final FhirContext FHIR_CTX = FhirContext.forR5();
 
     @EJB
     private PatientFacade patientFacade;
@@ -144,8 +142,8 @@ public class PatientFhirService {
         }
 
         mapFhirToPerson(fhirPt, person);
-        person.setEditer(editor);
-        person.setEditedAt(new Date());
+//        person.setEditer(editor);
+//        person.setEditedAt(new Date());
         personFacade.edit(person);
 
         // PHN update
