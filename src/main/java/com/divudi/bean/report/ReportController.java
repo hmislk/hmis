@@ -2722,7 +2722,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("bi.item.name, ")
                 .append("bi.item.department.name, ")
                 .append("bi.grossValue, ")
-                .append("itemFee.fee, ") // service value
+                .append("itemFee.fee, ")
                 .append("bi.netValue ")
                 .append(") ")
                 .append("FROM BillItem bi ")
@@ -2734,7 +2734,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("LEFT JOIN rd.person rdPer ")
                 .append("LEFT JOIN bi.item i ")
                 .append("LEFT JOIN i.department iDept ")
-                .append("LEFT JOIN i.itemFeesAuto itemFee ") // <-- fixed line
+                .append("LEFT JOIN i.itemFeesAuto itemFee ") 
                 .append("WHERE bi.retired = :ret ")
                 .append("AND b.retired = :bret ")
                 .append("AND b.cancelled = :can ")
