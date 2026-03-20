@@ -13,9 +13,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.WebUser;
 import com.divudi.service.fhir.PatientFhirService;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -99,8 +97,7 @@ public class PatientFhirApi {
     public Response search(
             @QueryParam("name") String name,
             @QueryParam("phone") String phone,
-            @QueryParam("identifier") String identifier,
-            @QueryParam("birthdate") String birthdate) {
+            @QueryParam("identifier") String identifier) {
 
         WebUser user = validateApiKey();
         if (user == null) {
@@ -223,38 +220,20 @@ public class PatientFhirApi {
     }
 
     private Response unauthorizedResponse() {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", "error");
-        body.put("code", 401);
-        body.put("message", "Invalid or missing FHIR API key");
-        return Response.status(401).entity(toJson(body)).type(javax.ws.rs.core.MediaType.APPLICATION_JSON).build();
+        String body = javax.json.Json.createObjectBuilder()
+                .add("status", "error")
+                .add("code", 401)
+                .add("message", "Invalid or missing FHIR API key")
+                .build().toString();
+        return Response.status(401).entity(body).type(javax.ws.rs.core.MediaType.APPLICATION_JSON).build();
     }
 
     private Response errorResponse(String message, int code) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", "error");
-        body.put("code", code);
-        body.put("message", message);
-        return Response.status(code).entity(toJson(body)).type(javax.ws.rs.core.MediaType.APPLICATION_JSON).build();
-    }
-
-    private String toJson(Map<String, Object> map) {
-        StringBuilder sb = new StringBuilder("{");
-        boolean first = true;
-        for (Map.Entry<String, Object> e : map.entrySet()) {
-            if (!first) {
-                sb.append(",");
-            }
-            first = false;
-            sb.append("\"").append(e.getKey()).append("\":");
-            Object val = e.getValue();
-            if (val instanceof String) {
-                sb.append("\"").append(val).append("\"");
-            } else {
-                sb.append(val);
-            }
-        }
-        sb.append("}");
-        return sb.toString();
+        String body = javax.json.Json.createObjectBuilder()
+                .add("status", "error")
+                .add("code", code)
+                .add("message", message)
+                .build().toString();
+        return Response.status(code).entity(body).type(javax.ws.rs.core.MediaType.APPLICATION_JSON).build();
     }
 }

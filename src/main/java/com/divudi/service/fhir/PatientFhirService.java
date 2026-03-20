@@ -14,8 +14,11 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.service.PatientService;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.hl7.fhir.r5.model.Bundle;
@@ -57,36 +60,45 @@ public class PatientFhirService {
     // -------------------------------------------------------------------------
 
     public List<Patient> searchPatients(String name, String phone, String identifier, int maxResults) {
-        // identifier covers NIC, PHN, and MRN
-        String nic = null;
-        String phn = null;
-        String mrn = null;
-        if (identifier != null && !identifier.trim().isEmpty()) {
-            // Try to determine type from system prefix if present (system|value)
-            if (identifier.contains("|")) {
-                String[] parts = identifier.split("\\|", 2);
-                String system = parts[0];
-                String value = parts[1];
-                if (system.contains("nic")) {
-                    nic = value;
-                } else if (system.contains("phn")) {
-                    phn = value;
-                } else if (system.contains("mrn")) {
-                    mrn = value;
-                } else {
-                    // Unknown system — try all
-                    nic = value;
-                    phn = value;
-                    mrn = value;
-                }
-            } else {
-                // Plain value — search across all identifier fields
-                nic = identifier;
-                phn = identifier;
-                mrn = identifier;
-            }
+        // If name or phone only — single call suffices
+        if (identifier == null || identifier.trim().isEmpty()) {
+            return patientService.searchPatient(name, null, phone, null, null, null, maxResults);
         }
-        return patientService.searchPatient(name, mrn, phone, nic, phn, mrn, maxResults);
+
+        // Determine which identifier field(s) to search
+        // System-prefixed format: "urn:lk:nic|value" routes to one field (AND is safe)
+        if (identifier.contains("|")) {
+            String[] parts = identifier.split("\\|", 2);
+            String system = parts[0];
+            String value = parts[1];
+            String nic = null, phn = null, mrn = null;
+            if (system.contains("nic")) {
+                nic = value;
+            } else if (system.contains("phn")) {
+                phn = value;
+            } else if (system.contains("mrn")) {
+                mrn = value;
+            } else {
+                nic = value; // unknown system — treat as NIC
+            }
+            return patientService.searchPatient(name, mrn, phone, nic, phn, null, maxResults);
+        }
+
+        // Plain value — must search NIC, PHN, MRN separately (OR semantics)
+        // PatientService.searchPatient uses AND, so we run three searches and deduplicate by id
+        String value = identifier.trim();
+        Map<Long, Patient> seen = new LinkedHashMap<>();
+        for (Patient p : patientService.searchPatient(name, null, phone, value, null, null, maxResults)) {
+            if (p.getId() != null) seen.put(p.getId(), p);
+        }
+        for (Patient p : patientService.searchPatient(name, null, phone, null, value, null, maxResults)) {
+            if (p.getId() != null) seen.putIfAbsent(p.getId(), p);
+        }
+        for (Patient p : patientService.searchPatient(name, value, phone, null, null, null, maxResults)) {
+            if (p.getId() != null) seen.putIfAbsent(p.getId(), p);
+        }
+        List<Patient> results = new ArrayList<>(seen.values());
+        return results.size() > maxResults ? results.subList(0, maxResults) : results;
     }
 
     // -------------------------------------------------------------------------
@@ -294,17 +306,17 @@ public class PatientFhirService {
         for (ContactPoint cp : fhirPt.getTelecom()) {
             if (ContactPoint.ContactPointSystem.PHONE.equals(cp.getSystem())) {
                 if (ContactPoint.ContactPointUse.MOBILE.equals(cp.getUse())) {
-                    if (cp.getValue() != null) {
-                        person.setMobile(cp.getValue());
+                    if (cp.getValue() != null && !cp.getValue().trim().isEmpty()) {
+                        person.setMobile(cp.getValue().trim());
                     }
                 } else {
-                    if (cp.getValue() != null) {
-                        person.setPhone(cp.getValue());
+                    if (cp.getValue() != null && !cp.getValue().trim().isEmpty()) {
+                        person.setPhone(cp.getValue().trim());
                     }
                 }
             } else if (ContactPoint.ContactPointSystem.EMAIL.equals(cp.getSystem())) {
-                if (cp.getValue() != null) {
-                    person.setEmail(cp.getValue());
+                if (cp.getValue() != null && !cp.getValue().trim().isEmpty()) {
+                    person.setEmail(cp.getValue().trim());
                 }
             }
         }

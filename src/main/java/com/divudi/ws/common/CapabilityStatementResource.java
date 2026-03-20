@@ -166,7 +166,7 @@ public class CapabilityStatementResource {
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("FHIR Patient", "/api/fhir/Patient",
                         "FHIR R5 Patient search, read, create, update",
-                        "API Key (FHIR header)",
+                        "API Key (use FHIR header, not Finance)",
                         "GET", "POST", "PUT"))
                 .build();
     }
