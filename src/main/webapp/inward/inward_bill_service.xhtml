@@ -15,113 +15,180 @@
 
             <h:panelGroup class="row" rendered="#{billBhtController.patientEncounter eq null}">
                 <div class="col-12">
-                    <h:panelGroup>
-                        <p:panel >
-                            <f:facet name="header">
-                                <div class="d-flex justify-content-between">
+                    <p:panel styleClass="shadow-sm">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-screwdriver-wrench fa-lg text-primary me-3"></i>
                                     <div>
-                                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
-                                        <p:outputLabel value="Patient Details" class="m-2"/>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                            <p:commandButton 
-                                                value="Nursing WorkBench" 
-                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                                                ajax="false"
-                                                class="ui-button-operating-theatre"
-                                                icon="fa fa-arrow-left">
-                                            </p:commandButton>
-                                        </h:panelGroup>
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Inpatient Dashboard"
-                                            icon="fa fa-id-card"
-                                            class="ui-button-secondary"
-                                            action="#{bhtSummeryController.navigateToInpatientProfile()}"
-                                            >
-                                            <f:setPropertyActionListener
-                                                value="#{billBhtController.patientEncounter}"
-                                                target="#{admissionController.current}" >
-                                            </f:setPropertyActionListener>
-                                            <f:setPropertyActionListener
-                                                value="#{billBhtController.patientEncounter}"
-                                                target="#{bhtSummeryController.patientEncounter}" >
-                                            </f:setPropertyActionListener>
-                                        </p:commandButton>
+                                        <h4 class="mb-1 text-primary">Patient Selection</h4>
+                                        <p class="mb-0 text-muted small">Search and select an inpatient to add services</p>
                                     </div>
                                 </div>
-                            </f:facet>
-
-                            <div>
-                                <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
-
-                                <p:autoComplete
-                                    widgetVar="aPt2"
-                                    id="acPt2"
-                                    forceSelection="true"
-                                    value="#{billBhtController.patientEncounter}"
-                                    completeMethod="#{admissionController.completePatient}"
-                                    var="apt2"
-                                    itemLabel="#{apt2.bhtNo}"
-                                    itemValue="#{apt2}"
-                                    size="30"
-                                    inputStyleClass="form-control"
-                                    class="mx-2 w-50"
-                                    >
-                                    <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
-                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{apt2.patient.phn}"/>
-                                    </p:column>
-                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{apt2.bhtNo}"/>
-                                    </p:column>
-                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
-                                        <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <div class="d-flex justify-content-center">
-                                            <span class="#{apt2.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                                #{apt2.discharged ? 'Discharged' : 'Not Discharged'}
-                                            </span>
-                                        </div>
-                                    </p:column>
-                                </p:autoComplete>
-
-                                <p:commandButton
-                                    value="Select"
-                                    ajax="false" >
-                                </p:commandButton>
-
-                                <style>
-                                    .discharged-badge {
-                                        background-color: #f44336;
-                                        color: white;
-                                        padding: 2px 8px;
-                                        border-radius: 12px;
-                                        font-size: 1em;
-                                        font-weight: bold;
-                                    }
-
-                                    .not-discharged-badge {
-                                        background-color: #2196F3;
-                                        color: white;
-                                        padding: 2px 8px;
-                                        border-radius: 12px;
-                                        font-size: 1em;
-                                        font-weight: bold;
-                                    }
-                                </style>
-
+                                <div class="d-flex gap-2">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
                             </div>
+                        </f:facet>
 
-                        </p:panel>
-                    </h:panelGroup>
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-10 col-xl-8">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-4">
+                                        <div class="text-center mb-4">
+                                            <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
+                                            <h5 class="text-dark mb-2">Find Inpatient</h5>
+                                            <p class="text-muted">Search by patient name, BHT number, or PHN to add services</p>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputLabel for="insSelect" styleClass="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-hospital me-2 text-primary"></i>
+                                                    Institution
+                                                </h:outputLabel>
+                                                <p:selectOneMenu id="insSelect"
+                                                                 label="Institution"
+                                                                 value="#{bhtSummeryController.institution}"
+                                                                 style="width:100%">
+                                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                                    <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                                   var="ins"
+                                                                   itemLabel="#{ins.name}"
+                                                                   itemValue="#{ins}" />
+                                                    <p:ajax listener="#{bhtSummeryController.onInstitutionChange}" update="acPt2 pnlPatientPreview" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputLabel for="acPt2" styleClass="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-user me-2 text-primary"></i>
+                                                    Patient Search
+                                                </h:outputLabel>
+                                                <p:autoComplete
+                                                    widgetVar="aPt2"
+                                                    id="acPt2"
+                                                    forceSelection="true"
+                                                    value="#{billBhtController.patientEncounter}"
+                                                    completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
+                                                    var="apt2"
+                                                    itemLabel="#{apt2.bhtNo}"
+                                                    itemValue="#{apt2}"
+                                                    placeholder="Type patient name, BHT number, or PHN..."
+                                                    minQueryLength="2"
+                                                    style="width: 100%;"
+                                                    inputStyleClass="form-control form-control-lg">
+                                                    <p:ajax event="itemSelect" update="pnlPatientPreview" />
+                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
+                                                            <strong>#{apt2.patient.phn}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                                                            <strong class="text-primary">#{apt2.bhtNo}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user me-2 text-success"></i>
+                                                            <span class="fw-medium">#{apt2.patient.person.nameWithTitle}</span>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                                                        <h:panelGroup rendered="#{apt2.currentPatientRoom ne null}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                                <span>#{apt2.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{apt2.currentPatientRoom eq null}">
+                                                            <span class="text-muted">
+                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                            </span>
+                                                        </h:panelGroup>
+                                                    </p:column>
+                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
+                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!apt2.discharged}" />
+                                                    </p:column>
+                                                </p:autoComplete>
+                                            </div>
+                                        </div>
+
+                                        <h:panelGroup id="pnlPatientPreview">
+                                            <h:panelGroup rendered="#{billBhtController.patientEncounter ne null}" layout="block">
+                                                <div class="card border-primary mt-3 mb-3">
+                                                    <div class="card-header bg-primary text-white py-2">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user-check me-2"></i>
+                                                            <strong>Selected Patient</strong>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body py-3">
+                                                        <div class="row">
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Patient Name</small>
+                                                                <strong>#{billBhtController.patientEncounter.patient.person.nameWithTitle}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">BHT No</small>
+                                                                <strong class="text-primary">#{billBhtController.patientEncounter.bhtNo}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">PHN</small>
+                                                                <strong>#{billBhtController.patientEncounter.patient.phn}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">Room</small>
+                                                                <h:panelGroup rendered="#{billBhtController.patientEncounter.currentPatientRoom ne null}">
+                                                                    <strong>#{billBhtController.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                                </h:panelGroup>
+                                                                <h:panelGroup rendered="#{billBhtController.patientEncounter.currentPatientRoom eq null}">
+                                                                    <span class="text-muted">Not assigned</span>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Status</small>
+                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{billBhtController.patientEncounter.discharged}" />
+                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!billBhtController.patientEncounter.discharged}" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <p:commandButton
+                                                    id="btnSelect"
+                                                    ajax="false"
+                                                    value="Continue"
+                                                    icon="fa-solid fa-arrow-right"
+                                                    class="ui-button-success btn-lg"
+                                                    style="min-width: 200px; height: 50px;"
+                                                    title="Continue to add services" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p:panel>
                 </div>
-                <br/><br/>
             </h:panelGroup>
 
             <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">

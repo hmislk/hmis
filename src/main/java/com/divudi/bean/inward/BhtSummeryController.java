@@ -2270,6 +2270,7 @@ public class BhtSummeryController implements Serializable {
 
     public void onInstitutionChange() {
         patientEncounter = null;
+        billBhtController.resetBillData();
         makeNull();
     }
 
