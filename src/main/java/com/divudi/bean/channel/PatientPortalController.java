@@ -48,6 +48,7 @@ import com.divudi.core.util.CommonFunctions;
 @ViewScoped
 public class PatientPortalController implements Serializable {
 
+    
     @EJB
     private StaffFacade staffFacade;
     @EJB
