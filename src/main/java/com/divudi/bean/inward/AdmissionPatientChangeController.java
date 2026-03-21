@@ -9,6 +9,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -50,6 +51,8 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     SessionController sessionController;
     @Inject
     com.divudi.bean.common.PatientController patientController;
+    @Inject
+    AdmissionController admissionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -73,6 +76,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     private boolean showConfirmation;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
+    private Institution institution;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -109,6 +113,25 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
             suggestions = admissionFacade.findByJpql(sql, h, 20);
         }
         return suggestions;
+    }
+
+    public List<Admission> completeAdmissionByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+    }
+
+    public Institution getInstitution() {
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     /**
