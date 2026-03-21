@@ -390,13 +390,13 @@ public class PatientPortalController implements Serializable {
             e.setReceipientNumber(patientphoneNumber);
             e.setSendingMessage(smsBody(otp));
             e.setPending(false);
-            e.setSmsType(MessageType.PatinetPortalOTP);
+            e.setSmsType(MessageType.PatientPortalOTP);
             e.setOtp(otp);
             getSmsFacade().create(e);
             Boolean sent = smsManager.sendSms(e);
             if (sent) {
                 otpSendSuccess = true;
-
+                otpSentTime = new Date();
                 System.out.println("otpSendSuccess = " + otpSendSuccess);
                 System.out.println("Successfuly OTP Send");
                 JsfUtil.addErrorMessage("Successfuly OTP Send");
@@ -467,6 +467,7 @@ public class PatientPortalController implements Serializable {
             System.out.println("searchedPatients = " + searchedPatients);
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
+                patient.setPerson(new Person());
                 System.out.println("Patient not Found ( Active - Add New Patinet)");
                 selectPatient = false;
                 addNewPatient = true;
@@ -511,7 +512,7 @@ public class PatientPortalController implements Serializable {
         Map m = new HashMap();
         Jpql = "select s from Sms s where s.retired =:ret and s.receipientNumber =:mobile and s.smsType =:type order by s.id desc";
         m.put("ret", false);
-        m.put("type", MessageType.PatinetPortalOTP);
+        m.put("type", MessageType.PatientPortalOTP);
         m.put("mobile", patientphoneNumber);
 
         Sms sms = smsFacade.findFirstByJpql(Jpql, m);
@@ -524,16 +525,22 @@ public class PatientPortalController implements Serializable {
             patientEnteredOtp = null;
             JsfUtil.addErrorMessage("Authentication Request SMS Fail.");
         } else {
-            if (patientEnteredOtp.equalsIgnoreCase(sms.getOtp())) {
-                System.out.println("---> OTP Authentication Pass. <---");
-                otpVerify = true;
-                findPatients();
-            } else {
-                System.out.println("<--- OTP Authentication Fail. --->");
-                otpVerify = false;
-                patientEnteredOtp = null;
-                JsfUtil.addErrorMessage("Enter correct authentication code");
+            if (patientEnteredOtp == null || patientEnteredOtp.trim().isEmpty()) {
+                System.out.println("---> OTP Code is Missing. <---");
+                JsfUtil.addErrorMessage("Enter the authentication code.");
+            }else{
+                if (patientEnteredOtp.equalsIgnoreCase(sms.getOtp())) {
+                    System.out.println("---> OTP Authentication Pass. <---");
+                    otpVerify = true;
+                    findPatients();
+                } else {
+                    System.out.println("<--- OTP Authentication Fail. --->");
+                    otpVerify = false;
+                    patientEnteredOtp = null;
+                    JsfUtil.addErrorMessage("Enter correct authentication code");
+                }
             }
+            
         }
     }
 
