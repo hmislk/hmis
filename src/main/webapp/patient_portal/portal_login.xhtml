@@ -1722,6 +1722,10 @@
                                                 <i class="fas fa-venus-mars"/>
                                                 #{patientPortalController.patient.person.sex.label}
                                             </span>
+                                            <span class="patient-meta-pill">
+                                                <i class="fas fa-mobile-screen-button"/>
+                                                #{patientPortalController.patient.person.mobile}
+                                            </span>
                                         </div>
                                         <p class="welcome-subtitle">
                                             You are now signed in to the Patient Portal.
@@ -1753,14 +1757,17 @@
 
                                             <hr/>
 
-                                            <div class="btn-verify">
-                                                <p:commandButton
-                                                    value="Switch Profile"
-                                                    icon="fas fa-users"
-                                                    action="#{patientPortalController.setPatientSelected(false)}"
-                                                    update="globalMessages portalContentPanel">
-                                                </p:commandButton>
-                                            </div>
+                                            <h:panelGroup rendered="#{patientPortalController.searchedPatients.size() gt 1}" layout="block">
+                                                <div class="btn-verify">
+                                                    <p:commandButton
+                                                        value="Switch Profile"
+                                                        icon="fas fa-users"
+                                                        actionListener="#{patientPortalController.setPatientSelected(false)}"
+                                                        action="#{patientPortalController.findPatients()}"
+                                                        update="globalMessages portalContentPanel">
+                                                    </p:commandButton>
+                                                </div>
+                                            </h:panelGroup>
                                             <div class="add-patient-wrap">
                                                 <p:commandButton
                                                     ajax="false"
@@ -1839,7 +1846,7 @@
                         </h:panelGroup>
                         <!-- END portalContentPanel -->
 
-                        <!-- Security footer note -->
+                        <!-- Footer note -->
                         <div class="portal-footer-note">
                             <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Patient Portal - CareCode Logo URL','https://i.ibb.co/V0bCPdZZ/fcare.png')}">
                                 <img src="#{configOptionApplicationController.getLongTextValueByKey('Patient Portal - CareCode Logo URL','https://i.ibb.co/V0bCPdZZ/fcare.png')}"
