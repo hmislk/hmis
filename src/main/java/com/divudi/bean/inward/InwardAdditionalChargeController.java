@@ -142,7 +142,9 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public void onInstitutionChange() {
-        makeNull();
+        current = null;
+        billItemList = null;
+        inwardChargeType = null;
     }
 
     public Institution getInstitution() {
