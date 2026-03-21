@@ -11,13 +11,23 @@
         <ui:composition template="./../index.xhtml">
 
             <ui:define name="subcontent">
-
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css"/>
                 <h:form >
 
                     <p:panel   header="Shift End Summary" class="m-1">
-
-                        <h:panelGrid columns="8" class="w-100">
-                            <h:outputLabel value="From"/>
+                        <h:panelGrid 
+                            columns="8" 
+                            class="ui-fluid w-100"
+                            style="table-layout: fixed;"
+                            columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                        fp-col-extraWidth-label2,fp-col-input2,fp-col-space2,
+                                        fp-col-label3,fp-col-input3">
+                                 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="From"/>
+                                </div>
+                            </h:panelGroup>
                             <p:calendar 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
@@ -28,7 +38,11 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="To"/>                                
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="To"/>          
+                                </div>
+                            </h:panelGroup>                      
                             <p:calendar 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
@@ -40,7 +54,11 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Department"/>       
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="User"/>       
+                                </div>
+                            </h:panelGroup>
                             <p:autoComplete 
                                 forceSelection="true"
                                 value="#{searchController.webUser}"
@@ -55,7 +73,11 @@
                                 >
                             </p:autoComplete>
 
-                            <h:outputLabel value="Institution"/>                                
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Institution"/>            
+                                </div>
+                            </h:panelGroup>                    
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institutions" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
@@ -63,7 +85,11 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Department"/>                                
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Department"/>    
+                                </div>
+                            </h:panelGroup>                            
                             <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
@@ -71,7 +97,11 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Site"/>   
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <div class="fp-label-text">
+                                    <h:outputLabel value="Site"/>   
+                                </div>
+                            </h:panelGroup>
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -87,13 +117,6 @@
                                 class="ui-button-warning mx-1" icon="fas fa-cogs">
                             </p:commandButton>
 
-                            <!-- <p:commandButton 
-                                value="Download Excel" 
-                                ajax="false" 
-                                class="mx-2 ui-button-success" 
-                                icon="fa fa-file-excel">
-                                <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
-                            </p:commandButton> -->
                             <p:commandButton 
                                 value="To Print" 
                                 ajax="false" 
