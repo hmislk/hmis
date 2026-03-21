@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.inward.TransferRequestStatus;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
@@ -37,6 +38,8 @@ public class PatientTransferController implements Serializable {
     private RoomFacilityChargeController roomFacilityChargeController;
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private AdmissionController admissionController;
 
     @EJB
     private AdmissionFacade admissionFacade;
@@ -46,6 +49,7 @@ public class PatientTransferController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
 
     private Admission current;
+    private Institution institution;
     private RoomFacilityCharge targetRoomFacilityCharge;
     private String notes;
     private List<PatientTransferRequest> pendingRequests;
@@ -54,6 +58,25 @@ public class PatientTransferController implements Serializable {
 
     // All transfer requests for the currently selected patient
     private List<PatientTransferRequest> currentAdmissionRequests;
+
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+    }
+
+    public Institution getInstitution() {
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
 
     public String navigateToInitiateTransfer() {
         current = null;
