@@ -3447,8 +3447,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("No document selected or document content is empty");
             return null;
         }
-        try {
-            XWPFDocument document = new XWPFDocument();
+        try (XWPFDocument document = new XWPFDocument()) {
             String htmlContent = encounterReferral.getLobValue();
             String plainText = htmlContent
                     .replaceAll("(?i)<br[^>]*>", "\n")
@@ -3474,7 +3473,6 @@ public class InpatientClinicalDataController implements Serializable {
             }
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             document.write(outputStream);
-            document.close();
             String fileName = "DiagnosisCard";
             if (encounterReferral.getStringValue() != null && !encounterReferral.getStringValue().isEmpty()) {
                 fileName = encounterReferral.getStringValue().replaceAll("[^a-zA-Z0-9.-]", "_");
