@@ -419,8 +419,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToInpatientDiagnosisCard() {
-        inpatientClinicalDataController.setCurrent(current);
-        return inpatientClinicalDataController.navigateToDiagnosisCard();
+        return inpatientClinicalDataController.navigateToDiagnosisCards(current);
     }
 
     public void dateChangeListen() {
