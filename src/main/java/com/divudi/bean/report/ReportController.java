@@ -2649,6 +2649,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.grossValue, ");
         jpql.append("bi.marginValue, ");
         jpql.append("bi.discount, ");
+        jpql.append("bi.bill.netTotal, ");
+        jpql.append("bi.bill.billTypeAtomic, ");
         jpql.append("bi.netValue) ");
         jpql.append("FROM BillItem bi ");
         jpql.append("JOIN bi.item item ");
