@@ -1293,7 +1293,7 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
             double requiredQty = Math.abs(b.getPharmaceuticalBillItem().getQtyInUnit()) + b.getPharmaceuticalBillItem().getFreeQtyInUnit();
             if (freshStock.getStock() < requiredQty) {
                 JsfUtil.addErrorMessage(b.getItem().getName() + " - Insufficient stock. Available: "
-                        + (int) freshStock.getStock() + ", Required: " + (int) requiredQty
+                        + freshStock.getStock().intValue() + ", Required: " + (int) requiredQty
                         + ". Another user may have already sold this stock.");
                 hasIssue = true;
             }
