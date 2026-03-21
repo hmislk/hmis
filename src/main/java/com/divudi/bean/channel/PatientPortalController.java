@@ -224,14 +224,15 @@ public class PatientPortalController implements Serializable {
         patient.setPatientMobileNumber(phoneAsLong);
         patient.getPerson().setPhone(patientphoneNumber);
         patient.getPerson().setMobile(patientphoneNumber);
+        patient.setSelfRegistered(true);
         patientController.save(patient);
         addNewPatient = false;
         patientSelected = true;
         Long phoneAsLongForSearch = com.divudi.core.util.CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
         java.util.Map<String, Object> searchMap = new java.util.HashMap<>();
         searchMap.put("pp", phoneAsLongForSearch);
-        searchedPatients = patientFacade.findByJpql(
-                "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp", searchMap);
+        searchedPatients = patientFacade.findByJpql("select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp", searchMap);
+        
     }
 
     public void selectPatientProfile(Patient selectedPt) {
