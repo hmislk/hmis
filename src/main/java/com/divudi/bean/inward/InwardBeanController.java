@@ -38,8 +38,10 @@ import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.entity.inward.AdmissionNumber;
 import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
@@ -105,6 +107,8 @@ public class InwardBeanController implements Serializable {
     private AdmissionFacade admissionFacade;
     @EJB
     private PatientEncounterFacade encounterFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
 
     @Inject
     BillBeanController billBean;
@@ -114,6 +118,12 @@ public class InwardBeanController implements Serializable {
     SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
+    private Long lastGeneratedBhtLong;
+
+    public Long getLastGeneratedBhtLong() {
+        return lastGeneratedBhtLong;
+    }
 
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
@@ -2200,47 +2210,32 @@ public class InwardBeanController implements Serializable {
     }
 
     public String getBhtText(AdmissionType admissionType) {
-        String bhtText;
-        HashMap hm = new HashMap();
-        Long temp = 0l;
-        String sql;
-
         boolean institutionBasedBht = configOptionApplicationController
                 .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
         Institution currentInstitution = getSessionController().getInstitution();
 
-        if (admissionType != null) {
-            if (admissionType.isGenerateSeparateAdmissionNumber()) {
-                sql = "SELECT count(a.id) FROM Admission a ";
-                sql += " where a.admissionType=:adType ";
-                hm.put("adType", admissionType);
-                if (institutionBasedBht && currentInstitution != null) {
-                    sql += " and a.institution=:ins ";
-                    hm.put("ins", currentInstitution);
-                }
-                temp += admissionType.getAdditionToCount();
-                temp += admissionFacade.countByJpql(sql, hm);
-            } else {
-                sql = "SELECT count(a.id) FROM Admission a ";
-                sql += " where a.admissionType.admissionTypeEnum=:adType ";
-                hm.put("adType", admissionType.getAdmissionTypeEnum());
-                if (institutionBasedBht && currentInstitution != null) {
-                    sql += " and a.institution=:ins ";
-                    hm.put("ins", currentInstitution);
-                }
-                temp += admissionType.getAdditionToCount();
-                temp += admissionFacade.countByJpql(sql, hm);
-            }
-        } else {
-            sql = "SELECT count(a.id) FROM Admission a ";
-            sql += " where a.admissionType.admissionTypeEnum=:adType ";
-            hm.put("adType", admissionType);
-            if (institutionBasedBht && currentInstitution != null) {
-                sql += " and a.institution=:ins ";
-                hm.put("ins", currentInstitution);
-            }
-            temp += admissionFacade.countByJpql(sql);
-        }
+        AdmissionNumber an = billNumberGenerator.fetchNextAdmissionNumber(
+                admissionType, currentInstitution, institutionBasedBht);
+
+        Long temp = an.getLastAdmissionNumber();
+        lastGeneratedBhtLong = temp;
+
+        return formatBhtText(admissionType, temp, institutionBasedBht, currentInstitution);
+    }
+
+    public String getBhtTextPreview(AdmissionType admissionType) {
+        boolean institutionBasedBht = configOptionApplicationController
+                .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
+        Institution currentInstitution = getSessionController().getInstitution();
+
+        Long temp = billNumberGenerator.peekNextAdmissionNumber(
+                admissionType, currentInstitution, institutionBasedBht);
+
+        return formatBhtText(admissionType, temp, institutionBasedBht, currentInstitution);
+    }
+
+    private String formatBhtText(AdmissionType admissionType, Long temp, boolean institutionBasedBht, Institution currentInstitution) {
+        String bhtText;
 
         if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
             bhtText = "BHT" + Long.toString(temp);
@@ -2250,7 +2245,6 @@ public class InwardBeanController implements Serializable {
 
         if (getSessionController().getApplicationPreference().isBhtNumberWithYear()) {
             Calendar c = Calendar.getInstance();
-
             bhtText = bhtText + "/" + c.get(Calendar.YEAR);
         }
 

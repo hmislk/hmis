@@ -12,6 +12,10 @@ import com.divudi.core.data.RequestType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillNumber;
+import com.divudi.core.entity.inward.AdmissionNumber;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.AdmissionNumberFacade;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
@@ -64,6 +68,10 @@ public class BillNumberGenerator {
     ItemFacade itemFacade;
     @EJB
     BillNumberFacade billNumberFacade;
+    @EJB
+    AdmissionNumberFacade admissionNumberFacade;
+    @EJB
+    AdmissionFacade admissionFacade;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -3511,6 +3519,141 @@ public class BillNumberGenerator {
         result.append(String.format("%06d", dd));
 
         return result.toString();
+    }
+
+    // ========== BHT (Admission) Number Generation ==========
+
+    private String getBhtLockKey(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        String typeKey;
+        if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
+            typeKey = "AT-" + (admissionType.getId() != null ? admissionType.getId().toString() : "null");
+        } else {
+            typeKey = "ATE-" + (admissionType != null && admissionType.getAdmissionTypeEnum() != null
+                    ? admissionType.getAdmissionTypeEnum().name() : "null");
+        }
+        String insKey = (institutionBased && institution != null) ? institution.getId().toString() : "global";
+        return "BHT-" + typeKey + "-" + insKey;
+    }
+
+    public AdmissionNumber fetchNextAdmissionNumber(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchNextAdmissionNumberSynchronized(admissionType, institution, institutionBased);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Long peekNextAdmissionNumber(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased);
+            if (an == null) {
+                // No counter yet — compute what the first number would be
+                Long count = computeAdmissionCount(admissionType, institution, institutionBased);
+                long addition = (admissionType != null) ? admissionType.getAdditionToCount() : 0;
+                return count + addition + 1;
+            } else {
+                Long last = an.getLastAdmissionNumber();
+                if (last == null) {
+                    last = 0L;
+                }
+                return last + 1;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private AdmissionNumber fetchNextAdmissionNumberSynchronized(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased);
+
+        if (an == null) {
+            // Self-initialize from existing count
+            Long count = computeAdmissionCount(admissionType, institution, institutionBased);
+            long addition = (admissionType != null) ? admissionType.getAdditionToCount() : 0;
+
+            an = new AdmissionNumber();
+            if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
+                an.setAdmissionType(admissionType);
+            }
+            if (admissionType != null) {
+                an.setAdmissionTypeEnum(admissionType.getAdmissionTypeEnum());
+            }
+            if (institutionBased && institution != null) {
+                an.setInstitution(institution);
+            }
+            an.setLastAdmissionNumber(count + addition);
+            admissionNumberFacade.createAndFlush(an);
+        }
+
+        // Increment
+        Long last = an.getLastAdmissionNumber();
+        if (last == null) {
+            last = 0L;
+        }
+        an.setLastAdmissionNumber(last + 1);
+        admissionNumberFacade.editAndFlush(an);
+
+        return an;
+    }
+
+    private AdmissionNumber findAdmissionNumberRecord(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        StringBuilder sql = new StringBuilder("SELECT an FROM AdmissionNumber an WHERE an.retired=false");
+        HashMap<String, Object> hm = new HashMap<>();
+
+        if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
+            sql.append(" AND an.admissionType=:adType");
+            hm.put("adType", admissionType);
+        } else {
+            sql.append(" AND an.admissionType IS NULL");
+            if (admissionType != null && admissionType.getAdmissionTypeEnum() != null) {
+                sql.append(" AND an.admissionTypeEnum=:adTypeEnum");
+                hm.put("adTypeEnum", admissionType.getAdmissionTypeEnum());
+            } else {
+                sql.append(" AND an.admissionTypeEnum IS NULL");
+            }
+        }
+
+        if (institutionBased && institution != null) {
+            sql.append(" AND an.institution=:ins");
+            hm.put("ins", institution);
+        } else {
+            sql.append(" AND an.institution IS NULL");
+        }
+
+        return admissionNumberFacade.findFreshByJpql(sql.toString(), hm);
+    }
+
+    private Long computeAdmissionCount(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        StringBuilder sql = new StringBuilder("SELECT count(a.id) FROM Admission a");
+        HashMap<String, Object> hm = new HashMap<>();
+
+        if (admissionType != null) {
+            if (admissionType.isGenerateSeparateAdmissionNumber()) {
+                sql.append(" WHERE a.admissionType=:adType");
+                hm.put("adType", admissionType);
+            } else {
+                sql.append(" WHERE a.admissionType.admissionTypeEnum=:adTypeEnum");
+                hm.put("adTypeEnum", admissionType.getAdmissionTypeEnum());
+            }
+        } else {
+            sql.append(" WHERE a.admissionType.admissionTypeEnum IS NULL");
+        }
+
+        if (institutionBased && institution != null) {
+            sql.append(" AND a.institution=:ins");
+            hm.put("ins", institution);
+        }
+
+        Long count = admissionFacade.countByJpql(sql.toString(), hm);
+        return (count != null) ? count : 0L;
     }
 
 }

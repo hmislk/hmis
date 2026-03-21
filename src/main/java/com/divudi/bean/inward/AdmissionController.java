@@ -1848,10 +1848,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
             }
         }
-//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
+        if (getInwardBean().getLastGeneratedBhtLong() != null) {
+            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+        }
 
-        //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -1979,10 +1980,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
             }
         }
-//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
+        if (getInwardBean().getLastGeneratedBhtLong() != null) {
+            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+        }
 
-        //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -2217,7 +2219,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
-        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
 
         getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
     }
