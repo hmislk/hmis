@@ -1118,15 +1118,13 @@
                                                 </f:facet>
 
                                                 <div class="mt-3">
-                                                    <p:textEditor
-                                                        style="width: 100%; min-height: 400px;"
-                                                        toolbarVisible="false"
-                                                        id="txeLetterPreview"
-                                                        rendered="#{patientEncounterController.encounterReferral.lobValue ne null}"
-                                                        secure="false"
-                                                        value="#{patientEncounterController.encounterReferral.lobValue}"
-                                                        placeholder="Select a document from the list to view its content">
-                                                    </p:textEditor>
+                                                    <h:panelGroup id="txeLetterPreview" layout="block"
+                                                        style="width: 100%; min-height: 400px; border: 1px solid #dee2e6; padding: 10px; overflow-y: auto;"
+                                                        rendered="#{patientEncounterController.encounterReferral.lobValue ne null}">
+                                                        <h:outputText
+                                                            value="#{patientEncounterController.encounterReferralContentForDisplay}"
+                                                            escape="false" />
+                                                    </h:panelGroup>
 
                                                     <h:panelGroup rendered="#{patientEncounterController.encounterReferral.lobValue eq null}" layout="block" styleClass="text-center py-5">
                                                         <h:outputText value="No document selected" styleClass="text-muted fs-5"/>
