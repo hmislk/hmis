@@ -15,6 +15,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -142,7 +143,8 @@ public class ApiInward {
     @Path("/admissions")
     @Produces("application/json")
     public String getAddmissions(@HeaderParam("Finance") String key) {
-        if (validateApiKey(key) == null) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
             return unauthorizedJson();
         }
 
@@ -170,7 +172,7 @@ public class ApiInward {
                     }
                     if (pe.getFinalBill() != null) {
                         double netTotal = pe.getFinalBill().getNetTotal();
-                        double paidAmount = pe.getFinalBill().getPaidAmount();
+                        double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
                         object.put("net_total", netTotal);
                         object.put("paid_amount", paidAmount);
                         object.put("balance", netTotal - paidAmount);
@@ -198,7 +200,8 @@ public class ApiInward {
     @Path("/admissions/byPhone/{phone}")
     @Produces("application/json")
     public String getAdmissionsByPhone(@HeaderParam("Finance") String key, @PathParam("phone") String phone) {
-        if (validateApiKey(key) == null) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
             return unauthorizedJson();
         }
 
@@ -220,7 +223,7 @@ public class ApiInward {
                     }
                     if (pe.getFinalBill() != null) {
                         double netTotal = pe.getFinalBill().getNetTotal();
-                        double paidAmount = pe.getFinalBill().getPaidAmount();
+                        double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
                         object.put("net_total", netTotal);
                         object.put("paid_amount", paidAmount);
                         object.put("balance", netTotal - paidAmount);
@@ -248,7 +251,8 @@ public class ApiInward {
     @Path("/banks")
     @Produces("application/json")
     public String getBanks(@HeaderParam("Finance") String key) {
-        if (validateApiKey(key) == null) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
             return unauthorizedJson();
         }
 
@@ -285,7 +289,8 @@ public class ApiInward {
     public String getAdmissionIsValidate(@HeaderParam("Finance") String key,
             @PathParam("bht_no") String bht_no,
             @PathParam("phone") String phone) {
-        if (validateApiKey(key) == null) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
             return unauthorizedJson();
         }
 
@@ -314,7 +319,8 @@ public class ApiInward {
     @Consumes("application/json")
     @Produces("application/json")
     public String postPayment(@HeaderParam("Finance") String key, String body) {
-        if (validateApiKey(key) == null) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
             return unauthorizedJson();
         }
 
@@ -331,8 +337,13 @@ public class ApiInward {
                 if (dateStr != null && !dateStr.isEmpty()) {
                     try {
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        sdf.setLenient(false);
                         paymentDate = sdf.parse(dateStr);
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        jSONObjectOut.put("bill", "");
+                        jSONObjectOut.put("error", "1");
+                        jSONObjectOut.put("error_description", "Invalid payment_date format. Expected: yyyy-MM-dd HH:mm:ss");
+                        return jSONObjectOut.toString();
                     }
                 }
             }
@@ -365,7 +376,7 @@ public class ApiInward {
             pmd.getOnlineSettlement().setTotalValue(amount);
             pmd.getOnlineSettlement().setDate(paymentDate);
 
-            Bill b = payWithPaymentRecord(PaymentMethod.OnlineSettlement, pe, amount, pmd);
+            Bill b = payWithPaymentRecord(PaymentMethod.OnlineSettlement, pe, amount, pmd, authenticatedUser);
             if (b != null) {
                 JSONObject object = new JSONObject();
                 object.put("bill_no", b.getDeptId());
@@ -398,7 +409,8 @@ public class ApiInward {
     public String getPayment(@HeaderParam("Finance") String key,
             @PathParam("bht_no") String bht_no, @PathParam("bank_id") String bank_id,
             @PathParam("credit_card_ref") String credit_card_ref, @PathParam("amount") String amount) {
-        if (validateApiKey(key) == null) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
             return unauthorizedJson();
         }
 
@@ -406,12 +418,13 @@ public class ApiInward {
         try {
             PatientEncounter pe = fetchPatientEncounter(bht_no);
             Institution bank = fetchBank(Long.parseLong(bank_id));
-            if (pe != null && bank != null && Long.parseLong(amount) > 0) {
+            double parsedAmount = Double.parseDouble(amount);
+            if (pe != null && bank != null && parsedAmount > 0) {
                 PaymentMethodData pmd = new PaymentMethodData();
-                pmd.getCreditCard().setNo(credit_card_ref);
-                pmd.getCreditCard().setInstitution(bank);
+                pmd.getOnlineSettlement().setReferenceNo(credit_card_ref);
+                pmd.getOnlineSettlement().setInstitution(bank);
 
-                Bill b = pay(PaymentMethod.OnlineSettlement, pe, Long.parseLong(amount), pmd);
+                Bill b = pay(PaymentMethod.OnlineSettlement, pe, parsedAmount, pmd);
                 if (b != null) {
                     JSONObject object = new JSONObject();
                     object.put("bill_no_ins", b.getInsId());
@@ -478,7 +491,6 @@ public class ApiInward {
             if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
                 removeTemps.add(p);
             }
-            p.getFinalBill().setPaidAmount(d + p.getFinalBill().getPaidAmount());
         }
         temps.removeAll(removeTemps);
         suggestions.addAll(temps);
@@ -522,7 +534,6 @@ public class ApiInward {
             if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
                 removeTemps.add(p);
             }
-            p.getFinalBill().setPaidAmount(d + p.getFinalBill().getPaidAmount());
         }
         temps.removeAll(removeTemps);
         suggestions.addAll(temps);
@@ -573,7 +584,7 @@ public class ApiInward {
     /**
      * New payment method: creates bill AND records to payment table.
      */
-    public Bill payWithPaymentRecord(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd) {
+    public Bill payWithPaymentRecord(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
         BilledBill bill = new BilledBill();
         bill.setPatientEncounter(patientEncounter);
         bill.setPaymentMethod(paymentMethod);
@@ -583,16 +594,17 @@ public class ApiInward {
             return null;
         }
 
-        bill = saveBill(bill, pmd);
+        bill = saveBill(bill, pmd, createdBy);
         if (bill == null) {
             return null;
         }
 
-        saveBillItem(bill);
-        getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
+        saveBillItem(bill, createdBy);
 
-        // Record payment to payment table
-        paymentService.createPayment(bill, paymentMethod, pmd, bill.getInstitution(), bill.getDepartment(), null);
+        // Record payment to payment table (before updateInwardDipositList, matching UI order)
+        paymentService.createPayment(bill, paymentMethod, pmd, bill.getInstitution(), bill.getDepartment(), createdBy);
+
+        getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
 
         if (bill.getPatientEncounter().isPaymentFinalized()) {
             getInwardBeanController().updateFinalFill(bill.getPatientEncounter());
@@ -617,13 +629,13 @@ public class ApiInward {
             return null;
         }
 
-        bill = saveBill(bill, pmd);
+        bill = saveBill(bill, pmd, null);
 
         if (bill == null) {
             return null;
         }
 
-        saveBillItem(bill);
+        saveBillItem(bill, null);
 
         getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
 
@@ -638,13 +650,14 @@ public class ApiInward {
         return getBillFacade().find(bill.getId());
     }
 
-    private BilledBill saveBill(BilledBill b, PaymentMethodData pmd) {
+    private BilledBill saveBill(BilledBill b, PaymentMethodData pmd, WebUser createdBy) {
         getBillBeanController().setPaymentMethodData(b, b.getPaymentMethod(), pmd);
         Bill temp = findLastPaymentBill();
         if (temp == null) {
             return null;
         }
         b.setBillType(BillType.InwardPaymentBill);
+        b.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT);
         if (temp.getInstitution() != null) {
             b.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(temp.getInstitution(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         }
@@ -661,6 +674,7 @@ public class ApiInward {
         b.setTotal(dbl);
         b.setNetTotal(dbl);
         b.setCreatedAt(new Date());
+        b.setCreater(createdBy);
         b.setComments("Online Payment");
 
         if (b.getId() == null) {
@@ -670,12 +684,13 @@ public class ApiInward {
         return b;
     }
 
-    private void saveBillItem(Bill b) {
+    private void saveBillItem(Bill b, WebUser createdBy) {
         BillItem temBi = new BillItem();
         temBi.setBill(b);
         temBi.setGrossValue(b.getTotal());
         temBi.setNetValue(b.getTotal());
         temBi.setCreatedAt(new Date());
+        temBi.setCreater(createdBy);
 
         if (temBi.getId() == null) {
             getBillItemFacade().create(temBi);
@@ -717,8 +732,9 @@ public class ApiInward {
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
-                + " and i.id=" + id;
-        Institution bank = getInstitutionFacade().findFirstByJpql(sql);
+                + " and i.id=:id";
+        m.put("id", id);
+        Institution bank = getInstitutionFacade().findFirstByJpql(sql, m);
         return bank;
     }
 
