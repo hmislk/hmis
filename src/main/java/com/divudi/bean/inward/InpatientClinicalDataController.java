@@ -1616,6 +1616,35 @@ public class InpatientClinicalDataController implements Serializable {
         return "/inward/inward_clinical_assessment_list";
     }
 
+    public String navigateToCurrentAssessment() {
+        if (current == null) {
+            return "/inward/inward_clinical_assessment_list";
+        }
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        return "/inward/inward_clinical_assessment";
+    }
+
+    public String navigateToAssessmentInwardMedicines() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No assessment selected.");
+            return "";
+        }
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        return "/inward/inward_assessment_inward_medicines";
+    }
+
+    public String navigateToAssessmentDischargeMedicines() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No assessment selected.");
+            return "";
+        }
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        return "/inward/inward_assessment_discharge_medicines";
+    }
+
     public PatientEncounter getParentAdmission() {
         return parentAdmission;
     }
@@ -1855,6 +1884,10 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void addEncounterMedicine() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
+            return;
+        }
         if (getEncounterMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
@@ -1879,6 +1912,10 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void addDischargeMedicine() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
+            return;
+        }
         if (getDischargeMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;

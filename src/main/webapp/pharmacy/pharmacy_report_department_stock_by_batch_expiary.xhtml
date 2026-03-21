@@ -129,8 +129,7 @@
                                                          ajax="false" value="Process"
                                                          actionListener="#{reportsStock.fillDepartmentExpiaryStockDtos()}" />
                                         <p:commandButton class="ui-button-info m-1" icon="fas fa-print"
-                                                         value="Print" ajax="false">
-                                            <p:printer target="gpBillPreview" />
+                                                         value="To Print" ajax="false" action="pharmacy_report_department_stock_by_batch_expiary_print?faces-redirect=true">
                                         </p:commandButton>
                                         <p:commandButton icon="fas fa-file-excel" class="ui-button-success m-1"
                                                          value="Excel" ajax="false">
