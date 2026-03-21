@@ -1512,7 +1512,7 @@ PatientInvestigationController patientInvestigationController;
         XSSFSheet sheet = workbook.getSheetAt(0); // ✅ Sheet exists now
 
         // Shift all existing rows down by 2 to make room for title rows
-        int titleRows = 1;
+        int titleRows = 2;
         sheet.shiftRows(0, sheet.getLastRowNum(), titleRows);
 
         // --- Row 0: Main Title ---
@@ -1551,7 +1551,9 @@ PatientInvestigationController patientInvestigationController;
         subCell.setCellStyle(subStyle);
 
         // --- Merge title across all columns ---
-        int lastCol = sheet.getRow(titleRows).getLastCellNum() - 1;
+        XSSFRow headerRow = sheet.getRow(titleRows);
+        int lastCol = headerRow != null ? headerRow.getLastCellNum() - 1 : 9;
+        
         if (lastCol < 1) lastCol = 9; // fallback
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, lastCol));
         sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, lastCol));

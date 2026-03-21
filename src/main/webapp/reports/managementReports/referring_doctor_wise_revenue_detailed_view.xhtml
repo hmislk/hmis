@@ -11,10 +11,10 @@
             <ui:define name="content">
 
                 <h:form >
-                    <p:panel header="Referring Doctor Wise Revenue Detialed Print" styleClass="w-100">
+                    <p:panel header="Referring Doctor Wise Revenue Detailed Print" styleClass="w-100">
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
-                                <h:outputText value="Referring Doctor Wise Revenue Detialed Print" class="mt-2"/>
+                                <h:outputText value="Referring Doctor Wise Revenue Detailed Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
@@ -240,9 +240,7 @@
                                                         <h:outputText value="#{i.index +1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.deptId}" style="margin-left 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
+                                                        <h:outputText value="#{row.bill.deptId}" style="margin-left:1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.referredBy.person.nameWithTitle}" style="margin-left: 1mm;"/>
@@ -258,7 +256,7 @@
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{patientInvestigationController.getPatientInvestigationFromBillItem(row) ne null ?
                                              patientInvestigationController.getPatientInvestigationFromBillItem(row).status :
-                                             '-'}" style="margin-left 1mm;"/>
+                                             '-'}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 10mm; text-align: right;">
                                                         <h:outputText value="#{row.collectingCentreFee}" style="margin-right: 1mm;">

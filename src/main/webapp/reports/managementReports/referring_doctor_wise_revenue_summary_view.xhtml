@@ -201,7 +201,7 @@
                                                     <h:outputText value="S.No" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
-                                                    <h:outputText value="referring Doctor" style="margin-right: 1mm;"/>
+                                                    <h:outputText value="Referring Doctor" style="margin-right: 1mm;"/>
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Agent Name" style="margin-right: 1mm;"/>
@@ -237,9 +237,7 @@
                                                         <h:outputText value="#{i.index +1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.doctor.nameWithTitle}" style="margin-left 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
+                                                        <h:outputText value="#{row.doctor.nameWithTitle}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
                                                         <h:outputText value="#{row.billItem.bill.collectingCentre.name}" style="margin-left: 1mm;"/>
@@ -253,7 +251,9 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.hosFee}" style="margin-right: 1mm;"/>
+                                                        <h:outputText value="#{row.hosFee}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
                                                     </td>
                                                     <td style="width: 10mm; text-align: right;">
                                                         <h:outputText value="#{row.ccFee}" style="margin-right: 1mm;">

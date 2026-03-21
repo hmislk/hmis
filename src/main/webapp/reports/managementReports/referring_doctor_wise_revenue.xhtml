@@ -361,7 +361,7 @@
                                 value="To Print"
                                 styleClass="ui-button-info m-1"
                                 icon="fa-solid fa-print"
-                                action="referring_doctor_wise_revenue_detialed_view?faces-redirect=true"
+                                action="referring_doctor_wise_revenue_detailed_view?faces-redirect=true"
                                 rendered="#{reportController.reportType eq 'Detail'}"/>
                         <p:commandButton
                                 value="To Print"
@@ -509,7 +509,7 @@
                     </p:panel>
 
                     <p:panel 
-                            header="Referring Doctor Summary Report "
+                            header="Referring Doctor Detailed Report "
                              rendered="#{reportController.reportType eq 'Detail'}">
 
                         <p:dataTable id="tblDetail" value="#{reportController.billItems}" var="bi" rowIndexVar="rowIndex"
