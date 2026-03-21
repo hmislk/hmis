@@ -219,6 +219,14 @@ public class PatientPortalController implements Serializable {
             return;
         }
 
+        String email = patient.getPerson().getEmail();
+        if (email != null && !email.trim().isEmpty()) {
+            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                JsfUtil.addErrorMessage("Invalid Email Address. Please enter a valid email (e.g. user@example.com).");
+                return;
+            }
+        }
+
         Long phoneAsLong = com.divudi.core.util.CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
         patient.setPatientPhoneNumber(phoneAsLong);
         patient.setPatientMobileNumber(phoneAsLong);

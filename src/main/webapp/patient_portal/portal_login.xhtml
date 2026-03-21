@@ -1555,7 +1555,9 @@
                                                             id="newPatientEmail"
                                                             value="#{patientPortalController.patient.person.email}"
                                                             placeholder="Enter email address"
-                                                            autocomplete="off"/>
+                                                            autocomplete="off">
+                                                        </p:inputText>
+                                                        <p:message for="newPatientEmail" display="text"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1601,7 +1603,7 @@
                                                 value="Save Patient"
                                                 icon="fas fa-floppy-disk"
                                                 action="#{patientPortalController.saveNewPatient}"
-                                                update="globalMessages portalContentPanel"/>
+                                                update="globalMessages portalContentPanel newPatientEmail"/>
                                         </div>
                                         <div class="add-patient-wrap">
                                             <p:commandButton
