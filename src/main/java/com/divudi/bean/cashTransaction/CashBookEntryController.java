@@ -12,6 +12,7 @@ import com.divudi.core.data.CashBookEntryData;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.DepartmentsGroupedIntoInstitutions;
 import com.divudi.core.data.SitesGroupedIntoInstitutions;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
@@ -70,6 +71,8 @@ public class CashBookEntryController implements Serializable {
 
     boolean doNotWriteCashBookEntriesAtBillingForAnyPaymentMethod = true;
     private List<SitesGroupedIntoInstitutions> sitesGroupedIntoInstitutionses;
+    private List<DepartmentsGroupedIntoInstitutions> departmentsGroupedIntoInstitutionses;
+    private List<Institution> fromInstitutions;
     private List<Date> dates;
 
     private Date fromDate;
@@ -528,6 +531,474 @@ public class CashBookEntryController implements Serializable {
         System.out.println("jpql = " + jpql);
         Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
         return result;
+    }
+
+    public void generateDailyCashbookSummaryByDepartment() {
+        departmentsGroupedIntoInstitutionses = new ArrayList<>();
+
+        Date fd = CommonFunctions.getStartOfDay(fromDate);
+        Date td = CommonFunctions.getEndOfDay(toDate);
+
+        List<Department> departmentsFromCashBookEntries = fetchFromDepartmentsFromCashbookEntries(fd, td);
+
+        Map<Institution, List<Department>> institutionToDepartmentsMap = new HashMap<>();
+
+        for (Department d : departmentsFromCashBookEntries) {
+            Institution institution = d.getInstitution();
+            institutionToDepartmentsMap
+                    .computeIfAbsent(institution, k -> new ArrayList<>())
+                    .add(d);
+        }
+
+        for (Map.Entry<Institution, List<Department>> entry : institutionToDepartmentsMap.entrySet()) {
+            DepartmentsGroupedIntoInstitutions grouped = new DepartmentsGroupedIntoInstitutions();
+            grouped.setInstitution(entry.getKey());
+            List<Department> uniqueDepts = new ArrayList<>(new HashSet<>(entry.getValue()));
+            grouped.setDepartments(uniqueDepts);
+            departmentsGroupedIntoInstitutionses.add(grouped);
+        }
+
+        dates = getDatesInRange(fromDate, toDate);
+    }
+
+    public List<Department> fetchFromDepartmentsFromCashbookEntries(Date fd, Date td) {
+        String jpql = "select d "
+                + " from CashBookEntry cbe "
+                + " join cbe.fromDepartment d "
+                + " where cbe.retired = :ret "
+                + " and cbe.createdAt between :fd and :td "
+                + " group by d";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("fd", fd);
+        params.put("td", td);
+        return departmentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public Double fetchStartingBalanceForFromDepartment(Date date, Department department) {
+        if (department == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromDepartment.id = :deptId"
+                + " and cbe.createdAt < :st"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("deptId", department.getId());
+        params.put("st", CommonFunctions.getStartOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (cbe != null) {
+            return cbe.getFromDepartmentBalanceAfter();
+        }
+        return null;
+    }
+
+    public Double fetchStartingBalanceForFromDepartment(Date date, Department department, String paymentMethodStr) {
+        if (department == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromDepartment.id = :deptId"
+                + " and cbe.createdAt < :st"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("deptId", department.getId());
+        params.put("st", CommonFunctions.getStartOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (cbe != null) {
+            switch (paymentMethod) {
+                case Agent: return cbe.getFromDepartmentAgentBalanceAfter();
+                case Card: return cbe.getFromDepartmentCardBalanceAfter();
+                case Cheque: return cbe.getFromDepartmentChequeBalanceAfter();
+                case Slip: return cbe.getFromDepartmentSlipBalanceAfter();
+                case ewallet: return cbe.getFromDepartmentEwalletBalanceAfter();
+                case PatientDeposit: return cbe.getFromDepartmentPatientDepositBalanceAfter();
+                case PatientPoints: return cbe.getFromDepartmentPatientPointsBalanceAfter();
+                case OnlineSettlement: return cbe.getFromDepartmentOnlineSettlementBalanceAfter();
+                case Cash: return cbe.getFromDepartmentCashBalanceAfter();
+                case Credit: return cbe.getFromDepartmentCreditBalanceAfter();
+                case IOU: return cbe.getFromDepartmentIouBalanceAfter();
+                case Staff: return cbe.getFromDepartmentStaffBalanceAfter();
+                case Staff_Welfare: return cbe.getFromDepartmentStaffWelfareBalanceAfter();
+                case Voucher: return cbe.getFromDepartmentVoucherBalanceAfter();
+                default: return cbe.getFromDepartmentBalanceAfter();
+            }
+        }
+        return null;
+    }
+
+    public Double fetchEndingBalanceForFromDepartment(Date date, Department department) {
+        if (department == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromDepartment.id = :deptId"
+                + " and cbe.createdAt < :et"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("deptId", department.getId());
+        params.put("et", CommonFunctions.getEndOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (cbe != null) {
+            return cbe.getFromDepartmentBalanceAfter();
+        }
+        return null;
+    }
+
+    public Double fetchEndingBalanceForFromDepartment(Date date, Department department, String paymentMethodStr) {
+        if (department == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromDepartment.id = :deptId"
+                + " and cbe.createdAt < :et"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("deptId", department.getId());
+        params.put("et", CommonFunctions.getEndOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (cbe != null) {
+            switch (paymentMethod) {
+                case Agent: return cbe.getFromDepartmentAgentBalanceAfter();
+                case Card: return cbe.getFromDepartmentCardBalanceAfter();
+                case Cheque: return cbe.getFromDepartmentChequeBalanceAfter();
+                case Slip: return cbe.getFromDepartmentSlipBalanceAfter();
+                case ewallet: return cbe.getFromDepartmentEwalletBalanceAfter();
+                case PatientDeposit: return cbe.getFromDepartmentPatientDepositBalanceAfter();
+                case PatientPoints: return cbe.getFromDepartmentPatientPointsBalanceAfter();
+                case OnlineSettlement: return cbe.getFromDepartmentOnlineSettlementBalanceAfter();
+                case Cash: return cbe.getFromDepartmentCashBalanceAfter();
+                case Credit: return cbe.getFromDepartmentCreditBalanceAfter();
+                case IOU: return cbe.getFromDepartmentIouBalanceAfter();
+                case Staff: return cbe.getFromDepartmentStaffBalanceAfter();
+                case Staff_Welfare: return cbe.getFromDepartmentStaffWelfareBalanceAfter();
+                case Voucher: return cbe.getFromDepartmentVoucherBalanceAfter();
+                default: return cbe.getFromDepartmentBalanceAfter();
+            }
+        }
+        return null;
+    }
+
+    public Double fetchSumOfEntryValuesForFromDepartment(Date date, Department department) {
+        if (department == null) {
+            return null;
+        }
+        String jpql = "select sum(cbe.entryValue) "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromDepartment = :dept"
+                + " and cbe.createdAt > :eds"
+                + " and cbe.createdAt < :ede";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("dept", department);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        return departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public Double fetchSumOfEntryValuesForFromDepartment(Date date, Department department, String paymentMethodStr) {
+        if (department == null) {
+            return null;
+        }
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        String jpqlField;
+        switch (paymentMethod) {
+            case Agent: jpqlField = "agentValue"; break;
+            case Card: jpqlField = "cardValue"; break;
+            case Cheque: jpqlField = "chequeValue"; break;
+            case Slip: jpqlField = "slipValue"; break;
+            case ewallet: jpqlField = "ewalletValue"; break;
+            case PatientDeposit: jpqlField = "patientDepositValue"; break;
+            case PatientPoints: jpqlField = "patientPointsValue"; break;
+            case OnlineSettlement: jpqlField = "onlineSettlementValue"; break;
+            case Cash: jpqlField = "cashValue"; break;
+            case Credit: jpqlField = "creditValue"; break;
+            case IOU: jpqlField = "iouValue"; break;
+            case Staff: jpqlField = "staffValue"; break;
+            case Staff_Welfare: jpqlField = "staffWelfareValue"; break;
+            case Voucher: jpqlField = "voucherValue"; break;
+            default: jpqlField = "cashValue";
+        }
+        String jpql = "select sum(cbe." + jpqlField + ") "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromDepartment = :dept"
+                + " and cbe.createdAt > :eds"
+                + " and cbe.createdAt < :ede";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("dept", department);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        return departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<DepartmentsGroupedIntoInstitutions> getDepartmentsGroupedIntoInstitutionses() {
+        return departmentsGroupedIntoInstitutionses;
+    }
+
+    public void setDepartmentsGroupedIntoInstitutionses(List<DepartmentsGroupedIntoInstitutions> departmentsGroupedIntoInstitutionses) {
+        this.departmentsGroupedIntoInstitutionses = departmentsGroupedIntoInstitutionses;
+    }
+
+    public List<Institution> getFromInstitutions() {
+        return fromInstitutions;
+    }
+
+    public void setFromInstitutions(List<Institution> fromInstitutions) {
+        this.fromInstitutions = fromInstitutions;
+    }
+
+    public void generateDailyCashbookSummaryByInstitution() {
+        Date fd = CommonFunctions.getStartOfDay(fromDate);
+        Date td = CommonFunctions.getEndOfDay(toDate);
+        fromInstitutions = fetchFromInstitutionsFromCashbookEntries(fd, td);
+        dates = getDatesInRange(fromDate, toDate);
+    }
+
+    public List<Institution> fetchFromInstitutionsFromCashbookEntries(Date fd, Date td) {
+        String jpql = "select distinct cbe.fromInstitution "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution is not null"
+                + " and cbe.createdAt between :fd and :td"
+                + " order by cbe.fromInstitution.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("fd", fd);
+        params.put("td", td);
+        List list = cashbookEntryFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<Institution> result = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Institution) {
+                result.add((Institution) obj);
+            }
+        }
+        return result;
+    }
+
+    public Double fetchStartingBalanceForFromInstitution(Date date, Institution institution) {
+        if (institution == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution.id = :insId"
+                + " and cbe.createdAt < :st"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("insId", institution.getId());
+        params.put("st", CommonFunctions.getStartOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (cbe != null) {
+            return cbe.getFromInstitutionBalanceAfter();
+        }
+        return null;
+    }
+
+    public Double fetchStartingBalanceForFromInstitution(Date date, Institution institution, String paymentMethodStr) {
+        if (institution == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution.id = :insId"
+                + " and cbe.createdAt < :st"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("insId", institution.getId());
+        params.put("st", CommonFunctions.getStartOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (cbe != null) {
+            switch (paymentMethod) {
+                case Agent: return cbe.getFromInstitutionAgentBalanceAfter();
+                case Card: return cbe.getFromInstitutionCardBalanceAfter();
+                case Cheque: return cbe.getFromInstitutionChequeBalanceAfter();
+                case Slip: return cbe.getFromInstitutionSlipBalanceAfter();
+                case ewallet: return cbe.getFromInstitutionEwalletBalanceAfter();
+                case PatientDeposit: return cbe.getFromInstitutionPatientDepositBalanceAfter();
+                case PatientPoints: return cbe.getFromInstitutionPatientPointsBalanceAfter();
+                case OnlineSettlement: return cbe.getFromInstitutionOnlineSettlementBalanceAfter();
+                case Cash: return cbe.getFromInstitutionCashBalanceAfter();
+                case Credit: return cbe.getFromInstitutionCreditBalanceAfter();
+                case IOU: return cbe.getFromInstitutionIouBalanceAfter();
+                case Staff: return cbe.getFromInstitutionStaffBalanceAfter();
+                case Staff_Welfare: return cbe.getFromInstitutionStaffWelfareBalanceAfter();
+                case Voucher: return cbe.getFromInstitutionVoucherBalanceAfter();
+                case OnCall: return cbe.getFromInstitutionOnCallBalanceAfter();
+                case MultiplePaymentMethods: return cbe.getFromInstitutionMultiplePaymentMethodsBalanceAfter();
+                default: return cbe.getFromInstitutionBalanceAfter();
+            }
+        }
+        return null;
+    }
+
+    public Double fetchEndingBalanceForFromInstitution(Date date, Institution institution) {
+        if (institution == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution.id = :insId"
+                + " and cbe.createdAt < :et"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("insId", institution.getId());
+        params.put("et", CommonFunctions.getEndOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (cbe != null) {
+            return cbe.getFromInstitutionBalanceAfter();
+        }
+        return null;
+    }
+
+    public Double fetchEndingBalanceForFromInstitution(Date date, Institution institution, String paymentMethodStr) {
+        if (institution == null) {
+            return null;
+        }
+        String jpql = "select cbe "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution.id = :insId"
+                + " and cbe.createdAt < :et"
+                + " order by cbe.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("insId", institution.getId());
+        params.put("et", CommonFunctions.getEndOfDay(date));
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        if (cbe != null) {
+            switch (paymentMethod) {
+                case Agent: return cbe.getFromInstitutionAgentBalanceAfter();
+                case Card: return cbe.getFromInstitutionCardBalanceAfter();
+                case Cheque: return cbe.getFromInstitutionChequeBalanceAfter();
+                case Slip: return cbe.getFromInstitutionSlipBalanceAfter();
+                case ewallet: return cbe.getFromInstitutionEwalletBalanceAfter();
+                case PatientDeposit: return cbe.getFromInstitutionPatientDepositBalanceAfter();
+                case PatientPoints: return cbe.getFromInstitutionPatientPointsBalanceAfter();
+                case OnlineSettlement: return cbe.getFromInstitutionOnlineSettlementBalanceAfter();
+                case Cash: return cbe.getFromInstitutionCashBalanceAfter();
+                case Credit: return cbe.getFromInstitutionCreditBalanceAfter();
+                case IOU: return cbe.getFromInstitutionIouBalanceAfter();
+                case Staff: return cbe.getFromInstitutionStaffBalanceAfter();
+                case Staff_Welfare: return cbe.getFromInstitutionStaffWelfareBalanceAfter();
+                case Voucher: return cbe.getFromInstitutionVoucherBalanceAfter();
+                case OnCall: return cbe.getFromInstitutionOnCallBalanceAfter();
+                case MultiplePaymentMethods: return cbe.getFromInstitutionMultiplePaymentMethodsBalanceAfter();
+                default: return cbe.getFromInstitutionBalanceAfter();
+            }
+        }
+        return null;
+    }
+
+    public Double fetchSumOfEntryValuesForFromInstitution(Date date, Institution institution) {
+        if (institution == null) {
+            return null;
+        }
+        String jpql = "select sum(cbe.entryValue) "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution = :ins"
+                + " and cbe.createdAt > :eds"
+                + " and cbe.createdAt < :ede";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("ins", institution);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        return cashbookEntryFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public Double fetchSumOfEntryValuesForFromInstitution(Date date, Institution institution, String paymentMethodStr) {
+        if (institution == null) {
+            return null;
+        }
+        PaymentMethod paymentMethod;
+        try {
+            paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        String jpqlField;
+        switch (paymentMethod) {
+            case Agent: jpqlField = "agentValue"; break;
+            case Card: jpqlField = "cardValue"; break;
+            case Cheque: jpqlField = "chequeValue"; break;
+            case Slip: jpqlField = "slipValue"; break;
+            case ewallet: jpqlField = "ewalletValue"; break;
+            case PatientDeposit: jpqlField = "patientDepositValue"; break;
+            case PatientPoints: jpqlField = "patientPointsValue"; break;
+            case OnlineSettlement: jpqlField = "onlineSettlementValue"; break;
+            case Cash: jpqlField = "cashValue"; break;
+            case Credit: jpqlField = "creditValue"; break;
+            case IOU: jpqlField = "iouValue"; break;
+            case Staff: jpqlField = "staffValue"; break;
+            case Staff_Welfare: jpqlField = "staffWelfareValue"; break;
+            case Voucher: jpqlField = "voucherValue"; break;
+            case OnCall: jpqlField = "onCallValue"; break;
+            case MultiplePaymentMethods: jpqlField = "multiplePaymentMethodsValue"; break;
+            default: jpqlField = "cashValue";
+        }
+        String jpql = "select sum(cbe." + jpqlField + ") "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired = :ret "
+                + " and cbe.fromInstitution = :ins"
+                + " and cbe.createdAt > :eds"
+                + " and cbe.createdAt < :ede";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("ins", institution);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        return cashbookEntryFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void writeCashBookEntryAtPaymentCreation(Payment p) {

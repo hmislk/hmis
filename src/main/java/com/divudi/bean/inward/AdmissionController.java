@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.AppointmentController;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
@@ -42,6 +43,9 @@ import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientTransferRequestFacade;
+import com.divudi.core.entity.inward.PatientTransferRequest;
+import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
@@ -127,6 +131,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueFacade clinicalFindingValueFacade;
     @EJB
     ReservationFacade reservationFacade;
+    @EJB
+    private PatientTransferRequestFacade patientTransferRequestFacade;
 
     @Inject
     BhtEditController bhtEditController;
@@ -136,6 +142,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    private ConfigOptionController configOptionController;
 
     ////////////////////////////
     ///////////////////////
@@ -369,6 +377,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
     }
 
+    public String navigateToInpatientClinicalAssessmentList() {
+        return inpatientClinicalDataController.navigateToAssessmentList(current);
+    }
+
     public void addCreditCompnay() {
         if (encounterCreditCompany.getCreditLimit() <= 0) {
             JsfUtil.addErrorMessage("Credit limit must be greater than zero");
@@ -407,8 +419,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToInpatientDiagnosisCard() {
-        inpatientClinicalDataController.setCurrent(current);
-        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+        return inpatientClinicalDataController.navigateToDiagnosisCards(current);
     }
 
     public void dateChangeListen() {
@@ -1075,6 +1086,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return suggestions;
     }
 
+    public List<Admission> completePatientNotFinalizedByInstitution(String query, Institution institution) {
+        List<Admission> suggestions;
+        if (query == null) {
+            return new ArrayList<>();
+        }
+        String sql = "select c from Admission c where c.retired=false "
+                + " and ( c.paymentFinalized is null or c.paymentFinalized=false ) "
+                + " and ( ((c.bhtNo) like :q ) "
+                + " or ((c.patient.person.name) like :q ) "
+                + " or ((c.patient.phn =:phn )) "
+                + " or ((c.patient.person.phone) like :q ) "
+                + " or ((c.patient.person.mobile) like :q ) ) ";
+        HashMap h = new HashMap();
+        h.put("q", "%" + query.toUpperCase() + "%");
+        h.put("phn", query.toUpperCase());
+        if (institution != null) {
+            sql += " and c.institution = :ins ";
+            h.put("ins", institution);
+        }
+        sql += " order by c.bhtNo";
+        suggestions = getFacade().findByJpql(sql, h, 20);
+        return suggestions;
+    }
+
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
@@ -1267,6 +1302,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_admission";
     }
 
+    public String navigateToAdmissionConfig() {
+        return configOptionController.navigateToApplicationOptionsWithFilter("Admission");
+    }
+
+    public boolean isClaimableAllowed() {
+        if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)) {
+            return false;
+        }
+        String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
+                "Inward Admission - Claimable Required For", "Credit");
+        if ("None".equalsIgnoreCase(claimableRequiredFor)) {
+            return false;
+        }
+        PaymentMethod pm = getCurrent() != null ? getCurrent().getPaymentMethod() : null;
+        if ("All".equalsIgnoreCase(claimableRequiredFor)) {
+            return true;
+        } else if ("Credit".equalsIgnoreCase(claimableRequiredFor)) {
+            return pm == PaymentMethod.Credit;
+        } else if ("Cash".equalsIgnoreCase(claimableRequiredFor)) {
+            return pm == PaymentMethod.Cash;
+        }
+        return false;
+    }
+
     public void prepereToAdmitNewPatient() {
         current = null;
         patientRoom = null;
@@ -1395,12 +1454,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return true;
         }
 
-        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
-            if (!getCurrent().isClaimable()) {
-                JsfUtil.addErrorMessage("Please mark as Claimable");
+        boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Show Claimable Field", true);
+        if (showClaimable) {
+            boolean claimableAllowed = isClaimableAllowed();
+            if (!claimableAllowed && getCurrent().isClaimable()) {
+                getCurrent().setClaimable(false);
+                JsfUtil.addErrorMessage("Claimable is not applicable for the selected payment method");
                 return true;
             }
+            if (claimableAllowed && !getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Please mark the admission as Claimable");
+                return true;
+            }
+        }
 
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
             if (encounterCreditCompany.getInstitution() != null) {
                 getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
                 getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
@@ -1538,6 +1607,63 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Add Reference No");
                 return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Mandatory Fields Enabled", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Medical Officer Required", false)) {
+                if (getCurrent().getOpdDoctor() == null) {
+                    JsfUtil.addErrorMessage("Medical Officer is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Primary Reason Required", false)) {
+                if (getCurrent().getPrimaryReason() == null) {
+                    JsfUtil.addErrorMessage("Primary Reason is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Comments Required", false)) {
+                if (getCurrent().getComments() == null || getCurrent().getComments().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Comments / Reference No is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
+                if (getCurrent().getReferringDoctor() == null) {
+                    JsfUtil.addErrorMessage("Doctor who referred the patient is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
+                if (getCurrent().getReferringStaff() == null) {
+                    JsfUtil.addErrorMessage("Staff who referred the patient is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
+                if (getCurrent().getReferredByInstitution() == null) {
+                    JsfUtil.addErrorMessage("Referral Institution is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Workplace Required", false)) {
+                if (getCurrent().getWorkplace() == null) {
+                    JsfUtil.addErrorMessage("Workplace is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
+                if (getCurrent().getReferralId() == null || getCurrent().getReferralId().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Referral Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
+                if (getCurrent().getReferringMethod() == null || getCurrent().getReferringMethod().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Referred From is Required");
+                    return true;
+                }
             }
         }
 
@@ -1749,6 +1875,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+                PatientTransferRequest handoverRequest = new PatientTransferRequest();
+                handoverRequest.setAdmission(getCurrent());
+                handoverRequest.setFromPatientRoom(null);
+                handoverRequest.setToRoomFacilityCharge(currentPatientRoom.getRoomFacilityCharge());
+                handoverRequest.setStatus(TransferRequestStatus.PENDING);
+                handoverRequest.setInitiatedAt(new Date());
+                handoverRequest.setInitiatedBy(getSessionController().getLoggedUser());
+                handoverRequest.setCreatedAt(new Date());
+                handoverRequest.setCreater(getSessionController().getLoggedUser());
+                patientTransferRequestFacade.create(handoverRequest);
+            }
         }
 
         if (currentReservation != null) {
@@ -1805,7 +1944,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
@@ -1855,6 +1998,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
+                PatientTransferRequest handoverRequest = new PatientTransferRequest();
+                handoverRequest.setAdmission(getCurrent());
+                handoverRequest.setFromPatientRoom(null);
+                handoverRequest.setToRoomFacilityCharge(currentPatientRoom.getRoomFacilityCharge());
+                handoverRequest.setStatus(TransferRequestStatus.PENDING);
+                handoverRequest.setInitiatedAt(new Date());
+                handoverRequest.setInitiatedBy(getSessionController().getLoggedUser());
+                handoverRequest.setCreatedAt(new Date());
+                handoverRequest.setCreater(getSessionController().getLoggedUser());
+                patientTransferRequestFacade.create(handoverRequest);
+            }
         }
 
         getFacade().edit(getCurrent());
@@ -1867,7 +2023,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();

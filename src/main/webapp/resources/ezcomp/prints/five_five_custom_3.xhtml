@@ -114,7 +114,7 @@
                             font-family: "Trebuchet MS", sans-serif !important;
                             line-height: 1.2;
                         }
-                        
+
                         .hospital-details {
                             font-family: "Trebuchet MS", sans-serif !important;
                         }
@@ -125,7 +125,7 @@
                             font-family: "Trebuchet MS", sans-serif !important;
                             line-height: 1.2;
                         }
-                        
+
                         .total-table th,
                         .total-table td {
                             font-family: "Trebuchet MS", sans-serif !important;
@@ -177,7 +177,10 @@
                         <tr>
                             <td style="padding: 2px;">Name :</td>
                             <td style="padding: 2px;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                                <div class="d-flex">
+                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName ne 'UPPERCASE'}"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.capitalNameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName eq 'UPPERCASE'}"/>
+                                </div>
                             </td>
                         </tr>
                     </h:panelGroup>

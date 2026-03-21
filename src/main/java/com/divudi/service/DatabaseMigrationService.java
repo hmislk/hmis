@@ -17,6 +17,8 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
  * Singleton startup EJB that controls access to the migration page (mf.xhtml).
@@ -44,6 +46,7 @@ public class DatabaseMigrationService {
     private volatile boolean migrationPending = true;
 
     @PostConstruct
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void init() {
         try {
             String storedVersion = readStoredDdlVersion();
@@ -106,6 +109,7 @@ public class DatabaseMigrationService {
         return null;
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public boolean isMigrationPending() {
         return migrationPending;
     }

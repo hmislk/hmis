@@ -221,30 +221,24 @@
                                 class="ui-button- mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                                value="To Print"
+                                action="purchase_return_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
-                                value="Download">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    fileName="Purchase Return Report" 
-                                    target="tbl"  />
+                                value="Download"
+                                action="#{pharmacyReportController.exportPurchaseReturnToExcel()}">
                             </p:commandButton>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Purchase Return Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportPurchaseReturnToPDF()}">
                             </p:commandButton>
 
                         </div>
@@ -337,8 +331,8 @@
                                 <h:outputText value="#{f.billItemFinanceDetails.valueAtPurchaseRate}" styleClass="text-end">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                 <f:facet name="footer">
-                                     <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>

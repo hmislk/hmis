@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="IOU Conversion Bill Report" class="m-1">
+                        <h:panelGrid columns="6" class="m-1 gap-3 p-3">
+                            <p:outputLabel value="From" class="me-2" />
+                            <p:datePicker
+                                value="#{iouBillController.reportFromDate}"
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:outputLabel value="To" class="me-2" />
+                            <p:datePicker
+                                value="#{iouBillController.reportToDate}"
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:outputLabel value="User" class="me-2" />
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acUser"
+                                inputStyleClass="w-100"
+                                value="#{iouBillController.reportUser}"
+                                var="usr"
+                                scrollHeight="450"
+                                itemLabel="#{usr.webUserPerson.name}"
+                                itemValue="#{usr}" >
+                                <p:column headerText="Username">
+                                    <h:outputText value="#{usr.name}" />
+                                </p:column>
+                                <p:column headerText="Name">
+                                    <h:outputText value="#{usr.webUserPerson.name}" />
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:outputLabel value="Department" class="me-2" />
+                            <p:autoComplete
+                                completeMethod="#{departmentController.completeDept}"
+                                class="w-100"
+                                id="acDept"
+                                inputStyleClass="w-100"
+                                value="#{iouBillController.reportDepartment}"
+                                var="dep"
+                                scrollHeight="450"
+                                itemLabel="#{dep.name}"
+                                itemValue="#{dep}" >
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{dep.name}" />
+                                </p:column>
+                                <p:column headerText="Institution">
+                                    <h:outputText value="#{dep.institution.name}" />
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:commandButton
+                                class="ui-button-info mx-2"
+                                ajax="false"
+                                icon="fas fa-magnifying-glass"
+                                value="Search"
+                                action="#{iouBillController.fillIouConversionBillReport()}" />
+                        </h:panelGrid>
+
+                        <p:dataTable
+                            id="tblBills"
+                            value="#{iouBillController.reportIouConversionBills}"
+                            var="b"
+                            rowKey="#{b.id}"
+                            emptyMessage="No records found">
+
+                            <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:outputText value="#{b.id}" />
+                            </p:column>
+
+                            <p:column headerText="Bill No" width="10em">
+                                <h:outputText value="#{b.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Date / Time" width="12em" styleClass="text-center">
+                                <h:outputText value="#{b.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="User">
+                                <h:outputText value="#{b.creater.webUserPerson.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department">
+                                <h:outputText value="#{b.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Total Value" styleClass="text-end" width="10em">
+                                <h:outputText value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Comment">
+                                <h:outputText value="#{b.comments}" />
+                            </p:column>
+
+                            <p:column headerText="Status" width="10em" styleClass="text-center">
+                                <span class="badge bg-success" rendered="#{not b.cancelled}">Active</span>
+                                <span class="badge bg-danger" rendered="#{b.cancelled}">Cancelled</span>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
