@@ -83,6 +83,7 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public String navigateToAddOutsideChargeFromInpatientProfile() {
+        institution = sessionController.getInstitution();
         return "/inward/inward_bill_outside_charge?faces-redirect=true";
     }
 

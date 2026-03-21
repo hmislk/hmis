@@ -178,6 +178,7 @@ public class BhtSummeryController implements Serializable {
     private Institution institution;
 
     public String navigateToIntrimBillEstimate() {
+        institution = sessionController.getInstitution();
         createTablesWithEstimatedProfessionalFees();
         return "/inward/inward_bill_intrim_estimate?faces-redirect=true";
     }
@@ -2285,9 +2286,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
@@ -2360,6 +2358,7 @@ public class BhtSummeryController implements Serializable {
 
     public String navigateToIntrimBill() {
         patientEncounter = null;
+        institution = sessionController.getInstitution();
         makeNull();
         return "/inward/inward_bill_intrim?faces-redirect=true";
     }
