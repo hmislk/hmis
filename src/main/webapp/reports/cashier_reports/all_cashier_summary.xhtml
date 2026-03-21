@@ -181,7 +181,8 @@
                                 value="Excel" 
                                 ajax="false"
                                 class="ui-button-success" icon="fas fa-file-excel">
-                                <p:dataExporter type="xlsx" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                                <p:dataExporter type="xlsx" target="printdata" fileName="#{searchController.allCashierSummaryExcelFileName}" 
+                                                postProcessor="#{searchController.postProcessAllCashierSummaryExcel}" />
                             </p:commandButton>
 
                             <p:commandButton  
