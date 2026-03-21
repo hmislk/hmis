@@ -47,8 +47,11 @@ import com.divudi.core.data.dto.ExpiryItemListDto;
 import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
 import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
 import com.divudi.core.data.dto.PharmacySaleItemDTO;
+import com.divudi.core.data.dto.ProfitMatrixRowDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
+import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.facade.PatientEncounterFacade;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -122,7 +125,6 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import java.util.logging.Logger;
 
-
 /**
  * @author Senula Nanayakkara
  */
@@ -150,6 +152,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     BillService billService;
     @EJB
     BillAnalyticsService billAnalyticsService;
+    @EJB
+    PatientEncounterFacade peFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -297,6 +301,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private PaymentScheme paymentScheme;
 
     private AdmissionType admissionType;
+    private List<AdmissionType> admissionTypes;
+    private List<RoomCategory> roomCategories;
+    private String bhtNo;
+    private String patientName;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -2931,6 +2939,210 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
+    private List<ProfitMatrixRowDTO> profitMatrixSummaryRows;
+    private List<ProfitMatrixRowDTO> profitMatrixDetailRows;
+
+    public void createProfitMatrixReport() {
+        totalNetTotal = 0.0;
+        profitMatrixSummaryRows = null;
+        profitMatrixDetailRows = null;
+
+        if ("detail".equalsIgnoreCase(reportType)) {
+            createProfitMatrixDetailReport();
+        } else { 
+            createProfitMatrixSummaryReport();
+        }
+    }
+
+    private void createProfitMatrixSummaryReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixRowDTO(")
+                .append("fb.deptId, ")
+                .append("pe.bhtNo, ")
+                .append("pat.phn, ")
+                .append("per.name, ")
+                .append("pe.patientEncounterType, ")
+                .append("rdPer.name, ")
+                .append("pe.grantTotal, ")
+                .append("pe.netTotal")
+                .append(") ")
+                .append("FROM PatientEncounter pe ")
+                .append("LEFT JOIN pe.finalBill fb ")
+                .append("LEFT JOIN pe.patient pat ")
+                .append("LEFT JOIN pat.person per ")
+                .append("LEFT JOIN pe.referringDoctor rd ")
+                .append("LEFT JOIN rd.person rdPer ");
+
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND pe.discharged = true ")
+                .append("AND pe.paymentFinalized = true ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("AND rfc.roomCategory IN :roomCats ");
+            params.put("roomCats", roomCategories);
+        }
+
+        if (admissionTypes != null && !admissionTypes.isEmpty()) {
+            jpql.append("AND pe.admissionType IN :admTypes ");
+            params.put("admTypes", admissionTypes);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
+            jpql.append("AND fb.deptId = :inv ");
+            params.put("inv", invoiceNumber.trim());
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql.append("AND pe.bhtNo LIKE :bht ");
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql.append("AND (LOWER(per.name) LIKE :pn ")
+                    .append("OR LOWER(pat.phn) LIKE :pn) ");
+            params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        profitMatrixSummaryRows = (List<ProfitMatrixRowDTO>) peFacade.findLightsByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+        );
+
+        totalNetTotal = 0.0;
+        if (profitMatrixSummaryRows != null) {
+            for (ProfitMatrixRowDTO row : profitMatrixSummaryRows) {
+                if (row.getFinalAmount() != null) {
+                    totalNetTotal += row.getFinalAmount();
+                }
+            }
+        }
+    }
+
+    private void createProfitMatrixDetailReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixRowDTO(")
+                .append("b.deptId, ")
+                .append("pe.bhtNo, ")
+                .append("pat.phn, ")
+                .append("per.name, ")
+                .append("pe.patientEncounterType, ")
+                .append("rdPer.name, ")
+                .append("bi.item.name, ")
+                .append("bi.item.department.name, ")
+                .append("bi.grossValue, ")
+                .append("itemFee.fee, ")
+                .append("bi.netValue ")
+                .append(") ")
+                .append("FROM BillItem bi ")
+                .append("JOIN bi.bill b ")
+                .append("JOIN b.patientEncounter pe ")
+                .append("LEFT JOIN pe.patient pat ")
+                .append("LEFT JOIN pat.person per ")
+                .append("LEFT JOIN pe.referringDoctor rd ")
+                .append("LEFT JOIN rd.person rdPer ")
+                .append("LEFT JOIN bi.item i ")
+                .append("LEFT JOIN i.department iDept ")
+                .append("LEFT JOIN i.itemFeesAuto itemFee ") 
+                .append("WHERE bi.retired = :ret ")
+                .append("AND b.retired = :bret ")
+                .append("AND b.cancelled = :can ")
+                .append("AND pe.retired = :peret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND pe.discharged = true ")
+                .append("AND pe.paymentFinalized = true ");
+
+        params.put("ret", false);
+        params.put("bret", false);
+        params.put("can", false);
+        params.put("peret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+
+        if (admissionTypes != null && !admissionTypes.isEmpty()) {
+            jpql.append("AND pe.admissionType IN :admTypes ");
+            params.put("admTypes", admissionTypes);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
+            jpql.append("AND b.deptId = :inv ");
+            params.put("inv", invoiceNumber.trim());
+        }
+
+        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+            jpql.append("AND pe.bhtNo LIKE :bht ");
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql.append("AND (LOWER(per.name) LIKE :pn ")
+                    .append("OR LOWER(pat.phn) LIKE :pn) ");
+            params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission, b.deptId, i.name ");
+
+        profitMatrixDetailRows = (List<ProfitMatrixRowDTO>) billItemFacade.findLightsByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+        );
+
+        totalNetTotal = 0.0;
+        if (profitMatrixDetailRows != null) {
+            for (ProfitMatrixRowDTO row : profitMatrixDetailRows) {
+                if (row.getFinalAmount() != null) {
+                    totalNetTotal += row.getFinalAmount();
+                }
+            }
+        }
+    }
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {
@@ -2967,8 +3179,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         }
-        
-        
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
@@ -3263,6 +3473,55 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 }
             }
         }
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public List<AdmissionType> getAdmissionTypes() {
+        return admissionTypes;
+    }
+
+    public void setAdmissionTypes(List<AdmissionType> admissionTypes) {
+        this.admissionTypes = admissionTypes;
+    }
+
+    public List<RoomCategory> getRoomCategories() {
+        return roomCategories;
+    }
+
+    public void setRoomCategories(List<RoomCategory> roomCategories) {
+        this.roomCategories = roomCategories;
+    }
+
+
+    public List<ProfitMatrixRowDTO> getProfitMatrixSummaryRows() {
+        return profitMatrixSummaryRows;
+    }
+
+    public void setProfitMatrixSummaryRows(List<ProfitMatrixRowDTO> profitMatrixSummaryRows) {
+        this.profitMatrixSummaryRows = profitMatrixSummaryRows;
+    }
+
+    public List<ProfitMatrixRowDTO> getProfitMatrixDetailRows() {
+        return profitMatrixDetailRows;
+    }
+
+    public void setProfitMatrixDetailRows(List<ProfitMatrixRowDTO> profitMatrixDetailRows) {
+        this.profitMatrixDetailRows = profitMatrixDetailRows;
     }
 
     private static class ExcelStyleBundle {
@@ -3675,7 +3934,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         table.addCell(cell);
     }
-
 
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
@@ -4211,8 +4469,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
     }
-    
-    public String navigateToGrnSummaryReport(){
+
+    public String navigateToGrnSummaryReport() {
         return "/reports/inventoryReports/grn_summary_report?faces-redirect=true";
     }
 
