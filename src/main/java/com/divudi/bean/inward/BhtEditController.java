@@ -129,6 +129,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     String comment;
 
     private Institution currentCompany;
+    private Institution institution;
     private String subject;
     private String emailBoday;
 
@@ -342,6 +343,25 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
         return suggestions;
+    }
+
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+    }
+
+    public void onInstitutionChange() {
+        current = null;
+    }
+
+    public Institution getInstitution() {
+        if (institution == null) {
+            institution = sessionController.getInstitution();
+        }
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public List<Admission> completePatientAll(String query) {
