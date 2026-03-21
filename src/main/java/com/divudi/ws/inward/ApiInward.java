@@ -424,7 +424,7 @@ public class ApiInward {
                 pmd.getOnlineSettlement().setReferenceNo(credit_card_ref);
                 pmd.getOnlineSettlement().setInstitution(bank);
 
-                Bill b = pay(PaymentMethod.OnlineSettlement, pe, parsedAmount, pmd);
+                Bill b = pay(PaymentMethod.OnlineSettlement, pe, parsedAmount, pmd, authenticatedUser);
                 if (b != null) {
                     JSONObject object = new JSONObject();
                     object.put("bill_no_ins", b.getInsId());
@@ -619,7 +619,7 @@ public class ApiInward {
     /**
      * Legacy pay method (used by GET /payment endpoint) — no payment table record.
      */
-    public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd) {
+    public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
         BilledBill bill = new BilledBill();
         bill.setPatientEncounter(patientEncounter);
         bill.setPaymentMethod(paymentMethod);
@@ -629,13 +629,13 @@ public class ApiInward {
             return null;
         }
 
-        bill = saveBill(bill, pmd, null);
+        bill = saveBill(bill, pmd, createdBy);
 
         if (bill == null) {
             return null;
         }
 
-        saveBillItem(bill, null);
+        saveBillItem(bill, createdBy);
 
         getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
 
