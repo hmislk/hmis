@@ -14,5 +14,6 @@ public enum PatientEncounterType {
     Admission,
     Procedure,
     ETU,
+    ClinicalAssessment,
 
 }

@@ -159,6 +159,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private Integer respiratoryRate = null;
     private Integer pfr = null;
     private Double saturation = null;
+    private Double temperature = null;
     @ManyToOne
     private Institution workplace;
     @ManyToOne
@@ -304,6 +305,8 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
     @Lob
     String comments;
+    @Lob
+    private String planOfAction;
     @Transient
     List<ClinicalFindingValue> diagnosis;
     @ManyToOne
@@ -801,6 +804,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
         this.comments = comments;
     }
 
+    public String getPlanOfAction() {
+        return planOfAction;
+    }
+
+    public void setPlanOfAction(String planOfAction) {
+        this.planOfAction = planOfAction;
+    }
+
     public double getCreditPaidAmount() {
         return creditPaidAmount;
     }
@@ -1025,6 +1036,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setSaturation(Double saturation) {
         this.saturation = saturation;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
     }
 
     public Item getGuardianRelationshipToPatient() {

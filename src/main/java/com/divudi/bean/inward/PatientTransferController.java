@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.inward.TransferRequestStatus;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientTransferRequest;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -50,17 +50,129 @@ public class PatientTransferController implements Serializable {
     private String notes;
     private List<PatientTransferRequest> pendingRequests;
     private Date acceptedAt;
+    private PatientTransferRequest lastInitiatedRequest;
+
+    // All transfer requests for the currently selected patient
+    private List<PatientTransferRequest> currentAdmissionRequests;
 
     public String navigateToInitiateTransfer() {
         current = null;
         targetRoomFacilityCharge = null;
         notes = null;
+        lastInitiatedRequest = null;
+        currentAdmissionRequests = null;
+        return "/inward/inward_transfer_initiate?faces-redirect=true";
+    }
+
+    public String navigateToInitiateTransferForAdmission(Admission admission) {
+        current = admission;
+        targetRoomFacilityCharge = null;
+        notes = null;
+        lastInitiatedRequest = null;
+        currentAdmissionRequests = null;
+        onPatientSelected();
         return "/inward/inward_transfer_initiate?faces-redirect=true";
     }
 
     public String navigateToPatientAccept() {
         loadPendingForDepartment();
         return "/inward/inward_patient_accept?faces-redirect=true";
+    }
+
+    /**
+     * Called when the user selects a patient. Loads all transfer requests for
+     * that admission so the page can show history and evaluate blocking rules.
+     */
+    public void onPatientSelected() {
+        lastInitiatedRequest = null;
+        targetRoomFacilityCharge = null;
+        notes = null;
+        loadCurrentAdmissionRequests();
+    }
+
+    private void loadCurrentAdmissionRequests() {
+        if (current == null) {
+            currentAdmissionRequests = new ArrayList<>();
+            return;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", current);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt DESC";
+        currentAdmissionRequests = patientTransferRequestFacade.findByJpql(jpql, params);
+        if (currentAdmissionRequests == null) {
+            currentAdmissionRequests = new ArrayList<>();
+        }
+    }
+
+    /**
+     * True when there is a PENDING transfer request for the current patient.
+     * In this state the user must cancel it before creating a new one.
+     */
+    public boolean isHasPendingRequest() {
+        if (currentAdmissionRequests == null) {
+            return false;
+        }
+        return currentAdmissionRequests.stream()
+                .anyMatch(r -> r.getStatus() == TransferRequestStatus.PENDING);
+    }
+
+    /**
+     * Returns the PENDING request for the current patient, or null.
+     */
+    public PatientTransferRequest getPendingRequestForCurrent() {
+        if (currentAdmissionRequests == null) {
+            return null;
+        }
+        return currentAdmissionRequests.stream()
+                .filter(r -> r.getStatus() == TransferRequestStatus.PENDING)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * True when the patient's current room belongs to a DIFFERENT department
+     * than the logged-in user — meaning the patient has already moved away and
+     * this ward cannot initiate another transfer.
+     */
+    public boolean isPatientInDifferentDepartment() {
+        if (current == null) {
+            return false;
+        }
+        PatientRoom currentRoom = current.getCurrentPatientRoom();
+        if (currentRoom == null || currentRoom.getRoomFacilityCharge() == null) {
+            return false;
+        }
+        Department patientDept = currentRoom.getRoomFacilityCharge().getDepartment();
+        if (patientDept == null || patientDept.getId() == null) {
+            return false;
+        }
+        Department userDept = sessionController.getDepartment();
+        if (userDept == null || userDept.getId() == null) {
+            // Cannot determine user's department — allow transfer
+            return false;
+        }
+        return !patientDept.getId().equals(userDept.getId());
+    }
+
+    /**
+     * True when the initiate-transfer form should be shown and usable.
+     * Blocked when: patient is in another department, or there is already a
+     * PENDING request that must be resolved first.
+     */
+    public boolean isCanInitiateTransfer() {
+        if (current == null) {
+            return false;
+        }
+        if (isPatientInDifferentDepartment()) {
+            return false;
+        }
+        if (isHasPendingRequest()) {
+            return false;
+        }
+        return true;
     }
 
     public void initiateTransfer() {
@@ -70,6 +182,22 @@ public class PatientTransferController implements Serializable {
         }
         if (targetRoomFacilityCharge == null) {
             JsfUtil.addErrorMessage("Please select a target room.");
+            return;
+        }
+        // Re-query DB to prevent race conditions with concurrent sessions
+        loadCurrentAdmissionRequests();
+        if (!isCanInitiateTransfer()) {
+            JsfUtil.addErrorMessage("Transfer cannot be initiated for this patient.");
+            return;
+        }
+        // Reject same-room transfers
+        PatientRoom currentRoom = current.getCurrentPatientRoom();
+        if (currentRoom != null
+                && currentRoom.getRoomFacilityCharge() != null
+                && currentRoom.getRoomFacilityCharge().getId() != null
+                && targetRoomFacilityCharge.getId() != null
+                && currentRoom.getRoomFacilityCharge().getId().equals(targetRoomFacilityCharge.getId())) {
+            JsfUtil.addErrorMessage("Please select a different target room.");
             return;
         }
 
@@ -84,8 +212,41 @@ public class PatientTransferController implements Serializable {
         req.setCreater(sessionController.getLoggedUser());
         req.setNotes(notes);
         patientTransferRequestFacade.create(req);
+        lastInitiatedRequest = req;
 
         JsfUtil.addSuccessMessage("Transfer initiated successfully.");
+        targetRoomFacilityCharge = null;
+        notes = null;
+        loadCurrentAdmissionRequests();
+    }
+
+    /**
+     * Cancel a pending request from the initiate page (so the user can then
+     * choose a different room and re-initiate).
+     */
+    public void cancelPendingAndReopen(PatientTransferRequest req) {
+        if (req == null || req.getId() == null) {
+            return;
+        }
+        // Re-fetch from DB to avoid acting on a stale session copy
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null || persisted.getStatus() != TransferRequestStatus.PENDING) {
+            lastInitiatedRequest = null;
+            loadCurrentAdmissionRequests();
+            JsfUtil.addErrorMessage("This transfer request is no longer pending and cannot be cancelled.");
+            return;
+        }
+        persisted.setStatus(TransferRequestStatus.CANCELLED);
+        persisted.setCancelledAt(new Date());
+        persisted.setCancelledBy(sessionController.getLoggedUser());
+        patientTransferRequestFacade.edit(persisted);
+        lastInitiatedRequest = null;
+        loadCurrentAdmissionRequests();
+        JsfUtil.addSuccessMessage("Transfer request cancelled. You may now initiate a new one.");
+    }
+
+    public void startNewTransfer() {
+        lastInitiatedRequest = null;
         targetRoomFacilityCharge = null;
         notes = null;
     }
@@ -146,6 +307,26 @@ public class PatientTransferController implements Serializable {
         JsfUtil.addSuccessMessage("Transfer request cancelled.");
     }
 
+    /**
+     * True if there are any PENDING transfer requests targeting the logged-in
+     * user's department. Used to enable/disable the Accept Patients button.
+     */
+    public boolean isHasPendingRequestsForDepartment() {
+        Department userDept = sessionController.getDepartment();
+        if (userDept == null) {
+            return false;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("status", TransferRequestStatus.PENDING);
+        params.put("department", userDept);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.status = :status "
+                + "AND r.toRoomFacilityCharge.department = :department "
+                + "AND r.retired = false";
+        List<PatientTransferRequest> result = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return result != null && !result.isEmpty();
+    }
+
     public void loadPendingForDepartment() {
         HashMap<String, Object> params = new HashMap<>();
         params.put("status", TransferRequestStatus.PENDING);
@@ -159,15 +340,6 @@ public class PatientTransferController implements Serializable {
         if (pendingRequests == null) {
             pendingRequests = new ArrayList<>();
         }
-    }
-
-    public List<PatientTransferRequest> getPendingTransfersForCurrentBht() {
-        if (current == null || pendingRequests == null) {
-            return new ArrayList<>();
-        }
-        return pendingRequests.stream()
-                .filter(r -> r.getAdmission() != null && r.getAdmission().equals(current))
-                .collect(Collectors.toList());
     }
 
     public Date getAcceptedAt() {
@@ -214,5 +386,33 @@ public class PatientTransferController implements Serializable {
 
     public void setPendingRequests(List<PatientTransferRequest> pendingRequests) {
         this.pendingRequests = pendingRequests;
+    }
+
+    public PatientTransferRequest getLastInitiatedRequest() {
+        return lastInitiatedRequest;
+    }
+
+    public void setLastInitiatedRequest(PatientTransferRequest lastInitiatedRequest) {
+        this.lastInitiatedRequest = lastInitiatedRequest;
+    }
+
+    public List<PatientTransferRequest> getCurrentAdmissionRequests() {
+        if (currentAdmissionRequests == null) {
+            currentAdmissionRequests = new ArrayList<>();
+        }
+        return currentAdmissionRequests;
+    }
+
+    /**
+     * Returns the single PENDING request as a one-element list for datatable binding,
+     * or empty list if none.
+     */
+    public List<PatientTransferRequest> getPendingRequestForCurrentAsList() {
+        PatientTransferRequest req = getPendingRequestForCurrent();
+        List<PatientTransferRequest> list = new ArrayList<>();
+        if (req != null) {
+            list.add(req);
+        }
+        return list;
     }
 }

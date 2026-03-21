@@ -377,6 +377,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
     }
 
+    public String navigateToInpatientClinicalAssessmentList() {
+        return inpatientClinicalDataController.navigateToAssessmentList(current);
+    }
+
     public void addCreditCompnay() {
         if (encounterCreditCompany.getCreditLimit() <= 0) {
             JsfUtil.addErrorMessage("Credit limit must be greater than zero");
@@ -415,8 +419,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToInpatientDiagnosisCard() {
-        inpatientClinicalDataController.setCurrent(current);
-        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+        return inpatientClinicalDataController.navigateToDiagnosisCards(current);
     }
 
     public void dateChangeListen() {
@@ -1941,7 +1944,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
@@ -2016,7 +2023,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
