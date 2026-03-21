@@ -85,6 +85,17 @@ public class DocumentTemplateController implements Serializable {
         return getFacade().findByJpql(j, m);
     }
 
+    public List<DocumentTemplate> fillByType(DocumentTemplateType type) {
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("type", type);
+        String j = "select c from DocumentTemplate c "
+                + "where c.retired=:ret "
+                + "and c.type=:type "
+                + "order by c.name";
+        return getFacade().findByJpql(j, m);
+    }
+
     public String navigateToAddNewUserDocumentTemplate() {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
