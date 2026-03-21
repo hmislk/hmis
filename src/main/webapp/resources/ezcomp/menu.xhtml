@@ -436,6 +436,20 @@
                             actionListener="#{roomChangeController.recreate()}" 
                             rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" >
                         </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{patientTransferController.navigateToInitiateTransfer()}"
+                            value="Initiate Transfer"
+                            icon="fa fa-arrow-right"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomTransferInitiate')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{patientTransferController.navigateToPatientAccept()}"
+                            value="Accept Patients"
+                            icon="fa fa-check-circle"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}" >
+                        </p:menuitem>
                     </p:submenu>  
                     <p:submenu label="Services &amp; Items" icon="fa fa-toolbox" rendered="#{webUserController.hasPrivilege('InwardServicesAndItems')}">
                         <p:menuitem
@@ -615,7 +629,7 @@
                     <p:menuitem  
                         ajax="false"  
                         action="/inward/inward_reports?faces-redirect=true" 
-                        value="Inward Analytics"
+                        value="Inpatient Analytics"
                         icon="pi pi-chart-bar" 
                         rendered="#{webUserController.hasPrivilege('InwardReport')}" >
                     </p:menuitem>

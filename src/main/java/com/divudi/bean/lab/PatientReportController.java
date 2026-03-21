@@ -2180,8 +2180,6 @@ public class PatientReportController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportCreateSentSMSHistory(currentPtIx, currentPatientReport, e);
                 }
-
-                System.out.println("Create a SMS for " + e.getPatientInvestigation().getInvestigation().getName() + " Report Send to = " + e.getReceipientNumber());
             }
 
             if (configOptionApplicationController.getBooleanValueByKey("Allow the collection center to be notified via SMS when the report is approved.", false)) {
@@ -2277,8 +2275,6 @@ public class PatientReportController implements Serializable {
 
         if (currentSMSReceipientNumber != null && !currentSMSReceipientNumber.trim().isEmpty()) {
 
-            System.out.println("Find Already Created SMS in This Patient Report");
-
             String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
                     + " and e.smsType =:smsType and e.patientReport =:pr ";
             Map<String, Object> params = new HashMap<>();
@@ -2293,11 +2289,6 @@ public class PatientReportController implements Serializable {
             
             if (sms != null) {
 
-                System.out.println("Found Current Report Pending SMS");
-
-                System.out.println("Current SMS Receipient Number = " + ptMobile);
-                System.out.println("SMS Receipient Number = " + sms.getReceipientNumber());
-
                 if (!sms.getReceipientNumber().equalsIgnoreCase(ptMobile)) {
                     sms.setReceipientNumber(ptMobile);
                     smsFacade.edit(sms);
@@ -2306,7 +2297,6 @@ public class PatientReportController implements Serializable {
                 currentSMS = sms;
 
             } else {
-                System.out.println("Not Found Pending SMS. Create New One ");
                 
                 Sms e = new Sms();
                 e.setCreatedAt(new Date());
@@ -2331,8 +2321,6 @@ public class PatientReportController implements Serializable {
                 }
             }
             
-            System.out.println("Current SMS = " + currentSMS);
-
             Boolean sent = smsManager.sendSms(currentSMS);
 
             if (sent) {
@@ -2340,13 +2328,9 @@ public class PatientReportController implements Serializable {
                 currentSMS.setPending(false);
                 getSmsFacade().edit(currentSMS);
 
-                System.out.println(currentSMS.getPatientInvestigation().getInvestigation().getName() + "Report Link Send to = " + currentSMS.getReceipientNumber());
-
                 if (!currentPatientReport.getSendSMSComplete()) {
                     currentPatientReport.setSendSMSComplete(true);
                     getFacade().edit(currentPatientReport);
-
-                    System.out.println("The SMS was successfully sent Manualy to "+ currentSMS.getReceipientNumber()+" and it was updated in the LAB Report. ---> " + currentPatientReport.getSendSMSComplete());
                 }
 
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
@@ -2520,8 +2504,6 @@ public class PatientReportController implements Serializable {
         List<Sms> smses = smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         if (smses != null && !smses.isEmpty()) {
-            System.out.println("Found Pending " + smses.size() + " SMS's");
-            System.out.println("smses = " + smses);
 
             int successCount = 0;
             for (Sms s : smses) {
@@ -2532,12 +2514,8 @@ public class PatientReportController implements Serializable {
 
                 smsFacade.edit(s);
                 successCount++;
-                System.out.println("SMS ID = " + s.getId() + " was removed.");
             }
 
-            System.out.println("Successfully Removed " + successCount + " SMSs");
-        } else {
-            System.out.println("Not Fount Pending SMS");
         }
 
         try {

@@ -49,6 +49,9 @@
 - **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
 - **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
 
+### When Working on Inward / Inpatient Module
+- [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
+
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
 

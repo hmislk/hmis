@@ -13,5 +13,6 @@ public enum ApiKeyType {
     Config,
     General,
     Admin,
-    Token
+    Token,
+    FHIR
 }

@@ -42,18 +42,28 @@ public class PharmacyF15ReportDTO {
     public static class StockValueDTO {
         private double retailRate;
         private double costRate;
+        private double purchaseRate;
 
         public StockValueDTO() {}
 
+        @Deprecated
         public StockValueDTO(double retailRate, double costRate) {
             this.retailRate = retailRate;
             this.costRate = costRate;
+        }
+
+        public StockValueDTO(double retailRate, double costRate, double purchaseRate) {
+            this.retailRate = retailRate;
+            this.costRate = costRate;
+            this.purchaseRate = purchaseRate;
         }
 
         public double getRetailRate() { return retailRate; }
         public void setRetailRate(double retailRate) { this.retailRate = retailRate; }
         public double getCostRate() { return costRate; }
         public void setCostRate(double costRate) { this.costRate = costRate; }
+        public double getPurchaseRate() { return purchaseRate; }
+        public void setPurchaseRate(double purchaseRate) { this.purchaseRate = purchaseRate; }
     }
 
     /**
@@ -70,6 +80,7 @@ public class PharmacyF15ReportDTO {
         private double netTotal;
         private double stockValueAtCostRate;
         private double stockValueAtRetailRate;
+        private double stockValueAtPurchaseRate;
 
         public BundleRowDTO() {}
 
@@ -87,6 +98,8 @@ public class PharmacyF15ReportDTO {
         public void setStockValueAtCostRate(double stockValueAtCostRate) { this.stockValueAtCostRate = stockValueAtCostRate; }
         public double getStockValueAtRetailRate() { return stockValueAtRetailRate; }
         public void setStockValueAtRetailRate(double stockValueAtRetailRate) { this.stockValueAtRetailRate = stockValueAtRetailRate; }
+        public double getStockValueAtPurchaseRate() { return stockValueAtPurchaseRate; }
+        public void setStockValueAtPurchaseRate(double stockValueAtPurchaseRate) { this.stockValueAtPurchaseRate = stockValueAtPurchaseRate; }
     }
 
     public static class BundleDTO {

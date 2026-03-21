@@ -489,9 +489,111 @@
                                 </p:column>
 
                                 <p:column>
-                                    <p:commandButton class="mr-4 ui-button-danger" icon="fas fa-trash" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                                    <p:commandButton
+                                        styleClass="ui-button-warning"
+                                        style="margin-right:10px"
+                                        icon="fas fa-edit"
+                                        title="Edit Item"
+                                        process="@this"
+                                        update=":bill:dlgEditBillItem"
+                                        oncomplete="PF('dlgEditBillItem').show()"
+                                        action="#{pharmacyDirectPurchaseController.prepareEditBillItem(ph)}" />
+                                    <p:commandButton styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
+
+                            <p:dialog
+                                id="dlgEditBillItem"
+                                header="Edit Item"
+                                widgetVar="dlgEditBillItem"
+                                modal="true"
+                                resizable="false"
+                                closable="true"
+                                dynamic="true"
+                                style="width:520px">
+                                <h:panelGroup rendered="#{pharmacyDirectPurchaseController.editingBillItem != null}">
+                                    <p:outputLabel value="#{pharmacyDirectPurchaseController.editingBillItem.item.name}" styleClass="font-weight-bold d-block mb-2"/>
+                                    <p:panelGrid columns="2" class="w-100" columnClasses="col-5,col-7">
+                                        <p:outputLabel for="editQty" value="Quantity" />
+                                        <p:inputText
+                                            id="editQty"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.quantity}" />
+
+                                        <p:outputLabel for="editFreeQty" value="Free Quantity" />
+                                        <p:inputText
+                                            id="editFreeQty"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.freeQuantity}" />
+
+                                        <p:outputLabel for="editPRate" value="Purchase Rate" />
+                                        <p:inputText
+                                            id="editPRate"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.lineGrossRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editDisRate" value="Discount Rate" />
+                                        <p:inputText
+                                            id="editDisRate"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.lineDiscountRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editRR" value="Retail Rate" />
+                                        <p:inputText
+                                            id="editRR"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.retailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editDoe" value="Date of Expiry" />
+                                        <p:calendar
+                                            id="editDoe"
+                                            inputStyleClass="w-100"
+                                            pattern="dd MM yy"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.doe}" />
+
+                                        <p:outputLabel for="editBatch" value="Batch No" />
+                                        <p:inputText
+                                            id="editBatch"
+                                            class="w-100"
+                                            autocomplete="off"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.stringValue}" />
+                                    </p:panelGrid>
+                                    <p:defaultCommand target="btnSave" />
+                                    <div class="d-flex justify-content-end mt-3 gap-2">
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Save"
+                                            icon="fas fa-save"
+                                            styleClass="ui-button-success mr-2"
+                                            process=":bill:dlgEditBillItem"
+                                            update=":bill:itemList :bill:tot :bill:billFinanceDetails :bill:dlgEditBillItem"
+                                            oncomplete="if (!args.validationFailed) PF('dlgEditBillItem').hide()"
+                                            action="#{pharmacyDirectPurchaseController.updateBillItem()}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            styleClass="ui-button-danger"
+                                            onclick="PF('dlgEditBillItem').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </h:panelGroup>
+                            </p:dialog>
 
 
 
