@@ -366,11 +366,17 @@ public class PatientPortalController implements Serializable {
     }
 
     public void sendOtp() {
-        otpCodeConverter();
-        if (patientphoneNumber == null) {
-            JsfUtil.addErrorMessage("Mobile number is Missing");
-            return;
+        java.util.Iterator<javax.faces.application.FacesMessage> iter = javax.faces.context.FacesContext.getCurrentInstance().getMessages();
+        while (iter.hasNext()) {
+            iter.next();
+            iter.remove();
+        }
+        if (patientphoneNumber == null || patientphoneNumber.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Mobile number is required.");
+        } else if (!patientphoneNumber.trim().matches("^(07[0-9]{8}|\\+[1-9][0-9]{6,14})$")) {
+            JsfUtil.addErrorMessage("Invalid mobile number. Enter a local number (e.g. 0712345678) or international format with country code (e.g. +447911123456).");
         } else {
+            otpCodeConverter();
             otpSendSuccess = false;
             Sms e = new Sms();
             e.setCreatedAt(new Date());
