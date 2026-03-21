@@ -116,6 +116,10 @@ public class RoomChangeController implements Serializable {
         return admissionController.completePatientNotFinalizedByInstitution(query, institution);
     }
 
+    public List<Admission> completePatientFromWaitingRoomByInstitution(String query) {
+        return admissionController.completePatientFromWaitingRoomByInstitution(query, institution);
+    }
+
     public void onInstitutionChange() {
         current = null;
     }

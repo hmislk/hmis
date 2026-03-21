@@ -490,6 +490,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * and accumulates their credit limits.
      */
     public void findLastUsedCreditCompanies() {
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Apply Claimable For Credit", false)) {
             if (current.getPaymentMethod() == PaymentMethod.Credit) {
                 current.setClaimable(true);
@@ -791,6 +793,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("department", sessionController.getDepartment());
+        suggestions = getFacade().findByJpql(sql, hm, 20);
+        return suggestions;
+    }
+
+    public List<Admission> completePatientFromWaitingRoomByInstitution(String query, Institution institution) {
+        List<Admission> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.retired=false "
+                + " and c.discharged=false "
+                + " and c.roomAdmitted=false"
+                + " and ((c.bhtNo) like :q "
+                + " or (c.patient.person.name) like :q "
+                + " or (c.patient.code) like :q "
+                + " or (c.patient.phn) like :q) ";
+        if (institution != null) {
+            sql += " and c.institution = :ins ";
+            hm.put("ins", institution);
+        }
+        sql += " order by c.bhtNo ";
+        hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findByJpql(sql, hm, 20);
         return suggestions;
     }
@@ -1347,6 +1371,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patient = null;
         yearMonthDay = null;
         printPreview = false;
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
         bhtNumberCalculation();
     }
 
