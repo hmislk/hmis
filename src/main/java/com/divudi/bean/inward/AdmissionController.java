@@ -702,12 +702,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToRoomChange() {
 //        roomChangeController.recreate();
         roomChangeController.createPatientRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
     public String navigateToGuardianRoomChange() {
 //         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 

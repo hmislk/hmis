@@ -60,17 +60,18 @@ public class PatientTransferController implements Serializable {
     private List<PatientTransferRequest> currentAdmissionRequests;
 
     public List<Admission> completePatientByInstitution(String query) {
-        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
 
     public void onInstitutionChange() {
         current = null;
+        targetRoomFacilityCharge = null;
+        notes = null;
+        lastInitiatedRequest = null;
+        currentAdmissionRequests = null;
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
@@ -84,6 +85,7 @@ public class PatientTransferController implements Serializable {
         notes = null;
         lastInitiatedRequest = null;
         currentAdmissionRequests = null;
+        institution = sessionController.getInstitution();
         return "/inward/inward_transfer_initiate?faces-redirect=true";
     }
 

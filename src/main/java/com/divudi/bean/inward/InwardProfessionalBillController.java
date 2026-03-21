@@ -760,6 +760,7 @@ public class InwardProfessionalBillController implements Serializable {
         current = null;
         batchBill = null;
         printPreview = false;
+        institution = sessionController.getInstitution();
         makeNullList();
 
     }
@@ -783,7 +784,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public List<Admission> completePatientByInstitution(String query) {
-        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
 
     public void onInstitutionChange() {
@@ -791,9 +792,6 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 

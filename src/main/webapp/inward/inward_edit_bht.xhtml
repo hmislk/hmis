@@ -185,6 +185,7 @@
                                                         class="ui-button-success btn-lg"
                                                         style="min-width: 200px; height: 50px;"
                                                         title="Continue to edit admission details"
+                                                        disabled="#{empty bhtEditController.current.bhtNo}"
                                                         action="#{bhtEditController.navigateToEditAdmissionDetails()}" />
                                                 </div>
                                             </div>

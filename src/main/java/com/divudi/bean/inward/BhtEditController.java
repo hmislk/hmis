@@ -346,7 +346,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public List<Admission> completePatientByInstitution(String query) {
-        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
 
     public void onInstitutionChange() {
@@ -354,9 +354,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
@@ -422,6 +419,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current = null;
         selectText = "";
         yearMonthDay = new YearMonthDay();
+        institution = sessionController.getInstitution();
     }
 
     @Deprecated

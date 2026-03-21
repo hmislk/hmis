@@ -124,9 +124,6 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
@@ -256,6 +253,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         patientDetailsEditable = false;
         selectText = "";
         showConfirmation = false;
+        institution = sessionController.getInstitution();
     }
 
     /**

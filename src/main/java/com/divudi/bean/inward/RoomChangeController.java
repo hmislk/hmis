@@ -113,21 +113,18 @@ public class RoomChangeController implements Serializable {
     }
 
     public List<Admission> completePatientByInstitution(String query) {
-        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
 
     public List<Admission> completePatientFromWaitingRoomByInstitution(String query) {
-        return admissionController.completePatientFromWaitingRoomByInstitution(query, institution);
+        return admissionController.completePatientFromWaitingRoomByInstitution(query, getInstitution());
     }
 
     public void onInstitutionChange() {
-        current = null;
+        recreate();
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
@@ -205,6 +202,7 @@ public class RoomChangeController implements Serializable {
     public String navigateToAdmitRoomFromMenu() {
         setCurrent(null);
         setCurrentPatientRoom(null);
+        institution = sessionController.getInstitution();
         return "/inward/admit_room?faces-redirect=true";
     }
 

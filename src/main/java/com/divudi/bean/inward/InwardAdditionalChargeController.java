@@ -133,10 +133,11 @@ public class InwardAdditionalChargeController implements Serializable {
         current = null;
         billItemList = null;
         inwardChargeType = null;
+        institution = sessionController.getInstitution();
     }
 
     public List<Admission> completePatientByInstitution(String query) {
-        return admissionController.completePatientNotFinalizedByInstitution(query, institution);
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
     }
 
     public void onInstitutionChange() {
@@ -144,9 +145,6 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
