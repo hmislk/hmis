@@ -55,19 +55,10 @@
                                         value="Config"
                                         icon="fa fa-cog"
                                         immediate="true"
-                                        title="Page Configuration Management"
-                                        action="#{pageAdminController.navigateToPageAdmin('inward/inward_admission')}"
+                                        title="Configure Admission Settings"
+                                        action="#{admissionController.navigateToAdmissionConfig()}"
                                         ajax="false"
                                         styleClass="ui-button-secondary ms-5">
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        value="Claimable Config"
-                                        icon="fa fa-cog"
-                                        immediate="true"
-                                        title="Configure Claimable Field Settings"
-                                        action="#{admissionController.navigateToAdmissionClaimableConfig()}"
-                                        ajax="false"
-                                        styleClass="ui-button-secondary ms-2">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
@@ -385,17 +376,15 @@
                                                 inputStyleClass="w-100"
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                             <h:outputLabel for="acRefMeth" value="Referred From" rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}"/>
-                                            <p:selectOneMenu 
-                                                id="acRefMeth" 
-                                                value="#{admissionController.current.referringMethod}" 
-                                                editable="false" 
-                                                filter="true" 
-                                                placeholder="Search &amp; select a Referring Method" 
-                                                filterMatchMode="contains" 
-                                                styleClass="w-100" 
-                                                required="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Require Referred From in Patient Admission')}" 
-                                                requiredMessage="Need a Referring Method " 
-                                                class="w-100 form-control" 
+                                            <p:selectOneMenu
+                                                id="acRefMeth"
+                                                value="#{admissionController.current.referringMethod}"
+                                                editable="false"
+                                                filter="true"
+                                                placeholder="Search &amp; select a Referring Method"
+                                                filterMatchMode="contains"
+                                                styleClass="w-100"
+                                                class="w-100 form-control"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}">
                                                 <f:selectItem itemLabel="Search &amp; select a Method" itemValue="" noSelectionOption="true"/>
                                                 <f:selectItems 
