@@ -19,6 +19,7 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.inward.BhtSummeryController;
 
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -93,6 +94,8 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
     @Inject
     ItemController itemController;
     @Inject
@@ -326,6 +329,7 @@ public class BillBhtController implements Serializable {
         batchBill = null;
         bills = null;
         referredBy = null;
+        bhtSummeryController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
@@ -352,6 +356,7 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
         marginTotal = 0.0;
+        bhtSummeryController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
