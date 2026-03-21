@@ -1210,11 +1210,17 @@
                     var remaining = expiryEpochMs - Date.now();
                     if (remaining <= 0) {
                         clearInterval(otpCountdownInterval);
-                        el.textContent = 'Expired';
+                        el.textContent = 'OTP Expired';
                         el.className = 'otp-countdown-timer expired';
-                        var verifyBtn = document.querySelector('.btn-verify .ui-button');
-                        if (verifyBtn)
-                            verifyBtn.disabled = true;
+                        var label = document.querySelector('.otp-countdown-label');
+                        if (label)
+                            label.style.display = 'none';
+                        var msgWrap = document.getElementById('form:globalMessages');
+                        if (msgWrap)
+                            msgWrap.innerHTML = '';
+                        var otpSection = document.getElementById('otpEntrySection');
+                        if (otpSection)
+                            otpSection.style.display = 'none';
                         return;
                     }
                     var mins = Math.floor(remaining / 60000);
@@ -1339,7 +1345,9 @@
                                                     <i class="fas fa-phone f-icon"/>
                                                     <p:inputText
                                                         value="#{patientPortalController.patientphoneNumber}"
-                                                        placeholder="Enter your mobile number"/>
+                                                        onfocus="this.select()"
+                                                        placeholder="Enter your mobile number">
+                                                    </p:inputText>
                                                 </div>
                                             </div>
                                             <div class="btn-send">
@@ -1347,7 +1355,8 @@
                                                     value="Send OTP"
                                                     icon="fas fa-paper-plane"
                                                     action="#{patientPortalController.sendOtp}"
-                                                    update="globalMessages otpFormPanel"/>
+                                                    update="globalMessages otpFormPanel">
+                                                </p:commandButton>
                                             </div>
                                         </h:panelGroup>
 
@@ -1371,21 +1380,25 @@
                                                 </span>
                                             </div>
 
-                                            <div class="field-group">
-                                                <label class="field-label">One-Time Password</label>
-                                                <div class="field-wrap">
-                                                    <i class="fas fa-key f-icon"/>
-                                                    <p:inputText
-                                                        value="#{patientPortalController.patientEnteredOtp}"
-                                                        placeholder="Enter OTP"/>
+                                            <div id="otpEntrySection">
+                                                <div class="field-group">
+                                                    <label class="field-label">One-Time Password</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-key f-icon"/>
+                                                        <p:inputText
+                                                            value="#{patientPortalController.patientEnteredOtp}"
+                                                            onfocus="this.select()"
+                                                            placeholder="Enter OTP">
+                                                        </p:inputText>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="btn-verify">
-                                                <p:commandButton
-                                                    value="Verify OTP"
-                                                    icon="fas fa-circle-check"
-                                                    action="#{patientPortalController.otpVerification}"
-                                                    update="globalMessages portalContentPanel"/>
+                                                <div class="btn-verify">
+                                                    <p:commandButton
+                                                        value="Verify OTP"
+                                                        icon="fas fa-circle-check"
+                                                        action="#{patientPortalController.otpVerification}"
+                                                        update="globalMessages portalContentPanel"/>
+                                                </div>
                                             </div>
                                             <div class="resend-wrap">
                                                 Didn't receive it?&#160;
@@ -1828,6 +1841,11 @@
 
                         <!-- Security footer note -->
                         <div class="portal-footer-note">
+                            <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Patient Portal - CareCode Logo URL','https://i.ibb.co/V0bCPdZZ/fcare.png')}">
+                                <img src="#{configOptionApplicationController.getLongTextValueByKey('Patient Portal - CareCode Logo URL','https://i.ibb.co/V0bCPdZZ/fcare.png')}"
+                                     alt="CareCode"
+                                     style="height:28px; vertical-align:middle; margin-right:6px;"/>
+                            </h:panelGroup>
                             Powered by CareCode (Pvt) Ltd.
                         </div>
 
