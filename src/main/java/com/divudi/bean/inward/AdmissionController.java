@@ -1875,18 +1875,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
+        // Always reserve the next BHT number from the counter
+        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtText == null || bhtText.trim().equals("")) {
-            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(generatedBht)) {
+            // User explicitly overrode the BHT text — keep their value
         } else {
-            if (!bhtCanBeEdited) {
-                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
-            }
+            bhtText = generatedBht;
         }
-//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
+        if (getInwardBean().getLastGeneratedBhtLong() != null) {
+            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+        }
 
-        //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -2006,18 +2008,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
+        // Always reserve the next BHT number from the counter
+        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtText == null || bhtText.trim().equals("")) {
-            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(generatedBht)) {
+            // User explicitly overrode the BHT text — keep their value
         } else {
-            if (!bhtCanBeEdited) {
-                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
-            }
+            bhtText = generatedBht;
         }
-//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
+        if (getInwardBean().getLastGeneratedBhtLong() != null) {
+            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+        }
 
-        //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -2252,7 +2256,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
-        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
 
         getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
     }
