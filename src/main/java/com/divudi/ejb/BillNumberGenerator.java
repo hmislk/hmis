@@ -3536,6 +3536,9 @@ public class BillNumberGenerator {
     }
 
     public AdmissionNumber fetchNextAdmissionNumber(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        if (institutionBased && institution == null) {
+            throw new IllegalArgumentException("Institution is required when institutionBased is true.");
+        }
         String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 
@@ -3548,6 +3551,9 @@ public class BillNumberGenerator {
     }
 
     public Long peekNextAdmissionNumber(AdmissionType admissionType, Institution institution, boolean institutionBased) {
+        if (institutionBased && institution == null) {
+            throw new IllegalArgumentException("Institution is required when institutionBased is true.");
+        }
         String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
 

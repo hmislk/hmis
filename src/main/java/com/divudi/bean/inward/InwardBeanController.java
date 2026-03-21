@@ -2238,7 +2238,7 @@ public class InwardBeanController implements Serializable {
         String bhtText;
 
         if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
-            bhtText = "BHT" + Long.toString(temp);
+            bhtText = "BHT";
         } else {
             bhtText = admissionType.getCode().trim();
         }
