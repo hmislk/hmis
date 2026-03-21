@@ -44,6 +44,10 @@
                                                 value="#{billBhtController.patientEncounter}"
                                                 target="#{admissionController.current}" >
                                             </f:setPropertyActionListener>
+                                            <f:setPropertyActionListener
+                                                value="#{billBhtController.patientEncounter}"
+                                                target="#{bhtSummeryController.patientEncounter}" >
+                                            </f:setPropertyActionListener>
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -178,14 +182,18 @@
                                                 value="#{billBhtController.patientEncounter}"
                                                 target="#{admissionController.current}" >
                                             </f:setPropertyActionListener>
+                                            <f:setPropertyActionListener
+                                                value="#{billBhtController.patientEncounter}"
+                                                target="#{bhtSummeryController.patientEncounter}" >
+                                            </f:setPropertyActionListener>
                                         </p:commandButton>
                                     </div>
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                    <p:commandButton 
-                                        value="Nursing WorkBench" 
-                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    <p:commandButton
+                                        value="Nursing WorkBench"
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
                                         class="ui-button-operating-theatre"
                                         icon="fa fa-arrow-left">

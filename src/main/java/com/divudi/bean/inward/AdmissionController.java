@@ -490,6 +490,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * and accumulates their credit limits.
      */
     public void findLastUsedCreditCompanies() {
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Apply Claimable For Credit", false)) {
+            if (current.getPaymentMethod() == PaymentMethod.Credit) {
+                current.setClaimable(true);
+            } else {
+                current.setClaimable(false);
+            }
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient", false)) {
             if (current.getPatient() == null) {
                 return;
