@@ -12,6 +12,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="formTemplates">
+                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardAdministration')}">
+                        <na:not_authorize xmlns:na="http://xmlns.jcp.org/jsf/composite/template" />
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdministration')}">
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText value="Appointment Schedule Templates" />
@@ -262,6 +266,7 @@
                             </div>
                         </div>
                     </p:panel>
+                    </h:panelGroup>
                 </h:form>
             </ui:define>
         </ui:composition>

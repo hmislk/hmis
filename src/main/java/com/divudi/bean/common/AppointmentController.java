@@ -515,6 +515,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         if (selectedConsultant != null) {
             getCurrentAppointment().setOpdDoctor(selectedConsultant);
         }
+        if (selectedDepartment != null) {
+            getCurrentAppointment().setDepartment(selectedDepartment);
+        }
         if (selectedScheduleInstance != null) {
             getCurrentAppointment().setScheduleInstance(selectedScheduleInstance);
         }
@@ -1486,12 +1489,14 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             selectedScheduleInstance = null;
             return;
         }
+        RoomFacilityCharge roomForFilter = (appointmentCategory != null && appointmentCategory.needsRoom())
+                ? reservedRoom : null;
         availableInstances = appointmentScheduleTemplateController.findAvailableInstances(
                 currentAppointment.getAppointmentDate(),
                 selectedProcedure,
                 selectedConsultant,
                 selectedDepartment,
-                reservedRoom);
+                roomForFilter);
         selectedScheduleInstance = null;
     }
 
@@ -1537,12 +1542,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return true;
         }
         if (currentAppointment.getAppointmentTimeFrom() == null || currentAppointment.getAppointmentTimeTo() == null) {
-            return true;
+            JsfUtil.addErrorMessage("Appointment from-time and to-time are required for time-based schedules.");
+            return false;
         }
+        Long excludeId = (currentAppointment != null && currentAppointment.getId() != null)
+                ? currentAppointment.getId() : null;
         boolean overlap = appointmentScheduleTemplateController.hasTimeOverlap(
                 selectedScheduleInstance,
                 currentAppointment.getAppointmentTimeFrom(),
-                currentAppointment.getAppointmentTimeTo());
+                currentAppointment.getAppointmentTimeTo(),
+                excludeId);
         if (overlap) {
             JsfUtil.addErrorMessage("Time slot overlaps with an existing appointment in this schedule.");
             return false;

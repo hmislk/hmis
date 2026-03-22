@@ -270,9 +270,8 @@ public class AppointmentScheduleTemplateController implements Serializable {
         for (AppointmentScheduleTemplate t : matchingTemplates) {
             AppointmentScheduleInstance inst = findOrCreateInstance(t, date);
             if (inst != null) {
-                // Refresh booked count
+                // Refresh booked count transiently (no DB write on read path)
                 inst.setBookedCount(countActiveAppointments(inst));
-                instanceFacade.edit(inst);
                 instances.add(inst);
             }
         }
@@ -327,20 +326,25 @@ public class AppointmentScheduleTemplateController implements Serializable {
         return count != null ? count.intValue() : 0;
     }
 
-    public boolean hasTimeOverlap(AppointmentScheduleInstance instance, Date fromTime, Date toTime) {
+    public boolean hasTimeOverlap(AppointmentScheduleInstance instance, Date fromTime, Date toTime, Long excludeAppointmentId) {
         if (instance == null || instance.getId() == null || fromTime == null || toTime == null) {
             return false;
         }
-        String jpql = "SELECT COUNT(a) FROM Appointment a "
-                + "WHERE a.scheduleInstance = :si AND a.retired = false "
-                + "AND a.status = :status "
-                + "AND a.appointmentTimeFrom < :toTime AND a.appointmentTimeTo > :fromTime";
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT COUNT(a) FROM Appointment a ");
+        jpql.append("WHERE a.scheduleInstance = :si AND a.retired = false ");
+        jpql.append("AND a.status = :status ");
+        jpql.append("AND a.appointmentTimeFrom < :toTime AND a.appointmentTimeTo > :fromTime ");
         Map<String, Object> params = new HashMap<>();
         params.put("si", instance);
         params.put("status", AppointmentStatus.PENDING);
         params.put("toTime", toTime);
         params.put("fromTime", fromTime);
-        Long count = instanceFacade.countByJpql(jpql, params);
+        if (excludeAppointmentId != null) {
+            jpql.append("AND a.id != :excludeId ");
+            params.put("excludeId", excludeAppointmentId);
+        }
+        Long count = instanceFacade.countByJpql(jpql.toString(), params);
         return count != null && count > 0;
     }
 
@@ -425,9 +429,13 @@ public class AppointmentScheduleTemplateController implements Serializable {
             if (value == null || value.isEmpty()) {
                 return null;
             }
-            AppointmentScheduleTemplateController controller = (AppointmentScheduleTemplateController) facesContext.getApplication().getELResolver()
-                    .getValue(facesContext.getELContext(), null, "appointmentScheduleTemplateController");
-            return controller.templateFacade.find(Long.valueOf(value));
+            try {
+                AppointmentScheduleTemplateController controller = (AppointmentScheduleTemplateController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "appointmentScheduleTemplateController");
+                return controller.templateFacade.find(Long.valueOf(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         @Override
@@ -451,9 +459,13 @@ public class AppointmentScheduleTemplateController implements Serializable {
             if (value == null || value.isEmpty()) {
                 return null;
             }
-            AppointmentScheduleTemplateController controller = (AppointmentScheduleTemplateController) facesContext.getApplication().getELResolver()
-                    .getValue(facesContext.getELContext(), null, "appointmentScheduleTemplateController");
-            return controller.instanceFacade.find(Long.valueOf(value));
+            try {
+                AppointmentScheduleTemplateController controller = (AppointmentScheduleTemplateController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "appointmentScheduleTemplateController");
+                return controller.instanceFacade.find(Long.valueOf(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         @Override
