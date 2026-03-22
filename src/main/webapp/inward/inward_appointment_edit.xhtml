@@ -576,6 +576,55 @@
                                     </h:panelGroup>
                                 </p:panel>
 
+                                <h:panelGroup rendered="#{appointmentController.currentAppointment.scheduleInstance ne null}">
+                                    <p:panel class="my-2">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-calendar" />
+                                            <h:outputLabel value="Schedule Information" class="mx-4" />
+                                        </f:facet>
+                                        <h:panelGrid columns="3" class="w-50 my-2">
+                                            <h:outputLabel value="Template" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{appointmentController.currentAppointment.scheduleInstance.template.name}" />
+
+                                            <h:outputLabel value="Schedule Type" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{appointmentController.currentAppointment.scheduleInstance.template.scheduleType.displayName}"
+                                                          rendered="#{appointmentController.currentAppointment.scheduleInstance.template.scheduleType ne null}" />
+
+                                            <h:outputLabel value="Instance Date" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{appointmentController.currentAppointment.scheduleInstance.instanceDate}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Time Window" rendered="#{appointmentController.currentAppointment.scheduleInstance.startTime ne null}" />
+                                            <h:outputLabel value=":" rendered="#{appointmentController.currentAppointment.scheduleInstance.startTime ne null}" />
+                                            <h:panelGroup rendered="#{appointmentController.currentAppointment.scheduleInstance.startTime ne null}">
+                                                <h:outputText value="#{appointmentController.currentAppointment.scheduleInstance.startTime}">
+                                                    <f:convertDateTime pattern="hh:mm a" />
+                                                </h:outputText>
+                                                <h:outputText value=" - " />
+                                                <h:outputText value="#{appointmentController.currentAppointment.scheduleInstance.endTime}">
+                                                    <f:convertDateTime pattern="hh:mm a" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+
+                                            <h:outputLabel value="Capacity" />
+                                            <h:outputLabel value=":" />
+                                            <h:outputText value="#{appointmentController.currentAppointment.scheduleInstance.bookedCount} / #{appointmentController.currentAppointment.scheduleInstance.maxCount}" />
+
+                                            <h:outputLabel value="Procedure" rendered="#{appointmentController.currentAppointment.item ne null}" />
+                                            <h:outputLabel value=":" rendered="#{appointmentController.currentAppointment.item ne null}" />
+                                            <h:outputText value="#{appointmentController.currentAppointment.item.name}" rendered="#{appointmentController.currentAppointment.item ne null}" />
+
+                                            <h:outputLabel value="Consultant" rendered="#{appointmentController.currentAppointment.opdDoctor ne null}" />
+                                            <h:outputLabel value=":" rendered="#{appointmentController.currentAppointment.opdDoctor ne null}" />
+                                            <h:outputText value="#{appointmentController.currentAppointment.opdDoctor.person.nameWithTitle}" rendered="#{appointmentController.currentAppointment.opdDoctor ne null}" />
+                                        </h:panelGrid>
+                                    </p:panel>
+                                </h:panelGroup>
+
                                 <p:panel>
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fas fa-info-circle" />
