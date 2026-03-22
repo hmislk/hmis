@@ -2743,7 +2743,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 deptDto.getBhtBills().add(bhtDto);
             }
 
-            // *** FIX: Negate values for DIRECT_ISSUE_INWARD_MEDICINE_RETURN ***
             if (RETURN_BILL_TYPES.contains(item.getBillTypeAtomic())) {
                 item.setQty(item.getQty() != null ? -Math.abs(item.getQty()) : null);
                 item.setGrossValue(item.getGrossValue() != null ? -Math.abs(item.getGrossValue()) : null);
