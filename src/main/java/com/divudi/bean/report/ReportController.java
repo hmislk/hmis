@@ -111,7 +111,6 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.util.logging.Logger;
 
-
 /**
  * @author Senula Nanayakkara
  */
@@ -2627,8 +2626,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         }
-        
-        
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
@@ -2700,6 +2697,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
     }
 
+    private static final Set<BillTypeAtomic> RETURN_BILL_TYPES = new HashSet<>(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+    ));
+
     private List<PharmacySaleDepartmentDTO> buildHierarchy(List<PharmacySaleItemDTO> flatItems) {
         if (flatItems == null || flatItems.isEmpty()) {
             return new ArrayList<>();
@@ -2740,6 +2741,15 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 bhtDto.setItems(new ArrayList<>());
                 billMap.put(billKey, bhtDto);
                 deptDto.getBhtBills().add(bhtDto);
+            }
+
+            // *** FIX: Negate values for DIRECT_ISSUE_INWARD_MEDICINE_RETURN ***
+            if (RETURN_BILL_TYPES.contains(item.getBillTypeAtomic())) {
+                item.setQty(item.getQty() != null ? -Math.abs(item.getQty()) : null);
+                item.setGrossValue(item.getGrossValue() != null ? -Math.abs(item.getGrossValue()) : null);
+                item.setDiscount(item.getDiscount() != null ? -Math.abs(item.getDiscount()) : null);
+                item.setNetValue(item.getNetValue() != null ? -Math.abs(item.getNetValue()) : null);
+                item.setMarginValue(item.getMarginValue() != null ? -Math.abs(item.getMarginValue()) : null);
             }
 
             bhtDto.getItems().add(item);
@@ -3338,7 +3348,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         table.addCell(cell);
     }
 
-
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -3873,8 +3882,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
     }
-    
-    public String navigateToGrnSummaryReport(){
+
+    public String navigateToGrnSummaryReport() {
         return "/reports/inventoryReports/grn_summary_report?faces-redirect=true";
     }
 
@@ -5605,7 +5614,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             XSSFSheet sheet = workbook.createSheet("Petty Cash Payment Report");
             int rowIndex = 0;
-            
+
             if (filters != null && !filters.isEmpty()) {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Petty Cash Payment Report", filters);
             }
@@ -5635,9 +5644,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 dataRow.createCell(colIndex++).setCellValue((b.getCreater() != null && b.getCreater().getWebUserPerson() != null) ? b.getCreater().getWebUserPerson().getName() : "");
 
                 if (b.getCancelledBill() != null) {
-                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + " (Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + " (Cancelled)") ) : "");
+                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + " (Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + " (Cancelled)")) : "");
                 } else if (b.getRefundedBill() != null) {
-                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + " (Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + " (Refunded)") ) : "");
+                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + " (Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + " (Refunded)")) : "");
                 } else {
                     dataRow.createCell(colIndex++).setCellValue(b.getDeptId() != null ? b.getDeptId() : "");
                 }
@@ -5647,14 +5656,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 dataRow.createCell(colIndex++).setCellValue(b.getBillDate() != null ? sdf.format(b.getBillDate()) : "");
 
                 if (b.getStaff() != null) {
-                    dataRow.createCell(colIndex++).setCellValue((b.getStaff().getPerson() != null && b.getStaff().getPerson().getName() != null ) ? b.getStaff().getPerson().getName() : "");
+                    dataRow.createCell(colIndex++).setCellValue((b.getStaff().getPerson() != null && b.getStaff().getPerson().getName() != null) ? b.getStaff().getPerson().getName() : "");
                 } else if (b.getPerson() != null) {
                     dataRow.createCell(colIndex++).setCellValue(b.getPerson().getName() != null ? b.getPerson().getName() : "");
                 } else {
                     dataRow.createCell(colIndex++).setCellValue("");
                 }
 
-                dataRow.createCell(colIndex++).setCellValue(b.getToDepartment() != null && b.getToDepartment().getName() != null? b.getToDepartment().getName() : "");
+                dataRow.createCell(colIndex++).setCellValue(b.getToDepartment() != null && b.getToDepartment().getName() != null ? b.getToDepartment().getName() : "");
                 dataRow.createCell(colIndex++).setCellValue(b.getComments() != null ? b.getComments() : "");
                 dataRow.createCell(colIndex++).setCellValue(b.getApproveUser() != null ? "Approved" : "Not Approved");
                 dataRow.createCell(colIndex++).setCellValue((0 - b.getTotal()));
@@ -5709,7 +5718,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             int columnCount = 11;
 
             Map<String, Object> filters = getFiltersForPettyCasgPaymentReport();
-            
+
             PdfPTable infoTable = createInfoTable(filters);
             if (infoTable != null) {
                 document.add(infoTable);
@@ -5739,11 +5748,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 addPdfTextCell(table, String.valueOf(serialNo++), normalFont, null, Element.ALIGN_RIGHT);
                 addPdfTextCell(table, ((b.getCreater() != null && b.getCreater().getWebUserPerson() != null) ? b.getCreater().getWebUserPerson().getName() : ""), normalFont, null, Element.ALIGN_LEFT);
 
-                String deptInfo="";
+                String deptInfo = "";
                 if (b.getCancelledBill() != null) {
-                    deptInfo = (b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + "\n(Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + "\n(Cancelled)") ) : "";
+                    deptInfo = (b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + "\n(Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + "\n(Cancelled)")) : "";
                 } else if (b.getRefundedBill() != null) {
-                    deptInfo = (b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + "\n(Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + "\n(Refunded)") ) : "";
+                    deptInfo = (b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + "\n(Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + "\n(Refunded)")) : "";
                 } else {
                     deptInfo = b.getDeptId() != null ? b.getDeptId() : "";
                 }
@@ -5752,7 +5761,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 addPdfTextCell(table, b.getBillDate() != null ? sdf2.format(b.getBillDate()) : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getInvoiceNumber() != null ? b.getInvoiceNumber() : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getBillDate() != null ? sdf1.format(b.getBillDate()) : "", normalFont, null, Element.ALIGN_LEFT);
-                
+
                 String forWhom = "";
                 if (b.getStaff() != null) {
                     forWhom = (b.getStaff().getPerson() != null && b.getStaff().getPerson().getName() != null) ? b.getStaff().getPerson().getName() : "";
@@ -5761,7 +5770,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 }
                 addPdfTextCell(table, forWhom, normalFont, null, Element.ALIGN_LEFT);
 
-                addPdfTextCell(table, b.getToDepartment() != null && b.getToDepartment().getName() != null? b.getToDepartment().getName() : "", normalFont, null, Element.ALIGN_LEFT);
+                addPdfTextCell(table, b.getToDepartment() != null && b.getToDepartment().getName() != null ? b.getToDepartment().getName() : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getComments() != null ? b.getComments() : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getApproveUser() != null ? "Approved" : "Not Approved", normalFont, null, Element.ALIGN_LEFT);
                 addPdfNumberCell(table, (0 - b.getTotal()), normalFont, null);
@@ -5862,7 +5871,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private Map<String, Object> getFiltersForBillWiseItemMovementReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
-        
+
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "N/A");
         filters.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
         filters.put("Institution", institution != null ? institution.getName() : "All Institutions");
