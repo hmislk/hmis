@@ -36,6 +36,7 @@ import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.AppointmentScheduleInstance;
 import com.divudi.core.entity.AppointmentScheduleTemplate;
 import com.divudi.core.data.AppointmentScheduleType;
+import com.divudi.core.data.InwardAppointmentCategory;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Staff;
@@ -164,6 +165,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private RoomFacilityCharge reservedRoom;
     private String comment;
 
+    private InwardAppointmentCategory appointmentCategory = InwardAppointmentCategory.ROOM_ADMISSION;
     private Item selectedProcedure;
     private Staff selectedConsultant;
     private Department selectedDepartment;
@@ -547,28 +549,46 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        if (reservation == null) {
-            JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
+        if (appointmentCategory == null) {
+            JsfUtil.addErrorMessage("Please select an appointment category.");
             return;
         }
 
-        if (getReservedRoom() == null) {
-            JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
+        if (appointmentCategory.needsRoom()) {
+            if (reservation == null) {
+                JsfUtil.addErrorMessage("Please select a patient room for the appointment.");
+                return;
+            }
+            if (getReservedRoom() == null) {
+                JsfUtil.addErrorMessage("Please select a patient room for the appointment.");
+                return;
+            }
+            if (getReservedFromDate() == null) {
+                JsfUtil.addErrorMessage("Please select a Reservation date for the appointment.");
+                return;
+            }
+            if (!getReservedFromDate().after(new Date())) {
+                JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
+                return;
+            }
+            if (getReservedToDate() != null && (!getReservedToDate().after(new Date()) || !getReservedToDate().after(getReservedFromDate()))) {
+                JsfUtil.addErrorMessage("Please select a valid Reservation to date.");
+                return;
+            }
+        }
+
+        if (appointmentCategory.needsConsultant() && selectedConsultant == null) {
+            JsfUtil.addErrorMessage("Please select a consultant.");
             return;
         }
 
-        if (getReservedFromDate() == null) {
-            JsfUtil.addErrorMessage("Please select a Reservation date for the appoiment.");
+        if (appointmentCategory.needsProcedure() && selectedProcedure == null) {
+            JsfUtil.addErrorMessage("Please select a procedure.");
             return;
         }
 
-        if (!getReservedFromDate().after(new Date())) {
-            JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
-            return;
-        }
-
-        if (getReservedToDate() != null && (!getReservedToDate().after(new Date()) || !getReservedToDate().after(getReservedFromDate()))) {
-            JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
+        if (appointmentCategory.needsDepartment() && selectedDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a department.");
             return;
         }
 
@@ -594,21 +614,24 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        Reservation res = checkRoomAvailability();
-
-        if (res != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
-            String fDate = sdf.format(res.getReservedFrom());
-            String tDate = sdf.format(res.getReservedTo());
-            JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
-            return;
+        if (appointmentCategory.needsRoom()) {
+            Reservation res = checkRoomAvailability();
+            if (res != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
+                String fDate = sdf.format(res.getReservedFrom());
+                String tDate = sdf.format(res.getReservedTo());
+                JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
+                return;
+            }
         }
 
         Patient p = savePatient(getPatient());
 
         saveBill(p);
         saveAppointment(p);
-        saveReservation(p, currentAppointment);
+        if (appointmentCategory.needsRoom()) {
+            saveReservation(p, currentAppointment);
+        }
         createPayment(getCurrentBill(), getCurrentBill().getPaymentMethod());
 
         // Increment booked count on schedule instance
@@ -1413,6 +1436,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         reservedToDate = null;
         reservedRoom = null;
         paymentMethodData = null;
+        appointmentCategory = InwardAppointmentCategory.ROOM_ADMISSION;
         selectedProcedure = null;
         selectedConsultant = null;
         selectedDepartment = null;
@@ -1432,7 +1456,24 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/inward_appointment?faces-redirect=true";
     }
 
-    // Schedule-related methods
+    // Category & schedule methods
+    public void onAppointmentCategoryChanged() {
+        selectedProcedure = null;
+        selectedConsultant = null;
+        selectedDepartment = null;
+        selectedScheduleInstance = null;
+        availableInstances = null;
+        if (appointmentCategory != null && appointmentCategory.needsRoom()) {
+            if (reservation == null) {
+                getReservation();
+            }
+        }
+    }
+
+    public InwardAppointmentCategory[] getAppointmentCategories() {
+        return InwardAppointmentCategory.values();
+    }
+
     public void onScheduleFilterChanged() {
         if (currentAppointment == null || currentAppointment.getAppointmentDate() == null) {
             availableInstances = null;
@@ -1835,6 +1876,14 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public InwardAppointmentCategory getAppointmentCategory() {
+        return appointmentCategory;
+    }
+
+    public void setAppointmentCategory(InwardAppointmentCategory appointmentCategory) {
+        this.appointmentCategory = appointmentCategory;
     }
 
     public Item getSelectedProcedure() {
