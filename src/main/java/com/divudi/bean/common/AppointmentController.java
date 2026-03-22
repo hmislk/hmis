@@ -625,6 +625,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             }
         }
 
+        // For room admission, auto-populate appointment times from reservation
+        if (appointmentCategory.needsRoom()) {
+            getCurrentAppointment().setAppointmentTimeFrom(reservedFromDate);
+            getCurrentAppointment().setAppointmentTimeTo(reservedToDate);
+        }
+
         Patient p = savePatient(getPatient());
 
         saveBill(p);

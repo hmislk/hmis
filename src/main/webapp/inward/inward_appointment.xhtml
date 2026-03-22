@@ -422,32 +422,37 @@
                                                             process="@this" />
                                                 </p:calendar>
 
-                                                <p:outputLabel value="Appointment Time From"/>
-                                                <p:datePicker
-                                                    id="appointmentTimeFrom"
-                                                    value="#{appointmentController.currentAppointment.appointmentTimeFrom}"
-                                                    timeOnly="true"
-                                                    showTime="true"
-                                                    pattern="hh:mm a"
-                                                    class="w-100 mt-2"
-                                                    inputStyleClass="form-control">
-                                                    <p:ajax event="dateSelect"
-                                                            listener="#{appointmentController.onAppointmentTimeFromChanged()}"
-                                                            update="appointmentTimeTo"
-                                                            process="@this" />
-                                                </p:datePicker>
-
-                                                <p:outputLabel value="Appointment Time To"/>
-                                                <p:datePicker
-                                                    id="appointmentTimeTo"
-                                                    value="#{appointmentController.currentAppointment.appointmentTimeTo}"
-                                                    timeOnly="true"
-                                                    showTime="true"
-                                                    pattern="hh:mm a"
-                                                    class="w-100 mt-2"
-                                                    inputStyleClass="form-control" />
-
                                             </h:panelGrid>
+
+                                            <!-- Time From/To only for non-room categories -->
+                                            <h:panelGroup rendered="#{not appointmentController.appointmentCategory.needsRoom()}">
+                                                <h:panelGrid columns="2" class="w-100">
+                                                    <p:outputLabel value="Appointment Time From"/>
+                                                    <p:datePicker
+                                                        id="appointmentTimeFrom"
+                                                        value="#{appointmentController.currentAppointment.appointmentTimeFrom}"
+                                                        timeOnly="true"
+                                                        showTime="true"
+                                                        pattern="hh:mm a"
+                                                        class="w-100 mt-2"
+                                                        inputStyleClass="form-control">
+                                                        <p:ajax event="dateSelect"
+                                                                listener="#{appointmentController.onAppointmentTimeFromChanged()}"
+                                                                update="appointmentTimeTo"
+                                                                process="@this" />
+                                                    </p:datePicker>
+
+                                                    <p:outputLabel value="Appointment Time To"/>
+                                                    <p:datePicker
+                                                        id="appointmentTimeTo"
+                                                        value="#{appointmentController.currentAppointment.appointmentTimeTo}"
+                                                        timeOnly="true"
+                                                        showTime="true"
+                                                        pattern="hh:mm a"
+                                                        class="w-100 mt-2"
+                                                        inputStyleClass="form-control" />
+                                                </h:panelGrid>
+                                            </h:panelGroup>
                                         </p:panel>
 
                                     </div>
