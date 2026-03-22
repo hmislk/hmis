@@ -54,6 +54,122 @@
                                     <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
 
                                     <p:panel class="my-2">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Appointment Schedule (Optional)" />
+                                        </f:facet>
+                                        <h:panelGroup class="my-2 w-100">
+                                            <h:panelGrid columns="3" class="w-50 my-2" cellpadding="10"
+                                                         columnClasses="labelCol,colonCol,inputCol">
+
+                                                <h:outputLabel value="Procedure"
+                                                               style="width:140px; display:inline-block;" />
+                                                <h:outputLabel value=":"
+                                                               style="width:10px; display:inline-block;" />
+                                                <p:autoComplete
+                                                    forceSelection="true"
+                                                    id="acSchedProcedure"
+                                                    class="my-1"
+                                                    value="#{appointmentController.selectedProcedure}"
+                                                    completeMethod="#{itemController.completeItem}"
+                                                    var="item"
+                                                    placeholder="Select Procedure"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{item.name}"
+                                                    itemValue="#{item}"
+                                                    style="width:100%; height:38px;">
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                            update="pnlScheduleInfo"
+                                                            process="@this acSchedConsultant acSchedDept" />
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="Consultant"
+                                                               style="width:140px; display:inline-block;" />
+                                                <h:outputLabel value=":"
+                                                               style="width:10px; display:inline-block;" />
+                                                <p:autoComplete
+                                                    forceSelection="true"
+                                                    id="acSchedConsultant"
+                                                    class="my-1"
+                                                    value="#{appointmentController.selectedConsultant}"
+                                                    completeMethod="#{staffController.completeStaff}"
+                                                    var="s"
+                                                    placeholder="Select Consultant"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{s.person.nameWithTitle}"
+                                                    itemValue="#{s}"
+                                                    style="width:100%; height:38px;">
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                            update="pnlScheduleInfo"
+                                                            process="@this acSchedProcedure acSchedDept" />
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="Department"
+                                                               style="width:140px; display:inline-block;" />
+                                                <h:outputLabel value=":"
+                                                               style="width:10px; display:inline-block;" />
+                                                <p:autoComplete
+                                                    forceSelection="true"
+                                                    id="acSchedDept"
+                                                    class="my-1"
+                                                    value="#{appointmentController.selectedDepartment}"
+                                                    completeMethod="#{departmentController.completeDepartments}"
+                                                    var="d"
+                                                    placeholder="Select Department"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"
+                                                    style="width:100%; height:38px;">
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                            update="pnlScheduleInfo"
+                                                            process="@this acSchedProcedure acSchedConsultant" />
+                                                </p:autoComplete>
+                                            </h:panelGrid>
+
+                                            <h:panelGroup id="pnlScheduleInfo" layout="block">
+                                                <h:panelGroup rendered="#{appointmentController.availableInstances ne null and not empty appointmentController.availableInstances}">
+                                                    <p:dataTable value="#{appointmentController.availableInstances}"
+                                                                 var="inst"
+                                                                 selection="#{appointmentController.selectedScheduleInstance}"
+                                                                 rowKey="#{inst.id}"
+                                                                 selectionMode="single"
+                                                                 class="my-2">
+                                                        <p:ajax event="rowSelect" />
+                                                        <p:column headerText="Template">
+                                                            <h:outputText value="#{inst.template.name}" />
+                                                        </p:column>
+                                                        <p:column headerText="Date">
+                                                            <h:outputText value="#{inst.instanceDate}">
+                                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Time Window">
+                                                            <h:outputText value="#{inst.startTime}" rendered="#{inst.startTime ne null}">
+                                                                <f:convertDateTime pattern="hh:mm a" />
+                                                            </h:outputText>
+                                                            <h:outputText value=" - " rendered="#{inst.startTime ne null}" />
+                                                            <h:outputText value="#{inst.endTime}" rendered="#{inst.endTime ne null}">
+                                                                <f:convertDateTime pattern="hh:mm a" />
+                                                            </h:outputText>
+                                                            <h:outputText value="Date Based" rendered="#{inst.startTime eq null}" />
+                                                        </p:column>
+                                                        <p:column headerText="Available Slots">
+                                                            <h:outputText value="#{inst.availableCount} of #{inst.maxCount}" />
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{appointmentController.availableInstances ne null and empty appointmentController.availableInstances}">
+                                                    <div class="alert alert-info my-2">
+                                                        No schedule constraints found for the selected criteria. Booking proceeds with room availability only.
+                                                    </div>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </p:panel>
+
+                                    <p:panel class="my-2">
                                         <f:facet name="header" >
                                             <h:outputLabel value="Reservation Details" />
                                         </f:facet>
@@ -248,17 +364,45 @@
                                             </p:autoComplete>
 
                                             <p:outputLabel value="Appointment Date"/>
-                                            <p:calendar 
+                                            <p:calendar
                                                 id="appointmentDate"
-                                                value="#{appointmentController.currentAppointment.appointmentDate}" 
+                                                value="#{appointmentController.currentAppointment.appointmentDate}"
                                                 navigator="false"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="dateTimePicker"
                                                 class="w-100 mt-2"
                                                 placeholder="Select Appointment Date"
                                                 inputStyleClass="form-control">
+                                                <p:ajax event="dateSelect"
+                                                        listener="#{appointmentController.onScheduleFilterChanged()}"
+                                                        update="pnlScheduleInfo"
+                                                        process="@this" />
                                             </p:calendar>
 
+                                            <p:outputLabel value="Appointment Time From"/>
+                                            <p:datePicker
+                                                id="appointmentTimeFrom"
+                                                value="#{appointmentController.currentAppointment.appointmentTimeFrom}"
+                                                timeOnly="true"
+                                                showTime="true"
+                                                pattern="hh:mm a"
+                                                class="w-100 mt-2"
+                                                inputStyleClass="form-control">
+                                                <p:ajax event="dateSelect"
+                                                        listener="#{appointmentController.onAppointmentTimeFromChanged()}"
+                                                        update="appointmentTimeTo"
+                                                        process="@this" />
+                                            </p:datePicker>
+
+                                            <p:outputLabel value="Appointment Time To"/>
+                                            <p:datePicker
+                                                id="appointmentTimeTo"
+                                                value="#{appointmentController.currentAppointment.appointmentTimeTo}"
+                                                timeOnly="true"
+                                                showTime="true"
+                                                pattern="hh:mm a"
+                                                class="w-100 mt-2"
+                                                inputStyleClass="form-control" />
 
                                         </h:panelGrid>
                                     </p:panel>

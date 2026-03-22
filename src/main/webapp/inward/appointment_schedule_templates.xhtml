@@ -1,0 +1,269 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Appointment Schedule Templates</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="formTemplates">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="Appointment Schedule Templates" />
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <p:panel header="Create / Edit Template">
+                                    <h:panelGrid columns="3" cellpadding="5" class="w-100"
+                                                 columnClasses="col-4,col-1,col-7">
+
+                                        <p:outputLabel value="Name" for="txtName" />
+                                        <h:outputText value=":" />
+                                        <p:inputText id="txtName"
+                                                     value="#{appointmentScheduleTemplateController.currentTemplate.name}"
+                                                     class="form-control w-100"
+                                                     placeholder="Template Name" />
+
+                                        <p:outputLabel value="Description" for="txtDesc" />
+                                        <h:outputText value=":" />
+                                        <p:inputTextarea id="txtDesc"
+                                                         value="#{appointmentScheduleTemplateController.currentTemplate.description}"
+                                                         class="form-control w-100"
+                                                         rows="2"
+                                                         placeholder="Description" />
+
+                                        <p:outputLabel value="Schedule Type" for="cmbScheduleType" />
+                                        <h:outputText value=":" />
+                                        <p:selectOneMenu id="cmbScheduleType"
+                                                         value="#{appointmentScheduleTemplateController.currentTemplate.scheduleType}"
+                                                         class="w-100">
+                                            <f:selectItem itemLabel="Select Type" itemValue="" />
+                                            <f:selectItems value="#{appointmentScheduleTemplateController.scheduleTypes}"
+                                                           var="st"
+                                                           itemLabel="#{st.displayName}"
+                                                           itemValue="#{st}" />
+                                            <p:ajax update="pnlTimeBased" process="@this" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Procedure" for="acProcedure" />
+                                        <h:outputText value=":" />
+                                        <p:autoComplete id="acProcedure"
+                                                        value="#{appointmentScheduleTemplateController.currentTemplate.procedure}"
+                                                        completeMethod="#{itemController.completeItem}"
+                                                        var="item"
+                                                        itemLabel="#{item.name}"
+                                                        itemValue="#{item}"
+                                                        forceSelection="true"
+                                                        inputStyleClass="form-control w-100"
+                                                        class="w-100"
+                                                        placeholder="Select Procedure" />
+
+                                        <p:outputLabel value="Consultant" for="acConsultant" />
+                                        <h:outputText value=":" />
+                                        <p:autoComplete id="acConsultant"
+                                                        value="#{appointmentScheduleTemplateController.currentTemplate.consultant}"
+                                                        completeMethod="#{staffController.completeStaff}"
+                                                        var="s"
+                                                        itemLabel="#{s.person.nameWithTitle}"
+                                                        itemValue="#{s}"
+                                                        forceSelection="true"
+                                                        inputStyleClass="form-control w-100"
+                                                        class="w-100"
+                                                        placeholder="Select Consultant" />
+
+                                        <p:outputLabel value="Department" for="cmbDept" />
+                                        <h:outputText value=":" />
+                                        <p:autoComplete id="cmbDept"
+                                                        value="#{appointmentScheduleTemplateController.currentTemplate.department}"
+                                                        completeMethod="#{departmentController.completeDepartments}"
+                                                        var="d"
+                                                        itemLabel="#{d.name}"
+                                                        itemValue="#{d}"
+                                                        forceSelection="true"
+                                                        inputStyleClass="form-control w-100"
+                                                        class="w-100"
+                                                        placeholder="Select Department" />
+
+                                        <p:outputLabel value="Room" for="acRoom" />
+                                        <h:outputText value=":" />
+                                        <p:autoComplete id="acRoom"
+                                                        value="#{appointmentScheduleTemplateController.currentTemplate.room}"
+                                                        completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                                        var="rf"
+                                                        itemLabel="#{rf.name}"
+                                                        itemValue="#{rf}"
+                                                        forceSelection="true"
+                                                        inputStyleClass="form-control w-100"
+                                                        class="w-100"
+                                                        placeholder="Select Room" />
+
+                                        <p:outputLabel value="Weekday" for="cmbWeekday" />
+                                        <h:outputText value=":" />
+                                        <p:selectOneMenu id="cmbWeekday"
+                                                         value="#{appointmentScheduleTemplateController.currentTemplate.sessionWeekday}"
+                                                         class="w-100">
+                                            <f:selectItem itemLabel="Select Weekday" itemValue="" />
+                                            <f:selectItem itemLabel="Sunday" itemValue="1" />
+                                            <f:selectItem itemLabel="Monday" itemValue="2" />
+                                            <f:selectItem itemLabel="Tuesday" itemValue="3" />
+                                            <f:selectItem itemLabel="Wednesday" itemValue="4" />
+                                            <f:selectItem itemLabel="Thursday" itemValue="5" />
+                                            <f:selectItem itemLabel="Friday" itemValue="6" />
+                                            <f:selectItem itemLabel="Saturday" itemValue="7" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Max Count" for="txtMaxCount" />
+                                        <h:outputText value=":" />
+                                        <p:inputText id="txtMaxCount"
+                                                     value="#{appointmentScheduleTemplateController.currentTemplate.maxCount}"
+                                                     class="form-control w-100"
+                                                     placeholder="Max Appointments" />
+                                    </h:panelGrid>
+
+                                    <h:panelGroup id="pnlTimeBased">
+                                        <h:panelGroup rendered="#{appointmentScheduleTemplateController.currentTemplate.scheduleType eq 'TIME_BASED'}">
+                                            <h:panelGrid columns="3" cellpadding="5" class="w-100"
+                                                         columnClasses="col-4,col-1,col-7">
+
+                                                <p:outputLabel value="Start Time" for="calStartTime" />
+                                                <h:outputText value=":" />
+                                                <p:datePicker id="calStartTime"
+                                                              value="#{appointmentScheduleTemplateController.currentTemplate.startTime}"
+                                                              timeOnly="true"
+                                                              showTime="true"
+                                                              pattern="hh:mm a"
+                                                              inputStyleClass="form-control w-100"
+                                                              class="w-100" />
+
+                                                <p:outputLabel value="End Time" for="calEndTime" />
+                                                <h:outputText value=":" />
+                                                <p:datePicker id="calEndTime"
+                                                              value="#{appointmentScheduleTemplateController.currentTemplate.endTime}"
+                                                              timeOnly="true"
+                                                              showTime="true"
+                                                              pattern="hh:mm a"
+                                                              inputStyleClass="form-control w-100"
+                                                              class="w-100" />
+
+                                                <p:outputLabel value="Default Duration (min)" for="txtDuration" />
+                                                <h:outputText value=":" />
+                                                <p:inputText id="txtDuration"
+                                                             value="#{appointmentScheduleTemplateController.currentTemplate.defaultDurationMinutes}"
+                                                             class="form-control w-100"
+                                                             placeholder="e.g. 90" />
+
+                                                <p:outputLabel value="Allow Overlap" for="chkOverlap" />
+                                                <h:outputText value=":" />
+                                                <p:selectBooleanCheckbox id="chkOverlap"
+                                                                         value="#{appointmentScheduleTemplateController.currentTemplate.allowOverlap}" />
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <h:panelGrid columns="3" cellpadding="5" class="w-100"
+                                                 columnClasses="col-4,col-1,col-7">
+
+                                        <p:outputLabel value="Effective From" for="calEffFrom" />
+                                        <h:outputText value=":" />
+                                        <p:datePicker id="calEffFrom"
+                                                      value="#{appointmentScheduleTemplateController.currentTemplate.effectiveFrom}"
+                                                      pattern="dd/MM/yyyy"
+                                                      inputStyleClass="form-control w-100"
+                                                      class="w-100"
+                                                      showButtonBar="true" />
+
+                                        <p:outputLabel value="Effective To" for="calEffTo" />
+                                        <h:outputText value=":" />
+                                        <p:datePicker id="calEffTo"
+                                                      value="#{appointmentScheduleTemplateController.currentTemplate.effectiveTo}"
+                                                      pattern="dd/MM/yyyy"
+                                                      inputStyleClass="form-control w-100"
+                                                      class="w-100"
+                                                      showButtonBar="true" />
+                                    </h:panelGrid>
+
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <p:commandButton value="Save Template"
+                                                         icon="fa fa-save"
+                                                         action="#{appointmentScheduleTemplateController.saveTemplate()}"
+                                                         update="formTemplates"
+                                                         class="ui-button-success" />
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-7">
+                                <p:panel header="Existing Templates">
+                                    <p:dataTable value="#{appointmentScheduleTemplateController.templates}"
+                                                 var="t"
+                                                 emptyMessage="No templates found."
+                                                 rowsPerPageTemplate="5,10,25"
+                                                 rows="10"
+                                                 paginator="true">
+
+                                        <p:column headerText="Name">
+                                            <h:outputText value="#{t.name}" />
+                                        </p:column>
+
+                                        <p:column headerText="Type">
+                                            <h:outputText value="#{t.scheduleType.displayName}" rendered="#{t.scheduleType ne null}" />
+                                        </p:column>
+
+                                        <p:column headerText="Weekday">
+                                            <h:outputText value="Sunday" rendered="#{t.sessionWeekday eq 1}" />
+                                            <h:outputText value="Monday" rendered="#{t.sessionWeekday eq 2}" />
+                                            <h:outputText value="Tuesday" rendered="#{t.sessionWeekday eq 3}" />
+                                            <h:outputText value="Wednesday" rendered="#{t.sessionWeekday eq 4}" />
+                                            <h:outputText value="Thursday" rendered="#{t.sessionWeekday eq 5}" />
+                                            <h:outputText value="Friday" rendered="#{t.sessionWeekday eq 6}" />
+                                            <h:outputText value="Saturday" rendered="#{t.sessionWeekday eq 7}" />
+                                        </p:column>
+
+                                        <p:column headerText="Procedure">
+                                            <h:outputText value="#{t.procedure.name}" rendered="#{t.procedure ne null}" />
+                                        </p:column>
+
+                                        <p:column headerText="Consultant">
+                                            <h:outputText value="#{t.consultant.person.nameWithTitle}" rendered="#{t.consultant ne null}" />
+                                        </p:column>
+
+                                        <p:column headerText="Max">
+                                            <h:outputText value="#{t.maxCount}" />
+                                        </p:column>
+
+                                        <p:column headerText="Actions" style="width:120px">
+                                            <p:commandButton icon="fa fa-pencil"
+                                                             title="Edit"
+                                                             class="ui-button-warning ui-button-outlined"
+                                                             action="#{appointmentScheduleTemplateController.editTemplate(t)}"
+                                                             update="formTemplates"
+                                                             style="margin-right:5px" />
+                                            <p:commandButton icon="fa fa-trash"
+                                                             title="Retire"
+                                                             class="ui-button-danger ui-button-outlined"
+                                                             action="#{appointmentScheduleTemplateController.retireTemplate(t)}"
+                                                             update="formTemplates">
+                                                <p:confirm header="Confirm" message="Retire this template?" icon="pi pi-exclamation-triangle" />
+                                            </p:commandButton>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                    <p:confirmDialog global="true">
+                                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-success" icon="pi pi-check" />
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-danger" icon="pi pi-times" />
+                                    </p:confirmDialog>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
