@@ -1860,7 +1860,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     public Date getReservedFromDate() {
         if(reservedFromDate == null){
             reservedFromDate = CommonFunctionsProxy.getRoundedHourAfter60Minutes();
-            System.out.println("reservedFromDate = " + reservedFromDate);
         }
         return reservedFromDate;
     }
@@ -1931,6 +1930,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setSelectedScheduleInstance(AppointmentScheduleInstance selectedScheduleInstance) {
         this.selectedScheduleInstance = selectedScheduleInstance;
+        onAppointmentTimeFromChanged();
     }
 
     public List<AppointmentScheduleInstance> getAvailableInstances() {
