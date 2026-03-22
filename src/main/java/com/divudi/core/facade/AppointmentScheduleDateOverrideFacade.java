@@ -13,8 +13,6 @@ public class AppointmentScheduleDateOverrideFacade extends AbstractFacade<Appoin
 
     @Override
     protected EntityManager getEntityManager() {
-        if (em == null) {
-        }
         return em;
     }
 

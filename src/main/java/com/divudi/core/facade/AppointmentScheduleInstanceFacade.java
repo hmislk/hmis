@@ -13,8 +13,6 @@ public class AppointmentScheduleInstanceFacade extends AbstractFacade<Appointmen
 
     @Override
     protected EntityManager getEntityManager() {
-        if (em == null) {
-        }
         return em;
     }
 
