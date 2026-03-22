@@ -461,10 +461,16 @@
 
                                                     <h:outputLabel value="Account Balance (PD)" class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-
                                                     <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(opdBillController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
+                                                    
+                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <p:badge 
+                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
+                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
+                                                    </p:badge>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>

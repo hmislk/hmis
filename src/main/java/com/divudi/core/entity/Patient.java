@@ -143,6 +143,8 @@ public class Patient implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING) //This is defined for mark patient labels as vip, vvip and normal.
     private SpecificPatientStatus specificStatus = SpecificPatientStatus.NORMAL;
     private String specificStatusComment;
+    
+    private Boolean selfRegistered = false;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
@@ -775,5 +777,16 @@ public class Patient implements Serializable, RetirableEntity {
 
     public void setSpecificStatusComment(String specificStatusComment) {
         this.specificStatusComment = specificStatusComment;
+    }
+
+    public Boolean getSelfRegistered() {
+        if(selfRegistered == null){
+            return false;
+        }
+        return selfRegistered;
+    }
+
+    public void setSelfRegistered(Boolean selfRegistered) {
+        this.selfRegistered = selfRegistered;
     }
 }
