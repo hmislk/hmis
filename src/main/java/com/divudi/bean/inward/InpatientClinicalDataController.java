@@ -1816,10 +1816,7 @@ public class InpatientClinicalDataController implements Serializable {
             String medicineName = rx.getItem() != null ? rx.getItem().getName() : "Unknown";
             String groupId = "g" + groupIndex;
             groupIndex++;
-            TimelineGroup<String> group = TimelineGroup.<String>builder()
-                    .id(groupId)
-                    .content(medicineName)
-                    .build();
+            TimelineGroup<String> group = new TimelineGroup<>(groupId, medicineName);
             wardMedicineTimelineModel.addGroup(group);
 
             LocalDateTime start = rx.getPrescribedAt().toInstant()
