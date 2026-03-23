@@ -22675,7 +22675,7 @@ public class SearchController implements Serializable {
             }   
             pdfSc = pdfController.createPdfForShiftEndSummary(bills, PageSize.A4.rotate(), true, getFiltersForShiftEndSummaryReport(), fileName);
         } catch (IOException e) {
-            logger.error("getShiftEndSummaryReportAsPdf: Error creating pdfSc via pdfController.ceratePdfForWhtReport", e);
+            logger.error("getShiftEndSummaryReportAsPdf: Error creating pdfSc via pdfController.createPdfForShiftEndSummary", e);
             pdfSc = null;
             JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report PDF file. Please try again.");
         } 
@@ -22910,7 +22910,7 @@ public class SearchController implements Serializable {
             }
             downloadingExcel = excelController.createExcelForShiftEndSummary(bills, getFiltersForShiftEndSummaryReport(), fileName);
         } catch (IOException e) {
-            logger.error("getShiftEndSummaryReportAsExcel: Error creating downloadingExcel via excelController.getShiftEndSummaryAsExcel", e);
+            logger.error("getShiftEndSummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForShiftEndSummary", e);
             downloadingExcel = null;
             JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report Excel file. Please try again.");
         }

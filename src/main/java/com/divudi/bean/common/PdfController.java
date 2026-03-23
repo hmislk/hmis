@@ -2970,6 +2970,10 @@ public class PdfController {
 
         populateTableForShiftEndSummary(document, bills);
 
+        if (withHeaderFooter) {
+            addReportFooter(document);
+        }
+
         document.close();
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());

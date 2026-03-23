@@ -153,29 +153,29 @@
                             paginatorPosition="top">
 
                             
-                            <p:column headerText="ID" sortBy="#{summary.department.institution.name}">
+                            <p:column headerText="ID" sortBy="#{bill.id}">
                                 <h:outputText value="#{bill.id}" />
                             </p:column>
                             
-                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}">
+                            <p:column headerText="Institution" sortBy="#{bill.institution.name}">
                                 <h:outputText value="#{bill.institution.name}" />
                             </p:column>
 
-                            <p:column headerText="Site" sortBy="#{summary.department.site.name}">
+                            <p:column headerText="Site" sortBy="#{bill.department.site.name}">
                                 <h:outputText value="#{bill.department.site.name}" />
                             </p:column>
 
-                            <p:column headerText="Department" sortBy="#{summary.department.name}">
+                            <p:column headerText="Department" sortBy="#{bill.department.name}">
                                 <h:outputText value="#{bill.department.name}" />
                             </p:column>
 
-                            <p:column headerText="Date" sortBy="#{summary.date}">
+                            <p:column headerText="Date" sortBy="#{bill.createdAt}">
                                 <h:outputText value="#{bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
                             
-                            <p:column headerText="Staff" sortBy="#{summary.department.name}">
+                            <p:column headerText="Staff" sortBy="#{bill.staff.person.name}">
                                 <h:outputText value="#{bill.staff.person.name}" />
                             </p:column>
 
