@@ -5,6 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
     <h:head>
         <title>Channelling</title>
@@ -168,7 +169,9 @@
         </style>
     </h:head>
     <h:body class="container bgImage shadow-lg" style="min-width: 100%">
-        <div id="google_translate_element">
+        
+        <na:under_development />
+<!--        <div id="google_translate_element">
 
             <h:form id="form">
 
@@ -207,7 +210,7 @@
                         </div>
                     </nav>
                   
-<!--                    <p:staticMessage severity="error" summary="ERROR" detail="This function is currently unavailable due to maintenance. Please refrain from using it until further notice." style="width: 100%; font-size: 2em;"/>-->
+                    <p:staticMessage severity="error" summary="ERROR" detail="This function is currently unavailable due to maintenance. Please refrain from using it until further notice." style="width: 100%; font-size: 2em;"/>
 
                 </div>
                 <div>
@@ -262,7 +265,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!--                    <div class="d-flex justify-content-between align-items-center mt-4 container-fluid">
+                                            <div class="d-flex justify-content-between align-items-center mt-4 container-fluid">
                                                 <div class="card w-100 ">
                                                     <div class="card-body">
                                                         <h5 class="card-title">My Past Bookings</h5>
@@ -285,7 +288,7 @@
                                                     </div>
                                                 </div>
                         
-                                            </div>-->
+                                            </div>
                         <h:panelGroup rendered="false">
                             <div  id="successPanel" class="d-flex justify-content-center align-items-center" style="z-index: 9999;" >
                                 <div class="success-message d-flex align-items-center justify-content-center" style="width: 300px;height: 150px">
@@ -354,9 +357,9 @@
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-end  p-2">
-    <!--                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.completeBooking}">
+                                        <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.completeBooking}">
                                             <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
-                                        </p:commandButton>-->
+                                        </p:commandButton>
                                         <p:commandButton 
                                             value="Add Booking" 
                                             class="ui-button-success" 
@@ -566,6 +569,6 @@
                                                         });
                                                         Checkout.showPaymentPage();  // Or Checkout.showLightbox();
                                                     }
-        </script>
+        </script>-->
     </h:body>
 </html>

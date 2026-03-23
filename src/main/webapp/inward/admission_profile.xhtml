@@ -131,17 +131,36 @@
                                         target="#{roomChangeController.current}" />
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    value="Guardian Room Change" 
+                                <p:commandButton
+                                    value="Guardian Room Change"
                                     ajax="false"
                                     disabled="#{admissionController.current.discharged eq true}"
-                                    action="#{admissionController.navigateToGuardianRoomChange}" 
-                                    actionListener="#{roomChangeController.recreate}"
+                                    action="#{admissionController.navigateToGuardianRoomChange}"
                                     icon="fa fa-users"
                                     class="w-100">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
                                         target="#{roomChangeController.current}" />
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('InwardRoomTransferInitiate')}"
+                                    value="Initiate Transfer"
+                                    ajax="false"
+                                    disabled="#{admissionController.current.discharged eq true}"
+                                    action="#{patientTransferController.navigateToInitiateTransferForAdmission(admissionController.current)}"
+                                    icon="fa fa-arrow-right"
+                                    class="w-100 ui-button-info">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}"
+                                    value="Accept Patients"
+                                    ajax="false"
+                                    disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
+                                    action="#{patientTransferController.navigateToPatientAccept()}"
+                                    icon="fa fa-check-circle"
+                                    class="w-100 ui-button-success">
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -393,18 +412,18 @@
                                     icon="fa fa-search"  
                                     class="w-100">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Images" 
+                                <p:commandButton
+                                    value="Images"
                                     ajax="false"
-                                    action="#{admissionController.navigateToInpatientImages}" 
-                                    icon="fa fa-images"  
+                                    action="#{admissionController.navigateToInpatientImages}"
+                                    icon="fa fa-images"
                                     class="w-100">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Diagnosis Card" 
+                                <p:commandButton
+                                    value="Diagnosis Card"
                                     ajax="false"
-                                    action="#{admissionController.navigateToInpatientDiagnosisCard()}" 
-                                    icon="fa fa-diagnoses" 
+                                    action="#{admissionController.navigateToInpatientDiagnosisCard()}"
+                                    icon="fa fa-diagnoses"
                                     class="w-100">
                                 </p:commandButton>
                             </div>

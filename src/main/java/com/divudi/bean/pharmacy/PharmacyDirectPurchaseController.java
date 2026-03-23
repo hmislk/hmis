@@ -931,8 +931,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void settleDirectPurchaseBillFinally() {
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add items");
             return;
         }
         if (getBill().getFromInstitution() == null) {
@@ -962,6 +962,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return;
+        }
         if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
             return;
@@ -977,13 +981,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     }
                 }
             }
-        }
-
-        //Need to Add History
-        String msg = errorCheck();
-        if (!msg.isEmpty()) {
-            JsfUtil.addErrorMessage(msg);
-            return;
         }
 
         saveBill();

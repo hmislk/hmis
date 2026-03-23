@@ -402,44 +402,43 @@
                     </div>
                     <div class="col-12">
                         <p:panel header="Payment Details" style="margin-top: 10px;">
-
-                            <div class="row">
-                                <div class="col-12">
-                                    <h:panelGrid id="pg1" columns="2" class="my-2 w-100" >
-                                        <p:outputLabel value="Nationality"/>
-                                        <p:selectBooleanCheckbox 
-                                            value="#{admissionController.current.foriegner}"
-                                            styleClass="form-control w-100"
-                                            class="w-100"
-                                            itemLabel="Mark as Foreigner"/>
-
-                                        <p:outputLabel for="claimableCheckbox" value="Claimable Status"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}"/>
-                                        <p:selectBooleanCheckbox id="claimableCheckbox"
-                                            value="#{admissionController.current.claimable}"
-                                            styleClass="form-control w-100"
-                                            class="w-100"
-                                            itemLabel="Claimable"
-                                            disabled="#{!admissionController.claimableAllowed}"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}" />
-
-                                        <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
-                                        <p:badge value="#{admissionController.lastCreditCompany.name}"
-                                                 rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
-                                                 />
-
-                                        <p:outputLabel value="Payment Method*"/>
-                                        <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />
-                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                            <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
+                            <div class="row align-items-start">
+                                <!-- Left: payment method controls -->
+                                <div class="col-md-3">
+                                    <h:panelGroup id="pg1">
+                                        <div class="mb-2">
+                                            <p:selectBooleanCheckbox
+                                                value="#{admissionController.current.foriegner}"
+                                                itemLabel="Mark as Foreigner"/>
+                                        </div>
+                                        <div class="mb-2">
+                                            <p:selectBooleanCheckbox id="claimableCheckbox"
+                                                value="#{admissionController.current.claimable}"
+                                                itemLabel="Claimable"
+                                                disabled="#{!admissionController.claimableAllowed}"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}" />
+                                        </div>
+                                        <h:panelGroup rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}">
+                                            <p:outputLabel value="Last Used Credit Company" styleClass="d-block text-muted small mb-1"/>
+                                            <p:badge value="#{admissionController.lastCreditCompany.name}" severity="info"/>
+                                        </h:panelGroup>
+                                        <div class="mb-1 mt-2">
+                                            <p:outputLabel value="Payment Method*" styleClass="d-block"/>
+                                            <p:selectOneMenu class="w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}">
+                                                <f:selectItem itemLabel="Select" />
+                                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                                <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                                <!-- Right: credit company form + table (fills remaining space) -->
+                                <div class="col-md-9">
+                                    <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'};">
+                                        <credit:inputCredit_admit patientEncounter="#{admissionController.current}"/>
+                                    </h:panelGroup>
                                 </div>
                             </div>
-                            <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
-                                <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
-                            </h:panelGroup>
                         </p:panel>
                     </div>
 

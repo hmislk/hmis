@@ -225,7 +225,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <strong class="text-muted">Account Status:</strong><br/>
                                                         <p:badge value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'Has Account':'No Account'}"
@@ -239,11 +239,22 @@
                                                         </h:outputText>
                                                     </h:panelGroup>
                                                 </div>
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <strong class="text-muted">Patient Status:</strong><br/>
                                                         <p:badge value="#{patientController.current.blacklisted eq true ? 'Blacklisted' : 'Active'}"
                                                                  severity="#{patientController.current.blacklisted eq true ? 'danger' : 'success'}"/>
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <strong class="text-muted">Registered Type</strong><br/>
+                                                        <p:badge 
+                                                            value="#{patientController.current.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
+                                                            severity="#{patientController.current.selfRegistered eq true ? 'warning' : 'success'}">
+                                                        </p:badge>
                                                     </div>
 
                                                 </div>
@@ -464,6 +475,20 @@
                                             icon="pi pi-trash"
                                             title="Delete patient record"
                                             onclick="return confirm('Are you sure you want to delete this patient?');">
+                                        </p:commandButton>
+                                    </div>
+                                    
+                                    <!-- Patient Portal &amp; SMS -->
+                                    <h:outputText value="Patient Portal &amp; SMS" styleClass="h6 fw-bold text-muted mb-2 d-block"/>
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <p:commandButton
+                                            value="Send Portal SMS"
+                                            action="#{patientPortalController.sendPortalLinkToPatinet(patientController.current)}"
+                                            ajax="false"
+                                            class="ui-button-inpatients"
+                                            style="min-width: 180px"
+                                            icon="fa fa-commenting"
+                                            title="Send Portal SMS">
                                         </p:commandButton>
                                     </div>
 
