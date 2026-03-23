@@ -398,6 +398,14 @@
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
+                                    value="Medicine Timeline"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToWardMedicinesTimeline(admissionController.current)}"
+                                    icon="fa fa-project-diagram"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
                                     value="Discharge Medications"
                                     ajax="false"
                                     action="#{inpatientClinicalDataController.navigateToDischargeMedicinesFromAdmission(admissionController.current)}"
