@@ -34,7 +34,7 @@
                                 value="Inpatient Dashboard"
                                 class="p-0 m-1"
                                 action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                <f:setPropertyActionListener value="#{inpatientClinicalDataController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                             <p:commandButton
                                 ajax="false"
