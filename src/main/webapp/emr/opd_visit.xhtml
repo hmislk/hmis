@@ -64,6 +64,17 @@
                                 process="panelPt" update="panelPt" ></p:commandButton>
 
 
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                <p:commandButton
+                                    icon="fa fa-cog"
+                                    title="Page Settings"
+                                    oncomplete="PF('dlgOpdVisitSettings').show()"
+                                    process="@this"
+                                    update="pnlSettingsDialog"
+                                    styleClass="ui-button-secondary p-0 m-1">
+                                </p:commandButton>
+                            </h:panelGroup>
+
                         </div>
                     </div>
 
@@ -566,12 +577,16 @@
                                                 </p:dataTable>
                                             </p:panel>
                                             <h:panelGroup id="pnlIssuableSuggestions" layout="block">
-                                                <h:panelGroup rendered="#{not empty patientEncounterController.issuableSuggestions}" layout="block">
-                                                    <p:panel class="w-100 m-1">
-                                                        <f:facet name="header">
-                                                            <h:outputText styleClass="fas fa-pills"/>
-                                                            <h:outputText class="mx-4" value="Issuable Medicines"/>
-                                                        </f:facet>
+                                                <p:panel class="w-100 m-1">
+                                                    <f:facet name="header">
+                                                        <h:outputText styleClass="fas fa-pills"/>
+                                                        <h:outputText class="mx-4" value="Issuable Medicines"/>
+                                                    </f:facet>
+                                                    <h:outputText value="Outdoor Pharmacy: #{patientEncounterController.defaultOutdoorPharmacy ne null ? patientEncounterController.defaultOutdoorPharmacy.name : 'NOT SET'}" style="display:block" />
+                                                    <h:outputText value="Indoor Pharmacy: #{patientEncounterController.defaultIndoorPharmacy ne null ? patientEncounterController.defaultIndoorPharmacy.name : 'NOT SET'}" style="display:block" />
+                                                    <h:outputText value="Medicines count: #{patientEncounterController.encounterMedicines ne null ? patientEncounterController.encounterMedicines.size() : 'null'}" style="display:block" />
+                                                    <h:outputText value="Suggestions count: #{patientEncounterController.issuableSuggestions ne null ? patientEncounterController.issuableSuggestions.size() : 'null'}" style="display:block" />
+                                                    <h:panelGroup rendered="#{not empty patientEncounterController.issuableSuggestions}" layout="block">
                                                         <p:dataTable id="tblIssuable"
                                                                      value="#{patientEncounterController.issuableSuggestions}"
                                                                      var="sug"
@@ -595,8 +610,8 @@
                                                                               styleClass="#{sug.inStock ? 'text-success fw-bold' : 'text-danger fw-bold'}" />
                                                             </p:column>
                                                         </p:dataTable>
-                                                    </p:panel>
-                                                </h:panelGroup>
+                                                    </h:panelGroup>
+                                                </p:panel>
                                             </h:panelGroup>
                                             <p:panel header="Add Test Results" class="w-100 m-1">
                                                 <f:facet name="header">
@@ -1815,6 +1830,48 @@
                             </div>
                         </div>
                     </div>
+
+                    <p:dialog header="OPD Visit Settings" widgetVar="dlgOpdVisitSettings"
+                             modal="true" responsive="true" width="500" appendTo="@(form)">
+                        <h:panelGroup id="pnlSettingsDialog" layout="block">
+                            <div class="p-3">
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-1">Default Outdoor Pharmacy Department</label>
+                                    <p:selectOneMenu id="cmbOutdoorPharmacy"
+                                                     value="#{patientEncounterController.defaultOutdoorPharmacy}"
+                                                     style="width:100%">
+                                        <f:selectItem itemLabel="-- Select --" itemValue="" />
+                                        <f:selectItems value="#{patientEncounterController.pharmacyDepartments}"
+                                                       var="dept"
+                                                       itemLabel="#{dept.name}"
+                                                       itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton value="Save" icon="pi pi-save"
+                                                     class="ui-button-success mt-2"
+                                                     process="cmbOutdoorPharmacy @this"
+                                                     update=":#{p:resolveFirstComponentWithId('pnlIssuableSuggestions',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                     action="#{patientEncounterController.saveDefaultOutdoorPharmacy()}" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-1">Default Indoor Pharmacy Department</label>
+                                    <p:selectOneMenu id="cmbIndoorPharmacy"
+                                                     value="#{patientEncounterController.defaultIndoorPharmacy}"
+                                                     style="width:100%">
+                                        <f:selectItem itemLabel="-- Select --" itemValue="" />
+                                        <f:selectItems value="#{patientEncounterController.pharmacyDepartments}"
+                                                       var="dept"
+                                                       itemLabel="#{dept.name}"
+                                                       itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton value="Save" icon="pi pi-save"
+                                                     class="ui-button-success mt-2"
+                                                     process="cmbIndoorPharmacy @this"
+                                                     update=":#{p:resolveFirstComponentWithId('pnlIssuableSuggestions',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                     action="#{patientEncounterController.saveDefaultIndoorPharmacy()}" />
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:dialog>
 
                 </h:form>
 
