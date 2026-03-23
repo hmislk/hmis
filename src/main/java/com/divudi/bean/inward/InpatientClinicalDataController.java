@@ -36,6 +36,7 @@ import com.divudi.core.entity.clinical.DocumentTemplate;
 import com.divudi.core.entity.clinical.ItemUsage;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -51,6 +52,7 @@ import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PrescriptionFacade;
+import com.divudi.ejb.PrescriptionService;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -121,6 +123,8 @@ public class InpatientClinicalDataController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     private AnthropicApiService anthropicApiService;
+    @EJB
+    private PrescriptionService prescriptionService;
     /**
      * Controllers
      */
@@ -199,6 +203,17 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> encounterDocuments;
     private List<ClinicalFindingValue> encounterPrescreptions;
     private List<ClinicalFindingValue> encounterFindingValues;
+
+    private ClinicalFindingValue admissionWardMedicine;
+    private List<ClinicalFindingValue> admissionWardMedicines;
+    private List<ClinicalFindingValue> activeWardMedicines;
+    private List<ClinicalFindingValue> pastWardMedicines;
+    private ClinicalFindingValue selectedWardMedicineToOmit;
+    private String omissionReason;
+    private ClinicalFindingValue selectedWardMedicineToChange;
+    private Double newDose;
+    private MeasurementUnit newDoseUnit;
+    private MeasurementUnit newFrequencyUnit;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1928,11 +1943,186 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public String navigateToInwardMedicinesFromAdmission(PatientEncounter admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
         this.parentAdmission = admission;
         this.current = admission;
-        fillCurrentPatientLists(admission.getPatient());
-        fillCurrentEncounterLists(admission);
-        return "/inward/inward_assessment_inward_medicines?faces-redirect=true";
+        this.patient = admission.getPatient();
+        this.admissionWardMedicine = null;
+        this.selectedWardMedicineToOmit = null;
+        this.omissionReason = null;
+        this.selectedWardMedicineToChange = null;
+        this.newDose = null;
+        this.newDoseUnit = null;
+        this.newFrequencyUnit = null;
+        fillAdmissionWardMedicines(admission);
+        return "/inward/inward_ward_medicines?faces-redirect=true";
+    }
+
+    public void fillAdmissionWardMedicines(PatientEncounter admission) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("admission", admission);
+        m.put("type", ClinicalFindingValueType.VisitMedicine);
+        m.put("ret", false);
+        String sql = "SELECT e FROM ClinicalFindingValue e "
+                + " WHERE (e.encounter = :admission OR e.encounter.parentEncounter = :admission) "
+                + " AND e.clinicalFindingValueType = :type "
+                + " AND e.retired = :ret "
+                + " ORDER BY e.id DESC";
+        admissionWardMedicines = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (admissionWardMedicines == null) {
+            admissionWardMedicines = new ArrayList<>();
+        }
+        splitActiveAndPastMedicines();
+    }
+
+    private void splitActiveAndPastMedicines() {
+        activeWardMedicines = new ArrayList<>();
+        pastWardMedicines = new ArrayList<>();
+        Date now = new Date();
+        for (ClinicalFindingValue cfv : admissionWardMedicines) {
+            Prescription rx = cfv.getPrescription();
+            if (rx != null && ((rx.getOmittedAt() != null && rx.getOmittedAt().before(now))
+                    || (rx.getPrescribedTo() != null && rx.getPrescribedTo().before(now)))) {
+                pastWardMedicines.add(cfv);
+            } else {
+                activeWardMedicines.add(cfv);
+            }
+        }
+    }
+
+    public void addAdmissionWardMedicine() {
+        if (parentAdmission == null || parentAdmission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return;
+        }
+        if (getAdmissionWardMedicine().getPrescription().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Medicine");
+            return;
+        }
+        Prescription rx = getAdmissionWardMedicine().getPrescription();
+        rx.setEncounter(parentAdmission);
+        rx.setPatient(parentAdmission.getPatient());
+        rx.setIndoor(true);
+        rx.setPrescribedAt(new Date());
+        rx.setPrescribedBy(sessionController.getLoggedUser());
+        rx.setPrescribingDepartment(sessionController.getDepartment());
+        rx.setPrescribedFrom(new Date());
+        if (rx.getDuration() != null && rx.getDuration() > 0 && rx.getDurationUnit() == null) {
+            JsfUtil.addErrorMessage("Please select a duration unit.");
+            return;
+        }
+        if (rx.getDuration() != null && rx.getDuration() > 0 && rx.getDurationUnit() != null) {
+            Date endDate = prescriptionService.calculateToDateFromDuration(
+                    rx.getPrescribedFrom(), rx.getDuration(), rx.getDurationUnit());
+            if (endDate != null) {
+                rx.setPrescribedTo(endDate);
+            }
+        }
+        getAdmissionWardMedicine().setEncounter(parentAdmission);
+        getAdmissionWardMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+        if (rx.getId() == null) {
+            prescriptionFacade.create(rx);
+        } else {
+            prescriptionFacade.edit(rx);
+        }
+        if (getAdmissionWardMedicine().getId() == null) {
+            clinicalFindingValueFacade.create(getAdmissionWardMedicine());
+        } else {
+            clinicalFindingValueFacade.edit(getAdmissionWardMedicine());
+        }
+        admissionWardMedicine = null;
+        fillAdmissionWardMedicines(parentAdmission);
+        JsfUtil.addSuccessMessage("Medicine Added");
+    }
+
+    public void omitAdmissionWardMedicine() {
+        if (selectedWardMedicineToOmit == null || selectedWardMedicineToOmit.getPrescription() == null) {
+            JsfUtil.addErrorMessage("No medicine selected to omit.");
+            return;
+        }
+        if (omissionReason == null || omissionReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter an omission reason.");
+            return;
+        }
+        Prescription rx = selectedWardMedicineToOmit.getPrescription();
+        rx.setOmittedAt(new Date());
+        rx.setOmittedBy(sessionController.getLoggedUser());
+        rx.setOmittingDepartment(sessionController.getDepartment());
+        rx.setOmissionReason(omissionReason.trim());
+        prescriptionFacade.edit(rx);
+        selectedWardMedicineToOmit = null;
+        omissionReason = null;
+        fillAdmissionWardMedicines(parentAdmission);
+        JsfUtil.addSuccessMessage("Medicine Omitted");
+    }
+
+    public void prepareChangeDoseFrequency(ClinicalFindingValue cfv) {
+        if (cfv == null || cfv.getPrescription() == null) {
+            return;
+        }
+        selectedWardMedicineToChange = cfv;
+        Prescription rx = cfv.getPrescription();
+        newDose = rx.getDose();
+        newDoseUnit = rx.getDoseUnit();
+        newFrequencyUnit = rx.getFrequencyUnit();
+    }
+
+    public void changeDoseFrequencyWardMedicine() {
+        if (selectedWardMedicineToChange == null || selectedWardMedicineToChange.getPrescription() == null) {
+            JsfUtil.addErrorMessage("No medicine selected to change.");
+            return;
+        }
+        Prescription originalRx = selectedWardMedicineToChange.getPrescription();
+
+        // Clone original prescription for the new record
+        Prescription newRx = originalRx.cloneForNewEntity();
+        newRx.setParent(originalRx);
+        newRx.setDose(newDose);
+        newRx.setDoseUnit(newDoseUnit);
+        newRx.setFrequencyUnit(newFrequencyUnit);
+        newRx.setPrescribedAt(new Date());
+        newRx.setPrescribedBy(sessionController.getLoggedUser());
+        newRx.setPrescribingDepartment(sessionController.getDepartment());
+        newRx.setPrescribedFrom(new Date());
+        // Carry over duration: recalculate prescribedTo from new start date
+        if (newRx.getDuration() != null && newRx.getDuration() > 0 && newRx.getDurationUnit() != null) {
+            Date endDate = prescriptionService.calculateToDateFromDuration(
+                    newRx.getPrescribedFrom(), newRx.getDuration(), newRx.getDurationUnit());
+            if (endDate != null) {
+                newRx.setPrescribedTo(endDate);
+            }
+        }
+        // Clear omission fields on the new prescription
+        newRx.setOmittedAt(null);
+        newRx.setOmittedBy(null);
+        newRx.setOmittingDepartment(null);
+        newRx.setOmissionReason(null);
+
+        // Auto-omit the original prescription
+        originalRx.setOmittedAt(new Date());
+        originalRx.setOmittedBy(sessionController.getLoggedUser());
+        originalRx.setOmittingDepartment(sessionController.getDepartment());
+        originalRx.setOmissionReason("Dose/frequency changed");
+
+        prescriptionFacade.create(newRx);
+        prescriptionFacade.edit(originalRx);
+
+        // Create new ClinicalFindingValue for the new prescription
+        ClinicalFindingValue newCfv = new ClinicalFindingValue();
+        newCfv.setEncounter(parentAdmission);
+        newCfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+        newCfv.setPrescription(newRx);
+        clinicalFindingValueFacade.create(newCfv);
+
+        selectedWardMedicineToChange = null;
+        newDose = null;
+        newDoseUnit = null;
+        newFrequencyUnit = null;
+        fillAdmissionWardMedicines(parentAdmission);
+        JsfUtil.addSuccessMessage("Dose/Frequency Changed");
     }
 
     public String navigateToDischargeMedicinesFromAdmission(PatientEncounter admission) {
@@ -2192,10 +2382,29 @@ public class InpatientClinicalDataController implements Serializable {
         }
         getEncounterMedicine().setEncounter(current);
         getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-        if (getEncounterMedicine().getPrescription().getId() == null) {
-            prescriptionFacade.create(getEncounterMedicine().getPrescription());
+        Prescription erx = getEncounterMedicine().getPrescription();
+        erx.setEncounter(current);
+        erx.setPatient(current.getPatient());
+        erx.setIndoor(true);
+        erx.setPrescribedAt(new Date());
+        erx.setPrescribedBy(sessionController.getLoggedUser());
+        erx.setPrescribingDepartment(sessionController.getDepartment());
+        erx.setPrescribedFrom(new Date());
+        if (erx.getDuration() != null && erx.getDuration() > 0 && erx.getDurationUnit() == null) {
+            JsfUtil.addErrorMessage("Please select a duration unit.");
+            return;
+        }
+        if (erx.getDuration() != null && erx.getDuration() > 0 && erx.getDurationUnit() != null) {
+            Date endDate = prescriptionService.calculateToDateFromDuration(
+                    erx.getPrescribedFrom(), erx.getDuration(), erx.getDurationUnit());
+            if (endDate != null) {
+                erx.setPrescribedTo(endDate);
+            }
+        }
+        if (erx.getId() == null) {
+            prescriptionFacade.create(erx);
         } else {
-            prescriptionFacade.edit(getEncounterMedicine().getPrescription());
+            prescriptionFacade.edit(erx);
         }
         if (getEncounterMedicine().getId() == null) {
             clinicalFindingValueFacade.create(getEncounterMedicine());
@@ -3273,6 +3482,92 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setFavouriteController(FavouriteController favouriteController) {
         this.favouriteController = favouriteController;
+    }
+
+    public ClinicalFindingValue getAdmissionWardMedicine() {
+        if (admissionWardMedicine == null) {
+            admissionWardMedicine = new ClinicalFindingValue();
+            admissionWardMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            Prescription p = new Prescription();
+            admissionWardMedicine.setPrescription(p);
+        }
+        return admissionWardMedicine;
+    }
+
+    public void setAdmissionWardMedicine(ClinicalFindingValue admissionWardMedicine) {
+        this.admissionWardMedicine = admissionWardMedicine;
+    }
+
+    public List<ClinicalFindingValue> getAdmissionWardMedicines() {
+        return admissionWardMedicines;
+    }
+
+    public void setAdmissionWardMedicines(List<ClinicalFindingValue> admissionWardMedicines) {
+        this.admissionWardMedicines = admissionWardMedicines;
+    }
+
+    public List<ClinicalFindingValue> getActiveWardMedicines() {
+        return activeWardMedicines;
+    }
+
+    public void setActiveWardMedicines(List<ClinicalFindingValue> activeWardMedicines) {
+        this.activeWardMedicines = activeWardMedicines;
+    }
+
+    public List<ClinicalFindingValue> getPastWardMedicines() {
+        return pastWardMedicines;
+    }
+
+    public void setPastWardMedicines(List<ClinicalFindingValue> pastWardMedicines) {
+        this.pastWardMedicines = pastWardMedicines;
+    }
+
+    public ClinicalFindingValue getSelectedWardMedicineToOmit() {
+        return selectedWardMedicineToOmit;
+    }
+
+    public void setSelectedWardMedicineToOmit(ClinicalFindingValue selectedWardMedicineToOmit) {
+        this.selectedWardMedicineToOmit = selectedWardMedicineToOmit;
+    }
+
+    public String getOmissionReason() {
+        return omissionReason;
+    }
+
+    public void setOmissionReason(String omissionReason) {
+        this.omissionReason = omissionReason;
+    }
+
+    public ClinicalFindingValue getSelectedWardMedicineToChange() {
+        return selectedWardMedicineToChange;
+    }
+
+    public void setSelectedWardMedicineToChange(ClinicalFindingValue selectedWardMedicineToChange) {
+        this.selectedWardMedicineToChange = selectedWardMedicineToChange;
+    }
+
+    public Double getNewDose() {
+        return newDose;
+    }
+
+    public void setNewDose(Double newDose) {
+        this.newDose = newDose;
+    }
+
+    public MeasurementUnit getNewDoseUnit() {
+        return newDoseUnit;
+    }
+
+    public void setNewDoseUnit(MeasurementUnit newDoseUnit) {
+        this.newDoseUnit = newDoseUnit;
+    }
+
+    public MeasurementUnit getNewFrequencyUnit() {
+        return newFrequencyUnit;
+    }
+
+    public void setNewFrequencyUnit(MeasurementUnit newFrequencyUnit) {
+        this.newFrequencyUnit = newFrequencyUnit;
     }
 
     public ClinicalFindingValue getEncounterMedicine() {
