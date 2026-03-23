@@ -45,14 +45,17 @@
                                                                 itemValue="#{item}"
                                                                 minQueryLength="4"
                                                                 maxResults="10"
-                                                                placeholder="Select Medicine" />
+                                                                placeholder="Select Medicine">
+                                                    <p:ajax event="itemSelect" update="cmbDose" />
+                                                </p:autoComplete>
                                             </div>
                                             <div class="m-1 d-flex flex-column">
-                                                <p:outputLabel value="Dose:" />
+                                                <p:outputLabel for="txtDose" value="Dose:" />
                                                 <div class="d-flex">
                                                     <p:inputText style="width: 6em;" id="txtDose"
                                                                  value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.dose}"
                                                                  placeholder="Dose"/>
+                                                    <p:outputLabel for="cmbDose" value="Dose unit:" styleClass="sr-only" />
                                                     <p:selectOneMenu id="cmbDose"
                                                                      value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.doseUnit}">
                                                         <f:selectItem itemLabel="Select" />
@@ -71,11 +74,12 @@
                                                 </p:selectOneMenu>
                                             </div>
                                             <div class="m-1 d-flex flex-column">
-                                                <p:outputLabel value="Duration:" />
+                                                <p:outputLabel for="txtDuration" value="Duration:" />
                                                 <div class="d-flex">
                                                     <p:inputText style="width: 6em;" id="txtDuration"
                                                                  value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.duration}"
                                                                  placeholder="Duration"/>
+                                                    <p:outputLabel for="cmbDuration" value="Duration unit:" styleClass="sr-only" />
                                                     <p:selectOneMenu id="cmbDuration"
                                                                      value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.durationUnit}">
                                                         <f:selectItem itemLabel="Select" />
@@ -90,7 +94,7 @@
                                                                  id="btnAddRx"
                                                                  disabled="#{inpatientClinicalDataController.parentAdmission == null or inpatientClinicalDataController.parentAdmission.id == null}"
                                                                  process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                 update="panelActiveMedicines panelPastMedicines"
+                                                                 update="panelAddMedicine panelActiveMedicines panelPastMedicines"
                                                                  action="#{inpatientClinicalDataController.addAdmissionWardMedicine()}" />
                                             </div>
                                         </div>
