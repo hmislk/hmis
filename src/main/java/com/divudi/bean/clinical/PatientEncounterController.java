@@ -41,7 +41,12 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.data.clinical.IssuableMedicineSuggestion;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ItemUsageFacade;
@@ -134,6 +139,10 @@ public class PatientEncounterController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     InvestigationItemFacade investigationItemFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
+    @EJB
+    DepartmentFacade departmentFacade;
 
     /**
      * Controllers
@@ -154,6 +163,8 @@ public class PatientEncounterController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     /**
      * Properties
      */
@@ -251,6 +262,8 @@ public class PatientEncounterController implements Serializable {
     private Investigation investigation;
 
     private ClinicalFindingValue removingCfv;
+    private List<IssuableMedicineSuggestion> issuableSuggestions;
+    private Department defaultPharmacyDepartment;
 
     private PatientEncounter encounterToDisplay;
     private PatientEncounter startedEncounter;
@@ -1243,6 +1256,7 @@ public class PatientEncounterController implements Serializable {
             encounterMedicines.add(cli);
 
         }
+        refreshIssuableSuggestions();
         updateOrGeneratePrescription();
     }
 
@@ -1366,6 +1380,7 @@ public class PatientEncounterController implements Serializable {
 
         // Refresh encounter medicines list from DB
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
 
         // Update prescription document
         updateOrGeneratePrescription();
@@ -1623,6 +1638,7 @@ public class PatientEncounterController implements Serializable {
             // Refresh the encounter medicines list
             System.out.println("DEBUG: Refreshing encounter medicines list...");
             encounterMedicines = fillEncounterMedicines(current);
+            refreshIssuableSuggestions();
             System.out.println("DEBUG: Encounter medicines list now has " + (encounterMedicines != null ? encounterMedicines.size() : "null") + " items");
 
             // Update/generate prescription like addEncounterMedicine does
@@ -1801,6 +1817,8 @@ public class PatientEncounterController implements Serializable {
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
         encounterPlanOfActions = fillPlanOfAction(encounter);
         encounterInvestigationResults = fillEncounterInvestigationResults(encounter);
+        defaultPharmacyDepartment = null;
+        refreshIssuableSuggestions();
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -2227,6 +2245,7 @@ public class PatientEncounterController implements Serializable {
         getEncounterFindingValues().add(getEncounterMedicine());
 
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
 
         updateOrGeneratePrescription();
         setEncounterMedicine(null);
@@ -2407,6 +2426,7 @@ public class PatientEncounterController implements Serializable {
     public void removeEncounterMedicine() {
         removeCfv();
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
     }
 
     public void removeEncounterDiagnosticImage() {
@@ -2939,6 +2959,109 @@ public class PatientEncounterController implements Serializable {
         }
         getPersonFacade().edit(current.getPatient().getPerson());
         getPatientFacade().edit(current.getPatient());
+    }
+
+    public void refreshIssuableSuggestions() {
+        issuableSuggestions = new ArrayList<>();
+        Department pharmacy = resolveDefaultPharmacy();
+        if (pharmacy == null) {
+            return;
+        }
+        if (encounterMedicines == null || encounterMedicines.isEmpty()) {
+            return;
+        }
+        for (ClinicalFindingValue cfv : encounterMedicines) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getPrescription().getItem() == null) {
+                continue;
+            }
+            Prescription rx = cfv.getPrescription();
+            Item prescribedItem = rx.getItem();
+            List<Amp> amps = pharmacyBean.resolveAmps(prescribedItem);
+            if (amps == null || amps.isEmpty()) {
+                continue;
+            }
+            for (Amp amp : amps) {
+                IssuableMedicineSuggestion suggestion = new IssuableMedicineSuggestion();
+                suggestion.setAmp(amp);
+                suggestion.setSourceCfv(cfv);
+                suggestion.setIssueUnit(amp.getIssueUnit());
+                double qty = pharmacyBean.calculateIssueQuantity(rx, amp);
+                suggestion.setCalculatedIssueQty(qty);
+                double stock = pharmacyBean.getItemStockQty(amp, pharmacy);
+                suggestion.setAvailableStock(stock);
+                suggestion.setInStock(stock > 0);
+                boolean sameDf = false;
+                if (prescribedItem.getDosageForm() != null && amp.getDosageForm() != null) {
+                    sameDf = prescribedItem.getDosageForm().equals(amp.getDosageForm());
+                }
+                suggestion.setSameDosageForm(sameDf);
+                String display = amp.getName();
+                if (prescribedItem.getName() != null) {
+                    display = prescribedItem.getName() + " → " + amp.getName();
+                }
+                suggestion.setDisplayText(display);
+                suggestion.setSelected(false);
+                issuableSuggestions.add(suggestion);
+            }
+        }
+        // Sort: same dosage form first, then in-stock first
+        issuableSuggestions.sort((a, b) -> {
+            if (a.isSameDosageForm() != b.isSameDosageForm()) {
+                return a.isSameDosageForm() ? -1 : 1;
+            }
+            if (a.isInStock() != b.isInStock()) {
+                return a.isInStock() ? -1 : 1;
+            }
+            return Double.compare(b.getAvailableStock(), a.getAvailableStock());
+        });
+        // Auto-select the best (first in-stock, same dosage form) per source CFV
+        java.util.Set<Long> selectedCfvIds = new java.util.HashSet<>();
+        for (IssuableMedicineSuggestion s : issuableSuggestions) {
+            if (s.getSourceCfv() != null && s.getSourceCfv().getId() != null) {
+                Long cfvId = s.getSourceCfv().getId();
+                if (!selectedCfvIds.contains(cfvId) && s.isInStock() && s.isSameDosageForm()) {
+                    s.setSelected(true);
+                    selectedCfvIds.add(cfvId);
+                }
+            }
+        }
+    }
+
+    public Department resolveDefaultPharmacy() {
+        if (defaultPharmacyDepartment != null) {
+            return defaultPharmacyDepartment;
+        }
+        Department currentDept = sessionController.getDepartment();
+        if (currentDept == null) {
+            return null;
+        }
+        ConfigOption option = configOptionController
+                .getOptionValueByKeyForDepartment("defaultPharmacyDepartmentForIssuing", currentDept);
+        if (option != null && option.getOptionValue() != null && !option.getOptionValue().trim().isEmpty()) {
+            try {
+                Long deptId = Long.parseLong(option.getOptionValue().trim());
+                defaultPharmacyDepartment = departmentFacade.find(deptId);
+            } catch (NumberFormatException e) {
+                // Invalid config value
+            }
+        }
+        return defaultPharmacyDepartment;
+    }
+
+    public List<IssuableMedicineSuggestion> getIssuableSuggestions() {
+        return issuableSuggestions;
+    }
+
+    public void setIssuableSuggestions(List<IssuableMedicineSuggestion> issuableSuggestions) {
+        this.issuableSuggestions = issuableSuggestions;
+    }
+
+    public Department getDefaultPharmacyDepartment() {
+        return defaultPharmacyDepartment;
+    }
+
+    public void setDefaultPharmacyDepartment(Department defaultPharmacyDepartment) {
+        this.defaultPharmacyDepartment = defaultPharmacyDepartment;
     }
 
     public String issueItems() {

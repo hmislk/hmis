@@ -329,9 +329,11 @@
 
                             </h:panelGrid>
                             <f:facet name="footer">
-                                <p:commandButton styleClass="ui-button-success" ajax="false"
+                                <p:commandButton styleClass="ui-button-success"
                                                  icon="fas fa-save" value="Save Favourite Medicine"
-                                                 action="#{favouriteController.saveFavMedicine}" />
+                                                 action="#{favouriteController.saveFavMedicine}"
+                                                 update="favouriteTable"
+                                                 oncomplete="PF('dlg2').hide();" />
                                 <p:commandButton styleClass="ui-button-secondary ml-2"
                                                  icon="fas fa-times" value="Cancel"
                                                  onclick="PF('dlg2').hide(); return false;" />

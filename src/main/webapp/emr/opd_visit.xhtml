@@ -523,23 +523,23 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
-                                                            <p:commandButton 
+                                                            <p:commandButton
                                                                 value="Add"
                                                                 class="ui-button-success"
                                                                 id="btnAddRx"
                                                                 icon="pi pi-plus"
                                                                 process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                update="tblRxx pnlIssuableSuggestions chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                 action="#{patientEncounterController.addEncounterMedicine}" />
 
-                                                            <p:commandButton 
+                                                            <p:commandButton
                                                                 id="btnAddRxFav"
-                                                                value="Add Favourite" 
+                                                                value="Add Favourite"
                                                                 process="@this"
-                                                                class='ui-button-success' 
-                                                                icon='fas fa-star' 
-                                                                style="float: right; margin-right: 5px;" 
-                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                class='ui-button-success'
+                                                                icon='fas fa-star'
+                                                                style="float: right; margin-right: 5px;"
+                                                                update="tblRxx pnlIssuableSuggestions chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                 action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
 
                                                         </div>
@@ -553,18 +553,51 @@
                                                         <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
                                                     </p:column>
                                                     <p:column>
-                                                        <p:commandButton icon="fas fa-trash" 
+                                                        <p:commandButton icon="fas fa-trash"
                                                                          id="btnRemove"
                                                                          process="btnRemove"
-                                                                         update="tblRxx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         update="tblRxx pnlIssuableSuggestions :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          class="ui-button-danger"
-                                                                         action="#{patientEncounterController.removeCfv()}">
+                                                                         action="#{patientEncounterController.removeEncounterMedicine()}">
                                                             <f:setPropertyActionListener value="#{rx}" target="#{patientEncounterController.removingCfv}" ></f:setPropertyActionListener>
 
                                                         </p:commandButton>
                                                     </p:column>
                                                 </p:dataTable>
                                             </p:panel>
+                                            <h:panelGroup id="pnlIssuableSuggestions" layout="block">
+                                                <h:panelGroup rendered="#{not empty patientEncounterController.issuableSuggestions}" layout="block">
+                                                    <p:panel class="w-100 m-1">
+                                                        <f:facet name="header">
+                                                            <h:outputText styleClass="fas fa-pills"/>
+                                                            <h:outputText class="mx-4" value="Issuable Medicines"/>
+                                                        </f:facet>
+                                                        <p:dataTable id="tblIssuable"
+                                                                     value="#{patientEncounterController.issuableSuggestions}"
+                                                                     var="sug"
+                                                                     rowStyleClass="#{sug.inStock ? 'bg-success-subtle' : 'bg-danger-subtle'}">
+                                                            <p:column headerText="Select" style="width:50px">
+                                                                <p:selectBooleanCheckbox value="#{sug.selected}" />
+                                                            </p:column>
+                                                            <p:column headerText="Medicine">
+                                                                <h:outputText value="#{sug.displayText}" />
+                                                            </p:column>
+                                                            <p:column headerText="Qty" style="width:80px">
+                                                                <p:inputNumber value="#{sug.calculatedIssueQty}"
+                                                                               decimalPlaces="0"
+                                                                               style="width:60px" />
+                                                            </p:column>
+                                                            <p:column headerText="Unit" style="width:100px">
+                                                                <h:outputText value="#{sug.issueUnit.name}" />
+                                                            </p:column>
+                                                            <p:column headerText="Stock" style="width:80px">
+                                                                <h:outputText value="#{sug.availableStock}"
+                                                                              styleClass="#{sug.inStock ? 'text-success fw-bold' : 'text-danger fw-bold'}" />
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </p:panel>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
                                             <p:panel header="Add Test Results" class="w-100 m-1">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-vial-virus"/>
