@@ -124,10 +124,22 @@
                                                 <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
                                             </h:outputText>
                                         </p:column>
-                                        <p:column headerText="Action" style="width: 80px;">
+                                        <p:column headerText="Changed From" style="width: 200px;">
+                                            <h:outputText value="Changed from: #{rx.prescription.parent.formattedPrescription}"
+                                                          rendered="#{rx.prescription.parent != null}"
+                                                          styleClass="text-muted" />
+                                        </p:column>
+                                        <p:column headerText="Action" style="width: 130px;">
+                                            <p:commandButton icon="fa fa-edit"
+                                                             title="Change Dose/Frequency"
+                                                             class="ui-button-warning ui-button-sm m-1"
+                                                             oncomplete="PF('dlgChangeDose').show()"
+                                                             process="@this"
+                                                             update="panelChangeDoseDialog"
+                                                             action="#{inpatientClinicalDataController.prepareChangeDoseFrequency(rx)}" />
                                             <p:commandButton icon="fa fa-times"
                                                              title="Omit"
-                                                             class="ui-button-danger ui-button-sm"
+                                                             class="ui-button-danger ui-button-sm m-1"
                                                              oncomplete="PF('dlgOmit').show()"
                                                              process="@this"
                                                              update="panelOmitDialog">
@@ -175,6 +187,13 @@
                                         </p:column>
                                         <p:column headerText="Reason">
                                             <h:outputText value="#{rx.prescription.omissionReason}" />
+                                            <h:panelGroup rendered="#{rx.prescription.omissionReason == 'Dose/frequency changed'}"
+                                                          layout="block">
+                                                <small class="text-muted">
+                                                    <i class="fa fa-arrow-right"></i>
+                                                    <h:outputText value=" See active list for updated prescription" />
+                                                </small>
+                                            </h:panelGroup>
                                         </p:column>
                                     </p:dataTable>
                                 </p:panel>
@@ -213,6 +232,64 @@
                                                      update="panelActiveMedicines panelPastMedicines"
                                                      oncomplete="PF('dlgOmit').hide()"
                                                      class="ui-button-danger m-1" />
+                                </div>
+                            </div>
+                        </p:dialog>
+                        <p:dialog id="panelChangeDoseDialog"
+                                 header="Change Dose/Frequency"
+                                 widgetVar="dlgChangeDose"
+                                 modal="true"
+                                 resizable="false"
+                                 closable="true"
+                                 width="500">
+                            <div class="p-3">
+                                <h:panelGroup rendered="#{inpatientClinicalDataController.selectedWardMedicineToChange != null}">
+                                    <p class="mb-2">
+                                        <strong>Medicine: </strong>
+                                        <h:outputText value="#{inpatientClinicalDataController.selectedWardMedicineToChange.prescription.item.name}" />
+                                    </p>
+                                    <p class="mb-3 text-muted">
+                                        <strong>Current: </strong>
+                                        <h:outputText value="#{inpatientClinicalDataController.selectedWardMedicineToChange.prescription.formattedPrescription}" />
+                                    </p>
+                                </h:panelGroup>
+                                <div class="mb-3 d-flex flex-wrap">
+                                    <div class="m-1 d-flex flex-column">
+                                        <p:outputLabel for="txtNewDose" value="New Dose:" />
+                                        <div class="d-flex">
+                                            <p:inputText style="width: 6em;" id="txtNewDose"
+                                                         value="#{inpatientClinicalDataController.newDose}"
+                                                         placeholder="Dose"/>
+                                            <p:outputLabel for="cmbNewDoseUnit" value="Dose unit:" styleClass="sr-only" />
+                                            <p:selectOneMenu id="cmbNewDoseUnit"
+                                                             value="#{inpatientClinicalDataController.newDoseUnit}">
+                                                <f:selectItem itemLabel="Select" />
+                                                <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(inpatientClinicalDataController.selectedWardMedicineToChange.prescription.item)}"
+                                                               var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="m-1 d-flex flex-column">
+                                        <p:outputLabel for="cmbNewFrequency" value="New Frequency:" />
+                                        <p:selectOneMenu id="cmbNewFrequency"
+                                                         value="#{inpatientClinicalDataController.newFrequencyUnit}">
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{measurementUnitController.frequencyUnits}"
+                                                           var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <p:commandButton value="Cancel"
+                                                     type="button"
+                                                     onclick="PF('dlgChangeDose').hide()"
+                                                     class="ui-button-secondary m-1" />
+                                    <p:commandButton value="Apply Change"
+                                                     action="#{inpatientClinicalDataController.changeDoseFrequencyWardMedicine()}"
+                                                     process="panelChangeDoseDialog"
+                                                     update="panelActiveMedicines panelPastMedicines"
+                                                     oncomplete="PF('dlgChangeDose').hide()"
+                                                     class="ui-button-warning m-1" />
                                 </div>
                             </div>
                         </p:dialog>
