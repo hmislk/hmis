@@ -36,5 +36,6 @@ public enum MessageType {
     CustomSMS,
     @Deprecated
     OTP,
-    PatientPortalOTP
+    PatientPortalOTP,
+    PatientPortal_Link
 }
