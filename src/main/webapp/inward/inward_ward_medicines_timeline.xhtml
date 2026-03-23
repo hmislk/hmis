@@ -55,7 +55,7 @@
                                         <span class="badge p-2 mr-2" style="background-color: #dc3545; color: #fff;">Omitted</span>
                                     </div>
 
-                                    <h:panelGroup rendered="#{not empty inpatientClinicalDataController.wardMedicineTimelineModel and not empty inpatientClinicalDataController.admissionWardMedicines}">
+                                    <h:panelGroup rendered="#{inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
                                         <p:timeline id="wardTimeline"
                                                     value="#{inpatientClinicalDataController.wardMedicineTimelineModel}"
                                                     zoomable="true"
@@ -70,7 +70,7 @@
                                         </p:timeline>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{empty inpatientClinicalDataController.admissionWardMedicines}">
+                                    <h:panelGroup rendered="#{not inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
                                         <p class="p-3 text-muted">No ward medicines recorded for this admission.</p>
                                     </h:panelGroup>
                                 </p:panel>
@@ -124,42 +124,52 @@
                                             </h:outputText>
                                         </td>
                                     </tr>
-                                    <tr rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedTo != null}">
-                                        <td class="font-weight-bold">Valid Until:</td>
-                                        <td>
-                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedTo}">
-                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
-                                            </h:outputText>
-                                        </td>
-                                    </tr>
-                                    <tr rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration != null and inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration > 0}">
-                                        <td class="font-weight-bold">Duration:</td>
-                                        <td>
-                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration}" />
-                                            <h:outputText value=" #{inpatientClinicalDataController.selectedTimelineMedicine.prescription.durationUnit.name}"
-                                                         rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.durationUnit != null}" />
-                                        </td>
-                                    </tr>
-                                    <tr rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedAt != null}">
-                                        <td class="font-weight-bold">Omitted At:</td>
-                                        <td>
-                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedAt}">
-                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
-                                            </h:outputText>
-                                        </td>
-                                    </tr>
-                                    <tr rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedBy != null}">
-                                        <td class="font-weight-bold">Omitted By:</td>
-                                        <td>
-                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedBy.name}" />
-                                        </td>
-                                    </tr>
-                                    <tr rendered="#{not empty inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}">
-                                        <td class="font-weight-bold">Omission Reason:</td>
-                                        <td>
-                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}" />
-                                        </td>
-                                    </tr>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedTo != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Valid Until:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedTo}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration != null and inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration gt 0}">
+                                        <tr>
+                                            <td class="font-weight-bold">Duration:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration}" />
+                                                <h:outputText value=" #{inpatientClinicalDataController.selectedTimelineMedicine.prescription.durationUnit.name}"
+                                                             rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.durationUnit != null}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedAt != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Omitted At:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedBy != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Omitted By:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedBy.name}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{not empty inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}">
+                                        <tr>
+                                            <td class="font-weight-bold">Omission Reason:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
                                 </table>
                             </h:panelGroup>
                         </div>

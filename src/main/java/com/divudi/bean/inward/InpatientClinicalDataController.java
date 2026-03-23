@@ -215,6 +215,7 @@ public class InpatientClinicalDataController implements Serializable {
 
     private TimelineModel<ClinicalFindingValue, String> wardMedicineTimelineModel;
     private ClinicalFindingValue selectedTimelineMedicine;
+    private boolean hasWardMedicineTimelineEvents;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1801,6 +1802,7 @@ public class InpatientClinicalDataController implements Serializable {
 
     private void buildWardMedicineTimeline() {
         wardMedicineTimelineModel = new TimelineModel<>();
+        hasWardMedicineTimelineEvents = false;
         if (admissionWardMedicines == null || admissionWardMedicines.isEmpty()) {
             return;
         }
@@ -1832,7 +1834,7 @@ public class InpatientClinicalDataController implements Serializable {
                 endDate = rx.getPrescribedTo();
                 styleClass = "timeline-expired";
             } else {
-                endDate = rx.getPrescribedTo() != null ? rx.getPrescribedTo() : now;
+                endDate = now;
                 styleClass = "timeline-active";
             }
             LocalDateTime end = endDate.toInstant()
@@ -1846,6 +1848,7 @@ public class InpatientClinicalDataController implements Serializable {
                     .styleClass(styleClass)
                     .build();
             wardMedicineTimelineModel.add(event);
+            hasWardMedicineTimelineEvents = true;
         }
     }
 
@@ -1865,6 +1868,10 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setSelectedTimelineMedicine(ClinicalFindingValue selectedTimelineMedicine) {
         this.selectedTimelineMedicine = selectedTimelineMedicine;
+    }
+
+    public boolean isHasWardMedicineTimelineEvents() {
+        return hasWardMedicineTimelineEvents;
     }
 
     public void prepareChangeDoseFrequency(ClinicalFindingValue cfv) {
