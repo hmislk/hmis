@@ -1664,6 +1664,8 @@ public class InpatientClinicalDataController implements Serializable {
         this.current = admission;
         this.patient = admission.getPatient();
         this.admissionWardMedicine = null;
+        this.selectedWardMedicineToOmit = null;
+        this.omissionReason = null;
         fillAdmissionWardMedicines(admission);
         return "/inward/inward_ward_medicines?faces-redirect=true";
     }
@@ -1691,7 +1693,8 @@ public class InpatientClinicalDataController implements Serializable {
         Date now = new Date();
         for (ClinicalFindingValue cfv : admissionWardMedicines) {
             Prescription rx = cfv.getPrescription();
-            if (rx != null && rx.getOmittedAt() != null && rx.getOmittedAt().before(now)) {
+            if (rx != null && ((rx.getOmittedAt() != null && rx.getOmittedAt().before(now))
+                    || (rx.getPrescribedTo() != null && rx.getPrescribedTo().before(now)))) {
                 pastWardMedicines.add(cfv);
             } else {
                 activeWardMedicines.add(cfv);
@@ -1724,7 +1727,6 @@ public class InpatientClinicalDataController implements Serializable {
             Date endDate = prescriptionService.calculateToDateFromDuration(
                     rx.getPrescribedFrom(), rx.getDuration(), rx.getDurationUnit());
             if (endDate != null) {
-                rx.setOmittedAt(endDate);
                 rx.setPrescribedTo(endDate);
             }
         }
@@ -1750,11 +1752,15 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("No medicine selected to omit.");
             return;
         }
+        if (omissionReason == null || omissionReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter an omission reason.");
+            return;
+        }
         Prescription rx = selectedWardMedicineToOmit.getPrescription();
         rx.setOmittedAt(new Date());
         rx.setOmittedBy(sessionController.getLoggedUser());
         rx.setOmittingDepartment(sessionController.getDepartment());
-        rx.setOmissionReason(omissionReason);
+        rx.setOmissionReason(omissionReason.trim());
         prescriptionFacade.edit(rx);
         selectedWardMedicineToOmit = null;
         omissionReason = null;
@@ -2035,7 +2041,6 @@ public class InpatientClinicalDataController implements Serializable {
             Date endDate = prescriptionService.calculateToDateFromDuration(
                     erx.getPrescribedFrom(), erx.getDuration(), erx.getDurationUnit());
             if (endDate != null) {
-                erx.setOmittedAt(endDate);
                 erx.setPrescribedTo(endDate);
             }
         }

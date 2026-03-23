@@ -132,6 +132,9 @@
                                                              process="@this"
                                                              update="panelOmitDialog">
                                                 <f:setPropertyActionListener
+                                                    value=""
+                                                    target="#{inpatientClinicalDataController.omissionReason}" />
+                                                <f:setPropertyActionListener
                                                     value="#{rx}"
                                                     target="#{inpatientClinicalDataController.selectedWardMedicineToOmit}" />
                                             </p:commandButton>
