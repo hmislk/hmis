@@ -74,6 +74,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.entity.AiMessage;
+import com.divudi.service.AnthropicApiService;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -119,6 +122,8 @@ public class InpatientClinicalDataController implements Serializable {
     @EJB
     private PrescriptionFacade prescriptionFacade;
     @EJB
+    private AnthropicApiService anthropicApiService;
+    @EJB
     private PrescriptionService prescriptionService;
     /**
      * Controllers
@@ -133,6 +138,8 @@ public class InpatientClinicalDataController implements Serializable {
     DocumentTemplateController documentTemplateController;
     @Inject
     SearchController searchController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -158,6 +165,7 @@ public class InpatientClinicalDataController implements Serializable {
     private List<DocumentTemplate> userDocumentTemplates;
     private List<DocumentTemplate> diagnosisCardTemplates;
     private DocumentTemplate selectedDocumentTemplate;
+    private boolean editingDiagnosisCard;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -514,6 +522,13 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         String input = t.getContents();
+        // p:textEditor escapes HTML entities and wraps lines in <p> tags.
+        // Unescape so the template renders as actual HTML.
+        input = input.replace("&lt;", "<");
+        input = input.replace("&gt;", ">");
+        input = input.replace("&amp;", "&");
+        input = input.replace("&quot;", "\"");
+        input = input.replace("&#39;", "'");
         String output = "";
 
         String name = e.getPatient().getPerson().getNameWithTitle();
@@ -531,18 +546,22 @@ public class InpatientClinicalDataController implements Serializable {
             dod = CommonFunctions.formatDate(e.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
         }
         String bht = e.getBhtNo() != null ? e.getBhtNo() : "";
-        String weight = CommonFunctions.formatNumber(e.getWeight(), "0.0") + " kg";
-        String height = CommonFunctions.formatNumber(e.getHeight(), "0") + " cm";
-        String bmi = e.getBmiFormatted();
-        String bp = e.getBp() != null ? e.getBp() : "";
-        String comments = e.getComments();
-        String pulseRate = e.getPr() != null ? e.getPr() + " bpm" : "";
-        String rr = e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "";
-        String pfr = e.getPfr() != null ? e.getPfr() + "" : "";
-        String saturation = e.getSaturation() != null ? e.getSaturation() + "" : "";
 
         // Vital sign series from clinical assessments belonging to this encounter (chronological)
         List<PatientEncounter> assessmentsForEncounter = fillAssessmentsForEncounter(e);
+
+        // Use the latest clinical assessment for single-value vitals, falling back to the admission encounter
+        PatientEncounter latestAssessment = assessmentsForEncounter.isEmpty() ? e : assessmentsForEncounter.get(assessmentsForEncounter.size() - 1);
+
+        String weight = CommonFunctions.formatNumber(latestAssessment.getWeight() != null && latestAssessment.getWeight() > 0 ? latestAssessment.getWeight() : e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(latestAssessment.getHeight() != null && latestAssessment.getHeight() > 0 ? latestAssessment.getHeight() : e.getHeight(), "0") + " cm";
+        String bmi = latestAssessment.getBmiFormatted() != null && !latestAssessment.getBmiFormatted().isEmpty() ? latestAssessment.getBmiFormatted() : e.getBmiFormatted();
+        String bp = latestAssessment.getBp() != null ? latestAssessment.getBp() : (e.getBp() != null ? e.getBp() : "");
+        String comments = latestAssessment.getComments() != null ? latestAssessment.getComments() : (e.getComments() != null ? e.getComments() : "");
+        String pulseRate = latestAssessment.getPr() != null ? latestAssessment.getPr() + " bpm" : (e.getPr() != null ? e.getPr() + " bpm" : "");
+        String rr = latestAssessment.getRespiratoryRate() != null ? latestAssessment.getRespiratoryRate() + " bpm" : (e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "");
+        String pfr = latestAssessment.getPfr() != null ? latestAssessment.getPfr() + "" : (e.getPfr() != null ? e.getPfr() + "" : "");
+        String saturation = latestAssessment.getSaturation() != null ? latestAssessment.getSaturation() + "" : (e.getSaturation() != null ? e.getSaturation() + "" : "");
         String tempSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getTemperature() != null ? a.getTemperature().toString() : null);
         String bpSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getBp());
         String prSeries = buildVitalSeries(assessmentsForEncounter, a -> a.getPr() != null ? a.getPr().toString() : null);
@@ -992,6 +1011,269 @@ public class InpatientClinicalDataController implements Serializable {
         encounterReferral = ref;
         getEncounterDocuments().add(ref);
     }
+
+    public void generateDiagnosisCardWithAi() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return;
+        }
+
+        String apiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("AI API key is not configured. Please set 'AI Chat - Claude API Key' in application settings.");
+            return;
+        }
+
+        String model = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude Model", "claude-sonnet-4-20250514");
+        Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
+        int maxTokens = (maxTokensConfig != null && maxTokensConfig > 0) ? Math.max(maxTokensConfig, 8192) : 8192;
+
+        String clinicalSummary = buildClinicalDataSummary(current);
+        String systemPrompt = buildDiagnosisCardSystemPrompt();
+
+        try {
+            AnthropicApiService.AnthropicResponse response = anthropicApiService.sendMessage(
+                    apiKey,
+                    model,
+                    maxTokens,
+                    systemPrompt,
+                    new ArrayList<>(),
+                    clinicalSummary,
+                    null,
+                    null
+            );
+
+            if (response == null || response.getContent() == null || response.getContent().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("AI returned an empty response. Please try again.");
+                return;
+            }
+
+            String html = response.getContent().trim();
+            // Strip markdown fences if present
+            if (html.startsWith("```html")) {
+                html = html.substring(7);
+            } else if (html.startsWith("```")) {
+                html = html.substring(3);
+            }
+            if (html.endsWith("```")) {
+                html = html.substring(0, html.length() - 3);
+            }
+            html = html.trim();
+
+            ClinicalFindingValue ref = new ClinicalFindingValue();
+            ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+            ref.setLobValue(html);
+            ref.setStringValue("AI Generated Diagnosis Card");
+            ref.setEncounter(current);
+            ref.setOrderNo(getEncounterDocuments().size() + 1);
+            clinicalFindingValueFacade.create(ref);
+            encounterReferral = ref;
+            getEncounterDocuments().add(ref);
+            JsfUtil.addSuccessMessage("Diagnosis card generated with AI");
+        } catch (Exception ex) {
+            Logger.getLogger(InpatientClinicalDataController.class.getName()).log(Level.SEVERE, "AI diagnosis card generation failed", ex);
+            JsfUtil.addErrorMessage("AI generation failed: " + ex.getMessage());
+        }
+    }
+
+    private String buildClinicalDataSummary(PatientEncounter e) {
+        StringBuilder sb = new StringBuilder();
+
+        String name = e.getPatient().getPerson().getNameWithTitle();
+        String age = e.getPatient().getPerson().getAgeAsString() != null ? e.getPatient().getPerson().getAgeAsString() : "";
+        String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
+        String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
+        String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
+        String bht = e.getBhtNo() != null ? e.getBhtNo() : "";
+        String doa = CommonFunctions.formatDate(e.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
+        String dod;
+        if (e.getDateOfDischarge() == null) {
+            dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat()) + " (still admitted)";
+        } else {
+            dod = CommonFunctions.formatDate(e.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        sb.append("PATIENT: ").append(name).append(", ").append(age).append(", ").append(sex).append("\n");
+        sb.append("ADDRESS: ").append(address).append("\n");
+        sb.append("PHONE: ").append(phone).append("\n");
+        sb.append("BHT: ").append(bht).append(", DOA: ").append(doa).append(", DOD: ").append(dod).append("\n\n");
+
+        List<PatientEncounter> assessments = fillAssessmentsForEncounter(e);
+        PatientEncounter latest = assessments.isEmpty() ? e : assessments.get(assessments.size() - 1);
+
+        sb.append("VITAL SIGNS:\n");
+        String bp = latest.getBp() != null ? latest.getBp() : (e.getBp() != null ? e.getBp() : "");
+        String pr = latest.getPr() != null ? latest.getPr() + " bpm" : (e.getPr() != null ? e.getPr() + " bpm" : "");
+        String rr = latest.getRespiratoryRate() != null ? latest.getRespiratoryRate() + " bpm" : (e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "");
+        String sat = latest.getSaturation() != null ? latest.getSaturation() + "" : (e.getSaturation() != null ? e.getSaturation() + "" : "");
+        String pfr = latest.getPfr() != null ? latest.getPfr() + "" : (e.getPfr() != null ? e.getPfr() + "" : "");
+        String weight = CommonFunctions.formatNumber(latest.getWeight() != null && latest.getWeight() > 0 ? latest.getWeight() : e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(latest.getHeight() != null && latest.getHeight() > 0 ? latest.getHeight() : e.getHeight(), "0") + " cm";
+        String bmi = latest.getBmiFormatted() != null && !latest.getBmiFormatted().isEmpty() ? latest.getBmiFormatted() : e.getBmiFormatted();
+        sb.append("  BP: ").append(bp).append(", PR: ").append(pr).append(", RR: ").append(rr);
+        sb.append(", SpO2: ").append(sat).append(", PFR: ").append(pfr).append("\n");
+        sb.append("  Ht: ").append(height).append(", Wt: ").append(weight).append(", BMI: ").append(bmi).append("\n");
+
+        String tempSeries = buildVitalSeries(assessments, a -> a.getTemperature() != null ? a.getTemperature().toString() : null);
+        String bpSeries = buildVitalSeries(assessments, a -> a.getBp());
+        String prSeries = buildVitalSeries(assessments, a -> a.getPr() != null ? a.getPr().toString() : null);
+        String rrSeries = buildVitalSeries(assessments, a -> a.getRespiratoryRate() != null ? a.getRespiratoryRate().toString() : null);
+        String satSeries = buildVitalSeries(assessments, a -> a.getSaturation() != null ? a.getSaturation().toString() : null);
+        if (!tempSeries.isEmpty() || !bpSeries.isEmpty()) {
+            sb.append("VITAL TRENDS:\n");
+            if (!tempSeries.isEmpty()) sb.append("  Temp: ").append(tempSeries).append("\n");
+            if (!bpSeries.isEmpty()) sb.append("  BP: ").append(bpSeries).append("\n");
+            if (!prSeries.isEmpty()) sb.append("  PR: ").append(prSeries).append("\n");
+            if (!rrSeries.isEmpty()) sb.append("  RR: ").append(rrSeries).append("\n");
+            if (!satSeries.isEmpty()) sb.append("  SpO2: ").append(satSeries).append("\n");
+        }
+        sb.append("\n");
+
+        sb.append("CURRENT DIAGNOSIS:\n");
+        for (ClinicalFindingValue dx : getEncounterDiagnoses()) {
+            if (dx != null) {
+                String diagName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+                sb.append("  - ").append(diagName);
+                if (!details.isEmpty()) sb.append(" (").append(details).append(")");
+                sb.append("\n");
+            }
+        }
+        sb.append("\n");
+
+        sb.append("PAST MEDICAL HISTORY:\n");
+        boolean hasPastDx = false;
+        for (ClinicalFindingValue dx : getPatientDiagnoses()) {
+            if (dx != null) {
+                String diagName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+                sb.append("  - ").append(diagName);
+                if (!details.isEmpty()) sb.append(" (").append(details).append(")");
+                sb.append("\n");
+                hasPastDx = true;
+            }
+        }
+        if (!hasPastDx) sb.append("  No significant past history\n");
+        sb.append("\n");
+
+        sb.append("ALLERGIES:\n");
+        boolean hasAllergies = false;
+        for (ClinicalFindingValue cf : getPatientAllergies()) {
+            if (cf != null) {
+                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
+                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                sb.append("  - ").append(allergyName);
+                if (!details.isEmpty()) sb.append(" (").append(details).append(")");
+                sb.append("\n");
+                hasAllergies = true;
+            }
+        }
+        if (!hasAllergies) sb.append("  No known allergies\n");
+        sb.append("\n");
+
+        sb.append("INVESTIGATIONS:\n");
+        boolean hasIx = false;
+        for (ClinicalFindingValue ix : getEncounterInvestigations()) {
+            sb.append("  - ").append(ix.getItemValue().getName()).append("\n");
+            hasIx = true;
+        }
+        if (!hasIx) sb.append("  No investigations performed\n");
+        sb.append("\n");
+
+        sb.append("PROCEDURES:\n");
+        boolean hasProc = false;
+        for (ClinicalFindingValue proc : getEncounterProcedures()) {
+            sb.append("  - ").append(proc.getItemValue().getName()).append("\n");
+            hasProc = true;
+        }
+        if (!hasProc) sb.append("  No procedures performed\n");
+        sb.append("\n");
+
+        sb.append("INPATIENT MEDICATIONS (Rx):\n");
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null && !cf.getPrescription().isIndoor()) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String freqUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String dur = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                sb.append("  - ").append(rxName).append(" ").append(dose).append(" ").append(doseUnit)
+                  .append(" ").append(freqUnit).append(" ").append(dur).append(" ").append(durUnit).append("\n");
+            }
+        }
+        sb.append("\n");
+
+        sb.append("DISCHARGE MEDICATIONS (DRx):\n");
+        for (ClinicalFindingValue cf : getDischargeMedicines()) {
+            if (cf != null && cf.getPrescription() != null && cf.getPrescription().isIndoor()) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String freqUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String dur = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                sb.append("  - ").append(rxName).append(" ").append(dose).append(" ").append(doseUnit)
+                  .append(" ").append(freqUnit).append(" ").append(dur).append(" ").append(durUnit).append("\n");
+            }
+        }
+        sb.append("\n");
+
+        sb.append("ROUTINE MEDICINES:\n");
+        for (ClinicalFindingValue rx : getPatientMedicines()) {
+            if (rx != null && rx.getPrescription() != null) {
+                String medName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
+                String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
+                String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
+                String freq = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                sb.append("  - ").append(medName).append(" ").append(dose).append(" ").append(doseUnit).append(" ").append(freq).append("\n");
+            }
+        }
+        sb.append("\n");
+
+        String comments = current.getComments() != null ? current.getComments() : "";
+        if (!comments.isEmpty()) {
+            sb.append("COMMENTS: ").append(comments).append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private String buildDiagnosisCardSystemPrompt() {
+        return "You are a clinical document formatter for a hospital information system. "
+                + "Your task is to generate a professional Diagnosis & Treatment Card in HTML format based on the clinical data provided.\n\n"
+                + "RULES:\n"
+                + "1. Output ONLY the HTML table markup. No markdown fencing, no explanations, no preamble.\n"
+                + "2. Use inline CSS styles on every element. The output must be self-contained and suitable for printing.\n"
+                + "3. Use a single <table> layout similar to the sample template below, but adapt sections as appropriate for the case.\n"
+                + "4. OMIT any section that has no meaningful data (do not show empty sections).\n"
+                + "5. NEVER fabricate, infer, or add clinical data that is not provided. Only use the data given.\n"
+                + "6. Use professional medical formatting: proper headings, clean borders, readable font sizes.\n"
+                + "7. The card should fit on an A4 page when printed.\n\n"
+                + "SAMPLE TEMPLATE STRUCTURE (adapt loosely, do not copy verbatim):\n"
+                + SAMPLE_DIAGNOSIS_CARD_TEMPLATE;
+    }
+
+    private static final String SAMPLE_DIAGNOSIS_CARD_TEMPLATE
+            = "<table style=\"width:100%; border:1px solid #333; border-collapse:collapse; font-family:Arial,sans-serif; font-size:12px;\">\n"
+            + "<tr><td colspan=\"4\" style=\"text-align:center; padding:10px; border-bottom:2px solid #333;\">\n"
+            + "<div style=\"font-size:16px; font-weight:bold;\">HOSPITAL NAME</div>\n"
+            + "<div style=\"font-size:14px; font-weight:bold; text-decoration:underline; margin-top:6px;\">DIAGNOSIS &amp; TREATMENT CARD</div>\n"
+            + "</td></tr>\n"
+            + "<tr><td style=\"padding:4px 8px; font-weight:bold;\">Name:</td><td colspan=\"3\">{name}</td></tr>\n"
+            + "<tr><td style=\"padding:4px 8px; font-weight:bold;\">Age:</td><td>{age}</td><td style=\"font-weight:bold;\">Sex:</td><td>{sex}</td></tr>\n"
+            + "<tr><td style=\"padding:4px 8px; font-weight:bold;\">BHT:</td><td>{bht}</td><td style=\"font-weight:bold;\">DOA:</td><td>{doa}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"border-top:2px solid #333;\"></td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>VITAL SIGNS</b><br/>BP, PR, RR, SpO2, Height, Weight, BMI</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>DIAGNOSIS</b><br/>{dx}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>PAST MEDICAL HISTORY</b><br/>{past-dx}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>ALLERGIES</b><br/>{allergies}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>INVESTIGATIONS</b><br/>{ix}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>PROCEDURES</b><br/>{procedures}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>TREATMENT (Rx)</b><br/>{rx}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"padding:6px 8px;\"><b>DISCHARGE TREATMENT (DRx)</b><br/>{drx}</td></tr>\n"
+            + "<tr><td colspan=\"4\" style=\"border-top:2px solid #333; padding:8px;\">Date: {visit-date}</td></tr>\n"
+            + "</table>";
 
     public String listAllEncounters() {
         Date startTime = new Date();
@@ -3719,6 +4001,18 @@ public class InpatientClinicalDataController implements Serializable {
         diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
     }
 
+    public boolean isEditingDiagnosisCard() {
+        return editingDiagnosisCard;
+    }
+
+    public void setEditingDiagnosisCard(boolean editingDiagnosisCard) {
+        this.editingDiagnosisCard = editingDiagnosisCard;
+    }
+
+    public void toggleEditingDiagnosisCard() {
+        editingDiagnosisCard = !editingDiagnosisCard;
+    }
+
     private List<PatientEncounter> fillAssessmentsForEncounter(PatientEncounter encounter) {
         if (encounter == null || encounter.getId() == null) {
             return new ArrayList<>();
@@ -3753,50 +4047,37 @@ public class InpatientClinicalDataController implements Serializable {
         return sb.toString();
     }
 
-    public StreamedContent downloadAsWordDocument() {
+    public StreamedContent downloadAsPdf() {
         if (encounterReferral == null || encounterReferral.getLobValue() == null) {
             JsfUtil.addErrorMessage("No document selected or document content is empty");
             return null;
         }
-        try (XWPFDocument document = new XWPFDocument()) {
+        try {
             String htmlContent = encounterReferral.getLobValue();
-            String plainText = htmlContent
-                    .replaceAll("(?i)<br[^>]*>", "\n")
-                    .replaceAll("(?i)<p[^>]*>", "\n")
-                    .replaceAll("(?i)</p>", "\n")
-                    .replaceAll("(?i)<div[^>]*>", "\n")
-                    .replaceAll("(?i)</div>", "\n")
-                    .replaceAll("(?i)<[^>]+>", "")
-                    .replaceAll("&nbsp;", " ")
-                    .replaceAll("&amp;", "&")
-                    .replaceAll("&lt;", "<")
-                    .replaceAll("&gt;", ">")
-                    .trim();
-            String[] lines = plainText.split("\n");
-            for (String line : lines) {
-                if (line.trim().length() > 0) {
-                    XWPFParagraph paragraph = document.createParagraph();
-                    XWPFRun run = paragraph.createRun();
-                    run.setText(line.trim());
-                    run.setFontSize(12);
-                    run.setFontFamily("Calibri");
-                }
-            }
+            // Wrap in a full HTML document for proper rendering
+            String fullHtml = "<html><head><style>"
+                    + "body { font-family: Arial, sans-serif; font-size: 12px; }"
+                    + "table { border-collapse: collapse; }"
+                    + "</style></head><body>"
+                    + htmlContent
+                    + "</body></html>";
+
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            document.write(outputStream);
+            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(fullHtml, outputStream);
+
             String fileName = "DiagnosisCard";
             if (encounterReferral.getStringValue() != null && !encounterReferral.getStringValue().isEmpty()) {
                 fileName = encounterReferral.getStringValue().replaceAll("[^a-zA-Z0-9.-]", "_");
             }
-            fileName += "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date()) + ".docx";
+            fileName += "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date()) + ".pdf";
             ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             return DefaultStreamedContent.builder()
                     .name(fileName)
-                    .contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    .contentType("application/pdf")
                     .stream(() -> inputStream)
                     .build();
-        } catch (IOException e) {
-            JsfUtil.addErrorMessage("Error generating Word document: " + e.getMessage());
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
             return null;
         }
     }

@@ -386,14 +386,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Credit limit must be greater than zero");
             return;
         }
-        // need to add encounterCreditCompany to list
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
             encounterCreditCompanies.add(encounterCreditCompany);
             current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
             encounterCreditCompany = new EncounterCreditCompany();
         }
-
     }
 
     public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany) {
@@ -536,6 +534,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     encounterCreditCompany.setInstitution(ecc.getInstitution());
                     encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
                     encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
+                    encounterCreditCompany.setReferanceNo(ecc.getReferanceNo());
+                    encounterCreditCompany.setDescreption(ecc.getDescreption());
                     current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
                     encounterCreditCompanies.add(encounterCreditCompany);
                     encounterCreditCompany = new EncounterCreditCompany();

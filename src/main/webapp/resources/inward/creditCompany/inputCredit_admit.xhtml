@@ -24,8 +24,7 @@
                                         completeMethod="#{creditCompanyController.completeCredit}"
                                         var="ix" itemLabel="#{ix.name}"
                                         itemValue="#{ix}" size="30">
-                            <f:ajax event="itemSelect" execute="@this"
-                                    render=":#{p:resolveFirstComponentWithId('panelCompanyDesc',view).clientId}"/>
+                            <p:ajax event="itemSelect" process="@this" update="panelCompanyDesc"/>
                         </p:autoComplete>
                     </div>
                     <div class="mb-2">
@@ -57,7 +56,7 @@
                     <p:growl id="growl" showDetail="false" showSummary="true" />
                     <p:commandButton
                         id="btnAdd"
-                        process="btnAdd gpDetails"
+                        process="@parent"
                         update="tblCom gpDetails"
                         value="Add Credit Company"
                         class="w-100 ui-button-success"
