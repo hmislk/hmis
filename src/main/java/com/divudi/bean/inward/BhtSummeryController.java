@@ -1458,8 +1458,12 @@ public class BhtSummeryController implements Serializable {
         if (patientRooms == null || patientRooms.isEmpty()) {
             return true;
         }
+        PatientRoom currentRoom = getPatientEncounter().getCurrentPatientRoom();
+        if (currentRoom == null) {
+            return true;
+        }
         for (PatientRoom pr : patientRooms) {
-            if (getPatientEncounter().getCurrentPatientRoom().getId() != pr.getId() && pr.getDischargedAt() == null) {
+            if (currentRoom.getId() != pr.getId() && pr.getDischargedAt() == null) {
                 return true;
             }
         }
