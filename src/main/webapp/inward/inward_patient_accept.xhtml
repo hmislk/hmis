@@ -16,7 +16,14 @@
                             <h:outputText styleClass="fa fa-check-circle fa-lg"/>
                             <p:outputLabel value="Pending Patients for #{sessionController.department.name}" class="m-2"/>
                         </div>
-                        <div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"/>
                             <p:commandButton
                                 value="Refresh"
                                 icon="fa fa-refresh"

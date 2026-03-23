@@ -190,7 +190,17 @@
                                 <h:outputText styleClass="fa fa-arrow-right fa-lg"/>
                                 <p:outputLabel value="Initiate Transfer" class="m-2"/>
                             </div>
-                            <div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    ajax="false"
+                                    class="ui-button-secondary"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}">
+                                    <f:setPropertyActionListener
+                                        value="#{patientTransferController.current}"
+                                        target="#{admissionController.current}" />
+                                </p:commandButton>
                                 <p:commandButton
                                     value="Change Patient"
                                     icon="fa fa-arrow-left"

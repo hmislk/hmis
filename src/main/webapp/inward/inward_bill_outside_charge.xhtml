@@ -198,8 +198,19 @@
                                 </div>
                                 <div class="d-flex gap-2">
 
-                                    <p:commandButton 
-                                        class="ui-button-success" 
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        ajax="false"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{inwardAdditionalChargeController.current.patientEncounter}"
+                                            target="#{admissionController.current}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-success"
                                         id="btnNew"
                                         icon="fa fa-plus"
                                         value="New Bill"  

@@ -373,28 +373,20 @@
 
                         <p:panel header="Clinical Data"  class="m-1">
                             <div class="d-grid gap-3">
-                                <p:commandButton 
+                                <p:commandButton
                                     value="Patient History"
-                                    action="#{patientController.toEmrPatientProfile}"
+                                    action="#{patientController.navigateToPatientProfileFromAdmissionProfile()}"
                                     ajax="false"
-                                    icon="fa fa-history" 
+                                    icon="fa fa-history"
                                     styleClass="mb-2 w-100">
-                                    <f:setPropertyActionListener 
+                                    <f:setPropertyActionListener
                                         value="#{admissionController.current.patient}"
                                         target="#{patientController.current}" />
                                 </p:commandButton>
                                 <p:commandButton
-                                    value="Clinical Assessments"
+                                    value="Clinical Notes"
                                     ajax="false"
                                     action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
-                                    icon="fa fa-stethoscope"
-                                    rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
-                                    class="w-100">
-                                </p:commandButton>
-                                <p:commandButton
-                                    value="Admission Clinical Notes"
-                                    action="#{admissionController.navigateToInpatientClinicalData}"
-                                    ajax="false"
                                     icon="fa fa-file-medical-alt"
                                     class="w-100">
                                 </p:commandButton>
