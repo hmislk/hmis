@@ -1663,6 +1663,7 @@ public class InpatientClinicalDataController implements Serializable {
         this.parentAdmission = admission;
         this.current = admission;
         this.patient = admission.getPatient();
+        this.admissionWardMedicine = null;
         fillAdmissionWardMedicines(admission);
         return "/inward/inward_ward_medicines?faces-redirect=true";
     }
@@ -1715,6 +1716,10 @@ public class InpatientClinicalDataController implements Serializable {
         rx.setPrescribedBy(sessionController.getLoggedUser());
         rx.setPrescribingDepartment(sessionController.getDepartment());
         rx.setPrescribedFrom(new Date());
+        if (rx.getDuration() != null && rx.getDuration() > 0 && rx.getDurationUnit() == null) {
+            JsfUtil.addErrorMessage("Please select a duration unit.");
+            return;
+        }
         if (rx.getDuration() != null && rx.getDuration() > 0 && rx.getDurationUnit() != null) {
             Date endDate = prescriptionService.calculateToDateFromDuration(
                     rx.getPrescribedFrom(), rx.getDuration(), rx.getDurationUnit());
@@ -2014,10 +2019,30 @@ public class InpatientClinicalDataController implements Serializable {
         }
         getEncounterMedicine().setEncounter(current);
         getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-        if (getEncounterMedicine().getPrescription().getId() == null) {
-            prescriptionFacade.create(getEncounterMedicine().getPrescription());
+        Prescription erx = getEncounterMedicine().getPrescription();
+        erx.setEncounter(current);
+        erx.setPatient(current.getPatient());
+        erx.setIndoor(true);
+        erx.setPrescribedAt(new Date());
+        erx.setPrescribedBy(sessionController.getLoggedUser());
+        erx.setPrescribingDepartment(sessionController.getDepartment());
+        erx.setPrescribedFrom(new Date());
+        if (erx.getDuration() != null && erx.getDuration() > 0 && erx.getDurationUnit() == null) {
+            JsfUtil.addErrorMessage("Please select a duration unit.");
+            return;
+        }
+        if (erx.getDuration() != null && erx.getDuration() > 0 && erx.getDurationUnit() != null) {
+            Date endDate = prescriptionService.calculateToDateFromDuration(
+                    erx.getPrescribedFrom(), erx.getDuration(), erx.getDurationUnit());
+            if (endDate != null) {
+                erx.setOmittedAt(endDate);
+                erx.setPrescribedTo(endDate);
+            }
+        }
+        if (erx.getId() == null) {
+            prescriptionFacade.create(erx);
         } else {
-            prescriptionFacade.edit(getEncounterMedicine().getPrescription());
+            prescriptionFacade.edit(erx);
         }
         if (getEncounterMedicine().getId() == null) {
             clinicalFindingValueFacade.create(getEncounterMedicine());
