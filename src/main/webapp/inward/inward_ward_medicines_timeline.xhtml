@@ -55,7 +55,7 @@
                                         <span class="badge p-2 mr-2" style="background-color: #dc3545; color: #fff;">Omitted</span>
                                     </div>
 
-                                    <h:panelGroup rendered="#{inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
                                         <p:timeline id="wardTimeline"
                                                     value="#{inpatientClinicalDataController.wardMedicineTimelineModel}"
                                                     zoomable="true"
@@ -70,7 +70,7 @@
                                         </p:timeline>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{not inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
+                                    <h:panelGroup layout="block" rendered="#{not inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
                                         <p class="p-3 text-muted">No ward medicines recorded for this admission.</p>
                                     </h:panelGroup>
                                 </p:panel>
@@ -96,7 +96,7 @@
                              closable="true"
                              width="500">
                         <div class="p-3">
-                            <h:panelGroup rendered="#{inpatientClinicalDataController.selectedTimelineMedicine != null and inpatientClinicalDataController.selectedTimelineMedicine.prescription != null}">
+                            <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine != null and inpatientClinicalDataController.selectedTimelineMedicine.prescription != null}">
                                 <table class="table table-borderless mb-0">
                                     <tr>
                                         <td class="font-weight-bold" style="width: 40%;">Medicine:</td>

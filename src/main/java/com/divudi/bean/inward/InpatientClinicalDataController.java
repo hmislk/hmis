@@ -1795,6 +1795,7 @@ public class InpatientClinicalDataController implements Serializable {
         this.parentAdmission = admission;
         this.current = admission;
         this.patient = admission.getPatient();
+        this.selectedTimelineMedicine = null;
         fillAdmissionWardMedicines(admission);
         buildWardMedicineTimeline();
         return "/inward/inward_ward_medicines_timeline?faces-redirect=true";
