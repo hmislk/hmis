@@ -199,6 +199,8 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> admissionWardMedicines;
     private List<ClinicalFindingValue> activeWardMedicines;
     private List<ClinicalFindingValue> pastWardMedicines;
+    private ClinicalFindingValue selectedWardMedicineToOmit;
+    private String omissionReason;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1662,6 +1664,8 @@ public class InpatientClinicalDataController implements Serializable {
         this.current = admission;
         this.patient = admission.getPatient();
         this.admissionWardMedicine = null;
+        this.selectedWardMedicineToOmit = null;
+        this.omissionReason = null;
         fillAdmissionWardMedicines(admission);
         return "/inward/inward_ward_medicines?faces-redirect=true";
     }
@@ -1689,7 +1693,8 @@ public class InpatientClinicalDataController implements Serializable {
         Date now = new Date();
         for (ClinicalFindingValue cfv : admissionWardMedicines) {
             Prescription rx = cfv.getPrescription();
-            if (rx != null && rx.getOmittedAt() != null && rx.getOmittedAt().before(now)) {
+            if (rx != null && ((rx.getOmittedAt() != null && rx.getOmittedAt().before(now))
+                    || (rx.getPrescribedTo() != null && rx.getPrescribedTo().before(now)))) {
                 pastWardMedicines.add(cfv);
             } else {
                 activeWardMedicines.add(cfv);
@@ -1722,7 +1727,6 @@ public class InpatientClinicalDataController implements Serializable {
             Date endDate = prescriptionService.calculateToDateFromDuration(
                     rx.getPrescribedFrom(), rx.getDuration(), rx.getDurationUnit());
             if (endDate != null) {
-                rx.setOmittedAt(endDate);
                 rx.setPrescribedTo(endDate);
             }
         }
@@ -1741,6 +1745,27 @@ public class InpatientClinicalDataController implements Serializable {
         admissionWardMedicine = null;
         fillAdmissionWardMedicines(parentAdmission);
         JsfUtil.addSuccessMessage("Medicine Added");
+    }
+
+    public void omitAdmissionWardMedicine() {
+        if (selectedWardMedicineToOmit == null || selectedWardMedicineToOmit.getPrescription() == null) {
+            JsfUtil.addErrorMessage("No medicine selected to omit.");
+            return;
+        }
+        if (omissionReason == null || omissionReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter an omission reason.");
+            return;
+        }
+        Prescription rx = selectedWardMedicineToOmit.getPrescription();
+        rx.setOmittedAt(new Date());
+        rx.setOmittedBy(sessionController.getLoggedUser());
+        rx.setOmittingDepartment(sessionController.getDepartment());
+        rx.setOmissionReason(omissionReason.trim());
+        prescriptionFacade.edit(rx);
+        selectedWardMedicineToOmit = null;
+        omissionReason = null;
+        fillAdmissionWardMedicines(parentAdmission);
+        JsfUtil.addSuccessMessage("Medicine Omitted");
     }
 
     public String navigateToDischargeMedicinesFromAdmission(PatientEncounter admission) {
@@ -2016,7 +2041,6 @@ public class InpatientClinicalDataController implements Serializable {
             Date endDate = prescriptionService.calculateToDateFromDuration(
                     erx.getPrescribedFrom(), erx.getDuration(), erx.getDurationUnit());
             if (endDate != null) {
-                erx.setOmittedAt(endDate);
                 erx.setPrescribedTo(endDate);
             }
         }
@@ -3139,6 +3163,22 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setPastWardMedicines(List<ClinicalFindingValue> pastWardMedicines) {
         this.pastWardMedicines = pastWardMedicines;
+    }
+
+    public ClinicalFindingValue getSelectedWardMedicineToOmit() {
+        return selectedWardMedicineToOmit;
+    }
+
+    public void setSelectedWardMedicineToOmit(ClinicalFindingValue selectedWardMedicineToOmit) {
+        this.selectedWardMedicineToOmit = selectedWardMedicineToOmit;
+    }
+
+    public String getOmissionReason() {
+        return omissionReason;
+    }
+
+    public void setOmissionReason(String omissionReason) {
+        this.omissionReason = omissionReason;
     }
 
     public ClinicalFindingValue getEncounterMedicine() {

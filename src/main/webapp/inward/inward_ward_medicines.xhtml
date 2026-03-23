@@ -124,6 +124,21 @@
                                                 <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
                                             </h:outputText>
                                         </p:column>
+                                        <p:column headerText="Action" style="width: 80px;">
+                                            <p:commandButton icon="fa fa-times"
+                                                             title="Omit"
+                                                             class="ui-button-danger ui-button-sm"
+                                                             oncomplete="PF('dlgOmit').show()"
+                                                             process="@this"
+                                                             update="panelOmitDialog">
+                                                <f:setPropertyActionListener
+                                                    value=""
+                                                    target="#{inpatientClinicalDataController.omissionReason}" />
+                                                <f:setPropertyActionListener
+                                                    value="#{rx}"
+                                                    target="#{inpatientClinicalDataController.selectedWardMedicineToOmit}" />
+                                            </p:commandButton>
+                                        </p:column>
                                     </p:dataTable>
                                 </p:panel>
                             </div>
@@ -155,10 +170,52 @@
                                                 <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
                                             </h:outputText>
                                         </p:column>
+                                        <p:column headerText="Omitted By" style="width: 150px;">
+                                            <h:outputText value="#{rx.prescription.omittedBy.name}" />
+                                        </p:column>
+                                        <p:column headerText="Reason">
+                                            <h:outputText value="#{rx.prescription.omissionReason}" />
+                                        </p:column>
                                     </p:dataTable>
                                 </p:panel>
                             </div>
                         </div>
+                        <p:dialog id="panelOmitDialog"
+                                 header="Omit Medication"
+                                 widgetVar="dlgOmit"
+                                 modal="true"
+                                 resizable="false"
+                                 closable="true"
+                                 width="450">
+                            <div class="p-3">
+                                <h:panelGroup rendered="#{inpatientClinicalDataController.selectedWardMedicineToOmit != null}">
+                                    <p class="mb-2">
+                                        <strong>Medicine: </strong>
+                                        <h:outputText value="#{inpatientClinicalDataController.selectedWardMedicineToOmit.prescription.formattedPrescription}" />
+                                    </p>
+                                </h:panelGroup>
+                                <div class="mb-3">
+                                    <p:outputLabel for="txtOmitReason" value="Reason for omission:" styleClass="d-block mb-1" />
+                                    <p:inputTextarea id="txtOmitReason"
+                                                     value="#{inpatientClinicalDataController.omissionReason}"
+                                                     rows="3"
+                                                     style="width: 100%;"
+                                                     placeholder="Enter reason for omitting this medication" />
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <p:commandButton value="Cancel"
+                                                     type="button"
+                                                     onclick="PF('dlgOmit').hide()"
+                                                     class="ui-button-secondary m-1" />
+                                    <p:commandButton value="Omit"
+                                                     action="#{inpatientClinicalDataController.omitAdmissionWardMedicine()}"
+                                                     process="panelOmitDialog"
+                                                     update="panelActiveMedicines panelPastMedicines"
+                                                     oncomplete="PF('dlgOmit').hide()"
+                                                     class="ui-button-danger m-1" />
+                                </div>
+                            </div>
+                        </p:dialog>
                     </h:panelGroup>
 
                     <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
