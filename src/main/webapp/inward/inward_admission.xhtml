@@ -471,15 +471,14 @@
                                 <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                             </p:commandButton>
 
-                            <p:commandButton 
-                                ajax="false" 
+                            <p:commandButton
+                                ajax="false"
                                 immediate="true"
-                                class="ui-button-warning " 
+                                class="ui-button-warning "
                                 value="Inpatient Dashboard"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
-                                icon="fa fa-fw fa-bed" > 
-                                <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
-                            </p:commandButton>
+                                icon="fa fa-fw fa-bed" />
+
                         </div>
 
                     </div>

@@ -864,6 +864,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        navigatedFromAdmissionProfile = false;
         return "/opd/patient?faces-redirect=true";
     }
 
@@ -876,16 +877,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToPatientProfileFromAdmissionProfile() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("No patient selected");
-            return "";
-        }
-        patientController.setCurrent(current);
-        patientEncounterController.setPatient(current);
-        patientEncounterController.fillCurrentPatientLists(current);
-        patientEncounterController.fillPatientInvestigations(current);
         navigatedFromAdmissionProfile = true;
-        return "/emr/patient_profile?faces-redirect=true";
+        return toEmrPatientProfile();
     }
 
     public String navigateToInpatientDashboard() {

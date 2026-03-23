@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
@@ -32,6 +33,7 @@ import javax.ejb.TransactionAttributeType;
  * @author Dr M H B Ariyaratne
  */
 @Singleton
+@Startup
 public class DatabaseMigrationService {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationService.class.getName());
