@@ -3644,6 +3644,19 @@ public class PatientEncounterController implements Serializable {
         return encounterReferral;
     }
 
+    public String getEncounterReferralContentForDisplay() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            return "";
+        }
+        String content = encounterReferral.getLobValue();
+        content = content.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&amp;", "&")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'");
+        return content;
+    }
+
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
         this.encounterReferral = encounterReferral;
     }

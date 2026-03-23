@@ -1555,7 +1555,9 @@
                                                             id="newPatientEmail"
                                                             value="#{patientPortalController.patient.person.email}"
                                                             placeholder="Enter email address"
-                                                            autocomplete="off"/>
+                                                            autocomplete="off">
+                                                        </p:inputText>
+                                                        <p:message for="newPatientEmail" display="text"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1601,7 +1603,7 @@
                                                 value="Save Patient"
                                                 icon="fas fa-floppy-disk"
                                                 action="#{patientPortalController.saveNewPatient}"
-                                                update="globalMessages portalContentPanel"/>
+                                                update="globalMessages portalContentPanel newPatientEmail"/>
                                         </div>
                                         <div class="add-patient-wrap">
                                             <p:commandButton
@@ -1727,7 +1729,15 @@
                                                 #{patientPortalController.patient.person.mobile}
                                             </span>
                                         </div>
-                                        <p class="welcome-subtitle">
+                                        
+                                        <h:panelGroup rendered="#{patientPortalController.patient.selfRegistered}" layout="block">
+                                            <span class="patient-meta-pill" style="background:#d1fae5;color:#065f46;margin-top:0.35rem;display:inline-flex;align-items:center;gap:0.25rem;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.68rem;font-weight:600;">
+                                                <i class="fas fa-user-pen" style="font-size:0.6rem;"/>
+                                                Self Registered
+                                            </span>
+                                        </h:panelGroup>
+                                        
+                                        <p class="welcome-subtitle mt-2">
                                             You are now signed in to the Patient Portal.
                                             Use the options below to manage your health information.
                                         </p>

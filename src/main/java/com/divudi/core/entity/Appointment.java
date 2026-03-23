@@ -83,6 +83,9 @@ public class Appointment extends PatientEncounter implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
+
+    @ManyToOne
+    private AppointmentScheduleInstance scheduleInstance;
     
     public Long getId() {
         return id;
@@ -291,6 +294,14 @@ public class Appointment extends PatientEncounter implements Serializable {
 
     public void setStatus(AppointmentStatus status) {
         this.status = status;
+    }
+
+    public AppointmentScheduleInstance getScheduleInstance() {
+        return scheduleInstance;
+    }
+
+    public void setScheduleInstance(AppointmentScheduleInstance scheduleInstance) {
+        this.scheduleInstance = scheduleInstance;
     }
 
     public Bill getAppointmentCancelBill() {

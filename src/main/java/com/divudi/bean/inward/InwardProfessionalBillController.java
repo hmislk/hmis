@@ -21,6 +21,8 @@ import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
@@ -101,6 +103,7 @@ public class InwardProfessionalBillController implements Serializable {
     private Speciality speciality;
     private Staff staff;
     private Bill current;
+    private Institution institution;
     BillEntry removeBillEntry;
     private BillFee currentBillFee;
     private double billTotal;
@@ -757,6 +760,7 @@ public class InwardProfessionalBillController implements Serializable {
         current = null;
         batchBill = null;
         printPreview = false;
+        institution = sessionController.getInstitution();
         makeNullList();
 
     }
@@ -777,6 +781,22 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void selectPatientEncounter() {
         fetchEncounterProfessionalFees();
+    }
+
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
+    }
+
+    public void onInstitutionChange() {
+        makeNull();
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public String navigateToAddProfessionalFeesFromMenu() {

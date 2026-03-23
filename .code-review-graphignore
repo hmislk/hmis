@@ -1,0 +1,21 @@
+# Build output
+target/**
+*.class
+
+# Version control
+.git/**
+
+# IDE files
+.idea/**
+.vscode/**
+*.iml
+nbproject/**
+
+# Generated files
+*.generated.java
+
+# Temporary files
+tmp/**
+
+# Graph data (self-exclude)
+.code-review-graph/**
