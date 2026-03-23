@@ -2008,6 +2008,10 @@ public class InpatientClinicalDataController implements Serializable {
         erx.setPrescribedBy(sessionController.getLoggedUser());
         erx.setPrescribingDepartment(sessionController.getDepartment());
         erx.setPrescribedFrom(new Date());
+        if (erx.getDuration() != null && erx.getDuration() > 0 && erx.getDurationUnit() == null) {
+            JsfUtil.addErrorMessage("Please select a duration unit.");
+            return;
+        }
         if (erx.getDuration() != null && erx.getDuration() > 0 && erx.getDurationUnit() != null) {
             Date endDate = prescriptionService.calculateToDateFromDuration(
                     erx.getPrescribedFrom(), erx.getDuration(), erx.getDurationUnit());
