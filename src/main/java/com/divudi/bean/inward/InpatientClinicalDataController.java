@@ -81,6 +81,12 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.timeline.TimelineEvent;
+import org.primefaces.model.timeline.TimelineGroup;
+import org.primefaces.model.timeline.TimelineModel;
+import org.primefaces.event.timeline.TimelineSelectEvent;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -201,6 +207,9 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> pastWardMedicines;
     private ClinicalFindingValue selectedWardMedicineToOmit;
     private String omissionReason;
+
+    private TimelineModel<ClinicalFindingValue, String> wardMedicineTimelineModel;
+    private ClinicalFindingValue selectedTimelineMedicine;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1766,6 +1775,87 @@ public class InpatientClinicalDataController implements Serializable {
         omissionReason = null;
         fillAdmissionWardMedicines(parentAdmission);
         JsfUtil.addSuccessMessage("Medicine Omitted");
+    }
+
+    public String navigateToWardMedicinesTimeline(PatientEncounter admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        this.parentAdmission = admission;
+        this.current = admission;
+        this.patient = admission.getPatient();
+        fillAdmissionWardMedicines(admission);
+        buildWardMedicineTimeline();
+        return "/inward/inward_ward_medicines_timeline?faces-redirect=true";
+    }
+
+    private void buildWardMedicineTimeline() {
+        wardMedicineTimelineModel = new TimelineModel<>();
+        if (admissionWardMedicines == null || admissionWardMedicines.isEmpty()) {
+            return;
+        }
+        Date now = new Date();
+        int groupIndex = 0;
+        for (ClinicalFindingValue cfv : admissionWardMedicines) {
+            Prescription rx = cfv.getPrescription();
+            if (rx == null || rx.getPrescribedAt() == null) {
+                continue;
+            }
+            String medicineName = rx.getItem() != null ? rx.getItem().getName() : "Unknown";
+            String groupId = "g" + groupIndex;
+            groupIndex++;
+            TimelineGroup<String> group = TimelineGroup.<String>builder()
+                    .id(groupId)
+                    .content(medicineName)
+                    .build();
+            wardMedicineTimelineModel.addGroup(group);
+
+            LocalDateTime start = rx.getPrescribedAt().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+            Date endDate;
+            String styleClass;
+            if (rx.getOmittedAt() != null && rx.getOmittedAt().before(now)) {
+                endDate = rx.getOmittedAt();
+                styleClass = "timeline-omitted";
+            } else if (rx.getPrescribedTo() != null && rx.getPrescribedTo().before(now)) {
+                endDate = rx.getPrescribedTo();
+                styleClass = "timeline-expired";
+            } else {
+                endDate = rx.getPrescribedTo() != null ? rx.getPrescribedTo() : now;
+                styleClass = "timeline-active";
+            }
+            LocalDateTime end = endDate.toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+            TimelineEvent<ClinicalFindingValue> event = TimelineEvent.<ClinicalFindingValue>builder()
+                    .data(cfv)
+                    .startDate(start)
+                    .endDate(end)
+                    .group(groupId)
+                    .styleClass(styleClass)
+                    .build();
+            wardMedicineTimelineModel.add(event);
+        }
+    }
+
+    public void onTimelineSelect(TimelineSelectEvent<ClinicalFindingValue> e) {
+        if (e != null && e.getTimelineEvent() != null) {
+            selectedTimelineMedicine = e.getTimelineEvent().getData();
+        }
+    }
+
+    public TimelineModel<ClinicalFindingValue, String> getWardMedicineTimelineModel() {
+        return wardMedicineTimelineModel;
+    }
+
+    public ClinicalFindingValue getSelectedTimelineMedicine() {
+        return selectedTimelineMedicine;
+    }
+
+    public void setSelectedTimelineMedicine(ClinicalFindingValue selectedTimelineMedicine) {
+        this.selectedTimelineMedicine = selectedTimelineMedicine;
     }
 
     public String navigateToDischargeMedicinesFromAdmission(PatientEncounter admission) {
