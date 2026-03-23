@@ -137,11 +137,12 @@
                                     action="#{inwardReportController.processSpecialtyDoctorWiseIncomeReport()}">
                                 </p:commandButton>
 
-                                <p:commandButton class="ui-button-primary mx-1"
-                                                 icon="fas fa-print"
-                                                 ajax="false"
-                                                 value="Print All">
-                                    <p:printer target="tblDoctorWise" />
+                                <p:commandButton 
+                                    class="ui-button-primary mx-1"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    action="specialty_doctor_wise_income_report_print?faces-redirect=true"
+                                    value="To Print">
                                 </p:commandButton>
 
                                 <p:commandButton
@@ -247,11 +248,12 @@
                                     action="#{inwardReportController.processSpecialtyDoctorWiseIncomeReport()}">
                                 </p:commandButton>
 
-                                <p:commandButton class="ui-button-primary mx-1"
+                                <p:commandButton 
+                                    class="ui-button-primary mx-1"
                                     icon="fas fa-print"
                                     ajax="false"
-                                    value="Print All">
-                                    <p:printer target="tblSpecialtyWise" />
+                                    action="specialty_doctor_wise_income_report_print?faces-redirect=true"
+                                    value="To Print">
                                 </p:commandButton>
 
                                 <p:commandButton
