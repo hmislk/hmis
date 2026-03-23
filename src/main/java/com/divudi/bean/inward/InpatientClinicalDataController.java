@@ -36,6 +36,7 @@ import com.divudi.core.entity.clinical.DocumentTemplate;
 import com.divudi.core.entity.clinical.ItemUsage;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -201,6 +202,10 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> pastWardMedicines;
     private ClinicalFindingValue selectedWardMedicineToOmit;
     private String omissionReason;
+    private ClinicalFindingValue selectedWardMedicineToChange;
+    private Double newDose;
+    private MeasurementUnit newDoseUnit;
+    private MeasurementUnit newFrequencyUnit;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1666,6 +1671,10 @@ public class InpatientClinicalDataController implements Serializable {
         this.admissionWardMedicine = null;
         this.selectedWardMedicineToOmit = null;
         this.omissionReason = null;
+        this.selectedWardMedicineToChange = null;
+        this.newDose = null;
+        this.newDoseUnit = null;
+        this.newFrequencyUnit = null;
         fillAdmissionWardMedicines(admission);
         return "/inward/inward_ward_medicines?faces-redirect=true";
     }
@@ -1766,6 +1775,72 @@ public class InpatientClinicalDataController implements Serializable {
         omissionReason = null;
         fillAdmissionWardMedicines(parentAdmission);
         JsfUtil.addSuccessMessage("Medicine Omitted");
+    }
+
+    public void prepareChangeDoseFrequency(ClinicalFindingValue cfv) {
+        if (cfv == null || cfv.getPrescription() == null) {
+            return;
+        }
+        selectedWardMedicineToChange = cfv;
+        Prescription rx = cfv.getPrescription();
+        newDose = rx.getDose();
+        newDoseUnit = rx.getDoseUnit();
+        newFrequencyUnit = rx.getFrequencyUnit();
+    }
+
+    public void changeDoseFrequencyWardMedicine() {
+        if (selectedWardMedicineToChange == null || selectedWardMedicineToChange.getPrescription() == null) {
+            JsfUtil.addErrorMessage("No medicine selected to change.");
+            return;
+        }
+        Prescription originalRx = selectedWardMedicineToChange.getPrescription();
+
+        // Clone original prescription for the new record
+        Prescription newRx = originalRx.cloneForNewEntity();
+        newRx.setParent(originalRx);
+        newRx.setDose(newDose);
+        newRx.setDoseUnit(newDoseUnit);
+        newRx.setFrequencyUnit(newFrequencyUnit);
+        newRx.setPrescribedAt(new Date());
+        newRx.setPrescribedBy(sessionController.getLoggedUser());
+        newRx.setPrescribingDepartment(sessionController.getDepartment());
+        newRx.setPrescribedFrom(new Date());
+        // Carry over duration: recalculate prescribedTo from new start date
+        if (newRx.getDuration() != null && newRx.getDuration() > 0 && newRx.getDurationUnit() != null) {
+            Date endDate = prescriptionService.calculateToDateFromDuration(
+                    newRx.getPrescribedFrom(), newRx.getDuration(), newRx.getDurationUnit());
+            if (endDate != null) {
+                newRx.setPrescribedTo(endDate);
+            }
+        }
+        // Clear omission fields on the new prescription
+        newRx.setOmittedAt(null);
+        newRx.setOmittedBy(null);
+        newRx.setOmittingDepartment(null);
+        newRx.setOmissionReason(null);
+
+        // Auto-omit the original prescription
+        originalRx.setOmittedAt(new Date());
+        originalRx.setOmittedBy(sessionController.getLoggedUser());
+        originalRx.setOmittingDepartment(sessionController.getDepartment());
+        originalRx.setOmissionReason("Dose/frequency changed");
+
+        prescriptionFacade.create(newRx);
+        prescriptionFacade.edit(originalRx);
+
+        // Create new ClinicalFindingValue for the new prescription
+        ClinicalFindingValue newCfv = new ClinicalFindingValue();
+        newCfv.setEncounter(parentAdmission);
+        newCfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+        newCfv.setPrescription(newRx);
+        clinicalFindingValueFacade.create(newCfv);
+
+        selectedWardMedicineToChange = null;
+        newDose = null;
+        newDoseUnit = null;
+        newFrequencyUnit = null;
+        fillAdmissionWardMedicines(parentAdmission);
+        JsfUtil.addSuccessMessage("Dose/Frequency Changed");
     }
 
     public String navigateToDischargeMedicinesFromAdmission(PatientEncounter admission) {
@@ -3179,6 +3254,38 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setOmissionReason(String omissionReason) {
         this.omissionReason = omissionReason;
+    }
+
+    public ClinicalFindingValue getSelectedWardMedicineToChange() {
+        return selectedWardMedicineToChange;
+    }
+
+    public void setSelectedWardMedicineToChange(ClinicalFindingValue selectedWardMedicineToChange) {
+        this.selectedWardMedicineToChange = selectedWardMedicineToChange;
+    }
+
+    public Double getNewDose() {
+        return newDose;
+    }
+
+    public void setNewDose(Double newDose) {
+        this.newDose = newDose;
+    }
+
+    public MeasurementUnit getNewDoseUnit() {
+        return newDoseUnit;
+    }
+
+    public void setNewDoseUnit(MeasurementUnit newDoseUnit) {
+        this.newDoseUnit = newDoseUnit;
+    }
+
+    public MeasurementUnit getNewFrequencyUnit() {
+        return newFrequencyUnit;
+    }
+
+    public void setNewFrequencyUnit(MeasurementUnit newFrequencyUnit) {
+        this.newFrequencyUnit = newFrequencyUnit;
     }
 
     public ClinicalFindingValue getEncounterMedicine() {
