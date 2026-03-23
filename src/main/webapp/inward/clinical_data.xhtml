@@ -34,15 +34,15 @@
                                 value="Inpatient Dashboard"
                                 class="p-0 m-1"
                                 action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                <f:setPropertyActionListener value="#{inpatientClinicalDataController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                             <p:commandButton
                                 ajax="false"
                                 icon="fa fa-user"
                                 value="Patient Profile"
                                 class="m-1 p-0"
-                                action="#{patientController.navigateToOpdPatientProfile()}" >
-                                <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                action="#{patientController.navigateToPatientProfileFromAdmissionProfile()}" >
+                                <f:setPropertyActionListener value="#{inpatientClinicalDataController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
 
                         </div>

@@ -216,6 +216,8 @@
                                         ajax="false"
                                         value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
                                         style="float: right;"
+                                        onclick="if (!confirm('Do you want to process this payment?'))
+                                            return false;"
                                         class="ui-button-success"
                                         action="#{staffPaymentBillController.settleBill()}" >
                                     </p:commandButton>

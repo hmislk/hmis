@@ -3153,21 +3153,17 @@ public class PharmacyStockTakeController implements Serializable {
                 ));
             }
 
-            // Deduplicate by (itemName, batchNo, expiryDate) — keep the row with the lowest billItemId.
-            // This guards against snapshot bills that were accidentally persisted twice
-            // (bill header created once, but BillItems inserted in two separate passes),
-            // which results in duplicate rows per batch in the database.
-            // Expiry date is included in the key so that two legitimate batches with the same
-            // batch number but different expiry dates are NOT collapsed into one.
-            java.util.LinkedHashMap<String, com.divudi.core.data.dto.SnapshotBillItemDTO> seen = new java.util.LinkedHashMap<>();
+            // Deduplicate by billItemId — guards against snapshot bills that were
+            // accidentally persisted twice (BillItems inserted in two separate passes).
+            // Previous key (itemName, batchNo, expiryDate) incorrectly collapsed
+            // legitimate distinct stock entries from separate GRNs that shared the
+            // same batch number and expiry date. billItemId is unique per stock row.
+            java.util.LinkedHashMap<Long, com.divudi.core.data.dto.SnapshotBillItemDTO> seen = new java.util.LinkedHashMap<>();
             for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : dtos) {
-                String expiryStr = dto.getExpiryDate() != null
-                        ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(dto.getExpiryDate()) : "";
-                String key = (dto.getItemName() != null ? dto.getItemName() : "") + "||" + (dto.getBatchNo() != null ? dto.getBatchNo() : "") + "||" + expiryStr;
-                com.divudi.core.data.dto.SnapshotBillItemDTO existing = seen.get(key);
-                if (existing == null || (dto.getBillItemId() != null && existing.getBillItemId() != null && dto.getBillItemId() < existing.getBillItemId())) {
-                    seen.put(key, dto);
+                if (dto.getBillItemId() == null) {
+                    continue;
                 }
+                seen.putIfAbsent(dto.getBillItemId(), dto);
             }
             if (seen.size() < dtos.size()) {
                 System.out.println("[LoadLazy] Deduplicated " + (dtos.size() - seen.size()) + " duplicate rows (snapshot bill persisted multiple times)");
