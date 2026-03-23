@@ -1645,6 +1645,22 @@ public class InpatientClinicalDataController implements Serializable {
         return "/inward/inward_assessment_discharge_medicines";
     }
 
+    public String navigateToInwardMedicinesFromAdmission(PatientEncounter admission) {
+        this.parentAdmission = admission;
+        this.current = admission;
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(admission);
+        return "/inward/inward_assessment_inward_medicines";
+    }
+
+    public String navigateToDischargeMedicinesFromAdmission(PatientEncounter admission) {
+        this.parentAdmission = admission;
+        this.current = admission;
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(admission);
+        return "/inward/inward_assessment_discharge_medicines";
+    }
+
     public PatientEncounter getParentAdmission() {
         return parentAdmission;
     }
