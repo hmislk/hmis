@@ -1523,13 +1523,13 @@ public class InpatientClinicalDataController implements Serializable {
         setStartedEncounter(current);
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/clinical_data";
+        return "/inward/clinical_data?faces-redirect=true";
     }
 
     public String navigateToAssessmentList(PatientEncounter admission) {
         this.parentAdmission = admission;
         fillClinicalAssessments();
-        return "/inward/inward_clinical_assessment_list";
+        return "/inward/inward_clinical_assessment_list?faces-redirect=true";
     }
 
     public void fillClinicalAssessments() {
@@ -1575,7 +1575,7 @@ public class InpatientClinicalDataController implements Serializable {
         viewOnly = false;
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/inward_clinical_assessment";
+        return "/inward/inward_clinical_assessment?faces-redirect=true";
     }
 
     public String viewClinicalAssessment(PatientEncounter exam) {
@@ -1584,7 +1584,7 @@ public class InpatientClinicalDataController implements Serializable {
         viewOnly = true;
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/inward_clinical_assessment";
+        return "/inward/inward_clinical_assessment?faces-redirect=true";
     }
 
     public String editClinicalAssessment(PatientEncounter exam) {
@@ -1593,7 +1593,7 @@ public class InpatientClinicalDataController implements Serializable {
         viewOnly = false;
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/inward_clinical_assessment";
+        return "/inward/inward_clinical_assessment?faces-redirect=true";
     }
 
     public String saveClinicalAssessment() {
@@ -1608,21 +1608,21 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addSuccessMessage("Assessment Saved Successfully.");
         }
         fillClinicalAssessments();
-        return "/inward/inward_clinical_assessment_list";
+        return "/inward/inward_clinical_assessment_list?faces-redirect=true";
     }
 
     public String navigateToAssessmentListFromCapturePage() {
         fillClinicalAssessments();
-        return "/inward/inward_clinical_assessment_list";
+        return "/inward/inward_clinical_assessment_list?faces-redirect=true";
     }
 
     public String navigateToCurrentAssessment() {
         if (current == null) {
-            return "/inward/inward_clinical_assessment_list";
+            return "/inward/inward_clinical_assessment_list?faces-redirect=true";
         }
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/inward_clinical_assessment";
+        return "/inward/inward_clinical_assessment?faces-redirect=true";
     }
 
     public String navigateToAssessmentInwardMedicines() {
@@ -1632,7 +1632,7 @@ public class InpatientClinicalDataController implements Serializable {
         }
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/inward_assessment_inward_medicines";
+        return "/inward/inward_assessment_inward_medicines?faces-redirect=true";
     }
 
     public String navigateToAssessmentDischargeMedicines() {
@@ -1642,7 +1642,23 @@ public class InpatientClinicalDataController implements Serializable {
         }
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        return "/inward/inward_assessment_discharge_medicines";
+        return "/inward/inward_assessment_discharge_medicines?faces-redirect=true";
+    }
+
+    public String navigateToInwardMedicinesFromAdmission(PatientEncounter admission) {
+        this.parentAdmission = admission;
+        this.current = admission;
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(admission);
+        return "/inward/inward_assessment_inward_medicines?faces-redirect=true";
+    }
+
+    public String navigateToDischargeMedicinesFromAdmission(PatientEncounter admission) {
+        this.parentAdmission = admission;
+        this.current = admission;
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(admission);
+        return "/inward/inward_assessment_discharge_medicines?faces-redirect=true";
     }
 
     public PatientEncounter getParentAdmission() {
@@ -1678,7 +1694,7 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_diagnosis_card";
+        return "/inward/clinical_data_diagnosis_card?faces-redirect=true";
     }
 
     public String navigateToDrugChart() {
@@ -1690,7 +1706,7 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_drug_chart";
+        return "/inward/clinical_data_drug_chart?faces-redirect=true";
     }
 
     public String navigateToImages() {
@@ -1702,7 +1718,7 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_images";
+        return "/inward/clinical_data_images?faces-redirect=true";
     }
 
     public String navigateToInvestigations() {
@@ -1714,7 +1730,7 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_investigations";
+        return "/inward/clinical_data_investigations?faces-redirect=true";
     }
     //clinical_data_investigations
     //clinical_data_images

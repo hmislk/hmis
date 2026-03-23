@@ -232,6 +232,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String membershipTypeListner = "1";
 
     boolean patientDetailsEditable;
+    private boolean navigatedFromAdmissionProfile = false;
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
@@ -863,6 +864,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        navigatedFromAdmissionProfile = false;
         return "/opd/patient?faces-redirect=true";
     }
 
@@ -872,6 +874,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         return "/optician/patient?faces-redirect=true";
+    }
+
+    public String navigateToPatientProfileFromAdmissionProfile() {
+        navigatedFromAdmissionProfile = true;
+        return toEmrPatientProfile();
+    }
+
+    public String navigateToInpatientDashboard() {
+        navigatedFromAdmissionProfile = false;
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     public String navigateToAdmitFromPatientProfile() {
@@ -4291,6 +4303,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setSearchText(String searchText) {
         this.searchText = searchText;
+    }
+
+    public boolean isNavigatedFromAdmissionProfile() {
+        return navigatedFromAdmissionProfile;
+    }
+
+    public void setNavigatedFromAdmissionProfile(boolean navigatedFromAdmissionProfile) {
+        this.navigatedFromAdmissionProfile = navigatedFromAdmissionProfile;
     }
 
     public List<Patient> getSelectedItems() {
