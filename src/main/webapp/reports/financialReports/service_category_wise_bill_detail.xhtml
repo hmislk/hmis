@@ -160,10 +160,11 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <h:panelGroup id="gpItem" layout="block" styleClass="form-group">
-                                <p:autoComplete 
+                                <p:autoComplete
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     rendered="#{searchController.category eq null}"
+                                    value="#{searchController.item}"
                                     completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
                                     var="acitem"
                                     itemLabel="#{acitem.name}"
