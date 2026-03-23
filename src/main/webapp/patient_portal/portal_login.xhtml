@@ -24,17 +24,17 @@
                ================================================ */
 
             :root {
-                --forest-deep:   #0d2b1f;
-                --forest-mid:    #1b4332;
-                --forest-bright: #2d6a4f;
-                --emerald:       #52b788;
-                --emerald-light: #74c69d;
-                --cream:         #f0f7f4;
+                --forest-mid:    #{configOptionApplicationController.getColorValueByKey('Patient Portal -  Theme Color','#1b4332')};
+                --forest-deep:   color-mix(in srgb, var(--forest-mid) 60%, #000);
+                --forest-bright: color-mix(in srgb, var(--forest-mid) 80%, #fff);
+                --emerald:       color-mix(in hsl, var(--forest-mid), white 55%);
+                --emerald-light: color-mix(in hsl, var(--forest-mid), white 65%);
+                --cream:         color-mix(in srgb, var(--forest-mid) 5%, #fff);
                 --white:         #ffffff;
-                --text-dark:     #1a2e2e;
-                --text-muted:    #5a7a6a;
-                --border:        #d8eee4;
-                --shadow-lg:     0 24px 64px rgba(13,43,31,0.20);
+                --text-dark:     color-mix(in srgb, var(--forest-mid) 12%, #111);
+                --text-muted:    color-mix(in srgb, var(--forest-mid) 20%, #555);
+                --border:        color-mix(in srgb, var(--forest-mid) 12%, #fff);
+                --shadow-lg:     0 24px 64px color-mix(in srgb, var(--forest-mid) 20%, transparent);
                 --radius-sm:     10px;
             }
 
@@ -54,8 +54,8 @@
             /* Logout button */
             .btn-logout .ui-button {
                 background: transparent !important;
-                border: 1.5px solid rgba(116,198,157,0.45) !important;
-                color: var(--emerald-light) !important;
+                border: 1.5px solid color-mix(in srgb, var(--forest-mid) 55%, transparent) !important;
+                color: var(--forest-mid) !important;
                 border-radius: 8px !important;
                 font-family: 'DM Sans', sans-serif !important;
                 font-size: 0.83rem !important;
@@ -64,14 +64,15 @@
                 white-space: nowrap;
             }
             .btn-logout .ui-button:hover {
-                background: rgba(82,183,136,0.15) !important;
-                border-color: var(--emerald-light) !important;
+                background: color-mix(in srgb, var(--forest-mid) 8%, transparent) !important;
+                border-color: var(--forest-mid) !important;
+                color: var(--forest-deep) !important;
             }
             .btn-logout .ui-button .ui-button-text {
                 padding: 0 !important;
             }
             .btn-logout .ui-button .ui-icon {
-                color: var(--emerald-light) !important;
+                color: var(--forest-mid) !important;
                 margin-right: 5px !important;
             }
 
@@ -91,7 +92,7 @@
                 justify-content: space-between;
                 align-items: flex-start;
                 padding: 3rem 3.5rem;
-                --hero-color: #1b4332; /* fallback — overridden by config option inline style */
+                --hero-color: var(--forest-mid); /* fallback — overridden by config option inline style */
                 background: linear-gradient(155deg,
                     color-mix(in srgb, var(--hero-color) 55%, #000) 0%,
                     var(--hero-color) 55%,
@@ -121,7 +122,7 @@
             .hero-dots {
                 position: absolute;
                 inset: 0;
-                background-image: radial-gradient(circle, rgba(116,198,157,0.22) 1px, transparent 1px);
+                background-image: radial-gradient(circle, color-mix(in srgb, var(--emerald-light) 22%, transparent) 1px, transparent 1px);
                 background-size: 30px 30px;
             }
 
@@ -129,7 +130,7 @@
             .hero-ring {
                 position: absolute;
                 border-radius: 50%;
-                border: 1px solid rgba(82,183,136,0.13);
+                border: 1px solid color-mix(in srgb, var(--emerald) 13%, transparent);
             }
             .hero-ring-1 {
                 width: 500px;
@@ -142,7 +143,7 @@
                 height: 330px;
                 top: -60px;
                 right: -110px;
-                border-color: rgba(82,183,136,0.2);
+                border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
             }
             .hero-ring-3 {
                 width: 620px;
@@ -156,7 +157,7 @@
                 bottom: -100px;
                 left: -80px;
                 border: none;
-                background: radial-gradient(circle, rgba(82,183,136,0.07) 0%, transparent 70%);
+                background: radial-gradient(circle, color-mix(in srgb, var(--emerald) 7%, transparent) 0%, transparent 70%);
             }
 
             /* Small medical cross decorations */
@@ -251,8 +252,8 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 0.5rem;
-                background: rgba(82,183,136,0.14);
-                border: 1px solid rgba(82,183,136,0.28);
+                background: color-mix(in srgb, var(--emerald) 14%, transparent);
+                border: 1px solid color-mix(in srgb, var(--emerald) 28%, transparent);
                 border-radius: 100px;
                 padding: 0.32rem 1rem;
                 font-size: 0.7rem;
@@ -320,7 +321,7 @@
             .feat-icon {
                 width: 32px;
                 height: 32px;
-                background: rgba(82,183,136,0.18);
+                background: color-mix(in srgb, var(--emerald) 18%, transparent);
                 border-radius: 8px;
                 display: flex;
                 align-items: center;
@@ -372,7 +373,7 @@
                 font-size: 1.75rem;
                 color: white;
                 margin-bottom: 0.75rem;
-                box-shadow: 0 8px 24px rgba(29,67,50,0.28);
+                box-shadow: 0 8px 24px color-mix(in srgb, var(--forest-mid) 28%, transparent);
             }
             .mobile-inst-name {
                 display: block;
@@ -414,7 +415,7 @@
             .card-lead-icon {
                 width: 52px;
                 height: 52px;
-                background: linear-gradient(135deg, #e2f0e8, #c5e4d1);
+                background: linear-gradient(135deg, color-mix(in srgb, var(--emerald) 20%, white), color-mix(in srgb, var(--emerald) 35%, white));
                 border-radius: 13px;
                 display: flex;
                 align-items: center;
@@ -475,7 +476,7 @@
             .step-dot.active {
                 background: var(--forest-mid);
                 color: white;
-                box-shadow: 0 0 0 3px rgba(27,67,50,0.15);
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-mid) 15%, transparent);
             }
             .step-label {
                 font-size: 0.72rem;
@@ -522,7 +523,7 @@
                 font-family: 'DM Sans', sans-serif !important;
                 font-size: 0.97rem !important;
                 color: var(--text-dark) !important;
-                background: #f6fbf8 !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
                 transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
                 box-shadow: none !important;
                 outline: none !important;
@@ -534,7 +535,7 @@
             .portal-form-panel .ui-inputtext:focus {
                 border-color: var(--forest-bright) !important;
                 background: var(--white) !important;
-                box-shadow: 0 0 0 3px rgba(45,106,79,0.11) !important;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent) !important;
             }
 
             /* ── PRIMARY BUTTON (Send OTP) ───────────────────────── */
@@ -550,13 +551,13 @@
                 color: white !important;
                 cursor: pointer !important;
                 transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-                box-shadow: 0 4px 16px rgba(27,67,50,0.28) !important;
+                box-shadow: 0 4px 16px color-mix(in srgb, var(--forest-mid) 28%, transparent) !important;
                 letter-spacing: 0.01em !important;
                 min-width: unset !important;
             }
             .btn-send .ui-button:hover {
                 transform: translateY(-1px) !important;
-                box-shadow: 0 7px 22px rgba(27,67,50,0.34) !important;
+                box-shadow: 0 7px 22px color-mix(in srgb, var(--forest-mid) 34%, transparent) !important;
             }
             .btn-send .ui-button:active {
                 transform: translateY(0) !important;
@@ -586,7 +587,7 @@
             }
             .btn-verify .ui-button:hover {
                 border-color: var(--emerald) !important;
-                background: #eaf7f1 !important;
+                background: color-mix(in srgb, var(--emerald) 12%, white) !important;
                 color: var(--forest-deep) !important;
             }
             .btn-verify .ui-button .ui-button-text {
@@ -711,7 +712,7 @@
                 font-size: 1.1rem;
                 font-weight: 700;
                 color: var(--forest-mid);
-                background: #e8f5ee;
+                background: color-mix(in srgb, var(--emerald) 10%, white);
                 border: 1.5px solid var(--border);
                 border-radius: 8px;
                 padding: 0.2rem 0.7rem;
@@ -846,13 +847,13 @@
                 padding: 0.9rem 1rem;
                 border: 2px solid var(--border);
                 border-radius: var(--radius-sm);
-                background: #f8fbf9;
+                background: color-mix(in srgb, var(--forest-mid) 4%, white);
                 transition: all 0.2s ease;
             }
 
             .patient-row:hover {
                 border-color: var(--emerald);
-                background: #eef8f3;
+                background: color-mix(in srgb, var(--emerald) 10%, white);
             }
 
             .patient-avatar {
@@ -897,7 +898,7 @@
                 gap: 0.3rem;
                 font-size: 0.72rem;
                 color: var(--text-muted);
-                background: #f0f7f4;
+                background: var(--cream);
                 border: 1px solid var(--border);
                 border-radius: 100px;
                 padding: 0.15rem 0.55rem;
@@ -921,12 +922,12 @@
                 white-space: nowrap !important;
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
-                box-shadow: 0 2px 8px rgba(27,67,50,0.22) !important;
+                box-shadow: 0 2px 8px color-mix(in srgb, var(--forest-mid) 22%, transparent) !important;
                 min-width: unset !important;
             }
             .btn-select-patient .ui-button:hover {
                 transform: translateY(-1px) !important;
-                box-shadow: 0 4px 12px rgba(27,67,50,0.3) !important;
+                box-shadow: 0 4px 12px color-mix(in srgb, var(--forest-mid) 30%, transparent) !important;
             }
             .btn-select-patient .ui-button .ui-button-text {
                 padding: 0 !important;
@@ -982,14 +983,14 @@
                 font-family: 'DM Sans', sans-serif !important;
                 font-size: 0.9rem !important;
                 text-align: center !important;
-                background: #f6fbf8 !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
                 min-width: unset !important;
                 box-shadow: none !important;
             }
             .age-input-wrap .ui-inputtext:focus {
                 border-color: var(--forest-bright) !important;
                 background: var(--white) !important;
-                box-shadow: 0 0 0 3px rgba(45,106,79,0.11) !important;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent) !important;
                 outline: none !important;
             }
             .age-unit {
@@ -1043,7 +1044,7 @@
                 width: 100% !important;
                 border: 2px solid var(--border) !important;
                 border-radius: var(--radius-sm) !important;
-                background: #f6fbf8 !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
                 min-width: unset !important;
                 box-shadow: none !important;
                 transition: border-color 0.2s !important;
@@ -1076,7 +1077,7 @@
                 border-radius: var(--radius-sm) !important;
                 font-family: 'DM Sans', sans-serif !important;
                 font-size: 0.97rem !important;
-                background: #f6fbf8 !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
                 min-width: unset !important;
                 box-shadow: none !important;
             }
@@ -1084,7 +1085,7 @@
             .portal-form-panel .field-wrap .ui-datepicker-input:focus {
                 border-color: var(--forest-bright) !important;
                 background: var(--white) !important;
-                box-shadow: 0 0 0 3px rgba(45,106,79,0.11) !important;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent) !important;
             }
             @media (max-width: 480px) {
                 .new-patient-row {
@@ -1113,7 +1114,7 @@
                 box-shadow: none !important;
             }
             .btn-add-patient-link.ui-button:hover {
-                background: rgba(82,183,136,0.08) !important;
+                background: color-mix(in srgb, var(--emerald) 8%, transparent) !important;
                 border-color: var(--forest-bright) !important;
             }
             .btn-add-patient-link.ui-button .ui-button-text {
@@ -1152,7 +1153,7 @@
                 font-size: 1.8rem;
                 color: white;
                 margin: 0 auto 1.25rem;
-                box-shadow: 0 8px 24px rgba(29,67,50,0.25);
+                box-shadow: 0 8px 24px color-mix(in srgb, var(--forest-mid) 25%, transparent);
             }
             .welcome-greeting {
                 font-size: 0.82rem;
@@ -1183,6 +1184,24 @@
                 display: flex;
                 flex-direction: column;
                 gap: 0.75rem;
+            }
+
+            /* ── SELF-REGISTERED BADGE ───────────────────────────── */
+            .badge-self-registered {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                background: color-mix(in srgb, var(--emerald) 22%, white);
+                color: var(--forest-deep);
+                margin-top: 0.35rem;
+                padding: 0.2rem 0.55rem;
+                border-radius: 20px;
+                font-size: 0.68rem;
+                font-weight: 600;
+                border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+            }
+            .badge-self-registered i {
+                font-size: 0.6rem;
             }
         </style>
         <script type="text/javascript">
@@ -1731,8 +1750,8 @@
                                         </div>
                                         
                                         <h:panelGroup rendered="#{patientPortalController.patient.selfRegistered}" layout="block">
-                                            <span class="patient-meta-pill" style="background:#d1fae5;color:#065f46;margin-top:0.35rem;display:inline-flex;align-items:center;gap:0.25rem;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.68rem;font-weight:600;">
-                                                <i class="fas fa-user-pen" style="font-size:0.6rem;"/>
+                                            <span class="badge-self-registered">
+                                                <i class="fas fa-user-pen"/>
                                                 Self Registered
                                             </span>
                                         </h:panelGroup>
@@ -1806,7 +1825,7 @@
                                             <i class="fas fa-flask"/>
                                         </div>
                                         <div class="welcome-greeting" style="font-size:2rem;">Laboratory</div>
-                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:#64748b;">
+                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:var(--text-muted);">
                                             View your lab test results and reports
                                         </div>
                                         <div style="margin:1.5rem 0; padding:2rem 1.5rem; background:#fef9c3; border:2px solid #fde68a; border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:1rem; color:#92400e;">
@@ -1832,7 +1851,7 @@
                                             <i class="fas fa-calendar-check"/>
                                         </div>
                                         <div class="welcome-greeting" style="font-size:2rem;">Channelling</div>
-                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:#64748b;">
+                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:var(--text-muted);">
                                             Book and manage your doctor appointments
                                         </div>
                                         <div style="margin:1.5rem 0; padding:2rem 1.5rem; background:#fef9c3; border:2px solid #fde68a; border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:1rem; color:#92400e;">

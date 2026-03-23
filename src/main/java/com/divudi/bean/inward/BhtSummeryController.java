@@ -1213,6 +1213,11 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Check Discharge Time should be after Admitted Time");
             return true;
         }
+        
+        if (patientRooms == null || patientRooms.isEmpty()) {
+            JsfUtil.addErrorMessage("Room must be assigned before discharge");
+            return true;
+        }
 
         if (checkRoomIsDischarged()) {
             JsfUtil.addErrorMessage("Please Discharged From Room");
@@ -1450,13 +1455,18 @@ public class BhtSummeryController implements Serializable {
     }
 
     private boolean checkRoomIsDischarged() {
-        for (PatientRoom patientRoom : patientRooms) {
-            if (getPatientEncounter().getCurrentPatientRoom().getId() != patientRoom.getId()
-                    && patientRoom.getDischargedAt() == null) {
+        if (patientRooms == null || patientRooms.isEmpty()) {
+            return true;
+        }
+        PatientRoom currentRoom = getPatientEncounter().getCurrentPatientRoom();
+        if (currentRoom == null) {
+            return true;
+        }
+        for (PatientRoom pr : patientRooms) {
+            if (currentRoom.getId() != pr.getId() && pr.getDischargedAt() == null) {
                 return true;
             }
         }
-
         return false;
     }
 
