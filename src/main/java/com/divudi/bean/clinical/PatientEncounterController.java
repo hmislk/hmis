@@ -1327,41 +1327,45 @@ public class PatientEncounterController implements Serializable {
                 continue;
             }
 
-            // Create new prescription from template
-            Prescription prescription = new Prescription();
-            prescription.setItem(template.getItem());
-            prescription.setDose(template.getDose());
-            prescription.setDoseUnit(template.getDoseUnit());
-            prescription.setFrequencyUnit(template.getFrequencyUnit());
-            prescription.setDuration(template.getDuration());
-            prescription.setDurationUnit(template.getDurationUnit());
-            prescription.setIndoor(template.isIndoor());
+            try {
+                // Create new prescription from template
+                Prescription prescription = new Prescription();
+                prescription.setItem(template.getItem());
+                prescription.setDose(template.getDose());
+                prescription.setDoseUnit(template.getDoseUnit());
+                prescription.setFrequencyUnit(template.getFrequencyUnit());
+                prescription.setDuration(template.getDuration());
+                prescription.setDurationUnit(template.getDurationUnit());
+                prescription.setIndoor(template.isIndoor());
 
-            // Create ClinicalFindingValue wrapper
-            ClinicalFindingValue cfv = new ClinicalFindingValue();
-            cfv.setEncounter(current);
-            cfv.setPatient(patient);
-            cfv.setPerson(patient.getPerson());
-            cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-            cfv.setPrescription(prescription);
+                // Create ClinicalFindingValue wrapper
+                ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setEncounter(current);
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+                cfv.setPrescription(prescription);
 
-            // Persist prescription and clinical finding value
-            if (prescription.getId() == null) {
-                prescriptionFacade.create(prescription);
-            } else {
-                prescriptionFacade.edit(prescription);
+                // Persist prescription and clinical finding value
+                if (prescription.getId() == null) {
+                    prescriptionFacade.create(prescription);
+                } else {
+                    prescriptionFacade.edit(prescription);
+                }
+
+                if (cfv.getId() == null) {
+                    clinicalFindingValueFacade.create(cfv);
+                } else {
+                    clinicalFindingValueFacade.edit(cfv);
+                }
+
+                getEncounterFindingValues().add(cfv);
+                addedCount++;
+            } catch (Exception e) {
+                System.out.println("Error adding favourite medicine: " + e.getMessage());
             }
-
-            if (cfv.getId() == null) {
-                clinicalFindingValueFacade.create(cfv);
-            } else {
-                clinicalFindingValueFacade.edit(cfv);
-            }
-
-            getEncounterFindingValues().add(cfv);
-            encounterMedicines.add(cfv);
-            addedCount++;
         }
+
+        // Refresh encounter medicines list from DB
+        encounterMedicines = fillEncounterMedicines(current);
 
         // Update prescription document
         updateOrGeneratePrescription();
