@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="formWardMedicines">
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-id-card"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{inpatientClinicalDataController.parentAdmission}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+                                <p:panel id="panelAddMedicine" class="w-100 m-1 p-0">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Add Ward Medication" />
+                                    </f:facet>
+                                    <div class="container-fluid m-0 p-0 w-100">
+                                        <div class="d-flex flex-wrap w-100">
+                                            <div class="m-1">
+                                                <p:outputLabel for="acMedicine" styleClass="w-100" value="Medicine:" />
+                                                <p:autoComplete id="acMedicine"
+                                                                completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.item}"
+                                                                var="item"
+                                                                class="w-100"
+                                                                inputStyleClass="w-100"
+                                                                itemLabel="#{item}"
+                                                                itemValue="#{item}"
+                                                                minQueryLength="4"
+                                                                maxResults="10"
+                                                                placeholder="Select Medicine">
+                                                    <p:ajax event="itemSelect" update="cmbDose" />
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="m-1 d-flex flex-column">
+                                                <p:outputLabel for="txtDose" value="Dose:" />
+                                                <div class="d-flex">
+                                                    <p:inputText style="width: 6em;" id="txtDose"
+                                                                 value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.dose}"
+                                                                 placeholder="Dose"/>
+                                                    <p:outputLabel for="cmbDose" value="Dose unit:" styleClass="sr-only" />
+                                                    <p:selectOneMenu id="cmbDose"
+                                                                     value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.doseUnit}">
+                                                        <f:selectItem itemLabel="Select" />
+                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(inpatientClinicalDataController.admissionWardMedicine.prescription.item)}"
+                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="m-1 d-flex flex-column">
+                                                <p:outputLabel for="cmbFrequency" value="Frequency:" />
+                                                <p:selectOneMenu id="cmbFrequency"
+                                                                 value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.frequencyUnit}">
+                                                    <f:selectItem itemLabel="Select" />
+                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}"
+                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="m-1 d-flex flex-column">
+                                                <p:outputLabel for="txtDuration" value="Duration:" />
+                                                <div class="d-flex">
+                                                    <p:inputText style="width: 6em;" id="txtDuration"
+                                                                 value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.duration}"
+                                                                 placeholder="Duration"/>
+                                                    <p:outputLabel for="cmbDuration" value="Duration unit:" styleClass="sr-only" />
+                                                    <p:selectOneMenu id="cmbDuration"
+                                                                     value="#{inpatientClinicalDataController.admissionWardMedicine.prescription.durationUnit}">
+                                                        <f:selectItem itemLabel="Select" />
+                                                        <f:selectItems value="#{measurementUnitController.durationUnits}"
+                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="&#160;" styleClass="w-100" />
+                                                <p:commandButton value="Add"
+                                                                 id="btnAddRx"
+                                                                 disabled="#{inpatientClinicalDataController.parentAdmission == null or inpatientClinicalDataController.parentAdmission.id == null}"
+                                                                 process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                 update="panelAddMedicine panelActiveMedicines panelPastMedicines"
+                                                                 action="#{inpatientClinicalDataController.addAdmissionWardMedicine()}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+                                <p:panel id="panelActiveMedicines" class="w-100 m-1 p-0">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Active Ward Medications" />
+                                    </f:facet>
+                                    <p:dataTable id="tblActiveMedicines"
+                                                 value="#{inpatientClinicalDataController.activeWardMedicines}"
+                                                 var="rx"
+                                                 emptyMessage="No active ward medications">
+                                        <p:column headerText="Medicine">
+                                            <h:outputText value="#{rx.prescription.formattedPrescription}" />
+                                        </p:column>
+                                        <p:column headerText="Prescribed By" style="width: 150px;">
+                                            <h:outputText value="#{rx.prescription.prescribedBy.name}" />
+                                        </p:column>
+                                        <p:column headerText="Prescribed At" style="width: 150px;">
+                                            <h:outputText value="#{rx.prescription.prescribedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+                                <p:panel id="panelPastMedicines" class="w-100 m-1 p-0" toggleable="true" collapsed="true">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Past Ward Medications" />
+                                    </f:facet>
+                                    <p:dataTable id="tblPastMedicines"
+                                                 value="#{inpatientClinicalDataController.pastWardMedicines}"
+                                                 var="rx"
+                                                 emptyMessage="No past ward medications">
+                                        <p:column headerText="Medicine">
+                                            <h:outputText value="#{rx.prescription.formattedPrescription}" />
+                                        </p:column>
+                                        <p:column headerText="Prescribed By" style="width: 150px;">
+                                            <h:outputText value="#{rx.prescription.prescribedBy.name}" />
+                                        </p:column>
+                                        <p:column headerText="Prescribed At" style="width: 150px;">
+                                            <h:outputText value="#{rx.prescription.prescribedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Omitted At" style="width: 150px;">
+                                            <h:outputText value="#{rx.prescription.omittedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to access Ward Medications." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
