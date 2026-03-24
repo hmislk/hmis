@@ -3211,7 +3211,7 @@ public class PharmacyStockTakeController implements Serializable {
                 + (snapshotBillDisplay != null ? snapshotBillDisplay.getId() : "null"));
 
         if (snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
-            if (snapshotBill == null) {
+            if (snapshotBill == null || !snapshotBillDisplay.getId().equals(snapshotBill.getId())) {
                 snapshotBill = billFacade.getReference(snapshotBillDisplay.getId());
                 System.out.println("[GetLazy] Created proxy billId=" + snapshotBill.getId());
             }
