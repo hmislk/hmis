@@ -1011,11 +1011,21 @@ public class LimsMiddlewareController {
             // Skip this investigation if none of its report items match the incoming test code.
             // This prevents creating reports for unrelated tests that share the same sample
             // (e.g., Blood Picture should not get a report when only FBC results arrive).
+            // Checks all dynamic item types consistent with PatientReportBean.addPatientReportItemValuesForReport()
+            // and excludes retired items to avoid stale codes causing false matches.
             boolean hasMatchingItem = false;
             for (InvestigationItem ii : ix.getReportItems()) {
+                if (ii.isRetired()) {
+                    continue;
+                }
                 if (ii.getTest() != null
                         && (ii.getIxItemType() == InvestigationItemType.Value
-                        || ii.getIxItemType() == InvestigationItemType.ReportImage)) {
+                        || ii.getIxItemType() == InvestigationItemType.ReportImage
+                        || ii.getIxItemType() == InvestigationItemType.Calculation
+                        || ii.getIxItemType() == InvestigationItemType.Flag
+                        || ii.getIxItemType() == InvestigationItemType.Template
+                        || ii.getIxItemType() == InvestigationItemType.WarningFlag
+                        || ii.getIxItemType() == InvestigationItemType.DynamicLabel)) {
                     String codeFromDb = ii.getResultCode();
                     if (codeFromDb == null || codeFromDb.trim().isEmpty()) {
                         codeFromDb = ii.getTest().getCode();
