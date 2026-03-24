@@ -152,7 +152,7 @@
 
                                         <div class="d-flex gap-2">
                                             <h:outputText value="Site" style="font-weight:600;"/>
-                                            <h:outputText value="#{empty pharmacyController.site ? 'All Sites' : reportController.site.name}"/>
+                                            <h:outputText value="#{empty pharmacyController.site ? 'All Sites' : pharmacyController.site.name}"/>
                                         </div>
 
                                         <div class="d-flex gap-2">
@@ -246,7 +246,7 @@
                     <h:outputText value="Supplier" style="margin-right: 1mm;"/>
                 </th>
                 <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
-                    <h:outputText value="MPR" style="margin-right: 1mm;"/>
+                    <h:outputText value="MRP" style="margin-right: 1mm;"/>
                 </th>
                 <th style="width: 10mm; font-weight: 700; text-align: center; font-size: 6px;">
                     <h:outputText value="Discount" style="margin-right: 1mm;"/>

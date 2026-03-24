@@ -9104,7 +9104,7 @@ public class PharmacyController implements Serializable {
         return total;
     }
 
-   public void exportGRNDetailReportToExcel() {
+   public void exportGRNAndDirectPurchaseDetailReportToExcel() {
     FacesContext context = FacesContext.getCurrentInstance();
     HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -9317,12 +9317,12 @@ public class PharmacyController implements Serializable {
         return "Date From: " + fromDateFormatted() +
                " To: " + toDateFormatted() +
                "   |   Site: " + (site == null ? "All institutions" : site.getName()) +
-               "   |   Department: " + (department == null ? "All departments" : department.getName()) +
+               "   |   Department: " + (dept == null ? "All departments" : dept.getName()) +
                "   |   Store: " + (toDepartment == null ? "All stores" : toDepartment.getName()) +
                "   |   Item: " + (selectedAmpDto == null ? "All Items" : selectedAmpDto.getName()) +
                "   |   Category: " + (category == null ? "All category" : category.getName()) +
                "   |   Dosage Form: " + (dosageForm == null ? "All dosage forms" : dosageForm.getName()) +
-               "   |   Department Type: " + (selectedDepartmentTypes == null ? "All dosage forms" : selectedDepartmentTypes.toString()) +
+               "   |   Department Type: " + (selectedDepartmentTypes == null ? "All department types" : selectedDepartmentTypes.toString()) +
                "   |   Report Type: " + (reportType == null ? "" : reportType);
     }
 
@@ -9351,7 +9351,7 @@ public class PharmacyController implements Serializable {
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         return cell;
     }
-    public void exportGRNDetailReportToPDF() {
+    public void exportGRNAndDirectPurchaseDetailReportToPDF() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -9559,7 +9559,7 @@ public class PharmacyController implements Serializable {
         }
     }
     
-    public void exportGRNSummaryReportToPDF(){
+    public void exportGRNAndDirectPurchaseSummaryReportToPDF(){
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
 

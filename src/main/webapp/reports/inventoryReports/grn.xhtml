@@ -322,18 +322,18 @@
                                          ajax="false"
                                          value="Download"
                                          rendered="#{pharmacyController.reportType eq 'detail'}"
-                                         action="#{pharmacyController.exportGRNDetailReportToExcel()}"/>
+                                         action="#{pharmacyController.exportGRNAndDirectPurchaseDetailReportToExcel()}"/>
 
                         <p:commandButton class="ui-button-danger mx-1"
                                          icon="fas fa-file-pdf"
                                          ajax="false"
-                                         action="#{pharmacyController.exportGRNSummaryReportToPDF()}"
+                                         action="#{pharmacyController.exportGRNAndDirectPurchaseSummaryReportToPDF()}"
                                          value="PDF"
                                          rendered="#{pharmacyController.reportType eq 'summary'}"/>
                         <p:commandButton class="ui-button-danger mx-1"
                                          icon="fas fa-file-pdf"
                                          ajax="false"
-                                         action="#{pharmacyController.exportGRNDetailReportToPDF()}"
+                                         action="#{pharmacyController.exportGRNAndDirectPurchaseDetailReportToPDF()}"
                                          value="PDF"
                                          rendered="#{pharmacyController.reportType eq 'detail'}"/>
                     </div>
