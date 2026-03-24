@@ -3122,7 +3122,7 @@ public class PharmacyStockTakeController implements Serializable {
                     + "pbi.doe, pbi.stringValue, pbi.description "
                     + "FROM BillItem bi "
                     + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
-                    + "WHERE bi.bill.id = :billId "
+                    + "WHERE bi.bill.id = :billId AND bi.retired = false "
                     + "ORDER BY bi.catId, bi.descreption";
 
             HashMap<String, Object> params = new HashMap<>();
