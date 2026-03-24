@@ -41,7 +41,15 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.data.clinical.IssuableMedicineSuggestion;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.DepartmentController;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ItemUsageFacade;
@@ -51,6 +59,12 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.core.data.InvestigationItemType;
@@ -67,6 +81,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -134,6 +149,12 @@ public class PatientEncounterController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     InvestigationItemFacade investigationItemFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
+    @EJB
+    DepartmentFacade departmentFacade;
+    @EJB
+    ConfigOptionFacade configOptionFacade;
 
     /**
      * Controllers
@@ -154,6 +175,54 @@ public class PatientEncounterController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    DepartmentController departmentController;
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("emr/opd_visit");
+        metadata.setPageName("OPD Visit");
+        metadata.setDescription("OPD patient encounter and prescription management");
+        metadata.setControllerClass("PatientEncounterController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Default Outdoor Pharmacy Department",
+                "Default pharmacy department for resolving issuable outdoor medicines during prescription",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Default Indoor Pharmacy Department",
+                "Default pharmacy department for resolving issuable indoor medicines during prescription",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Long Date Format",
+                "Date format pattern used for displaying dates",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to page configuration",
+                "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     /**
      * Properties
      */
@@ -251,6 +320,10 @@ public class PatientEncounterController implements Serializable {
     private Investigation investigation;
 
     private ClinicalFindingValue removingCfv;
+    private List<IssuableMedicineSuggestion> issuableSuggestions;
+    private Department defaultOutdoorPharmacy;
+    private Department defaultIndoorPharmacy;
+    private List<Department> pharmacyDepartments;
 
     private PatientEncounter encounterToDisplay;
     private PatientEncounter startedEncounter;
@@ -1243,6 +1316,7 @@ public class PatientEncounterController implements Serializable {
             encounterMedicines.add(cli);
 
         }
+        refreshIssuableSuggestions();
         updateOrGeneratePrescription();
     }
 
@@ -1327,41 +1401,46 @@ public class PatientEncounterController implements Serializable {
                 continue;
             }
 
-            // Create new prescription from template
-            Prescription prescription = new Prescription();
-            prescription.setItem(template.getItem());
-            prescription.setDose(template.getDose());
-            prescription.setDoseUnit(template.getDoseUnit());
-            prescription.setFrequencyUnit(template.getFrequencyUnit());
-            prescription.setDuration(template.getDuration());
-            prescription.setDurationUnit(template.getDurationUnit());
-            prescription.setIndoor(template.isIndoor());
+            try {
+                // Create new prescription from template
+                Prescription prescription = new Prescription();
+                prescription.setItem(template.getItem());
+                prescription.setDose(template.getDose());
+                prescription.setDoseUnit(template.getDoseUnit());
+                prescription.setFrequencyUnit(template.getFrequencyUnit());
+                prescription.setDuration(template.getDuration());
+                prescription.setDurationUnit(template.getDurationUnit());
+                prescription.setIndoor(template.isIndoor());
 
-            // Create ClinicalFindingValue wrapper
-            ClinicalFindingValue cfv = new ClinicalFindingValue();
-            cfv.setEncounter(current);
-            cfv.setPatient(patient);
-            cfv.setPerson(patient.getPerson());
-            cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-            cfv.setPrescription(prescription);
+                // Create ClinicalFindingValue wrapper
+                ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setEncounter(current);
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+                cfv.setPrescription(prescription);
 
-            // Persist prescription and clinical finding value
-            if (prescription.getId() == null) {
-                prescriptionFacade.create(prescription);
-            } else {
-                prescriptionFacade.edit(prescription);
+                // Persist prescription and clinical finding value
+                if (prescription.getId() == null) {
+                    prescriptionFacade.create(prescription);
+                } else {
+                    prescriptionFacade.edit(prescription);
+                }
+
+                if (cfv.getId() == null) {
+                    clinicalFindingValueFacade.create(cfv);
+                } else {
+                    clinicalFindingValueFacade.edit(cfv);
+                }
+
+                getEncounterFindingValues().add(cfv);
+                addedCount++;
+            } catch (Exception e) {
+                System.out.println("Error adding favourite medicine: " + e.getMessage());
             }
-
-            if (cfv.getId() == null) {
-                clinicalFindingValueFacade.create(cfv);
-            } else {
-                clinicalFindingValueFacade.edit(cfv);
-            }
-
-            getEncounterFindingValues().add(cfv);
-            encounterMedicines.add(cfv);
-            addedCount++;
         }
+
+        // Refresh encounter medicines list from DB
+        encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
 
         // Update prescription document
         updateOrGeneratePrescription();
@@ -1619,6 +1698,7 @@ public class PatientEncounterController implements Serializable {
             // Refresh the encounter medicines list
             System.out.println("DEBUG: Refreshing encounter medicines list...");
             encounterMedicines = fillEncounterMedicines(current);
+            refreshIssuableSuggestions();
             System.out.println("DEBUG: Encounter medicines list now has " + (encounterMedicines != null ? encounterMedicines.size() : "null") + " items");
 
             // Update/generate prescription like addEncounterMedicine does
@@ -1797,6 +1877,10 @@ public class PatientEncounterController implements Serializable {
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
         encounterPlanOfActions = fillPlanOfAction(encounter);
         encounterInvestigationResults = fillEncounterInvestigationResults(encounter);
+        defaultOutdoorPharmacy = null;
+        defaultIndoorPharmacy = null;
+        pharmacyDepartments = null;
+        refreshIssuableSuggestions();
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -2223,6 +2307,7 @@ public class PatientEncounterController implements Serializable {
         getEncounterFindingValues().add(getEncounterMedicine());
 
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
 
         updateOrGeneratePrescription();
         setEncounterMedicine(null);
@@ -2403,6 +2488,7 @@ public class PatientEncounterController implements Serializable {
     public void removeEncounterMedicine() {
         removeCfv();
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
     }
 
     public void removeEncounterDiagnosticImage() {
@@ -2935,6 +3021,207 @@ public class PatientEncounterController implements Serializable {
         }
         getPersonFacade().edit(current.getPatient().getPerson());
         getPatientFacade().edit(current.getPatient());
+    }
+
+    public void refreshIssuableSuggestions() {
+        issuableSuggestions = new ArrayList<>();
+        Department outdoorPharmacy = resolveDefaultOutdoorPharmacy();
+        Department indoorPharmacy = resolveDefaultIndoorPharmacy();
+        if (outdoorPharmacy == null && indoorPharmacy == null) {
+            return;
+        }
+        if (encounterMedicines == null || encounterMedicines.isEmpty()) {
+            return;
+        }
+        for (ClinicalFindingValue cfv : encounterMedicines) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getPrescription().getItem() == null) {
+                continue;
+            }
+            Prescription rx = cfv.getPrescription();
+            boolean indoor = rx.isIndoor();
+            Department pharmacy = indoor ? indoorPharmacy : outdoorPharmacy;
+            if (pharmacy == null) {
+                continue;
+            }
+            Item prescribedItem = rx.getItem();
+            List<Amp> amps = pharmacyBean.resolveAmps(prescribedItem);
+            if (amps == null || amps.isEmpty()) {
+                continue;
+            }
+            for (Amp amp : amps) {
+                IssuableMedicineSuggestion suggestion = new IssuableMedicineSuggestion();
+                suggestion.setAmp(amp);
+                suggestion.setSourceCfv(cfv);
+                suggestion.setIssueUnit(amp.getIssueUnit());
+                double qty = pharmacyBean.calculateIssueQuantity(rx, amp);
+                suggestion.setCalculatedIssueQty(qty);
+                double stock = pharmacyBean.getItemStockQty(amp, pharmacy);
+                suggestion.setAvailableStock(stock);
+                suggestion.setInStock(stock > 0);
+                boolean sameDf = false;
+                if (prescribedItem.getDosageForm() != null && amp.getDosageForm() != null) {
+                    sameDf = prescribedItem.getDosageForm().equals(amp.getDosageForm());
+                }
+                suggestion.setSameDosageForm(sameDf);
+                String display = amp.getName();
+                if (prescribedItem.getName() != null) {
+                    display = prescribedItem.getName() + " → " + amp.getName();
+                }
+                suggestion.setDisplayText(display);
+                suggestion.setSelected(false);
+                issuableSuggestions.add(suggestion);
+            }
+        }
+        // Sort: same dosage form first, then in-stock first
+        issuableSuggestions.sort((a, b) -> {
+            if (a.isSameDosageForm() != b.isSameDosageForm()) {
+                return a.isSameDosageForm() ? -1 : 1;
+            }
+            if (a.isInStock() != b.isInStock()) {
+                return a.isInStock() ? -1 : 1;
+            }
+            return Double.compare(b.getAvailableStock(), a.getAvailableStock());
+        });
+        // Auto-select the best (first in-stock, same dosage form) per source CFV
+        java.util.Set<Long> selectedCfvIds = new java.util.HashSet<>();
+        for (IssuableMedicineSuggestion s : issuableSuggestions) {
+            if (s.getSourceCfv() != null && s.getSourceCfv().getId() != null) {
+                Long cfvId = s.getSourceCfv().getId();
+                if (!selectedCfvIds.contains(cfvId) && s.isInStock() && s.isSameDosageForm()) {
+                    s.setSelected(true);
+                    selectedCfvIds.add(cfvId);
+                }
+            }
+        }
+    }
+
+    private Department resolvePharmacyFromConfig(String configKey) {
+        Department currentDept = sessionController.getDepartment();
+        if (currentDept == null) {
+            return null;
+        }
+        ConfigOption option = configOptionController
+                .getOptionValueByKeyForDepartment(configKey, currentDept);
+        if (option != null && option.getOptionValue() != null && !option.getOptionValue().trim().isEmpty()) {
+            try {
+                Long deptId = Long.parseLong(option.getOptionValue().trim());
+                return departmentFacade.find(deptId);
+            } catch (NumberFormatException e) {
+                // Invalid config value
+            }
+        }
+        return null;
+    }
+
+    public Department resolveDefaultOutdoorPharmacy() {
+        if (defaultOutdoorPharmacy == null) {
+            defaultOutdoorPharmacy = resolvePharmacyFromConfig("Default Outdoor Pharmacy Department");
+        }
+        return defaultOutdoorPharmacy;
+    }
+
+    public Department resolveDefaultIndoorPharmacy() {
+        if (defaultIndoorPharmacy == null) {
+            defaultIndoorPharmacy = resolvePharmacyFromConfig("Default Indoor Pharmacy Department");
+        }
+        return defaultIndoorPharmacy;
+    }
+
+    public void saveDefaultOutdoorPharmacy() {
+        savePharmacyConfig("Default Outdoor Pharmacy Department", defaultOutdoorPharmacy);
+        issuableSuggestions = null;
+        refreshIssuableSuggestions();
+        JsfUtil.addSuccessMessage("Default outdoor pharmacy saved");
+        debugIssuableSuggestions();
+    }
+
+    public void saveDefaultIndoorPharmacy() {
+        savePharmacyConfig("Default Indoor Pharmacy Department", defaultIndoorPharmacy);
+        issuableSuggestions = null;
+        refreshIssuableSuggestions();
+        JsfUtil.addSuccessMessage("Default indoor pharmacy saved");
+        debugIssuableSuggestions();
+    }
+
+    private void debugIssuableSuggestions() {
+        if (encounterMedicines == null || encounterMedicines.isEmpty()) {
+            JsfUtil.addWarningMessage("Debug: No encounter medicines found");
+            return;
+        }
+        for (ClinicalFindingValue cfv : encounterMedicines) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getPrescription().getItem() == null) {
+                JsfUtil.addWarningMessage("Debug: CFV with null prescription/item");
+                continue;
+            }
+            Prescription rx = cfv.getPrescription();
+            Item item = rx.getItem();
+            List<Amp> amps = pharmacyBean.resolveAmps(item);
+            JsfUtil.addWarningMessage("Debug: " + item.getName() + " (" + item.getClass().getSimpleName()
+                    + ") indoor=" + rx.isIndoor() + " → " + (amps != null ? amps.size() : 0) + " AMPs");
+        }
+        JsfUtil.addWarningMessage("Debug: issuableSuggestions size=" + (issuableSuggestions != null ? issuableSuggestions.size() : "null"));
+    }
+
+    private void savePharmacyConfig(String configKey, Department dept) {
+        Department currentDept = sessionController.getDepartment();
+        if (currentDept == null) {
+            return;
+        }
+        ConfigOption option = configOptionController
+                .getOptionValueByKeyForDepartment(configKey, currentDept);
+        if (option == null) {
+            option = new ConfigOption();
+            option.setOptionKey(configKey);
+            option.setScope(OptionScope.DEPARTMENT);
+            option.setDepartment(currentDept);
+            option.setValueType(OptionValueType.LONG);
+            option.setCreatedAt(new java.util.Date());
+            option.setCreater(sessionController.getLoggedUser());
+        }
+        option.setOptionValue(dept != null ? String.valueOf(dept.getId()) : "");
+        if (option.getId() == null) {
+            configOptionFacade.create(option);
+        } else {
+            configOptionFacade.edit(option);
+        }
+    }
+
+    public List<Department> getPharmacyDepartments() {
+        if (pharmacyDepartments == null) {
+            pharmacyDepartments = departmentController.getInstitutionDepatrments(
+                    sessionController.getInstitution(), DepartmentType.Pharmacy);
+        }
+        return pharmacyDepartments;
+    }
+
+    public List<IssuableMedicineSuggestion> getIssuableSuggestions() {
+        return issuableSuggestions;
+    }
+
+    public void setIssuableSuggestions(List<IssuableMedicineSuggestion> issuableSuggestions) {
+        this.issuableSuggestions = issuableSuggestions;
+    }
+
+    public Department getDefaultOutdoorPharmacy() {
+        if (defaultOutdoorPharmacy == null) {
+            resolveDefaultOutdoorPharmacy();
+        }
+        return defaultOutdoorPharmacy;
+    }
+
+    public void setDefaultOutdoorPharmacy(Department defaultOutdoorPharmacy) {
+        this.defaultOutdoorPharmacy = defaultOutdoorPharmacy;
+    }
+
+    public Department getDefaultIndoorPharmacy() {
+        if (defaultIndoorPharmacy == null) {
+            resolveDefaultIndoorPharmacy();
+        }
+        return defaultIndoorPharmacy;
+    }
+
+    public void setDefaultIndoorPharmacy(Department defaultIndoorPharmacy) {
+        this.defaultIndoorPharmacy = defaultIndoorPharmacy;
     }
 
     public String issueItems() {
