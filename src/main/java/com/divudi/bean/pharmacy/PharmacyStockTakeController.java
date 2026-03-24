@@ -226,6 +226,11 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
+        if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
+            JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
+            return null;
+        }
+
         Department dept = department;
 
         // Fetch stocks using DTO projection for performance (avoids N+1 queries)
