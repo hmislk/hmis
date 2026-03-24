@@ -53,7 +53,7 @@
                                                              styleClass="ui-button-success mx-2"
                                                              icon="fa fa-check"
                                                              rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}"
-                                                             onclick="return confirm('Are you sure you want to record the stock counts? This action cannot be undone.');"
+                                                             onclick="if(!confirm('Are you sure you want to record the stock counts? This action cannot be undone.')) return false; this.disabled=true; this.value='Saving...';"
                                                              action="#{pharmacyStockTakeController.settleStockCount}"/>
                                         </div>
                                     </div>
