@@ -64,9 +64,11 @@ public class ExpiryItemStockListDto implements Serializable {
                                 String uom, String itemType, Long batchNumber,
                                 Date expiryDate, Double costRate, Double retailRate,
                                 Double stockQuantity, String dosageFormName) {
+                                   
         this(stockId, departmentName, categoryCode, categoryName, itemCode, itemName,
              uom, itemType, batchNumber, expiryDate, costRate, retailRate, stockQuantity);
         this.dosageFormName = dosageFormName;
+         System.out.println("Creating ExpiryItemStockListDto with dosage form: " + stockId);
     }
 
     // Getters and Setters

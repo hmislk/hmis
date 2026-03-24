@@ -64,6 +64,21 @@
                                     font-size: 16px!important;
                                 }
 
+                                .report-title,
+                                .report-subtitle {
+                                    display: block;
+                                    text-align: center;
+                                    font-weight: 700;
+                                }
+
+                                .report-title {
+                                    font-size: 22px;
+                                }
+
+                                .report-subtitle {
+                                    font-size: 16px;
+                                }
+
                                 tfoot{
                                     font-weight: 700!important;
                                     font-size: 10px!important;
@@ -94,6 +109,21 @@
                                     line-height: 1.2;
                                     margin: 0mm!important;
                                     font-size: 10px!important;
+                                }
+
+                                .report-title,
+                                .report-subtitle {
+                                    display: block;
+                                    text-align: center;
+                                    font-weight: 700;
+                                }
+
+                                .report-title {
+                                    font-size: 22px;
+                                }
+
+                                .report-subtitle {
+                                    font-size: 16px;
                                 }
 
                                 table {
@@ -137,12 +167,8 @@
                         <h:panelGroup id="reportView" class="d-flex justify-content-center">
                             <div class="paper">
                                 <div class="header" >
-                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
-                                        <h:outputText value="#{sessionController.institution.name}"/>
-                                    </div>
-                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
-                                        <h:outputText value="Hospital Fee &amp; Doctor Fee Report"/>
-                                    </div>
+                                    <h:outputText value="#{sessionController.institution.name}" styleClass="report-title"/>
+                                    <h:outputText value="Hospital Fee &amp; Doctor Fee Report" styleClass="report-subtitle"/>
                                     <div class="d-flex justify-content-center mt-2" style=" font-size: 12px;">
                                         <div class="d-flex gap-3">
                                             <h:outputText value="From Date" style="width: 5em!important; font-weight: 600;"/>

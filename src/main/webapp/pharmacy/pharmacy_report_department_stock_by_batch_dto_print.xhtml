@@ -1,0 +1,343 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="Pharmacy Current Stock by Batch Report Print" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Pharmacy Current Stock by Batch Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="pharmacy_report_department_stock_by_batch_dto?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+
+                                .header{
+                                    font-size: 16px!important;
+                                }
+
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    size: A4 landscape!important;
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+
+                                    <!-- Institution -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;"
+                                         rendered="#{not empty reportsStock.institution}">
+                                        <h:outputText value="#{reportsStock.institution.name}" />
+                                    </div>
+
+                                    <!-- Site -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;"
+                                         rendered="#{not empty reportsStock.site}">
+                                        <h:outputText value="#{reportsStock.site.name}" />
+                                    </div>
+
+                                    <!-- Department -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 14px;"
+                                         rendered="#{not empty reportsStock.department}">
+                                        <h:outputText value="#{reportsStock.department.name}" />
+                                    </div>
+
+                                    <div class="d-flex justify-content-center gap-3" style="font-weight:400;  font-size: 10px;">
+
+                                        <!-- Category -->
+                                        <span>
+                                            Category:
+                                            <h:outputText value="#{not empty reportsStock.category ? reportsStock.category.name : 'All'}" />
+                                        </span>
+
+                                        <!-- Dosage Form -->
+                                        <span>
+                                            Dosage Form:
+                                            <h:outputText value="#{not empty reportsStock.dosageForm ? reportsStock.dosageForm.name : 'All'}" />
+                                        </span>
+
+                                        <!-- Department Types -->
+                                        <span>
+                                            Department Type:
+                                            <h:outputText value="#{reportsStock.selectedDepartmentTypesPrintDisplay}" />
+                                        </span>
+
+                                    </div>
+
+                                    <!-- Report Name -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 12px;">
+                                        <h:outputText value="Current Stock by Batch Report" />
+                                    </div>
+
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Category" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm;font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Dosage Form" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="width: 25mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Item" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Type" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Code" style=" margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Expiry" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Batch No" style=" margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Stock" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Purchase Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Purchase Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Cost Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Cost Value" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Retail Rate" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Retail Value" style="margin-right: 1mm;"/>
+                                                </th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{reportsStock.stockDtos}" var="row" varStatus="i">
+                                                <tr>
+                                                    <td style="width: 25mm; text-align: left;" >
+                                                        <h:outputText value="#{row.categoryName}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.dosageFormName}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 25mm; text-align: left;">
+                                                        <h:outputText value="#{row.itemName}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.departmentType}" style="margin-right: 1mm;">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.code}" style="margin-right: 1mm;">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.dateOfExpire}" style="margin-right: 1mm;">
+                                                            <f:convertDateTime pattern="dd/MM/YY" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.batchNo}" style="margin-right: 1mm;">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.stockQty}" style="margin-right: 1mm;">
+
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.purchaseRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.purchaseRate * row.stockQty}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.costRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.costRate * row.stockQty}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.retailRate}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: right;">
+                                                        <h:outputText value="#{row.retailRate * row.stockQty}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td style="width: 25mm; text-align: left;" />
+                                                <td style="width: 17mm; text-align: left;"/>
+                                                <td style="width: 25mm; text-align: left;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputLabel value="Total :" style="font-weight: bold;" />
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{reportsStock.stockPurchaseValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{reportsStock.stockCostValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="width: 17mm; text-align: right;"/>
+                                                <td style="width: 17mm; text-align: right;">
+                                                    <h:outputText value="#{reportsStock.stockSaleValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

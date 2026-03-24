@@ -97,6 +97,7 @@ public class VmpController implements Serializable {
     // DTO Management Fields
     private VmpDto selectedVmpDto;
     private List<VmpDto> vmpDtos;
+    private List<VmpDto> pharmacyVmpListDtos;
     private List<AuditEvent> vmpAuditEvents;
 
     // Filter state for active/inactive VMPs
@@ -820,7 +821,12 @@ public class VmpController implements Serializable {
     }
 
     public List<VmpDto> completeVmpDto(String query) {
-        if (query == null || query.trim().length() < 2) {
+        if (query == null) {
+            return new ArrayList<>();
+        }
+
+        String trimmedQuery = query.trim();
+        if (trimmedQuery.length() < 2) {
             return new ArrayList<>();
         }
 
@@ -830,7 +836,7 @@ public class VmpController implements Serializable {
                 + "AND v.departmentType=:dep AND v.retired=:retired ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toLowerCase() + "%");
+        params.put("query", "%" + trimmedQuery.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
         params.put("retired", false); // Only show non-deleted items
 
@@ -951,6 +957,7 @@ public class VmpController implements Serializable {
     public void refreshData() {
         recreateModel();
         vmpDtos = null; // Clear DTO cache
+        pharmacyVmpListDtos = null;
 
         // Clear selection if current item doesn't match new filter
         if (current != null) {
@@ -1071,6 +1078,43 @@ public class VmpController implements Serializable {
     /**
      *
      */
+    // ===================== List Page Methods =====================
+
+    public List<VmpDto> getPharmacyVmpListDtos() {
+        if (pharmacyVmpListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.retired, a.inactive, v.id, v.name, "
+                    + "df.id, df.name) "
+                    + "FROM Vmp a "
+                    + "LEFT JOIN a.vtm v "
+                    + "LEFT JOIN a.dosageForm df "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Pharmacy);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            pharmacyVmpListDtos = (List<VmpDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return pharmacyVmpListDtos;
+    }
+
+    public String navigateToVmpList() {
+        pharmacyVmpListDtos = null;
+        getPharmacyVmpListDtos();
+        return "/pharmacy/admin/vmp_list?faces-redirect=true";
+    }
+
     @FacesConverter("vmp")
     public static class VmpControllerConverter implements Converter {
 

@@ -47,7 +47,37 @@
                 <div class="row" >
                     <div class="col-3" >
                         <div class="m-1" >
-                            <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.nameWithTitle}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.sex}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.ageAsString}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.mobile}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.phone}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty admissionController.current.patient.person.nic ? 'N/A' : admissionController.current.patient.person.nic}" /></div>
+                                </div>
+                            </p:panel>
                         </div>
                         <div class="m-1" >
                             <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"/>
@@ -101,17 +131,36 @@
                                         target="#{roomChangeController.current}" />
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    value="Guardian Room Change" 
+                                <p:commandButton
+                                    value="Guardian Room Change"
                                     ajax="false"
                                     disabled="#{admissionController.current.discharged eq true}"
-                                    action="#{admissionController.navigateToGuardianRoomChange}" 
-                                    actionListener="#{roomChangeController.recreate}"
+                                    action="#{admissionController.navigateToGuardianRoomChange}"
                                     icon="fa fa-users"
                                     class="w-100">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
                                         target="#{roomChangeController.current}" />
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('InwardRoomTransferInitiate')}"
+                                    value="Initiate Transfer"
+                                    ajax="false"
+                                    disabled="#{admissionController.current.discharged eq true}"
+                                    action="#{patientTransferController.navigateToInitiateTransferForAdmission(admissionController.current)}"
+                                    icon="fa fa-arrow-right"
+                                    class="w-100 ui-button-info">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}"
+                                    value="Accept Patients"
+                                    ajax="false"
+                                    disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
+                                    action="#{patientTransferController.navigateToPatientAccept()}"
+                                    icon="fa fa-check-circle"
+                                    class="w-100 ui-button-success">
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -324,21 +373,43 @@
 
                         <p:panel header="Clinical Data"  class="m-1">
                             <div class="d-grid gap-3">
-                                <p:commandButton 
+                                <p:commandButton
                                     value="Patient History"
-                                    action="#{patientController.toEmrPatientProfile}"
+                                    action="#{patientController.navigateToPatientProfileFromAdmissionProfile()}"
                                     ajax="false"
-                                    icon="fa fa-history" 
+                                    icon="fa fa-history"
                                     styleClass="mb-2 w-100">
-                                    <f:setPropertyActionListener 
+                                    <f:setPropertyActionListener
                                         value="#{admissionController.current.patient}"
                                         target="#{patientController.current}" />
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Curated Clinical Summary" 
-                                    action="#{admissionController.navigateToInpatientClinicalData}" 
+                                <p:commandButton
+                                    value="Clinical Notes"
                                     ajax="false"
-                                    icon="fa fa-chart-line"  
+                                    action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
+                                    icon="fa fa-file-medical-alt"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Ward Medications"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(admissionController.current)}"
+                                    icon="fa fa-pills"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
+                                    value="Medicine Timeline"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToWardMedicinesTimeline(admissionController.current)}"
+                                    icon="fa fa-project-diagram"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Discharge Medications"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToDischargeMedicinesFromAdmission(admissionController.current)}"
+                                    icon="fa fa-prescription-bottle-alt"
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton 
@@ -355,18 +426,18 @@
                                     icon="fa fa-search"  
                                     class="w-100">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Images" 
+                                <p:commandButton
+                                    value="Images"
                                     ajax="false"
-                                    action="#{admissionController.navigateToInpatientImages}" 
-                                    icon="fa fa-images"  
+                                    action="#{admissionController.navigateToInpatientImages}"
+                                    icon="fa fa-images"
                                     class="w-100">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Diagnosis Card" 
+                                <p:commandButton
+                                    value="Diagnosis Card"
                                     ajax="false"
-                                    action="#{admissionController.navigateToInpatientDiagnosisCard()}" 
-                                    icon="fa fa-diagnoses" 
+                                    action="#{admissionController.navigateToInpatientDiagnosisCard()}"
+                                    icon="fa fa-diagnoses"
                                     class="w-100">
                                 </p:commandButton>
                             </div>
@@ -497,21 +568,8 @@
                         <p:panel header="Reports" class="m-1">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
-                                    ajax="false"
-                                    value="Pharmacy Issue Summary (Entity)" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
-                                    icon="fa fa-prescription-bottle-alt"
-                                    class="w-100"
-                                    title="Traditional entity-based report">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{inwardReportControllerBht.patientEncounter}" />
-                                    <f:setPropertyActionListener 
-                                        value="#{null}" 
-                                        target="#{inwardReportControllerBht.department}" />
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="Pharmacy Issue Summary (DTO - Fast)" 
+                                    id="btnPharmacyIssues"
+                                    value="Pharmacy Issue Summary" 
                                     action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}" 
                                     icon="fa fa-rocket"
                                     ajax="false"
@@ -524,17 +582,47 @@
                                         value="#{null}" 
                                         target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
-                                <p:commandButton 
-                                    value="Lab Bill Summary" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
+                                <p:commandButton
+                                    id="btnServiceSummary"
+                                    value="Service Summary"
+                                    action="#{inwardReportControllerBht.navigateToInpatientServiceItemListDto()}"
+                                    icon="fa fa-stethoscope"
+                                    ajax="false"
+                                    class="w-100 ui-button-success"
+                                    title="Inpatient services billed during this admission">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener
+                                        value="#{null}"
+                                        target="#{inwardReportControllerBht.department}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnPharmacyAndServiceSummary"
+                                    value="Pharmacy &amp; Services Summary"
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyAndServiceItemListDto()}"
+                                    icon="fa fa-list-alt"
+                                    ajax="false"
+                                    class="w-100 ui-button-success"
+                                    title="Combined pharmacy issues and services for this admission">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener
+                                        value="#{null}"
+                                        target="#{inwardReportControllerBht.department}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Lab Bill Summary"
+                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}"
                                     icon="fa fa-flask"
                                     ajax="false"
                                     class="w-100">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
                                         target="#{inwardReportControllerBht.patientEncounter}" />
-                                    <f:setPropertyActionListener 
-                                        value="#{null}" 
+                                    <f:setPropertyActionListener
+                                        value="#{null}"
                                         target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
                                 <p:commandButton 
@@ -543,6 +631,22 @@
                                     ajax="false"
                                     icon="pi pi-chart-line"
                                     class="ui-button-success mx-1 mb-2">
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnLegacy"
+                                    ajax="false"
+                                    value="Pharmacy Issue Summary (Legacy)"
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}"
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100 ui-button-secondary"
+                                    title="Traditional entity-based report"
+                                    onclick="return confirm('Warning: This is the legacy report and may be slow to load. Use the Pharmacy Issue Summary button above for better performance. Continue anyway?')">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener 
+                                        value="#{null}" 
+                                        target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
                             </div>
                         </p:panel>

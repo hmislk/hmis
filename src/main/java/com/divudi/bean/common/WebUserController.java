@@ -1312,7 +1312,7 @@ public class WebUserController implements Serializable {
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
-        getFacade().edit(current);
+        getFacade().editAndCommit(current);
         WebUserPasswordHistory wh = new WebUserPasswordHistory();
         wh.setWebUser(current);
         wh.setPassword(hashedPassword);

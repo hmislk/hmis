@@ -95,12 +95,24 @@
                                         action="#{searchController.navigateToAllCashierHandovers()}"
                                         value="6. Handovers" >
                                     </p:commandButton>
-                                    <p:commandButton  
-                                        class="w-100"  
-                                        ajax="false" 
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
                                         action="#{searchController.navigateToShiftEndCash()}"
                                         value="7. Shift End Cash" >
                                     </p:commandButton>
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToActiveShiftsReport()}"
+                                        value="8. Active Shifts" >
+                                    </p:commandButton>
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="9. IOU Conversion Bills"
+                                        action="#{iouBillController.navigateToIouConversionBillReport()}" />
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="10. IOU Conversion Payments"
+                                        action="#{iouBillController.navigateToIouConversionPaymentReport()}" />
 
                                 </div>
                             </p:tab>
@@ -264,7 +276,8 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
                                     <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History By User" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="26. Drawer History" action="/reports/financialReports/all_users_drawer_history?faces-redirect=true"/>
-                                    <p:commandButton  
+                                    <p:commandButton   class="w-100"  ajax="false" value="26 A. Drawer Adjustments" action="/reports/financialReports/drawer_adjustments?faces-redirect=true"/>
+                                    <p:commandButton
                                         action="#{searchController.navigatToDepartmentRevenueReport}"
                                         class="w-100"  
                                         ajax="false" 
@@ -490,6 +503,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="15. ROOM OCCUPANCY" action="#{reportController.navigateToROOMOCCUPANCY()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="16. OPD Weekly Report" action="#{reportController.navigateToOpdWeeklyReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="17. Speciality/Doctor Wise Income Report" action="#{reportController.navigateToSpecialityDoctorWiseIncome()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="18. All Department Sale Report" action="/reports/managementReports/all_department_sale_report?faces-redirect=true"/>
                                 </div>
                             </p:tab>
 

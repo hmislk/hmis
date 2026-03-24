@@ -80,6 +80,8 @@ public enum Privileges {
     WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
+    InwardRoomTransferInitiate("Inward Room Transfer Initiate"),
+    InwardRoomPatientAccept("Inward Room Patient Accept"),
     InwardServicesAndItems("Inward Services and Items"),
     InwardServicesAndItemsAddServices("Inward Add Services"),
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
@@ -116,6 +118,7 @@ public enum Privileges {
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
+    InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -609,6 +612,8 @@ public enum Privileges {
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    PrintOriginalPoBillFromReprint("Print Original PO Bill From Reprint"),
+    PrintOriginalGrnBillFromReprint("Print Original GRN Bill From Reprint"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Optician">
@@ -687,6 +692,8 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Approval">
     BillCancelRequestApproval("Bill Cancel Request Approval"),
     ItemRefundRequestApproval("Item Refund Request Approval"),
+    DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
+    DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -700,6 +707,7 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
+    AiChat("AI Chat")
     ;
 
     private final String label;
@@ -957,6 +965,8 @@ public enum Privileges {
             case PharmacyGrnSave:
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
+            case PrintOriginalPoBillFromReprint:
+            case PrintOriginalGrnBillFromReprint:    
 
                 return "Pharmacy";
 
@@ -988,6 +998,8 @@ public enum Privileges {
             // Approval Privileges
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
+            case DrawerAdjustmentRequestApproval:
+            case DrawerAdjustmentDirect:
                 return "Approval";
             
             case NursingWorkBench:
@@ -1000,8 +1012,9 @@ public enum Privileges {
             case InwardAppointmentAdmission:
             case InwardAppointmentUpdate:
             case InwardAppointmentCancel:
+            case InpatientClinicalAssessment:
                 return "Inward";
-                
+
             default:
                 return this.toString();
         }

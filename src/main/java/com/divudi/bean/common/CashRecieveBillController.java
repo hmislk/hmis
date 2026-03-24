@@ -1359,7 +1359,6 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setTotal(getCurrent().getNetTotal());
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        updateReferanceBills();
         saveBillItemBht();
 
 
@@ -1714,6 +1713,50 @@ public class CashRecieveBillController implements Serializable {
     public String prepareNewBill() {
         recreateModel();
         return "";
+    }
+
+    /**
+     * Prepares the settle page with the given bills pre-loaded and navigates to it.
+     * Called from CreditCompanyDueController when the user selects bills for batch settlement.
+     * Each bill gets a BillItem with netValue set to its current outstanding balance.
+     *
+     * @param bills List of credit bills to pre-load for settlement
+     * @return Navigation outcome for credit_company_bill_opd_combined page
+     */
+    public String navigateWithPreloadedBills(List<Bill> bills) {
+        recreateModel();
+        if (bills == null || bills.isEmpty()) {
+            return null;
+        }
+        for (Bill bill : bills) {
+            if (bill == null) {
+                continue;
+            }
+            double balance = calculateCurrentBalance(bill);
+            if (balance <= 0.01) {
+                continue;
+            }
+            BillItem bi = new BillItem();
+            bi.setReferenceBill(bill);
+            bi.setBill(bill);
+            if (bill.getPatientEncounter() != null) {
+                bi.setPatientEncounter(bill.getPatientEncounter());
+            }
+            bi.setNetValue(balance);
+            bi.setSearialNo(getBillItems().size());
+            getBillItems().add(bi);
+            getSelectedBillItems().add(bi);
+            if (getCurrent().getCreditCompany() == null) {
+                getCurrent().setCreditCompany(bill.getCreditCompany());
+                getCurrent().setFromInstitution(bill.getCreditCompany());
+            }
+        }
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No outstanding balances found for the selected bills.");
+            return null;
+        }
+        calTotal();
+        return "credit_company_bill_opd_combined?faces-redirect=true";
     }
 
     public String navigateToCancelCreditSettleBill() {

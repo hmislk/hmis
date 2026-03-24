@@ -25,12 +25,14 @@
                                 <h:outputText value="Return Deposits"/>
                             </div>
                             <div>
-                                <p:commandButton 
+                                <p:commandButton
                                     class="ui-button-success"
                                     icon="fas fa-check"
                                     id="btnSettle"
                                     value="Settle"
                                     action="#{patientDepositController.settlePatientDepositReturn}"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     ajax="false"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                                     <f:setPropertyActionListener value="#{patientDepositController.patient}" target="#{patientController.current}" />
@@ -472,7 +474,9 @@
                                     <h:panelGroup id="payment">
 
                                         <h:panelGroup id="panelGroup" rendered="#{!(patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet')}" style="display: inline-flex; align-items: center; gap: 1rem;" >
-                                            <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
+                                            <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal" onfocus="this.select()">
+                                                <f:convertNumber groupingUsed="true" minFractionDigits="2" maxFractionDigits="2" />
+                                            </p:inputText>
                                             <p:inputText value="#{patientController.bill.comments}" placeholder="Enter a Comment" id="comment"/>
                                         </h:panelGroup>
 

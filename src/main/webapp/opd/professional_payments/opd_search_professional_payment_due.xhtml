@@ -98,6 +98,10 @@
                                             value="#{bf.staff.person.name}">
                                         </p:commandLink>
                                     </p:column>
+                                    
+                                    <p:column headerText="MRN" width="5em;">
+                                        <h:outputLabel value="#{bf.bill.patient.phn}"/>
+                                    </p:column>
 
                                     <p:column headerText="Patient" >
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>
@@ -127,7 +131,7 @@
                                         <h:outputLabel value="#{bf.billItem.item.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Charge" class="text-end">
+                                    <p:column headerText="Charge" class="text-end"  width="6em;">
                                         <h:outputLabel value="#{bf.feeValue}" class="text-end">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>

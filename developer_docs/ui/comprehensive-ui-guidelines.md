@@ -125,6 +125,26 @@ Example:
 Supporting rules:
 - Use `p:growl` for feedback after actions.
 
+### Confirmation Dialogs
+
+**Prefer native JavaScript `confirm()` over `p:confirmDialog` / `p:confirm`.**
+
+`p:confirmDialog` with global wiring is fragile — it frequently fails silently due to JSF lifecycle and AJAX partial-render ordering issues.
+
+Use `onclick="return confirm('...');"` directly on `p:commandButton`:
+
+```xhtml
+<p:commandButton value="Complete"
+                 action="#{controller.complete}"
+                 ajax="false"
+                 onclick="return confirm('Are you sure you want to complete this? This cannot be undone.');"/>
+```
+
+Rules:
+- Write the confirmation message as a plain question the user can answer Yes/No.
+- Do **not** add `p:confirm` child tags or a global `p:confirmDialog` in the same form.
+- Only deviate from this pattern (e.g. custom modal) when explicitly required and approved.
+
 ---
 
 ## Data Presentation

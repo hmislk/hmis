@@ -22,10 +22,18 @@ public class DailyStockBalanceReport {
     private double openingStockValueAtCostRate;
     private double closingStockValueAtCostRate;
 
+    private double openingStockValueAtPurchaseRate;
+    private double closingStockValueAtPurchaseRate;
+
     private PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
     private PharmacyBundle pharmacyPurchaseByBillTypeBundle;
     private PharmacyBundle pharmacyTransferByBillTypeBundle;
     private PharmacyBundle pharmacyAdjustmentsByBillTypeBundle;
+    /** Pre-bill retail sales and their cancellations (informational section).
+     *  Covers PRE_TO_SETTLE_AT_CASHIER and CANCELLED_PRE — stock that moved
+     *  within the report period but whose financial settlement is not yet
+     *  recorded. Use this to explain any closing-stock discrepancy. */
+    private PharmacyBundle preBillStockMovementsBundle;
     
     private double purchasesOfDrugsPrevious;
     private double purchasesOfDrugsTransaction;
@@ -164,6 +172,22 @@ public class DailyStockBalanceReport {
 
     public void setClosingStockValueAtCostRate(double closingStockValueAtCostRate) {
         this.closingStockValueAtCostRate = closingStockValueAtCostRate;
+    }
+
+    public double getOpeningStockValueAtPurchaseRate() {
+        return openingStockValueAtPurchaseRate;
+    }
+
+    public void setOpeningStockValueAtPurchaseRate(double openingStockValueAtPurchaseRate) {
+        this.openingStockValueAtPurchaseRate = openingStockValueAtPurchaseRate;
+    }
+
+    public double getClosingStockValueAtPurchaseRate() {
+        return closingStockValueAtPurchaseRate;
+    }
+
+    public void setClosingStockValueAtPurchaseRate(double closingStockValueAtPurchaseRate) {
+        this.closingStockValueAtPurchaseRate = closingStockValueAtPurchaseRate;
     }
 
     public double getPurchasesOfDrugsPrevious() {
@@ -694,7 +718,12 @@ public class DailyStockBalanceReport {
         this.pharmacyAdjustmentsByBillTypeBundle = pharmacyAdjustmentsByBillTypeBundle;
     }
 
-    
-    
+    public PharmacyBundle getPreBillStockMovementsBundle() {
+        return preBillStockMovementsBundle;
+    }
+
+    public void setPreBillStockMovementsBundle(PharmacyBundle preBillStockMovementsBundle) {
+        this.preBillStockMovementsBundle = preBillStockMovementsBundle;
+    }
 
 }

@@ -64,13 +64,21 @@
                                         action="#{financialTransactionController.navigateToMyDrawer()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary" 
-                                        value="My Drawer History" 
-                                        icon="pi pi-folder-open" 
-                                        style="background-color: #11633a; color: #ffffff;" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="My Drawer History"
+                                        icon="pi pi-folder-open"
+                                        style="background-color: #11633a; color: #ffffff;"
+                                        ajax="false"
                                         action="#{drawerEntryController.navigateToMyDrawerEntry()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Request Drawer Adjustment"
+                                        icon="pi pi-sliders-h"
+                                        ajax="false"
+                                        action="#{drawerAdjustmentController.navigateToRequestAdjustment()}">
                                     </p:commandButton>
 
 
@@ -138,13 +146,22 @@
                                         action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
                                     </p:commandButton>
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-warning"
                                         value="Shift Shortage Bill Search"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         icon="fa fa-search"
-                                        ajax="false" 
+                                        ajax="false"
                                         action="#{financialTransactionController.navigateToCashierShiftBillSearch()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Shift Shortage Bills"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
+                                        icon="pi pi-file"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToShiftShortagePrint()}" >
                                     </p:commandButton>
 
                                 </p:tab>
@@ -182,6 +199,22 @@
                                         icon="pi pi-refresh"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Convert IOU to Cash"
+                                        icon="pi pi-money-bill"
+                                        ajax="false"
+                                        action="#{iouBillController.navigateToConvertIouToCash()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My IOU Conversions"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{iouBillController.navigateToMyIouConversions()}" >
                                     </p:commandButton>
                                 </p:tab>
 
@@ -273,15 +306,31 @@
 
                                 <p:tab title="Cash Book">
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="my-1 w-100"
                                         value="Site Cashbook Daily Summary"
                                         icon=""
-                                        ajax="false" 
+                                        ajax="false"
                                         action="#{searchController.navigateToListCashBookEntrySiteSummary}" >
                                     </p:commandButton>
 
-                                    <p:commandButton 
+                                    <p:commandButton
+                                        class="my-1 w-100"
+                                        value="Department Cashbook Daily Summary"
+                                        icon=""
+                                        ajax="false"
+                                        action="#{searchController.navigateToListCashBookEntryDepartmentSummary}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100"
+                                        value="Institution Cashbook Daily Summary"
+                                        icon=""
+                                        ajax="false"
+                                        action="#{searchController.navigateToListCashBookEntryInstitutionSummary}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="my-1 w-100"
                                         value="Cash Book Entries"
                                         icon=""
@@ -382,6 +431,15 @@
                                             </p:commandButton>
                                         </h:panelGroup>
                                     </div>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Adjust Drawer Balance"
+                                        icon="pi pi-wallet"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('DrawerAdjustmentDirect')}"
+                                        action="#{drawerAdjustmentController.navigateToAdminAdjustment()}">
+                                    </p:commandButton>
                                 </p:tab>
 
                             </p:accordionPanel>
