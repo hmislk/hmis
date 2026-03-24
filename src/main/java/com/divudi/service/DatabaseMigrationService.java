@@ -21,7 +21,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 /**
- * Singleton startup EJB that controls access to the migration page (mf.xhtml).
+ * Singleton EJB that controls access to the migration page (mf.xhtml).
  *
  * On every deployment/restart, migrationPending starts as true, making the
  * page accessible to anyone. If the stored DATABASE_DDL_VERSION config option

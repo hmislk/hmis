@@ -377,19 +377,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
     }
 
+    public String navigateToInpatientClinicalAssessmentList() {
+        return inpatientClinicalDataController.navigateToAssessmentList(current);
+    }
+
     public void addCreditCompnay() {
         if (encounterCreditCompany.getCreditLimit() <= 0) {
             JsfUtil.addErrorMessage("Credit limit must be greater than zero");
             return;
         }
-        // need to add encounterCreditCompany to list
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
             encounterCreditCompanies.add(encounterCreditCompany);
             current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
             encounterCreditCompany = new EncounterCreditCompany();
         }
-
     }
 
     public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany) {
@@ -415,8 +417,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToInpatientDiagnosisCard() {
-        inpatientClinicalDataController.setCurrent(current);
-        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+        return inpatientClinicalDataController.navigateToDiagnosisCards(current);
     }
 
     public void dateChangeListen() {
@@ -487,6 +488,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * and accumulates their credit limits.
      */
     public void findLastUsedCreditCompanies() {
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Apply Claimable For Credit", false)) {
+            if (current.getPaymentMethod() == PaymentMethod.Credit) {
+                current.setClaimable(true);
+            } else {
+                current.setClaimable(false);
+            }
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient", false)) {
             if (current.getPatient() == null) {
                 return;
@@ -524,6 +534,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     encounterCreditCompany.setInstitution(ecc.getInstitution());
                     encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
                     encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
+                    encounterCreditCompany.setReferanceNo(ecc.getReferanceNo());
+                    encounterCreditCompany.setDescreption(ecc.getDescreption());
                     current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
                     encounterCreditCompanies.add(encounterCreditCompany);
                     encounterCreditCompany = new EncounterCreditCompany();
@@ -690,12 +702,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToRoomChange() {
 //        roomChangeController.recreate();
         roomChangeController.createPatientRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
     public String navigateToGuardianRoomChange() {
 //         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 
@@ -781,6 +795,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("department", sessionController.getDepartment());
+        suggestions = getFacade().findByJpql(sql, hm, 20);
+        return suggestions;
+    }
+
+    public List<Admission> completePatientFromWaitingRoomByInstitution(String query, Institution institution) {
+        List<Admission> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.retired=false "
+                + " and c.discharged=false "
+                + " and c.roomAdmitted=false"
+                + " and ((c.bhtNo) like :q "
+                + " or (c.patient.person.name) like :q "
+                + " or (c.patient.code) like :q "
+                + " or (c.patient.phn) like :q) ";
+        if (institution != null) {
+            sql += " and c.institution = :ins ";
+            hm.put("ins", institution);
+        }
+        sql += " order by c.bhtNo ";
+        hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findByJpql(sql, hm, 20);
         return suggestions;
     }
@@ -1337,6 +1373,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patient = null;
         yearMonthDay = null;
         printPreview = false;
+        encounterCreditCompanies = new ArrayList<>();
+        encounterCreditCompany = new EncounterCreditCompany();
         bhtNumberCalculation();
     }
 
@@ -1837,18 +1875,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
+        // Always reserve the next BHT number from the counter
+        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtText == null || bhtText.trim().equals("")) {
-            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(generatedBht)) {
+            // User explicitly overrode the BHT text — keep their value
         } else {
-            if (!bhtCanBeEdited) {
-                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
-            }
+            bhtText = generatedBht;
         }
-//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
+        if (getInwardBean().getLastGeneratedBhtLong() != null) {
+            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+        }
 
-        //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -1941,7 +1981,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
@@ -1964,18 +2008,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
+        // Always reserve the next BHT number from the counter
+        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtText == null || bhtText.trim().equals("")) {
-            bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(generatedBht)) {
+            // User explicitly overrode the BHT text — keep their value
         } else {
-            if (!bhtCanBeEdited) {
-                bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
-            }
+            bhtText = generatedBht;
         }
-//        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
+        if (getInwardBean().getLastGeneratedBhtLong() != null) {
+            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+        }
 
-        //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -2016,7 +2062,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (appointmentFee != 0) {
-            getInwardPaymentController().getCurrent().setPaymentMethod(getCurrent().getPaymentMethod());
+            PaymentMethod appointmentPaymentMethod = getAppointmentBill().getPaymentMethod() != null
+                    ? getAppointmentBill().getPaymentMethod()
+                    : getCurrent().getPaymentMethod();
+            getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
+            getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
             getInwardPaymentController().getCurrent().setPatientEncounter(current);
             getInwardPaymentController().getCurrent().setTotal(appointmentFee);
             getInwardPaymentController().pay();
@@ -2206,7 +2256,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
-        bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
+        bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
 
         getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
     }
