@@ -1008,6 +1008,28 @@ public class LimsMiddlewareController {
                 }
             }
 
+            // Skip this investigation if none of its report items match the incoming test code.
+            // This prevents creating reports for unrelated tests that share the same sample
+            // (e.g., Blood Picture should not get a report when only FBC results arrive).
+            boolean hasMatchingItem = false;
+            for (InvestigationItem ii : ix.getReportItems()) {
+                if (ii.getTest() != null
+                        && (ii.getIxItemType() == InvestigationItemType.Value
+                        || ii.getIxItemType() == InvestigationItemType.ReportImage)) {
+                    String codeFromDb = ii.getResultCode();
+                    if (codeFromDb == null || codeFromDb.trim().isEmpty()) {
+                        codeFromDb = ii.getTest().getCode();
+                    }
+                    if (codeFromDb != null && codeFromDb.equalsIgnoreCase(testCodeFromUploadedDataBundle)) {
+                        hasMatchingItem = true;
+                        break;
+                    }
+                }
+            }
+            if (!hasMatchingItem) {
+                continue;
+            }
+
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
