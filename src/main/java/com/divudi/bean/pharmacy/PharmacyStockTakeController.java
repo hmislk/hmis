@@ -621,6 +621,8 @@ public class PharmacyStockTakeController implements Serializable {
             try {
                 stockTakePersistService.persistSnapshotBill(snapshotBill);
                 System.out.println("[settleStockCount] Batch persist complete. ms=" + (System.currentTimeMillis() - tSettle0));
+                // Clear in-memory items so any accidental second invocation cannot re-insert them
+                snapshotBill.setBillItems(new java.util.ArrayList<>());
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed", e);
                 // Never fall back to billFacade.create() — if the bill header was already
@@ -2378,7 +2380,7 @@ public class PharmacyStockTakeController implements Serializable {
         jpql.append("select new com.divudi.core.light.common.PharmacySnapshotBillLight( ");
         jpql.append(" b.id, b.deptId, b.createdAt, ins.name, dept.name, ");
         jpql.append(" (select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed ) ");
-        jpql.append(" from Bill b left join b.institution ins left join b.department dept where b.billType=:bt");
+        jpql.append(" from Bill b left join b.institution ins left join b.department dept where b.billType=:bt and b.retired=false");
         params.put("bt", BillType.PharmacySnapshotBill);
         if (fromDate != null) {
             jpql.append(" and b.createdAt>=:fd");
@@ -3660,7 +3662,7 @@ public class PharmacyStockTakeController implements Serializable {
         if (dept == null || dept.getId() == null) {
             return false;
         }
-        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and (b.completed is null or b.completed=false)";
+        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacySnapshotBill);
         params.put("deptId", dept.getId());

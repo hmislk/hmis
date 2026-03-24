@@ -110,12 +110,29 @@
                                         </p:commandButton>
                                         <p:commandButton
                                             id="btnGenerateCard"
-                                            icon="fas fa-arrows-rotate"
+                                            value="Generate"
+                                            icon="pi pi-plus"
                                             title="Generate card from selected template"
                                             class="ui-button-warning"
                                             process="btnGenerateCard somDxTemplates"
                                             update="lstSavedCards gpCardDoc msgDx"
                                             action="#{inpatientClinicalDataController.generateAndAddDocumentFromTemplate}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <p:commandButton
+                                            id="btnGenerateAi"
+                                            value="Generate with AI"
+                                            icon="fa fa-magic"
+                                            title="Generate diagnosis card using AI (Claude)"
+                                            class="ui-button-info w-100"
+                                            process="@this"
+                                            update="lstSavedCards gpCardDoc msgDx"
+                                            action="#{inpatientClinicalDataController.generateDiagnosisCardWithAi}"
+                                            onstart="PF('aiBlockUI').show();"
+                                            oncomplete="PF('aiBlockUI').hide();">
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -161,13 +178,23 @@
                                             styleClass="text-muted"/>
                                         <div class="d-flex gap-2">
                                             <p:commandButton
+                                                id="btnToggleEdit"
+                                                value="#{inpatientClinicalDataController.editingDiagnosisCard ? 'View' : 'Edit'}"
+                                                icon="#{inpatientClinicalDataController.editingDiagnosisCard ? 'pi pi-eye' : 'pi pi-pencil'}"
+                                                class="ui-button-secondary"
+                                                action="#{inpatientClinicalDataController.toggleEditingDiagnosisCard()}"
+                                                process="@this"
+                                                update="gpCardDoc"
+                                                title="Toggle between view and edit mode">
+                                            </p:commandButton>
+                                            <p:commandButton
                                                 id="btnSaveCard"
                                                 value="Save"
                                                 icon="pi pi-save"
                                                 class="ui-button-warning"
                                                 action="#{inpatientClinicalDataController.saveEncounterReferral()}"
-                                                process="btnSaveCard txeCardContent"
-                                                update="lstSavedCards msgDx"
+                                                process="btnSaveCard txeCardEdit"
+                                                update="lstSavedCards gpCardDoc msgDx"
                                                 title="Save changes to this diagnosis card">
                                             </p:commandButton>
                                             <p:commandButton
@@ -177,9 +204,9 @@
                                                 class="ui-button-danger"
                                                 action="#{inpatientClinicalDataController.removeEncounterReferral()}"
                                                 process="btnDeleteCard"
-                                                update="lstSavedCards txeCardContent msgDx"
+                                                update="lstSavedCards gpCardDoc msgDx"
+                                                onclick="if(!confirm('Are you sure you want to delete this diagnosis card?')) return false;"
                                                 title="Delete this diagnosis card">
-                                                <p:confirm header="Confirm Delete" message="Are you sure you want to delete this diagnosis card?"/>
                                             </p:commandButton>
                                             <p:commandButton
                                                 id="btnPrintCard"
@@ -188,29 +215,64 @@
                                                 icon="pi pi-print"
                                                 class="ui-button-info"
                                                 title="Print this diagnosis card">
-                                                <p:printer target="txeCardContent"/>
+                                                <p:printer target="pnlCardView"/>
                                             </p:commandButton>
                                             <p:commandButton
                                                 id="btnDownloadCard"
                                                 ajax="false"
-                                                value="Download Word"
-                                                icon="pi pi-download"
+                                                value="Download PDF"
+                                                icon="pi pi-file-pdf"
                                                 class="ui-button-success"
-                                                title="Download as Word document">
-                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsWordDocument()}"/>
+                                                title="Download as PDF">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsPdf()}"/>
                                             </p:commandButton>
                                         </div>
                                     </div>
                                 </f:facet>
 
-                                <p:textEditor
-                                    id="txeCardContent"
-                                    rendered="#{inpatientClinicalDataController.encounterReferral.lobValue ne null}"
-                                    secure="false"
-                                    style="width: 100%; min-height: 500px;"
-                                    value="#{inpatientClinicalDataController.encounterReferral.lobValue}"
-                                    placeholder="Select a diagnosis card from the list to view its content">
-                                </p:textEditor>
+                                <!-- Rendered HTML view (default) -->
+                                <h:panelGroup id="pnlCardView"
+                                    rendered="#{inpatientClinicalDataController.encounterReferral.lobValue ne null and not inpatientClinicalDataController.editingDiagnosisCard}"
+                                    layout="block"
+                                    style="width: 100%; min-height: 500px; border: 1px solid #dee2e6; padding: 15px; background: #fff; overflow: auto;">
+                                    <h:outputText id="txeCardContent" value="#{inpatientClinicalDataController.encounterReferral.lobValue}" escape="false"/>
+                                </h:panelGroup>
+
+                                <!-- WYSIWYG editor using contenteditable -->
+                                <h:panelGroup
+                                    rendered="#{inpatientClinicalDataController.encounterReferral.lobValue ne null and inpatientClinicalDataController.editingDiagnosisCard}"
+                                    layout="block">
+                                    <div id="cardEditToolbar" class="mb-2 d-flex gap-1 flex-wrap p-2" style="background:#f0f0f0; border:1px solid #dee2e6; border-radius:4px;">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('bold')" title="Bold"><i class="pi pi-bold"></i> <b>B</b></button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('italic')" title="Italic"><i class="pi pi-italic"></i> <i>I</i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('underline')" title="Underline"><u>U</u></button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('insertUnorderedList')" title="Bullet List">&#8226; List</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('insertOrderedList')" title="Numbered List">1. List</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('undo')" title="Undo">Undo</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.execCommand('redo')" title="Redo">Redo</button>
+                                    </div>
+                                    <div id="cardEditArea" contenteditable="true"
+                                         style="width:100%; min-height:500px; border:1px solid #dee2e6; padding:15px; background:#fff; overflow:auto; outline:none;">
+                                    </div>
+                                    <h:inputHidden id="txeCardEdit" value="#{inpatientClinicalDataController.encounterReferral.lobValue}"/>
+                                    <script type="text/javascript">
+                                        //<![CDATA[
+                                        (function() {
+                                            var editArea = document.getElementById('cardEditArea');
+                                            var hiddenInput = document.querySelector("[id$='txeCardEdit']");
+                                            if (editArea && hiddenInput) {
+                                                editArea.innerHTML = hiddenInput.value;
+                                                editArea.addEventListener('input', function() {
+                                                    hiddenInput.value = editArea.innerHTML;
+                                                });
+                                                editArea.addEventListener('blur', function() {
+                                                    hiddenInput.value = editArea.innerHTML;
+                                                });
+                                            }
+                                        })();
+                                        //]]>
+                                    </script>
+                                </h:panelGroup>
 
                                 <h:panelGroup
                                     rendered="#{inpatientClinicalDataController.encounterReferral.lobValue eq null}"
@@ -225,6 +287,14 @@
                         </div>
 
                     </div>
+
+                    <p:blockUI block="formDiagnosisCards" widgetVar="aiBlockUI">
+                        <div style="text-align:center; padding:20px;">
+                            <i class="pi pi-spin pi-spinner" style="font-size:2rem;"></i>
+                            <div style="margin-top:10px; font-weight:bold;">Generating diagnosis card with AI...</div>
+                            <div style="margin-top:5px; color:#666;">This may take a few seconds</div>
+                        </div>
+                    </p:blockUI>
 
                 </h:form>
 

@@ -1,6 +1,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.inward.InpatientClinicalDataController;
 
 import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.entity.WebUser;
@@ -36,6 +37,9 @@ public class DocumentTemplateController implements Serializable {
 
     @Inject
     SessionController sessionController;
+
+    @Inject
+    InpatientClinicalDataController inpatientClinicalDataController;
 
     @EJB
     private DocumentTemplateFacade ejbFacade;
@@ -176,6 +180,7 @@ public class DocumentTemplateController implements Serializable {
         }
         saveSelected();
         fillAllItems(null);
+        inpatientClinicalDataController.refreshDiagnosisCardTemplates();
 
     }
 
@@ -187,6 +192,7 @@ public class DocumentTemplateController implements Serializable {
         current.setWebUser(sessionController.getLoggedUser());
         delete();
         fillAllItems(sessionController.getLoggedUser());
+        inpatientClinicalDataController.refreshDiagnosisCardTemplates();
         JsfUtil.addSuccessMessage("Saved");
     }
 
