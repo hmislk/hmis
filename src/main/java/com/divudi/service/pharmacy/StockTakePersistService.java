@@ -77,7 +77,11 @@ public class StockTakePersistService {
         System.out.println("[StockTakePersist] Step1 Bill header persisted. ID=" + billId
                 + "  ms=" + (System.currentTimeMillis() - t0));
 
-        // Restore the list for callers
+        // Detach snapshotBill immediately so JPA cascade does NOT fire when we
+        // restore the billItems list below. Native SQL handles all child inserts.
+        em.clear();
+
+        // Restore the list onto the now-detached bill so callers can still reference it.
         snapshotBill.setBillItems(items);
 
         // -----------------------------------------------------------------------
@@ -93,10 +97,6 @@ public class StockTakePersistService {
         for (int i = 0; i < items.size(); i++) {
             items.get(i).setId(billItemIds[i]);
         }
-
-        // Detach all managed entities before the next allocateIds flush.
-        // EclipseLink would otherwise reject the ID writes above as "primary key updates".
-        em.clear();
 
         // -----------------------------------------------------------------------
         // Step 3: Allocate IDs for PharmaceuticalBillItems, then bulk-insert
