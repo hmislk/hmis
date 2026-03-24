@@ -621,6 +621,8 @@ public class PharmacyStockTakeController implements Serializable {
             try {
                 stockTakePersistService.persistSnapshotBill(snapshotBill);
                 System.out.println("[settleStockCount] Batch persist complete. ms=" + (System.currentTimeMillis() - tSettle0));
+                // Clear in-memory items so any accidental second invocation cannot re-insert them
+                snapshotBill.setBillItems(new java.util.ArrayList<>());
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "[settleStockCount] Batch persist failed", e);
                 // Never fall back to billFacade.create() — if the bill header was already
