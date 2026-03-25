@@ -477,6 +477,13 @@
                                                     <h:outputText value="#{patientDepositController.checkDepositOfThePatient(opdBillController.patient, sessionController.department).balance}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
+                                                    
+                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <p:badge 
+                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
+                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
+                                                    </p:badge>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -490,7 +497,6 @@
                                                     <h:outputLabel value="Discount Scheme " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
                                                     <h:outputLabel value=" : " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
                                                     <h:outputText value="#{opdBillController.patient.person.membershipScheme.paymentScheme.name}"   rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
-
 
                                                 </h:panelGrid>
                                             </h:panelGroup>
@@ -1263,11 +1269,11 @@
                                                         companyList = "#{opdBillController.previousCreditCompany}">
                                                     </pa:credit_with_last_company>
                                                 </h:panelGroup>
-                                                
+
                                                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display the past Credit Company List',false)}">
                                                     <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
-                                                
+
                                             </h:panelGroup>
                                             <h:panelGroup 
                                                 class="row my-1"

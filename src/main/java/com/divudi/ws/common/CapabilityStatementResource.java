@@ -164,6 +164,10 @@ public class CapabilityStatementResource {
                         "OPD and Inward service management including fees and categories",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("FHIR Patient", "/api/fhir/Patient",
+                        "FHIR R5 Patient search, read, create, update",
+                        "API Key (use FHIR header, not Finance)",
+                        "GET", "POST", "PUT"))
                 .build();
     }
 

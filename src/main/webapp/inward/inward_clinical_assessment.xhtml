@@ -44,6 +44,34 @@
                                     value="#{inpatientClinicalDataController.parentAdmission}"
                                     target="#{admissionController.current}" />
                             </p:commandButton>
+                            <p:commandButton
+                                value="Patient History"
+                                ajax="false"
+                                action="#{patientController.toEmrPatientProfile}"
+                                icon="fa fa-history"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{inpatientClinicalDataController.current.patient}"
+                                    target="#{patientController.current}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Inward Medicines"
+                                ajax="false"
+                                action="#{inpatientClinicalDataController.navigateToAssessmentInwardMedicines()}"
+                                icon="fa fa-pills"
+                                class="p-0 m-1"
+                                disabled="#{inpatientClinicalDataController.current.id eq null}"
+                                title="Save the assessment first">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Discharge Medicines"
+                                ajax="false"
+                                action="#{inpatientClinicalDataController.navigateToAssessmentDischargeMedicines()}"
+                                icon="fa fa-prescription-bottle-alt"
+                                class="p-0 m-1"
+                                disabled="#{inpatientClinicalDataController.current.id eq null}"
+                                title="Save the assessment first">
+                            </p:commandButton>
                         </div>
                     </div>
 

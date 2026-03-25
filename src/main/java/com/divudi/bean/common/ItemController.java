@@ -2368,6 +2368,20 @@ public class ItemController implements Serializable {
         return completeItem(query, classes, dts, 0, true);
     }
 
+    public List<Item> completeMedicineByTypeWithFilter(String query, boolean includeVtm, boolean includeAtm, boolean includeVmp, boolean includeAmp) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+        List<Class> classList = new ArrayList<>();
+        if (includeVtm) classList.add(Vtm.class);
+        if (includeAtm) classList.add(Atm.class);
+        if (includeVmp) classList.add(Vmp.class);
+        if (includeAmp) classList.add(Amp.class);
+        if (classList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Class[] classes = classList.toArray(new Class[0]);
+        return completeItem(query, classes, dts, 0, true);
+    }
+
     public List<Item> completeLabItemOnly(String query) {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Lab};
         Class[] classes = new Class[]{Amp.class};

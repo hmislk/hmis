@@ -178,6 +178,7 @@ public class BhtSummeryController implements Serializable {
     private Institution institution;
 
     public String navigateToIntrimBillEstimate() {
+        institution = sessionController.getInstitution();
         createTablesWithEstimatedProfessionalFees();
         return "/inward/inward_bill_intrim_estimate?faces-redirect=true";
     }
@@ -1212,6 +1213,11 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Check Discharge Time should be after Admitted Time");
             return true;
         }
+        
+        if (patientRooms == null || patientRooms.isEmpty()) {
+            JsfUtil.addErrorMessage("Room must be assigned before discharge");
+            return true;
+        }
 
         if (checkRoomIsDischarged()) {
             JsfUtil.addErrorMessage("Please Discharged From Room");
@@ -1449,13 +1455,18 @@ public class BhtSummeryController implements Serializable {
     }
 
     private boolean checkRoomIsDischarged() {
-        for (PatientRoom patientRoom : patientRooms) {
-            if (getPatientEncounter().getCurrentPatientRoom().getId() != patientRoom.getId()
-                    && patientRoom.getDischargedAt() == null) {
+        if (patientRooms == null || patientRooms.isEmpty()) {
+            return true;
+        }
+        PatientRoom currentRoom = getPatientEncounter().getCurrentPatientRoom();
+        if (currentRoom == null) {
+            return true;
+        }
+        for (PatientRoom pr : patientRooms) {
+            if (currentRoom.getId() != pr.getId() && pr.getDischargedAt() == null) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -2270,6 +2281,7 @@ public class BhtSummeryController implements Serializable {
 
     public void onInstitutionChange() {
         patientEncounter = null;
+        billBhtController.resetBillData();
         makeNull();
     }
 
@@ -2284,9 +2296,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public Institution getInstitution() {
-        if (institution == null) {
-            institution = sessionController.getInstitution();
-        }
         return institution;
     }
 
@@ -2359,6 +2368,7 @@ public class BhtSummeryController implements Serializable {
 
     public String navigateToIntrimBill() {
         patientEncounter = null;
+        institution = sessionController.getInstitution();
         makeNull();
         return "/inward/inward_bill_intrim?faces-redirect=true";
     }

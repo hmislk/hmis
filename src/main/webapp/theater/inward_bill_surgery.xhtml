@@ -126,14 +126,15 @@
                                             action="#{patientController.navigateToSearchPatients()}">
                                         </p:commandButton>
 
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            icon="fa fa-id-card" 
-                                            class="ui-button-warning" 
-                                            action="#{bhtSummeryController.navigateToInpatientProfile()}">
-                                            <f:setPropertyActionListener 
-                                                value="#{surgeryBillController.surgeryBill.patientEncounter}" 
-                                                target="#{bhtSummeryController.patientEncounter}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Inpatient Dashboard"
+                                            icon="fa fa-id-card"
+                                            class="ui-button-secondary"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <f:setPropertyActionListener
+                                                value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                                target="#{admissionController.current}">
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
 
