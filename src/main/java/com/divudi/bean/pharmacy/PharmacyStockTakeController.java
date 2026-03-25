@@ -131,6 +131,7 @@ public class PharmacyStockTakeController implements Serializable {
     private String approvalJobId; // background approval job id
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     private com.divudi.core.entity.Category selectedDosageForm; // for dosage-form-specific downloads
+    private com.divudi.core.data.DepartmentType selectedDepartmentType; // for department-type-specific downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
@@ -3051,9 +3052,10 @@ public class PharmacyStockTakeController implements Serializable {
             // so EAGER relationships (billFees, patientInvestigation, etc.) never fire.
             String jpql = "SELECT bi.id, bi.qty, bi.descreption, bi.catId, bi.netValue, "
                     + "pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
-                    + "pbi.doe, pbi.stringValue, pbi.description "
+                    + "pbi.doe, pbi.stringValue, pbi.description, i.departmentType "
                     + "FROM BillItem bi "
                     + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN bi.item i "
                     + "WHERE bi.bill.id = :billId AND bi.retired = false "
                     + "ORDER BY bi.catId, bi.descreption";
 
@@ -3070,6 +3072,8 @@ public class PharmacyStockTakeController implements Serializable {
                     new java.util.ArrayList<>(rows.size());
             for (Object[] r : rows) {
                 Date expiry = r[8] instanceof java.util.Date ? new Date(((java.util.Date) r[8]).getTime()) : null;
+                com.divudi.core.data.DepartmentType depType = r[11] instanceof com.divudi.core.data.DepartmentType
+                        ? (com.divudi.core.data.DepartmentType) r[11] : null;
                 dtos.add(new com.divudi.core.data.dto.SnapshotBillItemDTO(
                         toLong(r[0]),          // billItemId
                         toDouble(r[1]),        // qty
@@ -3081,7 +3085,8 @@ public class PharmacyStockTakeController implements Serializable {
                         toDouble(r[7]),        // retailRate
                         expiry,                // expiryDate
                         r[9] != null ? r[9].toString() : null,  // batchNo
-                        r[10] != null ? r[10].toString() : null // dosageForm
+                        r[10] != null ? r[10].toString() : null, // dosageForm
+                        depType                // departmentType
                 ));
             }
 
@@ -4052,24 +4057,43 @@ public class PharmacyStockTakeController implements Serializable {
         this.selectedDosageForm = selectedDosageForm;
     }
 
+    public com.divudi.core.data.DepartmentType getSelectedDepartmentType() {
+        return selectedDepartmentType;
+    }
+
+    public void setSelectedDepartmentType(com.divudi.core.data.DepartmentType selectedDepartmentType) {
+        this.selectedDepartmentType = selectedDepartmentType;
+    }
+
+    public java.util.List<com.divudi.core.data.DepartmentType> getAvailableDepartmentTypes() {
+        return java.util.Arrays.asList(
+                com.divudi.core.data.DepartmentType.Pharmacy,
+                com.divudi.core.data.DepartmentType.Store,
+                com.divudi.core.data.DepartmentType.Lab,
+                com.divudi.core.data.DepartmentType.Kitchen
+        );
+    }
+
     public StreamedContent downloadFilteredGuidedSheet() {
-        if (selectedCategory == null && selectedDosageForm == null) {
-            JsfUtil.addErrorMessage("Please select at least a category or a dosage form");
+        if (selectedCategory == null && selectedDosageForm == null && selectedDepartmentType == null) {
+            JsfUtil.addErrorMessage("Please select at least a category, a dosage form, or a department type");
             return null;
         }
         String catPart = selectedCategory != null ? selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
         String dfPart = selectedDosageForm != null ? selectedDosageForm.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
-        return generateFilteredSheet(true, "pharmacy_stock_guided_" + catPart + "_" + dfPart + ".xlsx");
+        String dtPart = selectedDepartmentType != null ? selectedDepartmentType.name() : "all";
+        return generateFilteredSheet(true, "pharmacy_stock_guided_" + catPart + "_" + dfPart + "_" + dtPart + ".xlsx");
     }
 
     public StreamedContent downloadFilteredBlindSheet() {
-        if (selectedCategory == null && selectedDosageForm == null) {
-            JsfUtil.addErrorMessage("Please select at least a category or a dosage form");
+        if (selectedCategory == null && selectedDosageForm == null && selectedDepartmentType == null) {
+            JsfUtil.addErrorMessage("Please select at least a category, a dosage form, or a department type");
             return null;
         }
         String catPart = selectedCategory != null ? selectedCategory.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
         String dfPart = selectedDosageForm != null ? selectedDosageForm.getName().replaceAll("[^a-zA-Z0-9]", "_") : "all";
-        return generateFilteredSheet(false, "pharmacy_stock_blind_" + catPart + "_" + dfPart + ".xlsx");
+        String dtPart = selectedDepartmentType != null ? selectedDepartmentType.name() : "all";
+        return generateFilteredSheet(false, "pharmacy_stock_blind_" + catPart + "_" + dfPart + "_" + dtPart + ".xlsx");
     }
 
     public StreamedContent getDownloadFilteredGuidedSheet() {
@@ -4574,10 +4598,12 @@ public class PharmacyStockTakeController implements Serializable {
             List<com.divudi.core.data.dto.SnapshotBillItemDTO> allItems = getSnapshotItems();
             String catFilter = selectedCategory != null ? selectedCategory.getName() : null;
             String dfFilter = selectedDosageForm != null ? selectedDosageForm.getName() : null;
+            com.divudi.core.data.DepartmentType dtFilter = selectedDepartmentType;
             List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = new java.util.ArrayList<>();
             for (com.divudi.core.data.dto.SnapshotBillItemDTO dto : allItems) {
                 if (catFilter != null && !catFilter.equals(dto.getCategoryName())) continue;
                 if (dfFilter != null && !dfFilter.equals(dto.getDosageForm())) continue;
+                if (dtFilter != null && !dtFilter.equals(dto.getDepartmentType())) continue;
                 items.add(dto);
             }
 
