@@ -175,8 +175,6 @@
                                 class="ui-button-danger mx-1"
                                 onclick="window.open('#{request.contextPath}/faces/reports/cashier_reports/all_cashier_summary_preview.xhtml', '_blank'); return false;" />
 
-
-
                             <p:commandButton  
                                 value="Excel" 
                                 ajax="false"
@@ -188,8 +186,8 @@
                             <p:commandButton  
                                 value="PDF" 
                                 ajax="false"
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf">
-                                <p:dataExporter type="pdf" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf"
+                                action="#{searchController.exportAllCashierSummaryToPDF()}">
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -204,12 +202,12 @@
                                      paginatorPosition="bottom">
 
 
-                            <p:column headerText="Cashier" 
+                            <p:column headerText="Cashier" width= "10em"
                                       sortBy="#{summary.user.webUserPerson.name}" 
                                       filterBy="#{summary.user.webUserPerson.name}">
                                 <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
                             </p:column>
-                            <p:column headerText="Navigate" exportable="false">
+                            <p:column width= "6em" headerText="Navigate" exportable="false">
                                 <p:commandButton 
                                     icon="fa fa-bar-chart" title="Cashier Summary"
                                     styleClass="m-1"
@@ -236,35 +234,35 @@
 
 
 
-                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
+                            <p:column width= "8em" headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
                                 <h:outputText value="#{summary.department.institution.name}" />
                             </p:column>
 
-                            <p:column headerText="Site" sortBy="#{summary.department.site.name}" filterBy="#{summary.department.site.name}">
+                            <p:column width= "8em" headerText="Site" sortBy="#{summary.department.site.name}" filterBy="#{summary.department.site.name}">
                                 <h:outputText value="#{summary.department.site.name}" />
                             </p:column>
 
-                            <p:column headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}">
+                            <p:column width= "8em" headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}">
                                 <h:outputText value="#{summary.department.name}" />
                             </p:column>
 
-                            <p:column headerText="Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
+                            <p:column width= "6em" headerText="Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
                                 <h:outputText value="#{summary.date}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="HandOvered Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
+                            <p:column width= "6em" headerText="HandOvered Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
                                 <h:outputText value="#{summary.date}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Checked By" >
+                            <p:column width= "3em" headerText="Checked By" >
 
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 headerText="Cash" 
                                 styleClass="text-end"
                                 sortBy="#{summary.cashValue}" filterBy="#{summary.cashValue}" rendered="#{searchController.bundle.hasCashTransaction}" >
@@ -279,7 +277,7 @@
 
                             </p:column>
 
-                            <p:column
+                            <p:column  width= "6em"
                                 headerText="Card" 
                                 styleClass="text-end"
                                 sortBy="#{summary.cardValue}" filterBy="#{summary.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
@@ -293,7 +291,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 headerText="Multiple Payment Methods" 
                                 styleClass="text-end"
                                 sortBy="#{summary.multiplePaymentMethodsValue}" 
@@ -309,7 +307,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 headerText="Credit" 
                                 styleClass="text-end"
                                 sortBy="#{summary.creditValue}" 
@@ -326,7 +324,7 @@
                             </p:column>
 
                             <!-- Continuing from Credit -->
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Staff Welfare" 
                                 sortBy="#{summary.staffWelfareValue}" 
@@ -342,7 +340,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Voucher"
                                 sortBy="#{summary.voucherValue}"
@@ -358,7 +356,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="IOU" 
                                 sortBy="#{summary.iouValue}" 
@@ -374,7 +372,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Agent" 
                                 sortBy="#{summary.agentValue}"
@@ -390,7 +388,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Cheque"
                                 sortBy="#{summary.chequeValue}" 
@@ -406,7 +404,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Slip" 
                                 sortBy="#{summary.slipValue}" 
@@ -422,7 +420,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="eWallet" 
                                 sortBy="#{summary.ewalletValue}" 
@@ -438,7 +436,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Patient Deposit" 
                                 sortBy="#{summary.patientDepositValue}" 
@@ -454,7 +452,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Patient Points"
                                 sortBy="#{summary.patientPointsValue}"
@@ -470,7 +468,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column width= "6em"
                                 styleClass="text-end"
                                 headerText="Online Settlement" 
                                 sortBy="#{summary.onlineSettlementValue}" 
@@ -486,7 +484,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Grand Total" class="text-end">
+                            <p:column width= "8em" headerText="Grand Total" class="text-end">
                                 <h:outputText value="#{searchController.rowCashierGrandTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -498,7 +496,7 @@
                             </p:column>
 
 
-                            <p:column headerText="Collection Total" class="text-end">
+                            <p:column width= "8em" headerText="Collection Total" class="text-end">
                                 <h:outputText value="#{searchController.rowCashierCollectionTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -509,7 +507,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total NOT included in Collection Total" class="text-end">
+                            <p:column width= "8em" headerText="Total NOT included in Collection Total" class="text-end">
                                 <h:outputText value="#{searchController.rowCashierExcludedTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
