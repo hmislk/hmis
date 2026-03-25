@@ -3601,6 +3601,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
                 return;
             }
+            if (getCurrentBillItemQty() % 1 != 0) {
+                JsfUtil.addErrorMessage("Quantity cannot be a decimal value. Please enter a whole number.");
+                return;
+            }
         } else {
             setCurrentBillItemQty(1.0);
         }
