@@ -15,7 +15,7 @@
 
                 <p:panelGrid columns="4" class="w-100 my-2" >
 
-                    <h:outputLabel value="Date Type"/>
+                    <h:outputLabel for="dateFilterType" value="Date Type"/>
                     <p:selectOneMenu class="w-100" id="dateFilterType"
                                      value="#{mdInwardReportController.dateFilterType}">
                         <f:selectItem itemLabel="Service Added Date" itemValue="SERVICE_ADDED"/>
@@ -24,23 +24,19 @@
                         <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:selectOneMenu>
 
-
-
-                    <h:outputLabel value="From"/>
+                    <h:outputLabel for="fromDate" value="From"/>
                     <p:calendar class="w-100"
                                 inputStyleClass="w-100" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         <f:ajax event="dateSelect" render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
 
-                    <h:outputLabel value="To"/>
+                    <h:outputLabel for="toDate" value="To"/>
                     <p:calendar class="w-100"
                                 inputStyleClass="w-100" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         <f:ajax event="dateSelect" render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
 
-
-
-                    <h:outputLabel value="Payment Method"/>
+                    <h:outputLabel for="pm" value="Payment Method"/>
                     <p:selectOneMenu class="w-100" id="pm"
                                      value="#{mdInwardReportController.paymentMethod}">
                         <f:selectItem itemLabel="All Payment Methods"/>
@@ -48,7 +44,7 @@
                         <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:selectOneMenu>
 
-                    <p:outputLabel value="Institution" />
+                    <p:outputLabel for="ins" value="Institution" />
                     <p:autoComplete class="w-100"
                                     inputStyleClass="w-100" id="ins" value="#{mdInwardReportController.institution}"
                                     completeMethod="#{institutionController.completeIns}"
@@ -60,11 +56,11 @@
 
 
 
-                    <p:outputLabel value="Department" />
+                    <p:outputLabel for="dept" value="Department" />
                     <p:autoComplete class="w-100"
                                     inputStyleClass="w-100"  id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
                     </p:autoComplete>
-                    <p:outputLabel value="Category" />
+                    <p:outputLabel for="ct" value="Category" />
                     <p:autoComplete value="#{mdInwardReportController.category}" id="ct"
                                     forceSelection="true"
                                     completeMethod="#{categoryController.completeCategoryService}"
@@ -90,7 +86,7 @@
 
 
 
-                    <p:outputLabel value="Item" />
+                    <p:outputLabel for="acIx" value="Item" />
                     <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true"
                                      value="#{mdInwardReportController.item}"
                                      completeMethod="#{itemController.completeAllServicesAndInvestigationsCategory}"
