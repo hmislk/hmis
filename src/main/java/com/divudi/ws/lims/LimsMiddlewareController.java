@@ -1020,12 +1020,7 @@ public class LimsMiddlewareController {
                 }
                 if (ii.getTest() != null
                         && (ii.getIxItemType() == InvestigationItemType.Value
-                        || ii.getIxItemType() == InvestigationItemType.ReportImage
-                        || ii.getIxItemType() == InvestigationItemType.Calculation
-                        || ii.getIxItemType() == InvestigationItemType.Flag
-                        || ii.getIxItemType() == InvestigationItemType.Template
-                        || ii.getIxItemType() == InvestigationItemType.WarningFlag
-                        || ii.getIxItemType() == InvestigationItemType.DynamicLabel)) {
+                        || ii.getIxItemType() == InvestigationItemType.ReportImage)) {
                     String codeFromDb = ii.getResultCode();
                     if (codeFromDb == null || codeFromDb.trim().isEmpty()) {
                         codeFromDb = ii.getTest().getCode();
