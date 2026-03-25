@@ -1452,6 +1452,45 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
 
+    public void qtyChangeListener(BillEntry be) {
+        if (be == null || be.getBillItem() == null || be.getBillItem().getItem() == null) {
+            return;
+        }
+        BillItem bi = be.getBillItem();
+        Double qty = bi.getQty();
+        if (qty == null || qty == 0.0) {
+            JsfUtil.addErrorMessage("Quantity cannot be zero.");
+            return;
+        }
+        if (qty % 1 != 0) {
+            JsfUtil.addErrorMessage("Quantity cannot be a decimal value. Please enter a whole number.");
+            return;
+        }
+        bi.setNetValue(bi.getRate() * qty);
+        if (bi.getItem().isVatable()) {
+            bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
+        } else {
+            bi.setVat(0.0);
+        }
+        bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+        calTotals();
+        JsfUtil.addSuccessMessage("Quantity updated.");
+    }
+
+    public void baseRateChangeListener(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.getTmpChangedValue() == null || bf.getTmpChangedValue() < 0) {
+            JsfUtil.addErrorMessage("Invalid rate value.");
+            return;
+        }
+        lstBillItems = null;
+        getLstBillItems();
+        calTotals();
+        JsfUtil.addSuccessMessage("Base rate updated.");
+    }
+
     public void changeBillDoctorByFee(BillFee bf) {
         if (bf == null) {
             return;
