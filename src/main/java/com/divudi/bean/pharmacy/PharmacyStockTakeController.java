@@ -3052,9 +3052,10 @@ public class PharmacyStockTakeController implements Serializable {
             // so EAGER relationships (billFees, patientInvestigation, etc.) never fire.
             String jpql = "SELECT bi.id, bi.qty, bi.descreption, bi.catId, bi.netValue, "
                     + "pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
-                    + "pbi.doe, pbi.stringValue, pbi.description, bi.item.departmentType "
+                    + "pbi.doe, pbi.stringValue, pbi.description, i.departmentType "
                     + "FROM BillItem bi "
                     + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN bi.item i "
                     + "WHERE bi.bill.id = :billId AND bi.retired = false "
                     + "ORDER BY bi.catId, bi.descreption";
 
