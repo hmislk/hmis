@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="frmReviewForm">
                     <!-- Print Section - shown after approval -->
                     <h:panelGroup rendered="#{pharmacyStockTakeController.printPreview}">
                         <p:panel id="printSection">
@@ -43,7 +43,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{not empty pharmacyStockTakeController.physicalCountBill}">
-                                    <p:blockUI block="frmReview" trigger="btnApprove">
+                                    <p:blockUI block="frmReviewForm" trigger="btnApprove">
                                         <div style="text-align:center; padding: 20px; color: white;">
                                             <i class="fa fa-spinner fa-spin fa-3x" style="margin-bottom: 12px;"></i>
                                             <div style="font-size: 1.1em; font-weight: bold;">Approving and posting stock adjustments, please wait...</div>
@@ -71,6 +71,7 @@
                                                          rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
                                                          onclick="return confirm('Approve this physical count and post stock adjustments?');"
                                                          action="#{pharmacyStockTakeController.confirmUploadAndApprove}"
+                                                         update="@form :growl"
                                                          timeout="600000"/>
                                     </p:panelGrid>
 
