@@ -2114,8 +2114,8 @@ public class PatientEncounterController implements Serializable {
             }
         }
 
-        output = input.replace("{name}", name)
-                .replace("{age}", age)
+        output = input.replace("{patient_name}", name)
+                .replace("{patient_age}", age)
                 .replace("{comments}", comments)
                 .replace("{sex}", sex)
                 .replace("{address}", address)
@@ -2140,8 +2140,6 @@ public class PatientEncounterController implements Serializable {
                 .replace("{pr}", pulseRate)
                 .replace("{pfr}", pfr)
                 .replace("{sat}", saturation)
-                .replace("{patient_name}", name)
-                .replace("{patient_age}", age)
                 .replace("{patient_phn_number}", phn)
                 .replace("{patient_nic}", nic)
                 .replace("{medical_start_date}", medicalStartDate)
