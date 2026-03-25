@@ -144,14 +144,20 @@ import java.util.Collections;
 
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import javax.faces.context.ExternalContext;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.OutputStream;
 
 // </editor-fold>
 /**
@@ -21175,14 +21181,31 @@ public class SearchController implements Serializable {
         }, CashierReports.All_CASHIER_SUMMARY, sessionController.getLoggedUser());
     }
 
+    private String buildReportFileName(String reportName) {
+
+        SimpleDateFormat displayDate = new SimpleDateFormat("dd-MM-yyyy");
+
+        String from = (fromDate != null) ? displayDate.format(fromDate) : "ALL";
+        String to = (toDate != null) ? displayDate.format(toDate) : "ALL";
+
+        String inst = (institution != null) ? institution.getName() : "All_Institutions";
+        String dept = (department != null) ? department.getName() : "All_Departments";
+
+        // Clean special characters
+        inst = inst.replaceAll("[^a-zA-Z0-9]", "_");
+        dept = dept.replaceAll("[^a-zA-Z0-9]", "_");
+
+        return reportName + "_"
+                + from + "_to_" + to + "_"
+                + inst + "_" + dept;
+    }
+
     public String getAllCashierSummaryExcelFileName() {
-        
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        return buildReportFileName("All_Cashier_Summary");
+    }
 
-        String ins = (institution != null) ? institution.getName() : "All";
-        String dept = (department != null) ? department.getName() : "All";
-
-        return "All_Cashier_Summary_" + date + "_" + ins + "_" + dept;
+    public String getAllCashierSummaryPdfFileName() {
+        return buildReportFileName("All_Cashier_Summary");
     }
 
     public void postProcessAllCashierSummaryExcel(Object document) {
@@ -21196,7 +21219,7 @@ public class SearchController implements Serializable {
             // =========================
             // SHIFT TABLE DOWN
             // =========================
-            int shiftRows = 7;
+            int shiftRows = 8;
             sheet.shiftRows(0, sheet.getLastRowNum(), shiftRows);
 
             int rowIndex = 0;
@@ -21204,12 +21227,12 @@ public class SearchController implements Serializable {
             // =========================
             // STYLES
             // =========================
-            Font boldFont = workbook.createFont();
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
             boldFont.setBold(true);
 
-            Font titleFont = workbook.createFont();
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
             titleFont.setBold(true);
-            titleFont.setFontHeightInPoints((short) 14);
+            titleFont.setFontHeightInPoints((short) 16);
 
             CellStyle titleStyle = workbook.createCellStyle();
             titleStyle.setFont(titleFont);
@@ -21244,7 +21267,7 @@ public class SearchController implements Serializable {
             c2.setCellValue(
                     site != null ? site.getName() : "All Sites"
             );
-            c2.setCellStyle(filterStyle);
+            c2.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             // Department
@@ -21253,7 +21276,7 @@ public class SearchController implements Serializable {
             c3.setCellValue(
                     department != null ? department.getName() : "All Departments"
             );
-            c3.setCellStyle(filterStyle);
+            c3.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
             // User
@@ -21282,6 +21305,7 @@ public class SearchController implements Serializable {
             c5.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
+            rowIndex++;
             // Title
             Row r6 = sheet.createRow(rowIndex++);
             Cell c6 = r6.createCell(0);
@@ -21341,6 +21365,375 @@ public class SearchController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void exportAllCashierSummaryToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=" + getAllCashierSummaryPdfFileName() + ".pdf");
+
+        String dateTimePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String datePattern = sessionController.getApplicationPreference().getLongDateFormat();
+
+        SimpleDateFormat sdf1 = new SimpleDateFormat(dateTimePattern);
+        SimpleDateFormat sdf2 = new SimpleDateFormat(datePattern);
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(com.itextpdf.text.PageSize.A3.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 7);
+
+            // =========================
+            // HEADER (Filters)
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            Paragraph filterPara = new Paragraph(
+                    "User : " + (webUser != null ? webUser.getName() : "All")
+                    + " | From : " + (fromDate != null ? sdf1.format(fromDate) : "-")
+                    + " | To : " + (toDate != null ? sdf1.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            Paragraph reportTitle
+                    = new Paragraph("All Cashier Summary Report", subTitleFont);
+            reportTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(reportTitle);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // DYNAMIC HEADERS
+            // =========================
+            List<String> headers = new ArrayList<>();
+
+            headers.add("Cashier");
+            headers.add("Institution");
+            headers.add("Site");
+            headers.add("Department");
+            headers.add("Date");
+            headers.add("HandOvered Date");
+
+            if (bundle.isHasCashTransaction()) {
+                headers.add("Cash");
+            }
+            if (bundle.isHasCardTransaction()) {
+                headers.add("Card");
+            }
+            if (bundle.isHasCreditTransaction()) {
+                headers.add("Credit");
+            }
+            if (bundle.isHasStaffWelfareTransaction()) {
+                headers.add("Staff Welfare");
+            }
+            if (bundle.isHasVoucherTransaction()) {
+                headers.add("Voucher");
+            }
+            if (bundle.isHasIouTransaction()) {
+                headers.add("IOU");
+            }
+            if (bundle.isHasAgentTransaction()) {
+                headers.add("Agent");
+            }
+            if (bundle.isHasChequeTransaction()) {
+                headers.add("Cheque");
+            }
+            if (bundle.isHasSlipTransaction()) {
+                headers.add("Slip");
+            }
+            if (bundle.isHasEWalletTransaction()) {
+                headers.add("eWallet");
+            }
+            if (bundle.isHasPatientDepositTransaction()) {
+                headers.add("Patient Deposit");
+            }
+            if (bundle.isHasPatientPointsTransaction()) {
+                headers.add("Patient Points");
+            }
+            if (bundle.isHasOnCallTransaction()) {
+                headers.add("Online Settlement");
+            }
+
+            headers.add("Grand Total");
+            headers.add("Collection Total");
+            headers.add("Total NOT included in Collection Total");
+
+            // =========================
+            // TABLE
+            // =========================
+            PdfPTable table = new PdfPTable(headers.size());
+            table.setWidthPercentage(100);
+
+            // Dynamic column widths
+            float[] widths = new float[headers.size()];
+
+            for (int i = 0; i < headers.size(); i++) {
+
+                String h = headers.get(i);
+
+                switch (h) {
+
+                    // ===== TEXT HEAVY =====
+                    case "Cashier":
+                        widths[i] = 3.5f;
+                        break;
+
+                    case "Institution":
+                    case "Site":
+                    case "Department":
+                        widths[i] = 2.5f;
+                        break;
+
+                    // ===== DATE =====
+                    case "Date":
+                    case "HandOvered Date":
+                        widths[i] = 2.2f;
+                        break;
+
+                    // ===== PAYMENT  =====
+                    case "Cash":
+                    case "Card":
+                    case "Credit":
+                    case "Staff Welfare":
+                    case "Voucher":
+                    case "IOU":
+                    case "Agent":
+                    case "Cheque":
+                    case "Slip":
+                    case "eWallet":
+                    case "Patient Deposit":
+                    case "Patient Points":
+                    case "Online Settlement":
+                        widths[i] = 1.6f;
+                        break;
+
+                    // ===== TOTALS 
+                    case "Grand Total":
+                    case "Collection Total":
+                        widths[i] = 2.4f;
+                        break;
+
+                    case "Total NOT included in Collection Total":
+                        widths[i] = 3.2f;
+                        break;
+
+                    // ===== DEFAULT =====
+                    default:
+                        widths[i] = 1.8f;
+                        break;
+                }
+            }
+
+            float total = 0f;
+            for (float w : widths) {
+                total += w;
+            }
+
+            for (int i = 0; i < widths.length; i++) {
+                widths[i] = (widths[i] / total) * 100f;
+            }
+            table.setWidths(widths);
+
+            // =========================
+            // HEADER ROW
+            // =========================
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA ROWS
+            // =========================
+            for (ReportTemplateRow summary : bundle.getReportTemplateRows()) {
+
+                table.addCell(new Phrase(
+                        summary.getUser().getWebUserPerson().getName()
+                        + " (" + summary.getUser().getName() + ")",
+                        dataFont));
+
+                table.addCell(new Phrase(summary.getDepartment().getInstitution().getName(), dataFont));
+                table.addCell(new Phrase(summary.getDepartment().getSite().getName(), dataFont));
+                table.addCell(new Phrase(summary.getDepartment().getName(), dataFont));
+
+                table.addCell(new Phrase(
+                        summary.getDate() != null ? sdf2.format(summary.getDate()) : "",
+                        dataFont));
+
+                table.addCell(new Phrase(
+                        summary.getDate() != null ? sdf2.format(summary.getDate()) : "",
+                        dataFont));
+
+                if (bundle.isHasCashTransaction()) {
+                    table.addCell(rightCell(summary.getCashValue(), dataFont));
+                }
+
+                if (bundle.isHasCardTransaction()) {
+                    table.addCell(rightCell(summary.getCardValue(), dataFont));
+                }
+
+                if (bundle.isHasCreditTransaction()) {
+                    table.addCell(rightCell(summary.getCreditValue(), dataFont));
+                }
+
+                if (bundle.isHasStaffWelfareTransaction()) {
+                    table.addCell(rightCell(summary.getStaffWelfareValue(), dataFont));
+                }
+
+                if (bundle.isHasVoucherTransaction()) {
+                    table.addCell(rightCell(summary.getVoucherValue(), dataFont));
+                }
+
+                if (bundle.isHasIouTransaction()) {
+                    table.addCell(rightCell(summary.getIouValue(), dataFont));
+                }
+
+                if (bundle.isHasAgentTransaction()) {
+                    table.addCell(rightCell(summary.getAgentValue(), dataFont));
+                }
+
+                if (bundle.isHasChequeTransaction()) {
+                    table.addCell(rightCell(summary.getChequeValue(), dataFont));
+                }
+
+                if (bundle.isHasSlipTransaction()) {
+                    table.addCell(rightCell(summary.getSlipValue(), dataFont));
+                }
+
+                if (bundle.isHasEWalletTransaction()) {
+                    table.addCell(rightCell(summary.getEwalletValue(), dataFont));
+                }
+
+                if (bundle.isHasPatientDepositTransaction()) {
+                    table.addCell(rightCell(summary.getPatientDepositValue(), dataFont));
+                }
+
+                if (bundle.isHasPatientPointsTransaction()) {
+                    table.addCell(rightCell(summary.getPatientPointsValue(), dataFont));
+                }
+
+                if (bundle.isHasOnCallTransaction()) {
+                    table.addCell(rightCell(summary.getOnlineSettlementValue(), dataFont));
+                }
+
+                table.addCell(rightCell(rowCashierGrandTotal(summary), dataFont));
+                table.addCell(rightCell(rowCashierCollectionTotal(summary), dataFont));
+                table.addCell(rightCell(rowCashierExcludedTotal(summary), dataFont));
+            }
+
+            // =========================
+            // FOOTER TOTAL ROW
+            // =========================
+            PdfPCell totalLabel = new PdfPCell(new Phrase("", totalFont));
+            totalLabel.setColspan(6);
+            totalLabel.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(totalLabel);
+
+            if (bundle.isHasCashTransaction()) {
+                table.addCell(rightCell(bundle.getCashValue(), totalFont));
+            }
+
+            if (bundle.isHasCardTransaction()) {
+                table.addCell(rightCell(bundle.getCardValue(), totalFont));
+            }
+
+            if (bundle.isHasCreditTransaction()) {
+                table.addCell(rightCell(bundle.getCreditValue(), totalFont));
+            }
+
+            if (bundle.isHasStaffWelfareTransaction()) {
+                table.addCell(rightCell(bundle.getStaffWelfareValue(), totalFont));
+            }
+
+            if (bundle.isHasVoucherTransaction()) {
+                table.addCell(rightCell(bundle.getVoucherValue(), totalFont));
+            }
+
+            if (bundle.isHasIouTransaction()) {
+                table.addCell(rightCell(bundle.getIouValue(), totalFont));
+            }
+
+            if (bundle.isHasAgentTransaction()) {
+                table.addCell(rightCell(bundle.getAgentValue(), totalFont));
+            }
+
+            if (bundle.isHasChequeTransaction()) {
+                table.addCell(rightCell(bundle.getChequeValue(), totalFont));
+            }
+
+            if (bundle.isHasSlipTransaction()) {
+                table.addCell(rightCell(bundle.getSlipValue(), totalFont));
+            }
+
+            if (bundle.isHasEWalletTransaction()) {
+                table.addCell(rightCell(bundle.getEwalletValue(), totalFont));
+            }
+
+            if (bundle.isHasPatientDepositTransaction()) {
+                table.addCell(rightCell(bundle.getPatientDepositValue(), totalFont));
+            }
+
+            if (bundle.isHasPatientPointsTransaction()) {
+                table.addCell(rightCell(bundle.getPatientPointsValue(), totalFont));
+            }
+
+            if (bundle.isHasOnCallTransaction()) {
+                table.addCell(rightCell(bundle.getOnlineSettlementValue(), totalFont));
+            }
+
+            table.addCell(rightCell(allCashierSummaryGrandTotal, totalFont));
+            table.addCell(rightCell(allCashierSummaryCollectionTotal, totalFont));
+            table.addCell(rightCell(allCashierSummaryExcludedTotal, totalFont));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private PdfPCell rightCell(Object value, Font font) {
+        String text = value != null ? String.format("%,.2f", value) : "0.00";
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        return cell;
     }
 
     public void generateDepartmentRevenueReport() {
