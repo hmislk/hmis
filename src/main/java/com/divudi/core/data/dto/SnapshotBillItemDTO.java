@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.DepartmentType;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -23,6 +24,7 @@ public class SnapshotBillItemDTO implements Serializable {
     private Date expiryDate;
     private String batchNo;
     private String dosageForm;
+    private DepartmentType departmentType;
 
     public SnapshotBillItemDTO() {
     }
@@ -41,6 +43,14 @@ public class SnapshotBillItemDTO implements Serializable {
         this.expiryDate = expiryDate;
         this.batchNo = batchNo;
         this.dosageForm = dosageForm;
+    }
+
+    public SnapshotBillItemDTO(Long billItemId, Double qty, String itemName, String categoryName,
+                                Double netValue, Double costRate, Double purchaseRate, Double retailRate,
+                                Date expiryDate, String batchNo, String dosageForm, DepartmentType departmentType) {
+        this(billItemId, qty, itemName, categoryName, netValue, costRate, purchaseRate, retailRate,
+                expiryDate, batchNo, dosageForm);
+        this.departmentType = departmentType;
     }
 
     public Long getBillItemId() { return billItemId; }
@@ -75,6 +85,9 @@ public class SnapshotBillItemDTO implements Serializable {
 
     public String getDosageForm() { return dosageForm; }
     public void setDosageForm(String dosageForm) { this.dosageForm = dosageForm; }
+
+    public DepartmentType getDepartmentType() { return departmentType; }
+    public void setDepartmentType(DepartmentType departmentType) { this.departmentType = departmentType; }
 
     public double getCostValue() { return getCostRate() * (qty != null ? qty : 0.0); }
     public double getPurchaseValue() { return getPurchaseRate() * (qty != null ? qty : 0.0); }
