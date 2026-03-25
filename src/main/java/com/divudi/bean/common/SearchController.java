@@ -21214,7 +21214,11 @@ public class SearchController implements Serializable {
             XSSFWorkbook workbook = (XSSFWorkbook) document;
             XSSFSheet sheet = workbook.getSheetAt(0);
 
-            int totalColumns = sheet.getRow(0).getLastCellNum();
+            Row firstRow = sheet.getRow(0);
+            if (firstRow == null) {
+                return;
+            }
+            int totalColumns = firstRow.getLastCellNum();
 
             // =========================
             // SHIFT TABLE DOWN
@@ -21446,7 +21450,7 @@ public class SearchController implements Serializable {
             headers.add("Site");
             headers.add("Department");
             headers.add("Date");
-            headers.add("HandOvered Date");
+            headers.add("Handed Over Date");
 
             if (bundle.isHasCashTransaction()) {
                 headers.add("Cash");
@@ -21520,7 +21524,7 @@ public class SearchController implements Serializable {
 
                     // ===== DATE =====
                     case "Date":
-                    case "HandOvered Date":
+                    case "Handed Over Date":
                         widths[i] = 2.2f;
                         break;
 
