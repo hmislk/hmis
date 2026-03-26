@@ -1045,15 +1045,21 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
 
     }
+    
+    public String navigateToApproveRequests() {
+        setBills(null);
+        fillPharmacyTransferRequestsToApprove();
+        return "/pharmacy/pharmacy_transfer_request_list_to_approve?faces-redirect=true";
+    }
 
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
-        return "/lab/patient_lab_reports";
+        return "/lab/patient_lab_reports?faces-redirect=true";
     }
 
     public String navigateToPatientAcceptPayment() {
         fillPatientPreBills(null, patient, null, true);
-        return "/opd/patient_accept_payment";
+        return "/opd/patient_accept_payment?faces-redirect=true";
     }
 
     public String menuBarSearch() {
