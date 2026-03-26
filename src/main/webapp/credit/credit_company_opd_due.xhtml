@@ -86,6 +86,14 @@
                                 value="Download Excel"
                                 ajax="false" >
                             </p:commandButton>
+                            
+                             <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF"
+                                action="#{creditCompanyDueController.exportOpdCreditDueToPDF()}">
+                            </p:commandButton>
 
                             <p:commandButton
                                 class="ui-button-success mx-2"

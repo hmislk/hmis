@@ -48,6 +48,7 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import javax.faces.context.ExternalContext;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -3223,7 +3224,7 @@ public class CreditCompanyDueController implements Serializable {
 
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
 
-            Sheet sheet = workbook.createSheet("Due Report");
+            Sheet sheet = workbook.createSheet("OPD Credit Due");
 
             org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
             boldFont.setBold(true);
@@ -3306,7 +3307,7 @@ public class CreditCompanyDueController implements Serializable {
             // =========================
             Row titleRow = sheet.createRow(rowIndex++);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("Credit Company Due Report");
+            titleCell.setCellValue("OPD Credit Due Report");
             titleCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
 
@@ -3454,11 +3455,216 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=Credit_Company_Due_Report.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=OPD_Credit_Due_Report.xlsx");
             try (OutputStream outputStream = response.getOutputStream()) {
                 workbook.write(outputStream);
                 facesContext.responseComplete();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportOpdCreditDueToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=OPD_Credit_Due_Report.pdf");
+
+        boolean hideStaffFee = configOptionApplicationController != null
+                && configOptionApplicationController.getBooleanValueByKey("OPD Due Search - Hide Staff Fee", false);
+
+        List<InstitutionBills> data = getItems() == null ? Collections.emptyList() : getItems();
+
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph companyPara = new Paragraph(
+                    creditCompany != null ? creditCompany.getName() : "All Credit Companies",
+                    titleFont);
+            companyPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(companyPara);
+
+            Paragraph billTypePara = new Paragraph(
+                    "Bill Type : " + (billType != null ? billType : "ALL"),
+                    filterFont);
+            billTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(billTypePara);
+
+            Paragraph datePara = new Paragraph(
+                    "From : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                    + " | To : " + (getToDate() != null ? sdf.format(getToDate()) : "-"),
+                    filterFont);
+            datePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(datePara);
+
+            Paragraph title = new Paragraph("OPD Credit Due Report", subTitleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = hideStaffFee ? 8 : 9;
+
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] widths = hideStaffFee
+                    ? new float[]{8f, 4f, 4f, 6f, 4f, 4f, 4f, 4f}
+                    : new float[]{8f, 4f, 4f, 6f, 4f, 4f, 4f, 4f, 4f};
+
+            table.setWidths(widths);
+
+            String[] headers = hideStaffFee
+                    ? new String[]{"Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Paid Amount", "Due Amount"}
+                    : new String[]{"Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Due Amount"};
+
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (InstitutionBills ib : data) {
+
+                if (ib == null) {
+                    continue;
+                }
+
+                // Institution row
+                PdfPCell instCell = new PdfPCell(
+                        new Phrase(
+                                ib.getInstitution() != null ? ib.getInstitution().getName() : "",
+                                headerFont
+                        )
+                );
+                instCell.setColspan(columnCount);
+                instCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                table.addCell(instCell);
+
+                List<Payment> payments = ib.getPayments() != null
+                        ? ib.getPayments() : Collections.emptyList();
+
+                for (Payment p : payments) {
+
+                    Bill bill = p.getBill();
+
+                    table.addCell(new Phrase(
+                            bill != null ? bill.getDeptId() : "", dataFont));
+
+                    table.addCell(new Phrase(
+                            p.getPolicyNo() != null ? p.getPolicyNo() : "N/A", dataFont));
+
+                    table.addCell(new Phrase(
+                            p.getReferenceNo() != null ? p.getReferenceNo() : "N/A", dataFont));
+
+                    table.addCell(new Phrase(
+                            bill != null && bill.getPatient() != null
+                            ? bill.getPatient().getPerson().getNameWithTitle()
+                            : "", dataFont));
+
+                    PdfPCell bDateCell = new PdfPCell(
+                            new Phrase(bill != null && bill.getCreatedAt() != null
+                                    ? new SimpleDateFormat("yyyy MM dd").format(bill.getCreatedAt())
+                                    : "", dataFont));
+                    bDateCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table.addCell(bDateCell);
+
+                    // Billed Amount
+                    PdfPCell billedA = new PdfPCell(new Phrase(
+                            String.format("%,.2f", bill != null ? bill.getNetTotal() : 0.0),
+                            dataFont));
+                    billedA.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(billedA);
+
+                    // Staff Fee
+                    if (!hideStaffFee) {
+                        PdfPCell staff = new PdfPCell(new Phrase(
+                                String.format("%,.2f", bill != null ? bill.getStaffFee() : 0.0),
+                                dataFont));
+                        staff.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(staff);
+                    }
+
+                    // Paid
+                    PdfPCell paid = new PdfPCell(new Phrase(
+                            String.format("%,.2f", bill != null ? bill.getPaidAmount() : 0.0),
+                            dataFont));
+                    paid.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(paid);
+
+                    // Due
+                    double dueVal = bill != null
+                            ? bill.getNetTotal() - bill.getPaidAmount() : 0.0;
+
+                    PdfPCell due = new PdfPCell(new Phrase(
+                            String.format("%,.2f", dueVal), dataFont));
+                    due.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(due);
+                }
+
+                // =========================
+                // TOTAL ROW PER INSTITUTION
+                // =========================
+                PdfPCell totalLabel = new PdfPCell(new Phrase("Total", headerFont));
+                totalLabel.setColspan(5);
+                totalLabel.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(totalLabel);
+
+                PdfPCell totalBilled = new PdfPCell(new Phrase(
+                        String.format("%,.2f", ib.getTotal()), headerFont));
+                totalBilled.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(totalBilled);
+
+                if (!hideStaffFee) {
+                    table.addCell(new PdfPCell(new Phrase(" ")));
+                }
+
+                PdfPCell totalPaid = new PdfPCell(new Phrase(
+                        String.format("%,.2f", ib.getPaidTotal()), headerFont));
+                totalPaid.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(totalPaid);
+
+                PdfPCell totalDue = new PdfPCell(new Phrase(
+                        String.format("%,.2f", ib.getTotal() - ib.getPaidTotal()),
+                        headerFont));
+                totalDue.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(totalDue);
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
