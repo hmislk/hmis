@@ -182,15 +182,23 @@
                                                 <p:panel header="Surgeries">
                                                     <div class="d-grid gap-3">
                                                         
-                                                        <p:commandButton 
-                                                            value="Add Surgeries" 
+                                                        <p:commandButton
+                                                            value="Add Surgeries"
                                                             icon="fa fa-clock"
                                                             ajax="false"
                                                             action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                                             class="w-100">
                                                         </p:commandButton>
-                                                        
-                                                        <p:commandButton 
+
+                                                        <p:commandButton
+                                                            value="Manage Surgeries"
+                                                            icon="fa fa-list"
+                                                            ajax="false"
+                                                            action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
+                                                            class="w-100">
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
                                                             ajax="false"
                                                             value="Add Services for Surgeries" 
                                                             icon="fa fa-briefcase"
