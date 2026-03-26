@@ -262,7 +262,12 @@ public class LaboratoryManagementController implements Serializable {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
         reportHandoverStaff = null; 
         
-        if (currentPatientReport != null && (currentPatientReport.getApproved() == null || !currentPatientReport.getApproved())) {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Invalid Patient Report");
+            return "";
+        }
+
+        if (currentPatientReport.getApproved() == null || !currentPatientReport.getApproved()) {
             patientReportController.setInitialInvestigation(new HashMap<>(20));
             patientReportController.patientInvestigationToAuditMap(patientReportController.getInitialInvestigation(), currentPatientReport);
         }
