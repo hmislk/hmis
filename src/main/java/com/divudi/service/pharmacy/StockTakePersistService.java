@@ -20,13 +20,13 @@ import javax.persistence.Query;
  * Strategy:
  *  1. Persist the Bill header via JPA (gets DTYPE, ID, all Bill fields).
  *  2. Flush to obtain the Bill ID.
- *  3. Allocate IDs for BillItems via SequenceAllocatorService (REQUIRES_NEW transaction).
+ *  3. Allocate IDs for BillItems via SequenceAllocatorService (EclipseLink API).
  *  4. Bulk-insert BillItems using native SQL with explicit IDs.
- *  5. Allocate IDs for PharmaceuticalBillItems (REQUIRES_NEW transaction).
+ *  5. Allocate IDs for PharmaceuticalBillItems via SequenceAllocatorService.
  *  6. Bulk-insert PharmaceuticalBillItems using native SQL with explicit IDs.
  *
- * Sequence allocation runs in a separate committed transaction to avoid lock-wait
- * conflicts between EclipseLink's own sequence allocator and our native UPDATE.
+ * Sequence allocation uses EclipseLink's internal non-JTA sequence mechanism, which
+ * keeps its in-memory cache in sync and avoids lock-wait conflicts.
  *
  * Only used for PharmacySnapshotBill creation. All other Bill types use JPA cascade.
  */
@@ -89,7 +89,7 @@ public class StockTakePersistService {
         //         then bulk-insert
         // -----------------------------------------------------------------------
         long t1 = System.currentTimeMillis();
-        long[] billItemIds = sequenceAllocator.allocate(items.size());
+        long[] billItemIds = sequenceAllocator.allocate(items.size(), BillItem.class);
         insertBillItemsBulk(items, billId, billItemIds);
         System.out.println("[StockTakePersist] Step2 BillItems inserted. count=" + items.size()
                 + "  ms=" + (System.currentTimeMillis() - t1));
@@ -104,7 +104,7 @@ public class StockTakePersistService {
         //         immediately), then bulk-insert
         // -----------------------------------------------------------------------
         long t2 = System.currentTimeMillis();
-        long[] pbIds = sequenceAllocator.allocate(items.size());
+        long[] pbIds = sequenceAllocator.allocate(items.size(), PharmaceuticalBillItem.class);
         insertPharmBillItemsBulk(items, billItemIds, pbIds);
         System.out.println("[StockTakePersist] Step3 PharmaceuticalBillItems inserted. count=" + items.size()
                 + "  ms=" + (System.currentTimeMillis() - t2));
