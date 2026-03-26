@@ -137,6 +137,18 @@ public class AtmDto implements Serializable {
         this.vtmName = vtmName;
     }
 
+    public AtmDto(Long id, String name, String code, String descreption,
+            Boolean retired, Boolean inactive, Long vtmId, String vtmName) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.descreption = descreption;
+        this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
+        this.vtmId = vtmId;
+        this.vtmName = vtmName;
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;

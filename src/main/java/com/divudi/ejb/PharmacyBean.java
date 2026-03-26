@@ -35,6 +35,9 @@ import com.divudi.core.entity.pharmacy.StoreItemCategory;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
 import com.divudi.core.facade.BillFacade;
@@ -803,6 +806,14 @@ public class PharmacyBean {
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
+    public double getStockWithoutPurchaseValue(Item item) {
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(s.stock) from Stock s where s.itemBatch.item=:i";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
     public double getStockByPurchaseValue(Item item, Institution ins) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
@@ -1297,7 +1308,90 @@ public class PharmacyBean {
             return amps == null ? new ArrayList<>() : amps;
         }
 
+        if (item instanceof Vtm) {
+            return findAmpsForVtm((Vtm) item);
+        }
+
+        if (item instanceof Atm) {
+            return findAmpsForAtm((Atm) item);
+        }
+
         return new ArrayList<>();
+    }
+
+    public List<Amp> findAmpsForVtm(Vtm vtm) {
+        if (vtm == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("vtm", vtm);
+        m.put("ret", false);
+        String jpql = "select vpi from VirtualProductIngredient vpi "
+                + " where vpi.retired=:ret and vpi.vtm=:vtm";
+        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(jpql, m);
+        List<Amp> allAmps = new ArrayList<>();
+        if (vpis != null) {
+            for (VirtualProductIngredient vpi : vpis) {
+                if (vpi.getVmp() != null) {
+                    List<Amp> amps = findAmpsForVmp(vpi.getVmp());
+                    if (amps != null) {
+                        allAmps.addAll(amps);
+                    }
+                }
+            }
+        }
+        return allAmps;
+    }
+
+    public List<Amp> findAmpsForAtm(Atm atm) {
+        if (atm == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("atm", atm);
+        m.put("ret", false);
+        String jpql = "select amp from Amp amp "
+                + " where amp.retired=:ret and amp.atm=:atm";
+        return ampFacade.findByJpql(jpql, m);
+    }
+
+    public double calculateIssueQuantity(Prescription prescription, Amp targetAmp) {
+        if (prescription == null || targetAmp == null) {
+            return 0.0;
+        }
+        Double dose = prescription.getDose();
+        if (dose == null || dose <= 0) {
+            return 0.0;
+        }
+        double durationInHours = 0.0;
+        if (prescription.getDuration() != null && prescription.getDuration() > 0
+                && prescription.getDurationUnit() != null
+                && prescription.getDurationUnit().getDurationInHours() != null
+                && prescription.getDurationUnit().getDurationInHours() > 0) {
+            durationInHours = prescription.getDuration() * prescription.getDurationUnit().getDurationInHours();
+        }
+        double frequencyInHours = 0.0;
+        if (prescription.getFrequencyUnit() != null
+                && prescription.getFrequencyUnit().getFrequencyInHours() != null
+                && prescription.getFrequencyUnit().getFrequencyInHours() > 0) {
+            frequencyInHours = prescription.getFrequencyUnit().getFrequencyInHours();
+        }
+        if (durationInHours <= 0 || frequencyInHours <= 0) {
+            return 0.0;
+        }
+        double totalDoses = durationInHours / frequencyInHours;
+        double strengthRatio = 1.0;
+        Double prescribedStrength = null;
+        if (prescription.getItem() != null) {
+            prescribedStrength = prescription.getItem().getStrengthOfAnIssueUnit();
+        }
+        Double ampStrength = targetAmp.getStrengthOfAnIssueUnit();
+        if (prescribedStrength != null && prescribedStrength > 0
+                && ampStrength != null && ampStrength > 0) {
+            strengthRatio = prescribedStrength / ampStrength;
+        }
+        double issueQty = dose * totalDoses * strengthRatio;
+        return Math.ceil(issueQty);
     }
 
     public List<StockQty> getStockByQty(Amp item, double qty, Department department) {

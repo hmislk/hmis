@@ -2,6 +2,7 @@ package com.divudi.bean.pharmacy;
 
 // <editor-fold defaultstate="collapsed" desc="Import Statements">
 import com.divudi.bean.common.*;
+import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
@@ -83,6 +84,28 @@ import com.divudi.service.PharmacyAsyncReportService;
 import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.service.StockHistoryService;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -106,6 +129,19 @@ import org.primefaces.model.file.UploadedFile;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
+import java.text.SimpleDateFormat;
+import java.util.LinkedHashMap;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
 
 import org.primefaces.model.StreamedContent;
@@ -206,6 +242,8 @@ public class PharmacySummaryReportController implements Serializable {
     BillController billController;
     @Inject
     DataAdministrationController dataAdministrationController;
+     @Inject
+    PharmacyController pharmacyController;
     // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
@@ -272,6 +310,10 @@ public class PharmacySummaryReportController implements Serializable {
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
     private PharmacyBundle pharmacyBundle;
+    private PharmacyBundle pharmacyTransferBundle;
+    private IncomeRow floatInRow;
+    private IncomeRow floatOutRow;
+    private List<IncomeRow> floatRows;
     private ReportTemplateRowBundle bundleReport;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
@@ -342,6 +384,10 @@ public class PharmacySummaryReportController implements Serializable {
 
     public String navigateToAllItemMovementSummary() {
         return "/pharmacy/reports/summary_reports/all_item_movement_summary?faces-redirect=true";
+    }
+
+    public String navigateToF9bReport() {
+        return "/pharmacy/reports/summary_reports/pharmacy_f9b_report?faces-redirect=true";
     }
 
     public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
@@ -989,6 +1035,133 @@ public class PharmacySummaryReportController implements Serializable {
         bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
     }
 
+    public void processF9bReport() {
+        reportTimerController.trackReportExecution(() -> {
+            processF9bIncomeSection();
+            processF9bTransferSection();
+            processF9bFloatSection();
+        }, SummaryReports.PHARMACY_F9B_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void processF9bIncomeSection() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, null, billTypeAtomics, null, null);
+        bundle = new IncomeBundle(dtos);
+        bundle.fixDiscountsAndMarginsInRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
+        bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
+    }
+
+    private void processF9bTransferSection() {
+        pharmacyTransferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(
+                fromDate, toDate, institution, site, department, null, null, null);
+    }
+
+    private void processF9bFloatSection() {
+        List<BillTypeAtomic> floatInTypes = Arrays.asList(
+                BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL,
+                BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED
+        );
+        List<BillTypeAtomic> floatOutTypes = Arrays.asList(
+                BillTypeAtomic.FUND_TRANSFER_BILL,
+                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+        );
+
+        floatInRow = fetchFloatSummaryRow(floatInTypes);
+        floatInRow.setRowType("Float In");
+        floatOutRow = fetchFloatSummaryRow(floatOutTypes);
+        floatOutRow.setRowType("Float Out");
+        floatRows = new ArrayList<>();
+        floatRows.add(floatInRow);
+        floatRows.add(floatOutRow);
+    }
+
+    private IncomeRow fetchFloatSummaryRow(List<BillTypeAtomic> billTypeAtomics) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :cash THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :card THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :cheque THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :slip THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :staffWelfare THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :ewallet THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :voucher THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :iou THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :patientDeposit THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(CASE WHEN p.paymentMethod = :agent THEN p.paidValue ELSE 0 END), ");
+        jpql.append("SUM(p.paidValue) ");
+        jpql.append("FROM Payment p ");
+        jpql.append("WHERE p.bill.billTypeAtomic IN :btas ");
+        jpql.append("AND p.bill.createdAt BETWEEN :fd AND :td ");
+        jpql.append("AND p.retired = :ret ");
+        jpql.append("AND p.bill.retired = :ret ");
+
+        if (department != null) {
+            jpql.append("AND p.bill.department = :dept ");
+        }
+        if (institution != null) {
+            jpql.append("AND p.bill.department.institution = :ins ");
+        }
+        if (site != null) {
+            jpql.append("AND p.bill.department.site = :site ");
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btas", billTypeAtomics);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("ret", false);
+        params.put("cash", PaymentMethod.Cash);
+        params.put("card", PaymentMethod.Card);
+        params.put("cheque", PaymentMethod.Cheque);
+        params.put("slip", PaymentMethod.Slip);
+        params.put("staffWelfare", PaymentMethod.Staff_Welfare);
+        params.put("ewallet", PaymentMethod.ewallet);
+        params.put("voucher", PaymentMethod.Voucher);
+        params.put("iou", PaymentMethod.IOU);
+        params.put("patientDeposit", PaymentMethod.PatientDeposit);
+        params.put("agent", PaymentMethod.Agent);
+
+        if (department != null) {
+            params.put("dept", department);
+        }
+        if (institution != null) {
+            params.put("ins", institution);
+        }
+        if (site != null) {
+            params.put("site", site);
+        }
+
+        IncomeRow row = new IncomeRow();
+        List<Object[]> results = paymentFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (results != null && !results.isEmpty()) {
+            Object[] r = results.get(0);
+            row.setCashValue(r[0] != null ? ((Number) r[0]).doubleValue() : 0);
+            row.setCardValue(r[1] != null ? ((Number) r[1]).doubleValue() : 0);
+            row.setChequeValue(r[2] != null ? ((Number) r[2]).doubleValue() : 0);
+            row.setSlipValue(r[3] != null ? ((Number) r[3]).doubleValue() : 0);
+            row.setStaffWelfareValue(r[4] != null ? ((Number) r[4]).doubleValue() : 0);
+            row.seteWalletValue(r[5] != null ? ((Number) r[5]).doubleValue() : 0);
+            row.setVoucherValue(r[6] != null ? ((Number) r[6]).doubleValue() : 0);
+            row.setIouValue(r[7] != null ? ((Number) r[7]).doubleValue() : 0);
+            row.setPatientDepositValue(r[8] != null ? ((Number) r[8]).doubleValue() : 0);
+            row.setAgentValue(r[9] != null ? ((Number) r[9]).doubleValue() : 0);
+            row.setTotal(r[10] != null ? ((Number) r[10]).doubleValue() : 0);
+        }
+        return row;
+    }
+
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
@@ -1027,6 +1200,583 @@ public class PharmacySummaryReportController implements Serializable {
             }
         }
         bundle.generatePaymentDetailsForBills();
+    }
+    
+    public String getReportHeader() {
+        return "Date From: " + getFromDateFormatted() +
+               " To: " + getToDateFormatted() +
+               "   |   Site: " + (site == null ? "All institutions" : site.getName()) +
+               "   |   Department: " + (department == null ? "All departments" : department.getName()) +
+               "   |   Admission Type: " + (admissionType == null ? "All admission types" : admissionType.getName()) +
+               "   |   Discount Scheme: " + (paymentScheme == null ? "All discount schemes" : paymentScheme.getName()) +
+               "   |   Report Type: " + (reportViewType == null ? "" : reportViewType.getLabel());
+    }
+     public Map<String, Object> getFiltersForPharmacyIncomeReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+      
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Admission Type", admissionType != null ? admissionType.getName() : "All");
+        filters.put("Discount Scheme", paymentScheme != null ? paymentScheme.getName() : "All");
+        filters.put("Report Type", reportViewType != null ? reportViewType.getLabel() : "All");
+
+        return filters;
+    }
+     
+     public void postProcessExcel(Object document) {
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+
+        // --- Build filter map ---
+        Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+
+        // --- Calculate how many param rows needed (4 label-value pairs per row) ---
+        int PAIRS_PER_ROW = 4;
+        int COLS_PER_ROW  = PAIRS_PER_ROW * 2; // 8 columns (label + value alternating)
+        int paramRowCount = (int) Math.ceil((double) filters.size() / PAIRS_PER_ROW);
+
+        // Total header rows: title + date + blank + param rows
+        int headerRows = 3 + paramRowCount;
+        sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
+
+        // --- Calculate actual max columns AFTER shifting ---
+        int lastCol = COLS_PER_ROW - 1; // minimum needed for param table
+        for (Row row : sheet) {
+            if (row.getRowNum() < headerRows) continue;
+            short cellNum = row.getLastCellNum();
+            if (cellNum - 1 > lastCol) lastCol = cellNum - 1;
+        }
+
+        // ================================================================
+        // STYLES
+        // ================================================================
+        XSSFCellStyle titleStyle = workbook.createCellStyle();
+        XSSFFont titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        titleStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        XSSFCellStyle dateStyle = workbook.createCellStyle();
+        XSSFFont dateFont = workbook.createFont();
+        dateFont.setFontHeightInPoints((short) 10);
+        dateStyle.setFont(dateFont);
+        dateStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        dateStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        XSSFCellStyle labelStyle = workbook.createCellStyle();
+        XSSFFont labelFont = workbook.createFont();
+        labelFont.setBold(true);
+        labelFont.setFontHeightInPoints((short) 10);
+        labelStyle.setFont(labelFont);
+        applyThinBorders(labelStyle);
+        labelStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        labelStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        XSSFCellStyle valueStyle = workbook.createCellStyle();
+        XSSFFont valueFont = workbook.createFont();
+        valueFont.setFontHeightInPoints((short) 10);
+        valueStyle.setFont(valueFont);
+        applyThinBorders(valueStyle);
+        valueStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        valueStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        // Empty bordered cell style (fills unused slots in last row)
+        XSSFCellStyle emptyStyle = workbook.createCellStyle();
+        applyThinBorders(emptyStyle);
+
+        // ================================================================
+        // ROW 0 — Main Title
+        // ================================================================
+        XSSFRow titleRow = sheet.createRow(0);
+        titleRow.setHeightInPoints(28);
+        XSSFCell titleCell = titleRow.createCell(0);
+        String institutionName = sessionController.getInstitution()!=null ? sessionController.getInstitution().getName(): "No Logged Institution";
+        String createString = institutionName + "-- Pharmacy Income Report";
+        titleCell.setCellValue(createString);
+        titleCell.setCellStyle(titleStyle);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, lastCol));
+
+        // ================================================================
+        // ROW 1 — Date subtitle
+        // ================================================================
+        XSSFRow subRow = sheet.createRow(1);
+        subRow.setHeightInPoints(18);
+        XSSFCell subCell = subRow.createCell(0);
+        java.text.SimpleDateFormat sdf =
+            new java.text.SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        subCell.setCellValue("Date: " + sdf.format(new java.util.Date()));
+        subCell.setCellStyle(dateStyle);
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, lastCol));
+
+        // ================================================================
+        // ROW 2 — Blank spacer
+        // ================================================================
+        sheet.createRow(2).setHeightInPoints(8);
+
+        // ================================================================
+        // ROWS 3..N — Dynamic parameter table from filter map
+        // ================================================================
+        List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
+        int totalEntries = entries.size();
+
+        for (int rowIdx = 0; rowIdx < paramRowCount; rowIdx++) {
+            XSSFRow paramRow = sheet.createRow(3 + rowIdx);
+            paramRow.setHeightInPoints(18);
+
+            for (int pairIdx = 0; pairIdx < PAIRS_PER_ROW; pairIdx++) {
+                int entryIndex = rowIdx * PAIRS_PER_ROW + pairIdx;
+                int labelCol   = pairIdx * 2;
+                int valueCol   = pairIdx * 2 + 1;
+
+                if (entryIndex < totalEntries) {
+                    // Populate label and value from map
+                    Map.Entry<String, Object> entry = entries.get(entryIndex);
+
+                    XSSFCell lCell = paramRow.createCell(labelCol);
+                    lCell.setCellValue(entry.getKey());
+                    lCell.setCellStyle(labelStyle);
+
+                    XSSFCell vCell = paramRow.createCell(valueCol);
+                    vCell.setCellValue(entry.getValue() != null
+                        ? entry.getValue().toString() : "");
+                    vCell.setCellStyle(valueStyle);
+                } else {
+                    // Fill unused trailing cells with empty bordered cells
+                    XSSFCell lCell = paramRow.createCell(labelCol);
+                    lCell.setCellStyle(emptyStyle);
+
+                    XSSFCell vCell = paramRow.createCell(valueCol);
+                    vCell.setCellStyle(emptyStyle);
+                }
+            }
+        }
+    }
+
+    // ================================================================
+    // HELPER: Apply thin borders on all 4 sides
+    // ================================================================
+    private void applyThinBorders(XSSFCellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+    }
+
+    
+    private String fmt(Object v) {
+        if (v == null) return "-";
+        if (v instanceof BigDecimal) {
+            return ((BigDecimal) v).setScale(2, RoundingMode.HALF_UP).toString();
+        }
+        if (v instanceof Number) {
+            return String.format("%,.2f", ((Number) v).doubleValue());
+        }
+        return v.toString();
+    }
+    
+    private PdfPCell textCell(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text == null ? "-" : text, font));
+        cell.setPadding(2f); // smaller padding
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        return cell;
+    }
+    
+    private PdfPCell numCell(Object val, Font font) {
+        String s = fmt(val);   // your existing formatter
+
+        PdfPCell cell = new PdfPCell(new Phrase(s, font));
+        cell.setPadding(2f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        return cell;
+    }
+    
+    public void exportPharmacyIncomeReportByBillToPdf() {
+        Font bodyFontSmall = FontFactory.getFont(FontFactory.HELVETICA, 6);
+//        Font bodyFontTiny = FontFactory.getFont(FontFactory.HELVETICA, 5);
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        
+        if (bundle == null || bundle.getRows() == null || bundle.getRows().isEmpty()) {
+            processPharmacyIncomeReportByBill();
+        }
+
+        String fileName = "pharmacy_income_by_bill_" + getFromDateFormatted() + "_to_" + getToDateFormatted() + ".pdf";
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        try (OutputStream out = response.getOutputStream()) {
+            // Landscape + small margins for wide tables
+            Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
+            PdfWriter.getInstance(document, out);
+            document.open();
+            String intitutionName=sessionController.getInstitution()!= null ? sessionController.getInstitution().getName() : "No Logged Institution";
+            document.add(new Paragraph(intitutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Income Report - By Bill", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+            PdfPTable table = new PdfPTable(21);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {2f, 3f, 3f, 2f, 2f, 2f, 2f,2f,2f, 2f, 2f, 2f,2f, 2f, 2f, 2f, 2f, 2f, 2f,2f,2f};
+            table.setWidths(columnWidths);
+
+            String[] headers ={
+                    "Bill No", "Patient", "Bill Type", "Date", "Net Total",
+                    "Cash", "Card", "Cheque", "Slip","Staff Welfare","e Wallet",
+                    "Patient Deposit", "Inpatient Credit", "Outpatient Credit", "Staff Credit", "Agent Credit",
+                    "Total", "Discount", "Service Charge", "Actual Total", "Cost"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<IncomeRow> rows = bundle.getRows();
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+           for (IncomeRow f : rows) {
+
+                table.addCell(textCell(f.getBill().getDeptId(), bodyFontSmall));
+                table.addCell(textCell(f.getBill().getPatient().getPerson().getNameWithTitle(), bodyFontSmall));
+                
+                table.addCell(textCell(f.getBill().getBillTypeAtomic().getLabel() ,bodyFontSmall));
+
+                table.addCell(textCell(
+                        f.getBill().getCreatedAt() != null ? sdf.format(f.getBill().getCreatedAt()) : "-",
+                        bodyFontSmall));
+
+                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getCashValue(), bodyFontSmall));
+                table.addCell(numCell(f.getCardValue(), bodyFontSmall));
+                table.addCell(numCell(f.getChequeValue(), bodyFontSmall));
+                table.addCell(numCell(f.getSlipValue(), bodyFontSmall));
+                table.addCell(numCell(f.getStaffWelfareValue(), bodyFontSmall));
+                table.addCell(numCell(f.getEwalletValue(), bodyFontSmall));
+
+                table.addCell(numCell(f.getPatientDepositValue(), bodyFontSmall));
+                table.addCell(numCell(f.getInpatientCreditValue(), bodyFontSmall));
+                table.addCell(numCell(f.getOpdCreditValue(), bodyFontSmall));
+                table.addCell(numCell(f.getStaffValue(), bodyFontSmall));
+                table.addCell(numCell(f.getAgentValue(), bodyFontSmall));
+
+                table.addCell(numCell(f.getGrossTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(f.getServiceCharge(), bodyFontSmall));
+                table.addCell(numCell(f.getActualTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getTotalCostValue(), bodyFontSmall));
+            }
+                
+                PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                footerCell.setColspan(4);
+                footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(footerCell);
+                table.addCell(numCell(bundle.getSummaryRow().getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getCashValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getCardValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getChequeValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getSlipValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getStaffWelfareValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getEwalletValue(), bodyFontSmall));
+
+                table.addCell(numCell(bundle.getSummaryRow().getPatientDepositValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getInpatientCreditValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getOpdCreditValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getStaffValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getAgentValue(), bodyFontSmall));
+
+                table.addCell(numCell(bundle.getSummaryRow().getGrossTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getDiscount(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getServiceCharge(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getActualTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getTotalCostValue(), bodyFontSmall));
+          
+
+                document.add(table);
+                document.close();
+                context.responseComplete();
+            } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacySummaryReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+    
+    public void exportPharmacyIncomeReportByBillTypeToPdf() {
+        Font bodyFontSmall = FontFactory.getFont(FontFactory.HELVETICA, 6);
+//        Font bodyFontTiny = FontFactory.getFont(FontFactory.HELVETICA, 5);
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        
+        if (bundle == null || bundle.getRows() == null || bundle.getRows().isEmpty()) {
+            processPharmacyIncomeReportByBillType();
+        }
+
+        String fileName = "pharmacy_income_by_bill_type_" + getFromDateFormatted() + "_to_" + getToDateFormatted() + ".pdf";
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        try (OutputStream out = response.getOutputStream()) {
+            // Landscape + small margins for wide tables
+            Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
+            PdfWriter.getInstance(document, out);
+            document.open();
+            String institutionName= sessionController.getInstitution()!=null ? sessionController.getInstitution().getName() : "No Logged Institution";
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Income Report - By Biil Type", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+            
+            PdfPTable table = new PdfPTable(18);
+            table.setWidthPercentage(100);
+            float[] columnWidths = { 3f, 2f, 2f, 2f,2f,2f, 2f, 2f, 2f,2f, 2f, 2f, 2f, 2f, 2f, 2f,2f,2f};
+            table.setWidths(columnWidths);
+
+            String[] headers ={
+                    "Bill Type", "Net Total",
+                    "Cash", "Card", "Cheque", "Slip","Staff Welfare","e Wallet",
+                    "Patient Deposit", "Inpatient Credit", "Outpatient Credit", "Staff Credit", "Agent Credit",
+                    "Total", "Discount", "Service Charge", "Actual Total", "Cost"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<IncomeRow> rows = bundle.getRows();
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+           for (IncomeRow f : rows) {
+
+                table.addCell(textCell(f.getBillTypeAtomic().getLabel() ,bodyFontSmall));
+                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getCashValue(), bodyFontSmall));
+                table.addCell(numCell(f.getCardValue(), bodyFontSmall));
+                table.addCell(numCell(f.getChequeValue(), bodyFontSmall));
+                table.addCell(numCell(f.getSlipValue(), bodyFontSmall));
+                table.addCell(numCell(f.getStaffWelfareValue(), bodyFontSmall));
+                table.addCell(numCell(f.getEwalletValue(), bodyFontSmall));
+
+                table.addCell(numCell(f.getPatientDepositValue(), bodyFontSmall));
+                table.addCell(numCell(f.getInpatientCreditValue(), bodyFontSmall));
+                table.addCell(numCell(f.getOpdCreditValue(), bodyFontSmall));
+                table.addCell(numCell(f.getStaffValue(), bodyFontSmall));
+                table.addCell(numCell(f.getAgentValue(), bodyFontSmall));
+
+                table.addCell(numCell(f.getGrossTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(f.getServiceCharge(), bodyFontSmall));
+                table.addCell(numCell(f.getActualTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getTotalCostValue(), bodyFontSmall));
+            }
+                
+                PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                footerCell.setColspan(1);
+                footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(footerCell);
+                table.addCell(numCell(bundle.getSummaryRow().getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getCashValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getCardValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getChequeValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getSlipValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getStaffWelfareValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getEwalletValue(), bodyFontSmall));
+
+                table.addCell(numCell(bundle.getSummaryRow().getPatientDepositValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getInpatientCreditValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getOpdCreditValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getStaffValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getAgentValue(), bodyFontSmall));
+
+                table.addCell(numCell(bundle.getSummaryRow().getGrossTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getDiscount(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getServiceCharge(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getActualTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getTotalCostValue(), bodyFontSmall));
+          
+
+                document.add(table);
+                document.close();
+                context.responseComplete();
+            } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacySummaryReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+    
+     public void exportPharmacyIncomeReportByBillTypeAdmissionDiscountToPdf() {
+        Font bodyFontSmall = FontFactory.getFont(FontFactory.HELVETICA, 6);
+//        Font bodyFontTiny = FontFactory.getFont(FontFactory.HELVETICA, 5);
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        
+        if (bundle == null || bundle.getRows() == null || bundle.getRows().isEmpty()) {
+            if (reportViewType == BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE){
+                processPharmacyIncomeReportByDiscountTypeAndAdmissionType();
+            } else if (reportViewType == BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE) {
+                processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType();
+            } 
+        }
+        
+        String fileName=".pdf";
+        String columnTitle=" ";
+        if (reportViewType == BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE){
+                fileName = "pharmacy_income_by_discount_type_admission_type_" + getFromDateFormatted() + "_to_" + getToDateFormatted() + ".pdf";
+                columnTitle="Group";
+            } else if (reportViewType == BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE) {
+                fileName = "pharmacy_income_by_bill_type_discount_type_admission_type_" + getFromDateFormatted() + "_to_" + getToDateFormatted() + ".pdf";
+                columnTitle="Bill Type+Group";
+            } 
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        try (OutputStream out = response.getOutputStream()) {
+            // Landscape + small margins for wide tables
+            Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
+            PdfWriter.getInstance(document, out);
+            document.open();
+            String institutionName=sessionController.getInstitution()!= null ? sessionController.getInstitution().getName() : "No Logger Institution" ;
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            String reportTitle = reportViewType == BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+                    ? "Pharmacy Income Report - By Discount and Admission"
+                    : "Pharmacy Income Report - By Bill Type, Discount and Admission";
+            document.add(new Paragraph(reportTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+            
+             Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+            
+            PdfPTable table = new PdfPTable(18);
+            table.setWidthPercentage(100);
+            float[] columnWidths = { 3f, 2f, 2f, 2f,2f,2f, 2f, 2f, 2f,2f, 2f, 2f, 2f, 2f, 2f, 2f,2f,2f};
+            table.setWidths(columnWidths);
+
+            String[] headers ={
+                    columnTitle, "Net Total",
+                    "Cash", "Card", "Cheque", "Slip","Staff Welfare","e Wallet",
+                    "Patient Deposit", "Inpatient Credit", "Outpatient Credit", "Staff Credit", "Agent Credit",
+                    "Total", "Discount", "Service Charge", "Actual Total", "Cost"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<IncomeRow> rows = bundle.getRows();
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+           for (IncomeRow f : rows) {
+
+                table.addCell(textCell(f.getRowType() ,bodyFontSmall));
+                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getCashValue(), bodyFontSmall));
+                table.addCell(numCell(f.getCardValue(), bodyFontSmall));
+                table.addCell(numCell(f.getChequeValue(), bodyFontSmall));
+                table.addCell(numCell(f.getSlipValue(), bodyFontSmall));
+                table.addCell(numCell(f.getStaffWelfareValue(), bodyFontSmall));
+                table.addCell(numCell(f.getEwalletValue(), bodyFontSmall));
+
+                table.addCell(numCell(f.getPatientDepositValue(), bodyFontSmall));
+                table.addCell(numCell(f.getInpatientCreditValue(), bodyFontSmall));
+                table.addCell(numCell(f.getOpdCreditValue(), bodyFontSmall));
+                table.addCell(numCell(f.getStaffValue(), bodyFontSmall));
+                table.addCell(numCell(f.getAgentValue(), bodyFontSmall));
+
+                table.addCell(numCell(f.getGrossTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(f.getServiceCharge(), bodyFontSmall));
+                table.addCell(numCell(f.getActualTotal(), bodyFontSmall));
+                table.addCell(numCell(f.getTotalCostValue(), bodyFontSmall));
+            }
+                
+                PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                footerCell.setColspan(1);
+                footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(footerCell);
+                table.addCell(numCell(bundle.getSummaryRow().getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getCashValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getCardValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getChequeValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getSlipValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getStaffWelfareValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getEwalletValue(), bodyFontSmall));
+
+                table.addCell(numCell(bundle.getSummaryRow().getPatientDepositValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getInpatientCreditValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getOpdCreditValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getStaffValue(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getAgentValue(), bodyFontSmall));
+
+                table.addCell(numCell(bundle.getSummaryRow().getGrossTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getDiscount(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getServiceCharge(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getActualTotal(), bodyFontSmall));
+                table.addCell(numCell(bundle.getSummaryRow().getTotalCostValue(), bodyFontSmall));
+          
+
+                document.add(table);
+                document.close();
+                context.responseComplete();
+            } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacySummaryReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
     }
 
     public void processMovementOutWithStocksReportByBill() {
@@ -2563,6 +3313,10 @@ public class PharmacySummaryReportController implements Serializable {
         }
         return fromDate;
     }
+    
+    public String getFromDateFormatted(){
+        return new SimpleDateFormat("dd_MM_yyyy").format(fromDate);
+    }
 
     /**
      * @param fromDate the fromDate to set
@@ -2579,6 +3333,10 @@ public class PharmacySummaryReportController implements Serializable {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
+    }
+    
+    public String getToDateFormatted(){
+         return new SimpleDateFormat("dd_MM_yyyy").format(toDate);
     }
 
     /**
@@ -3160,6 +3918,38 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setHistoricalRecords(List<HistoricalRecord> historicalRecords) {
         this.historicalRecords = historicalRecords;
+    }
+
+    public PharmacyBundle getPharmacyTransferBundle() {
+        return pharmacyTransferBundle;
+    }
+
+    public void setPharmacyTransferBundle(PharmacyBundle pharmacyTransferBundle) {
+        this.pharmacyTransferBundle = pharmacyTransferBundle;
+    }
+
+    public IncomeRow getFloatInRow() {
+        return floatInRow;
+    }
+
+    public void setFloatInRow(IncomeRow floatInRow) {
+        this.floatInRow = floatInRow;
+    }
+
+    public IncomeRow getFloatOutRow() {
+        return floatOutRow;
+    }
+
+    public void setFloatOutRow(IncomeRow floatOutRow) {
+        this.floatOutRow = floatOutRow;
+    }
+
+    public List<IncomeRow> getFloatRows() {
+        return floatRows;
+    }
+
+    public void setFloatRows(List<IncomeRow> floatRows) {
+        this.floatRows = floatRows;
     }
 
     public void retireHistoricalRecord(HistoricalRecord hr) {

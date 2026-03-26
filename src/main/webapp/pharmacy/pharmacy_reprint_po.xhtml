@@ -46,7 +46,7 @@
                                     <p:commandButton 
                                         class="ui-button-success mx-1" 
                                         icon="fas fa-print"
-                                        rendered="#{configOptionController.getBooleanValueByKey('Print Original Purchase Order Approval Bill', false)}"
+                                        rendered="#{webUserController.hasPrivilege('PrintOriginalPoBillFromReprint')}"
                                         value="Print Original" ajax="false" >
                                         <p:printer target="gpOriginalBillPreview" ></p:printer>
                                     </p:commandButton>
@@ -84,11 +84,15 @@
                                         <ph:po_custom_3_letter
                                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Letter Paper Format', true)}"
                                             bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
+                                        
+                                        <ph:po_custom_4_letter
+                                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Custom 4 Paper Format', true)}"
+                                            bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
 
                                     </h:panelGroup> 
                             </div>
                             <div class="col-6 d-flex justify-content-center border border-light boder-1">
-                                    <h:panelGroup id="gpOriginalBillPreview" style="width: 212mm;" rendered="#{configOptionController.getBooleanValueByKey('Print Original Purchase Order Approval Bill', false)}">
+                                    <h:panelGroup id="gpOriginalBillPreview" style="width: 212mm;" rendered="#{webUserController.hasPrivilege('PrintOriginalPoBillFromReprint')}">
 
                                         <ph:po_custom_1
                                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format', true)}"
@@ -100,6 +104,10 @@
 
                                         <ph:po_custom_3_letter
                                             rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Letter Paper Format', true)}"
+                                            bill="#{pharmacyBillSearch.bill}" controller="#{purchaseOrderController}"/>
+                                        
+                                        <ph:po_custom_4_letter
+                                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Custom 4 Paper Format', true)}"
                                             bill="#{pharmacyBillSearch.bill}" controller="#{purchaseOrderController}"/>
 
                                     </h:panelGroup> 
@@ -191,6 +199,14 @@
                                                 value="#{purchaseOrderConfigController.letterPaper}" />
                                             <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="custom4paper"
+                                                value="#{purchaseOrderConfigController.custom4paper}" />
+                                            <p:outputLabel for="custom4paper" value="Custom 4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Purchase order format - Custom 4 Paper</small>
                                         </div>
 
                                     </div>

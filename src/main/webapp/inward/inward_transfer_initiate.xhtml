@@ -1,0 +1,505 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+
+            <!-- ============================================================ -->
+            <!-- Panel 1: Patient Search                                       -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3" rendered="#{patientTransferController.current eq null}" styleClass="shadow-sm">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-arrow-right fa-lg text-primary me-3"></i>
+                            <div>
+                                <h4 class="mb-1 text-primary">Patient Selection</h4>
+                                <p class="mb-0 text-muted small">Search and select an inpatient to initiate a transfer</p>
+                            </div>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-10 col-xl-8">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body p-4">
+                                <div class="text-center mb-4">
+                                    <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
+                                    <h5 class="text-dark mb-2">Find Inpatient</h5>
+                                    <p class="text-muted">Search by patient name, BHT number, or PHN to initiate a transfer</p>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <h:outputLabel for="insSelect" styleClass="form-label fw-bold text-dark mb-2">
+                                            <i class="fa-solid fa-hospital me-2 text-primary"></i>
+                                            Institution
+                                        </h:outputLabel>
+                                        <p:selectOneMenu id="insSelect"
+                                                         label="Institution"
+                                                         value="#{patientTransferController.institution}"
+                                                         style="width:100%">
+                                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                            <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                           var="ins"
+                                                           itemLabel="#{ins.name}"
+                                                           itemValue="#{ins}" />
+                                            <p:ajax listener="#{patientTransferController.onInstitutionChange}" update="acPt pnlPatientPreview" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <h:outputLabel for="acPt" styleClass="form-label fw-bold text-dark mb-2">
+                                            <i class="fa-solid fa-user me-2 text-primary"></i>
+                                            Patient Search
+                                        </h:outputLabel>
+                                        <p:autoComplete
+                                            widgetVar="aPt"
+                                            id="acPt"
+                                            forceSelection="true"
+                                            value="#{patientTransferController.current}"
+                                            completeMethod="#{patientTransferController.completePatientByInstitution}"
+                                            var="myItem"
+                                            itemValue="#{myItem}"
+                                            itemLabel="#{myItem.bhtNo}"
+                                            placeholder="Type patient name, BHT number, or PHN..."
+                                            minQueryLength="2"
+                                            style="width: 100%;"
+                                            inputStyleClass="form-control form-control-lg">
+                                            <p:ajax event="itemSelect" update="pnlPatientPreview" />
+                                            <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid fa-id-card me-2 text-info"></i>
+                                                    <strong>#{myItem.patient.phn}</strong>
+                                                </div>
+                                            </p:column>
+                                            <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                                                    <strong class="text-primary">#{myItem.bhtNo}</strong>
+                                                </div>
+                                            </p:column>
+                                            <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid fa-user me-2 text-success"></i>
+                                                    <span class="fw-medium">#{myItem.patient.person.nameWithTitle}</span>
+                                                </div>
+                                            </p:column>
+                                            <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                                                <h:panelGroup rendered="#{myItem.currentPatientRoom ne null}">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                        <span>#{myItem.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                    </div>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{myItem.currentPatientRoom eq null}">
+                                                    <span class="text-muted">
+                                                        <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                    </span>
+                                                </h:panelGroup>
+                                            </p:column>
+                                            <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!myItem.discharged}" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup id="pnlPatientPreview">
+                                    <h:panelGroup rendered="#{patientTransferController.current ne null}" layout="block">
+                                        <div class="card border-primary mt-3 mb-3">
+                                            <div class="card-header bg-primary text-white py-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid fa-user-check me-2"></i>
+                                                    <strong>Selected Patient</strong>
+                                                </div>
+                                            </div>
+                                            <div class="card-body py-3">
+                                                <div class="row">
+                                                    <div class="col-md-3 mb-2">
+                                                        <small class="text-muted d-block">Patient Name</small>
+                                                        <strong>#{patientTransferController.current.patient.person.nameWithTitle}</strong>
+                                                    </div>
+                                                    <div class="col-md-2 mb-2">
+                                                        <small class="text-muted d-block">BHT No</small>
+                                                        <strong class="text-primary">#{patientTransferController.current.bhtNo}</strong>
+                                                    </div>
+                                                    <div class="col-md-2 mb-2">
+                                                        <small class="text-muted d-block">PHN</small>
+                                                        <strong>#{patientTransferController.current.patient.phn}</strong>
+                                                    </div>
+                                                    <div class="col-md-2 mb-2">
+                                                        <small class="text-muted d-block">Room</small>
+                                                        <h:panelGroup rendered="#{patientTransferController.current.currentPatientRoom ne null}">
+                                                            <strong>#{patientTransferController.current.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{patientTransferController.current.currentPatientRoom eq null}">
+                                                            <span class="text-muted">Not assigned</span>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <div class="col-md-3 mb-2">
+                                                        <small class="text-muted d-block">Status</small>
+                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{patientTransferController.current.discharged}" />
+                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!patientTransferController.current.discharged}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <p:commandButton
+                                            id="btnSelect"
+                                            ajax="false"
+                                            value="Continue"
+                                            icon="fa-solid fa-arrow-right"
+                                            class="ui-button-success btn-lg"
+                                            style="min-width: 200px; height: 50px;"
+                                            title="Continue to initiate transfer"
+                                            action="#{patientTransferController.onPatientSelected()}" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Panel 2: Patient selected — history + transfer form / blocks  -->
+            <!-- ============================================================ -->
+            <h:panelGroup rendered="#{patientTransferController.current ne null and patientTransferController.lastInitiatedRequest eq null}">
+
+                <p:panel class="my-3">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa fa-arrow-right fa-lg"/>
+                                <p:outputLabel value="Initiate Transfer" class="m-2"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    ajax="false"
+                                    class="ui-button-secondary"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}">
+                                    <f:setPropertyActionListener
+                                        value="#{patientTransferController.current}"
+                                        target="#{admissionController.current}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Change Patient"
+                                    icon="fa fa-arrow-left"
+                                    ajax="false"
+                                    class="ui-button-secondary"
+                                    action="#{patientTransferController.navigateToInitiateTransfer()}"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row w-100">
+
+                        <!-- Left: patient detail -->
+                        <div class="col-4">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-id-card-alt"/>
+                                    <h:outputLabel value="Patient Details" class="mx-4"/>
+                                </f:facet>
+                                <in:bhtDetail admission="#{patientTransferController.current}"/>
+                                <div class="row mt-2">
+                                    <div class="col-5"><p:outputLabel value="Current Room"/></div>
+                                    <div class="col-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                    <div class="col-6">
+                                        <h:outputText value="#{patientTransferController.current.currentPatientRoom != null and patientTransferController.current.currentPatientRoom.roomFacilityCharge != null ? patientTransferController.current.currentPatientRoom.roomFacilityCharge.name : 'Admission Desk'}"/>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-5"><p:outputLabel value="Current Department"/></div>
+                                    <div class="col-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                    <div class="col-6">
+                                        <h:outputText value="#{patientTransferController.current.currentPatientRoom != null and patientTransferController.current.currentPatientRoom.roomFacilityCharge != null and patientTransferController.current.currentPatientRoom.roomFacilityCharge.department != null ? patientTransferController.current.currentPatientRoom.roomFacilityCharge.department.name : '-'}"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                        <!-- Right: blocked messages OR transfer form -->
+                        <div class="col-8">
+
+                            <!-- BLOCK 1: Patient is in a different department (no pending request) -->
+                            <p:panel rendered="#{patientTransferController.patientInDifferentDepartment and not patientTransferController.hasPendingRequest}"
+                                     class="mb-3" style="border-left: 4px solid #f44336;">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa fa-ban" style="color:#f44336;"/>
+                                    <p:outputLabel value=" Transfer Not Allowed" class="m-2" style="color:#f44336;"/>
+                                </f:facet>
+                                <p:outputLabel
+                                    value="This patient's current room is in a different department (#{patientTransferController.current.currentPatientRoom.roomFacilityCharge.department.name}). Only staff of that department can initiate the next transfer."
+                                    style="color:#b71c1c;"/>
+                            </p:panel>
+
+                            <!-- BLOCK 2: There is a PENDING request — show it with Cancel option (regardless of department) -->
+                            <p:panel rendered="#{patientTransferController.hasPendingRequest}"
+                                     class="mb-3" style="border-left: 4px solid #ff9800;">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa fa-clock" style="color:#ff9800;"/>
+                                    <p:outputLabel value=" Pending Transfer Request" class="m-2" style="color:#e65100;"/>
+                                </f:facet>
+                                <p:outputLabel
+                                    value="There is already a pending transfer request for this patient. Cancel it below if you need to assign a different room."
+                                    style="color:#e65100; display:block; margin-bottom:8px;"/>
+
+                                <p:dataTable value="#{patientTransferController.pendingRequestForCurrentAsList}" var="preq">
+                                    <p:column headerText="To Room">
+                                        <h:outputText value="#{preq.toRoomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Department">
+                                        <h:outputText value="#{preq.toRoomFacilityCharge.department.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Initiated At">
+                                        <h:outputText value="#{preq.initiatedAt}">
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Initiated By">
+                                        <h:outputText value="#{preq.initiatedBy.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Action">
+                                        <p:commandButton
+                                            value="Cancel Request"
+                                            icon="fa fa-times"
+                                            ajax="false"
+                                            class="ui-button-danger"
+                                            action="#{patientTransferController.cancelPendingAndReopen(preq)}"
+                                            onclick="if (!confirm('Cancel this pending transfer request?')) return false;"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <!-- TRANSFER FORM: shown only when allowed -->
+                            <p:panel rendered="#{patientTransferController.canInitiateTransfer}">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-door-open"/>
+                                    <h:outputLabel value="New Transfer Request" class="mx-4"/>
+                                </f:facet>
+
+                                <h:panelGrid columns="2" cellpadding="5">
+                                    <h:outputLabel value="Target Room"/>
+                                    <p:autoComplete
+                                        forceSelection="true"
+                                        id="targetRoom"
+                                        value="#{patientTransferController.targetRoomFacilityCharge}"
+                                        completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                        var="rf"
+                                        itemLabel="#{rf.name}"
+                                        itemValue="#{rf}"
+                                        size="30"
+                                        class="my-2 mx-5">
+                                        <p:column headerText="Room" style="padding: 6px; width: 12em;">
+                                            <h:outputLabel value="#{rf.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Department" style="padding: 6px; width: 12em;">
+                                            <h:outputLabel value="#{rf.department.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+
+                                    <h:outputLabel value="Notes"/>
+                                    <p:inputTextarea
+                                        value="#{patientTransferController.notes}"
+                                        rows="3"
+                                        cols="40"
+                                        class="my-2 mx-5"/>
+                                </h:panelGrid>
+
+                                <div class="mt-2">
+                                    <p:commandButton
+                                        value="Initiate Transfer"
+                                        icon="fa fa-arrow-right"
+                                        ajax="false"
+                                        class="ui-button-success"
+                                        action="#{patientTransferController.initiateTransfer()}"/>
+                                </div>
+                            </p:panel>
+
+                        </div><!-- col-8 -->
+                    </div><!-- row -->
+
+                    <!-- Transfer history for this patient -->
+                    <h:panelGroup rendered="#{not empty patientTransferController.currentAdmissionRequests}">
+                        <p:panel class="mt-3">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa fa-history"/>
+                                <p:outputLabel value=" Transfer History" class="m-2"/>
+                            </f:facet>
+                            <p:dataTable value="#{patientTransferController.currentAdmissionRequests}" var="req">
+                                <p:column headerText="Status">
+                                    <h:outputText value="#{req.status}"
+                                        style="#{req.status.name() eq 'PENDING' ? 'color:#e65100;font-weight:bold;' : req.status.name() eq 'ACCEPTED' ? 'color:#2e7d32;font-weight:bold;' : 'color:#757575;'}"/>
+                                </p:column>
+                                <p:column headerText="From">
+                                    <h:outputText value="#{req.fromPatientRoom != null ? req.fromPatientRoom.roomFacilityCharge.name : 'Admission Desk'}"/>
+                                </p:column>
+                                <p:column headerText="To Room">
+                                    <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{req.toRoomFacilityCharge.department.name}"/>
+                                </p:column>
+                                <p:column headerText="Initiated At">
+                                    <h:outputText value="#{req.initiatedAt}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Initiated By">
+                                    <h:outputText value="#{req.initiatedBy.webUserPerson.name}"/>
+                                </p:column>
+                                <p:column headerText="Accepted / Cancelled At">
+                                    <h:outputText value="#{req.acceptedAt}" rendered="#{req.status.name() eq 'ACCEPTED'}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                    </h:outputText>
+                                    <h:outputText value="#{req.cancelledAt}" rendered="#{req.status.name() eq 'CANCELLED'}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:panelGroup>
+
+            <!-- ============================================================ -->
+            <!-- Panel 3: Print slip after successful initiation               -->
+            <!-- ============================================================ -->
+            <h:panelGroup rendered="#{patientTransferController.current ne null and patientTransferController.lastInitiatedRequest ne null}">
+
+                <div class="d-flex gap-2 mb-3 no-print">
+                    <p:commandButton
+                        value="Print"
+                        icon="fa fa-print"
+                        ajax="false"
+                        class="ui-button-info"
+                        onclick="window.print(); return false;"/>
+                    <p:commandButton
+                        value="Cancel Request"
+                        icon="fa fa-times"
+                        ajax="false"
+                        class="ui-button-danger"
+                        action="#{patientTransferController.cancelPendingAndReopen(patientTransferController.lastInitiatedRequest)}"
+                        onclick="if (!confirm('Cancel this transfer request?')) return false;"/>
+                    <p:commandButton
+                        value="New Transfer"
+                        icon="fa fa-plus"
+                        ajax="false"
+                        class="ui-button-success"
+                        action="#{patientTransferController.startNewTransfer()}"/>
+                    <p:commandButton
+                        value="Change Patient"
+                        icon="fa fa-user"
+                        ajax="false"
+                        class="ui-button-secondary"
+                        action="#{patientTransferController.navigateToInitiateTransfer()}"/>
+                </div>
+
+                <p:panel class="my-3">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa fa-check-circle fa-lg" style="color:#2e7d32;"/>
+                                <p:outputLabel value=" Transfer Request — #{sessionController.institution.name}" class="m-2"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row w-100">
+                        <div class="col-6">
+                            <h4 class="mb-3">Patient Details</h4>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>BHT No</strong></div>
+                                <div class="col-7">#{patientTransferController.lastInitiatedRequest.admission.bhtNo}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>Patient Name</strong></div>
+                                <div class="col-7">#{patientTransferController.lastInitiatedRequest.admission.patient.person.nameWithTitle}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>Age / Sex</strong></div>
+                                <div class="col-7">#{patientTransferController.lastInitiatedRequest.admission.patient.person.ageAsString} / #{patientTransferController.lastInitiatedRequest.admission.patient.person.sex}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>From</strong></div>
+                                <div class="col-7">
+                                    <h:outputText value="#{patientTransferController.lastInitiatedRequest.fromPatientRoom != null ? patientTransferController.lastInitiatedRequest.fromPatientRoom.roomFacilityCharge.name : 'Admission Desk'}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="mb-3">Transfer Details</h4>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>To Room</strong></div>
+                                <div class="col-7">#{patientTransferController.lastInitiatedRequest.toRoomFacilityCharge.name}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>Department</strong></div>
+                                <div class="col-7">#{patientTransferController.lastInitiatedRequest.toRoomFacilityCharge.department.name}</div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>Initiated At</strong></div>
+                                <div class="col-7">
+                                    <h:outputText value="#{patientTransferController.lastInitiatedRequest.initiatedAt}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <div class="row mb-1">
+                                <div class="col-5"><strong>Initiated By</strong></div>
+                                <div class="col-7">#{patientTransferController.lastInitiatedRequest.initiatedBy.webUserPerson.name}</div>
+                            </div>
+                            <h:panelGroup rendered="#{not empty patientTransferController.lastInitiatedRequest.notes}">
+                                <div class="row mb-1">
+                                    <div class="col-5"><strong>Notes</strong></div>
+                                    <div class="col-7">#{patientTransferController.lastInitiatedRequest.notes}</div>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+                    <hr/>
+                    <div class="row mt-4">
+                        <div class="col-6 text-center" style="border-top: 1px solid #000; padding-top: 4px;">
+                            <p>Sending Ward Signature</p>
+                        </div>
+                        <div class="col-6 text-center" style="border-top: 1px solid #000; padding-top: 4px;">
+                            <p>Receiving Ward Signature</p>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <style>
+                    @media print {
+                        .no-print { display: none !important; }
+                        .layout-topbar, .layout-sidebar, .layout-footer { display: none !important; }
+                        .layout-main { margin: 0 !important; padding: 0 !important; }
+                    }
+                </style>
+            </h:panelGroup>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

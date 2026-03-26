@@ -169,6 +169,14 @@
                                         ajax="false"
                                         disabled="#{amppController.current.id eq null}"
                                         title="View audit history for this AMPP record"/>
+                                    <p:commandButton
+                                        id="btnViewList"
+                                        value="All AMPPs List"
+                                        action="#{amppController.navigateToAmppList()}"
+                                        class="m-1 ui-button-secondary"
+                                        ajax="false"
+                                        icon="fas fa-list"
+                                        title="View and download the full list of AMPPs"/>
                                 </div>
                             </div>
                         </h:panelGroup>

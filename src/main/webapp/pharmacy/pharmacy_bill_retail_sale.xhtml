@@ -19,7 +19,6 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
-
                         <p:dialog
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
                             header="Search Any Medicine..."
@@ -28,7 +27,6 @@
                             width="1100"
                             position="top"
                             modal="true"
-
                             closeOnEscape="true">
                             <p:autoComplete
                                 id="exItem"
@@ -1166,6 +1164,9 @@
                                                                         <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
                                                                     </h:panelGroup>
 
+                                                                    <h:panelGroup id="iou" rendered="#{pharmacySaleController.paymentMethod eq 'IOU'}">
+                                                                        <pa:iouDetailsAsOnlyPayment paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                                    </h:panelGroup>
 
                                                                     <h:panelGroup
                                                                         class="row my-1 w-100"
