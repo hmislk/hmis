@@ -365,12 +365,12 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     /**
-     * @deprecated This method will be removed in the next iteration.
-     * Pharmacy credit bills are now managed through the OPD credit due age methods,
-     * which handle both OPD and Pharmacy credit bills.
-     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
-     * the unified OPD Credit Settle bill type.
-     * Please use the OPD Due Age functionality instead.
+     * @deprecated This method will be removed in the next iteration. Pharmacy
+     * credit bills are now managed through the OPD credit due age methods,
+     * which handle both OPD and Pharmacy credit bills. The separate Pharmacy
+     * Credit Settle bill type is being deprecated in favor of the unified OPD
+     * Credit Settle bill type. Please use the OPD Due Age functionality
+     * instead.
      */
     @Deprecated
     public void createAgeTablePharmacy() {
@@ -939,7 +939,6 @@ public class CreditCompanyDueController implements Serializable {
 //            }
 //        }
 //    }
-
     public void createInwardAgeTableAccessWithFilters() {
         reportTimerController.trackReportExecution(() -> {
             HashMap m = new HashMap();
@@ -1163,7 +1162,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
-                                 Institution institutionOfDepartment, Department department, Institution site) {
+            Institution institutionOfDepartment, Department department, Institution site) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
                 inst, true, paymentMethod, institutionOfDepartment, department, site);
         for (PatientEncounter b : lst) {
@@ -1343,12 +1342,12 @@ public class CreditCompanyDueController implements Serializable {
                 default:
                     btas = billService.fetchBillTypeAtomicsForOpdFinance();
             }
-            
+
             List<Institution> setIns = new ArrayList<>();
-            
-            if(creditCompany == null){
+
+            if (creditCompany == null) {
                 setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
-            }else{
+            } else {
                 setIns.add(creditCompany);
             }
 
@@ -1381,12 +1380,11 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     /**
-     * @deprecated This method will be removed in the next iteration.
-     * Pharmacy credit bills are now managed through the OPD credit due methods,
-     * which handle both OPD and Pharmacy credit bills.
-     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
-     * the unified OPD Credit Settle bill type.
-     * Please use the OPD Due Search functionality instead.
+     * @deprecated This method will be removed in the next iteration. Pharmacy
+     * credit bills are now managed through the OPD credit due methods, which
+     * handle both OPD and Pharmacy credit bills. The separate Pharmacy Credit
+     * Settle bill type is being deprecated in favor of the unified OPD Credit
+     * Settle bill type. Please use the OPD Due Search functionality instead.
      */
     @Deprecated
     public void createPharmacyCreditDue() {
@@ -1698,7 +1696,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
-                    "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
+                "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -1789,8 +1787,8 @@ public class CreditCompanyDueController implements Serializable {
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
             Paragraph dateRange = new Paragraph(
-                    "From: " + sdf.format(getFromDate()) +
-                            "    To: " + sdf.format(getToDate()),
+                    "From: " + sdf.format(getFromDate())
+                    + "    To: " + sdf.format(getToDate()),
                     normalFont);
             dateRange.setAlignment(Element.ALIGN_CENTER);
             dateRange.setSpacingAfter(10);
@@ -1801,7 +1799,7 @@ public class CreditCompanyDueController implements Serializable {
             table.setWidths(new float[]{1.2f, 2.5f, 3f, 1.2f, 1.2f, 2f, 2f, 2f, 2f, 2f, 2f});
 
             String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
-                    "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
+                "Billed Amount", "GOP Amount", "Paid by Patient", "Patient Due", "Paid by Company", "Company Due"};
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -2256,7 +2254,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private Map<PatientEncounter, List<Bill>> getCreditCompanyBills(List<PatientEncounter> patientEncounters, String dueType,
-                                                                    Institution filteringCreditCompany) {
+            Institution filteringCreditCompany) {
         if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
                 && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
             return Collections.emptyMap();
@@ -2600,8 +2598,8 @@ public class CreditCompanyDueController implements Serializable {
 
             Row columnHeader = sheet.createRow(rowIndex++);
             String[] headers = {
-                    "", "BHT", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient",
-                    "Patient Due", "Paid by Companies", "Total Due", "Company Details"
+                "", "BHT", "Admitted At", "Discharged At", "Final Total", "GOP by Patient", "Paid by Patient",
+                "Patient Due", "Paid by Companies", "Total Due", "Company Details"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = columnHeader.createCell(i);
@@ -2632,8 +2630,8 @@ public class CreditCompanyDueController implements Serializable {
 
                 Row subHeader = sheet.createRow(rowIndex++);
                 String[] innerHeaders = {
-                        "Company Name", "Policy Number", "Reference Number", "GOP by Company",
-                        "Paid by Company", "Company Due"
+                    "Company Name", "Policy Number", "Reference Number", "GOP by Company",
+                    "Paid by Company", "Company Due"
                 };
                 for (int i = 0; i < innerHeaders.length; i++) {
                     Cell cell = subHeader.createCell(i + 10);
@@ -2677,12 +2675,12 @@ public class CreditCompanyDueController implements Serializable {
 
             int[] footerCols = {4, 5, 6, 7, 8, 9};
             double[] footerValues = {
-                    getBilled(),
-                    getPayableByPatient(),
-                    getPaidByPatient(),
-                    getPayableByPatient() - getPaidByPatient(),
-                    getPaidByCompany(),
-                    getBilled() - (getPaidByCompany() + getPaidByPatient())
+                getBilled(),
+                getPayableByPatient(),
+                getPaidByPatient(),
+                getPayableByPatient() - getPaidByPatient(),
+                getPaidByCompany(),
+                getBilled() - (getPaidByCompany() + getPaidByPatient())
             };
 
             for (int i = 0; i < footerCols.length; i++) {
@@ -2863,7 +2861,6 @@ public class CreditCompanyDueController implements Serializable {
 //            institutionEncounters.add(newIns);
 //        }
 //    }
-
     public void createInwardCreditAccessWithFilters() {
         reportTimerController.trackReportExecution(() -> {
             HashMap m = new HashMap();
@@ -2949,7 +2946,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
-                    "Billed Amount", "Paid by Patient", "Paid by Company", "Excess Amount"};
+                "Billed Amount", "Paid by Patient", "Paid by Company", "Excess Amount"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -3036,8 +3033,8 @@ public class CreditCompanyDueController implements Serializable {
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
             Paragraph dateRange = new Paragraph(
-                    "From: " + sdf.format(getFromDate()) +
-                            "    To: " + sdf.format(getToDate()),
+                    "From: " + sdf.format(getFromDate())
+                    + "    To: " + sdf.format(getToDate()),
                     normalFont);
             dateRange.setAlignment(Element.ALIGN_CENTER);
             dateRange.setSpacingAfter(10);
@@ -3048,7 +3045,7 @@ public class CreditCompanyDueController implements Serializable {
             table.setWidths(new float[]{1.2f, 2.5f, 3f, 1.2f, 1.2f, 2f, 2f, 2f, 2f});
 
             String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
-                    "Billed Amount", "Paid by Patient", "Paid by Company", "Excess Amount"};
+                "Billed Amount", "Paid by Patient", "Paid by Company", "Excess Amount"};
 
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
@@ -3225,44 +3222,93 @@ public class CreditCompanyDueController implements Serializable {
         List<InstitutionBills> data = getItems() == null ? Collections.emptyList() : getItems();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-            CreationHelper helper = workbook.getCreationHelper();
+
             Sheet sheet = workbook.createSheet("Due Report");
 
-            XSSFFont boldFont = workbook.createFont();
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
             boldFont.setBold(true);
 
-            CellStyle headerStyle = workbook.createCellStyle();
-            headerStyle.setFont(boldFont);
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 15);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
 
             CellStyle sectionHeaderStyle = workbook.createCellStyle();
             sectionHeaderStyle.setFont(boldFont);
 
-            CellStyle dateStyle = workbook.createCellStyle();
-            dateStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy MM dd"));
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
 
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dateStyle = workbook.createCellStyle();
+            CreationHelper createHelper = workbook.getCreationHelper();
+            dateStyle.cloneStyleFrom(dataStyle);
+            dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy MM dd"));
+
+            DataFormat format = workbook.createDataFormat();
             CellStyle numberStyle = workbook.createCellStyle();
-            numberStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
 
             int rowIndex = 0;
+            int headerCount = hideStaffFee ? 8 : 9;
 
+            SimpleDateFormat sdf = new SimpleDateFormat(
+                    sessionController.getApplicationPreference().getLongDateTimeFormat()
+            );
+
+            // Credit Company
+            Row companyRow = sheet.createRow(rowIndex++);
+            Cell companyCell = companyRow.createCell(0);
+            companyCell.setCellValue(
+                    creditCompany != null ? creditCompany.getName() : "All Credit Companies"
+            );
+            companyCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
+
+            // Bill Type
+            Row billTypeRow = sheet.createRow(rowIndex++);
+            Cell billTypeCell = billTypeRow.createCell(0);
+            billTypeCell.setCellValue("Bill Type : " + (billType != null ? billType : "All"));
+            billTypeCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
+
+            // Date Filter
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From Date : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                    + " | To Date : " + (getToDate() != null ? sdf.format(getToDate()) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TITLE
+            // =========================
             Row titleRow = sheet.createRow(rowIndex++);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("DUE SEARCH");
-            titleCell.setCellStyle(sectionHeaderStyle);
-
-            Row periodRow = sheet.createRow(rowIndex++);
-            periodRow.createCell(0).setCellValue("From :");
-            if (getFromDate() != null) {
-                Cell fromCell = periodRow.createCell(1);
-                fromCell.setCellValue(getFromDate());
-                fromCell.setCellStyle(dateStyle);
-            }
-            periodRow.createCell(3).setCellValue("To :");
-            if (getToDate() != null) {
-                Cell toCell = periodRow.createCell(4);
-                toCell.setCellValue(getToDate());
-                toCell.setCellStyle(dateStyle);
-            }
+            titleCell.setCellValue("Credit Company Due Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
 
             rowIndex++;
 
@@ -3279,8 +3325,6 @@ public class CreditCompanyDueController implements Serializable {
             }
             headerIndex = createHeaderCell(headerRow, headerIndex, "Paid Amount", headerStyle);
             createHeaderCell(headerRow, headerIndex, "Due Amount", headerStyle);
-
-            int headerCount = hideStaffFee ? 8 : 9;
 
             for (InstitutionBills institutionBills : data) {
                 if (institutionBills == null) {
@@ -3309,15 +3353,23 @@ public class CreditCompanyDueController implements Serializable {
                     Row dataRow = sheet.createRow(rowIndex++);
                     int dataIndex = 0;
 
-                    dataRow.createCell(dataIndex++).setCellValue(bill != null && bill.getDeptId() != null ? bill.getDeptId() : "");
-                    dataRow.createCell(dataIndex++)
-                            .setCellValue(payment.getPolicyNo() != null && !payment.getPolicyNo().isEmpty() ? payment.getPolicyNo() : "N/A");
-                    dataRow.createCell(dataIndex++)
-                            .setCellValue(payment.getReferenceNo() != null && !payment.getReferenceNo().isEmpty() ? payment.getReferenceNo() : "N/A");
-                    dataRow.createCell(dataIndex++)
-                            .setCellValue(bill != null && bill.getPatient() != null && bill.getPatient().getPerson() != null
-                                    ? bill.getPatient().getPerson().getNameWithTitle()
-                                    : "");
+                    Cell d0 = dataRow.createCell(dataIndex++);
+                    d0.setCellValue(bill != null && bill.getDeptId() != null ? bill.getDeptId() : "");
+                    d0.setCellStyle(dataStyle);
+
+                    Cell d1 = dataRow.createCell(dataIndex++);
+                    d1.setCellValue(payment.getPolicyNo() != null && !payment.getPolicyNo().isEmpty() ? payment.getPolicyNo() : "N/A");
+                    d1.setCellStyle(dataStyle);
+
+                    Cell d2 = dataRow.createCell(dataIndex++);
+                    d2.setCellValue(payment.getReferenceNo() != null && !payment.getReferenceNo().isEmpty() ? payment.getReferenceNo() : "N/A");
+                    d2.setCellStyle(dataStyle);
+
+                    Cell d3 = dataRow.createCell(dataIndex++);
+                    d3.setCellValue(bill != null && bill.getPatient() != null && bill.getPatient().getPerson() != null
+                            ? bill.getPatient().getPerson().getNameWithTitle()
+                            : "");
+                    d3.setCellStyle(dataStyle);
 
                     Cell billDateCell = dataRow.createCell(dataIndex++);
                     if (bill != null && bill.getCreatedAt() != null) {
@@ -3325,6 +3377,7 @@ public class CreditCompanyDueController implements Serializable {
                         billDateCell.setCellStyle(dateStyle);
                     } else {
                         billDateCell.setCellValue("");
+                        billDateCell.setCellStyle(dataStyle);
                     }
 
                     Cell billedAmountCell = dataRow.createCell(dataIndex++);
@@ -3365,7 +3418,7 @@ public class CreditCompanyDueController implements Serializable {
                 Row totalRow = sheet.createRow(rowIndex++);
                 Cell totalLabelCell = totalRow.createCell(0);
                 totalLabelCell.setCellValue("Total");
-                totalLabelCell.setCellStyle(sectionHeaderStyle);
+                totalLabelCell.setCellStyle(headerStyle);
 
                 for (int i = 1; i < 5; i++) {
                     totalRow.createCell(i);
@@ -3401,7 +3454,7 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=Credit Company Due_Report.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Credit_Company_Due_Report.xlsx");
             try (OutputStream outputStream = response.getOutputStream()) {
                 workbook.write(outputStream);
                 facesContext.responseComplete();
