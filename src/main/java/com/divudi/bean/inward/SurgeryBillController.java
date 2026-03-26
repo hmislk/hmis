@@ -261,11 +261,14 @@ public class SurgeryBillController implements Serializable {
         PatientEncounter procedure = getSurgeryBill().getProcedure();
 
         if (procedure.getId() == null || procedure.getId() == 0) {
-            procedure.setParentEncounter(getSurgeryBill().getPatientEncounter());
             procedure.setCreatedAt(new Date());
             procedure.setCreater(getSessionController().getLoggedUser());
-
+            // Persist without parentEncounter first to avoid cascade issues with
+            // the detached admission entity in the persistence context
             getPatientEncounterFacade().create(procedure);
+            // Now link to parent and update
+            procedure.setParentEncounter(getSurgeryBill().getPatientEncounter());
+            getPatientEncounterFacade().edit(procedure);
         } else {
             getPatientEncounterFacade().edit(procedure);
         }
