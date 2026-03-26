@@ -975,9 +975,8 @@
                                                         <p:outputLabel value="Select a Template" class="form-label"></p:outputLabel>
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-8">
-                                                        <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
+                                                <div class="d-flex justify-content-between">
+                                                    <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems
                                                                 value="#{patientEncounterController.userDocumentTemplates}"
@@ -985,26 +984,23 @@
                                                                 itemLabel="#{dt.name}"
                                                                 itemValue="#{dt}"></f:selectItems>
                                                             <p:ajax update="medicalCertDatePanel" process="somTemplates" />
-                                                        </p:selectOneMenu>
-                                                    </div>
-                                                    <div class="col-2">
+                                                    </p:selectOneMenu>
+                                                    <div class="d-flex gap-2">
                                                         <p:commandButton
                                                             id="btnRefreshTemplates"
                                                             value="Refresh"
-                                                            class="ui-button-info"
+                                                            class="ui-button-info mx-2"
                                                             icon="fas fa-sync-alt"
                                                             title="Refresh template list"
                                                             process="btnRefreshTemplates"
                                                             update="somTemplates"
                                                             action="#{patientEncounterController.refreshUserDocumentTemplates}">
                                                         </p:commandButton>
-                                                    </div>
-                                                    <div class="col-2">
                                                         <p:commandButton
                                                             id="btnGenerateNewDocument"
                                                             value="Generate"
                                                             class="ui-button-warning"
-                                                            icon="fas fa-arrows-rotate"
+                                                            icon="fas fa-spinner"
                                                             process="btnGenerateNewDocument somTemplates medicalCertDatePanel"
                                                             update="lstEncounterDocs gpReferralDoc"
                                                             action="#{patientEncounterController.generateAndAddDocumentFromTemplate}">
