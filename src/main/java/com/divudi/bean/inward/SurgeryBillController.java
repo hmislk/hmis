@@ -167,6 +167,15 @@ public class SurgeryBillController implements Serializable {
      * blockingBillsForDelete is populated so the UI can show a warning.
      */
     public void checkAndDeleteSurgery(Bill surgery) {
+        if (surgery == null || surgery.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("Admission ?");
+            return;
+        }
+        if (surgery.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
+            return;
+        }
+
         selectedSurgeryToDelete = surgery;
         blockingBillsForDelete = findActiveBillsByForwardRef(surgery);
 
@@ -178,6 +187,7 @@ public class SurgeryBillController implements Serializable {
 
         // Safe to retire
         retireSurgeryBill(surgery);
+        getBillBean().updateBatchBill(surgery);
         surgeryList = null; // refresh list
         JsfUtil.addSuccessMessage("Surgery removed successfully.");
     }

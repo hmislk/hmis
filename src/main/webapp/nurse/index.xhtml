@@ -186,8 +186,12 @@
                                                             value="Add Surgeries"
                                                             icon="fa fa-clock"
                                                             ajax="false"
+                                                            rendered="#{admissionController.current ne null and not admissionController.current.paymentFinalized}"
                                                             action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                                             class="w-100">
+                                                            <f:setPropertyActionListener
+                                                                value="#{admissionController.current}"
+                                                                target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
                                                         </p:commandButton>
 
                                                         <p:commandButton
@@ -196,6 +200,9 @@
                                                             ajax="false"
                                                             action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
                                                             class="w-100">
+                                                            <f:setPropertyActionListener
+                                                                value="#{admissionController.current}"
+                                                                target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
                                                         </p:commandButton>
 
                                                         <p:commandButton

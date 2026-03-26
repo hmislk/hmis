@@ -329,6 +329,7 @@
                                     value="Add Surgeries"
                                     icon="fa fa-clock"
                                     ajax="false"
+                                    rendered="#{not admissionController.current.paymentFinalized}"
                                     action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
