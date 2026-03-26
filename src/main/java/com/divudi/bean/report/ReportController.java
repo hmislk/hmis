@@ -5425,7 +5425,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
     
     
-   // Filters for expiry_item_report
+   // Filters for test_wise_count_report
     public Map<String, Object> getFiltersForTestWiseCountReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
@@ -5438,16 +5438,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return filters;
     }
     
-    public String currentDateTime(){
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
-        return sdf.format(new Date());
-    }
-    
     public void exportTestWiseCountReportToPDF() {
-//        if (testWiseCounts == null || testWiseCounts.isEmpty()) {
-//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-//            return;
-//        }
+        if (testWiseCounts == null || testWiseCounts.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
         com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -5539,9 +5535,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             context.responseComplete();
 
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class
-                    .getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
-        }
+            Logger.getLogger(ReportController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+        } 
     }
     
     
