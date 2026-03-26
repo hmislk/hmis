@@ -341,6 +341,7 @@ public class PaymentService {
 
                 paymentFacade.create(p);
                 cashbookService.writeCashBookEntryAtPaymentCreation(p);
+                drawerService.updateDrawer(p);
                 ps.add(p);
             }
         } else {
@@ -351,7 +352,7 @@ public class PaymentService {
             p.setCreatedAt(new Date());
             p.setCreater(webUser);
             p.setPaymentMethod(pm);
-            
+
             switch (pm) {
                 case Cash:
                     p.setPaidValue(bill.getNetTotal());
