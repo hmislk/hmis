@@ -16,11 +16,13 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h:outputText value="Float Transfer Receive"/>
+                                    <i class="fa fa-inbox me-2"/>
+                                    <h:outputText value="Receive Float Transfer"/>
                                 </div>
                                 <div>
                                     <p:commandButton
                                         value="Back"
+                                        icon="fa fa-arrow-left"
                                         class="ui-button-secondary"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
@@ -41,15 +43,16 @@
                                     <h:outputText value="#{financialTransactionController.currentBill.referenceBill.fromWebUser.webUserPerson.nameWithTitle}" >
                                     </h:outputText>
 
-                                    <h:outputText value="Transfer At" >
+                                    <h:outputText value="Transferred At" >
                                     </h:outputText>
                                     <h:outputText value="#{financialTransactionController.currentBill.referenceBill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </h:outputText>
 
-                                    <h:outputText value="Value" class="mx-2" >
+                                    <h:outputText value="Transfer Total" >
                                     </h:outputText>
                                     <h:outputText style="font-weight: bold" value="#{financialTransactionController.currentBill.referenceBill.absoluteNetTotalTransient}" >
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:panelGrid>
                             </div>

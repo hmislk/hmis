@@ -325,16 +325,26 @@
                                     </div>
                                 </ui:repeat>
 
-                                <p:commandButton 
-                                    value="Add Surgeries" 
+                                <p:commandButton
+                                    value="Add Surgeries"
                                     icon="fa fa-clock"
                                     ajax="false"
+                                    rendered="#{not admissionController.current.paymentFinalized}"
                                     action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
-                                        />
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Manage Surgeries"
+                                    icon="fa fa-list"
+                                    ajax="false"
+                                    action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
                                 </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
@@ -373,29 +383,43 @@
 
                         <p:panel header="Clinical Data"  class="m-1">
                             <div class="d-grid gap-3">
-                                <p:commandButton 
+                                <p:commandButton
                                     value="Patient History"
-                                    action="#{patientController.toEmrPatientProfile}"
+                                    action="#{patientController.navigateToPatientProfileFromAdmissionProfile()}"
                                     ajax="false"
-                                    icon="fa fa-history" 
+                                    icon="fa fa-history"
                                     styleClass="mb-2 w-100">
-                                    <f:setPropertyActionListener 
+                                    <f:setPropertyActionListener
                                         value="#{admissionController.current.patient}"
                                         target="#{patientController.current}" />
                                 </p:commandButton>
                                 <p:commandButton
-                                    value="Curated Clinical Summary"
-                                    action="#{admissionController.navigateToInpatientClinicalData}"
+                                    value="Clinical Notes"
                                     ajax="false"
-                                    icon="fa fa-chart-line"
+                                    action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
+                                    icon="fa fa-file-medical-alt"
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton
-                                    value="Clinical Assessments"
+                                    value="Ward Medications"
                                     ajax="false"
-                                    action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
-                                    icon="fa fa-stethoscope"
+                                    action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(admissionController.current)}"
+                                    icon="fa fa-pills"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
                                     rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
+                                    value="Medicine Timeline"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToWardMedicinesTimeline(admissionController.current)}"
+                                    icon="fa fa-project-diagram"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Discharge Medications"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToDischargeMedicinesFromAdmission(admissionController.current)}"
+                                    icon="fa fa-prescription-bottle-alt"
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton 

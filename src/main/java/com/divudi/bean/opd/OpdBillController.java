@@ -1452,6 +1452,54 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
 
+    public void qtyChangeListener(BillEntry be) {
+        if (be == null || be.getBillItem() == null || be.getBillItem().getItem() == null) {
+            return;
+        }
+        BillItem bi = be.getBillItem();
+        Double qty = bi.getQty();
+        if (qty == null) {
+            JsfUtil.addErrorMessage("Quantity cannot be empty.");
+            return;
+        }
+        if (qty < 0) {
+            bi.setQty(null);
+            JsfUtil.addErrorMessage("Quantity cannot be negative. Please enter a positive value.");
+            return;
+        }
+        if (qty % 1 != 0) {
+            JsfUtil.addErrorMessage("Quantity cannot be a decimal value. Please enter a whole number.");
+            return;
+        }
+        bi.setNetValue(bi.getRate() * qty);
+        if (bi.getItem().isVatable()) {
+            bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
+        } else {
+            bi.setVat(0.0);
+        }
+        bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+        calTotals();
+        if (qty == 0.0) {
+            JsfUtil.addErrorMessage("Quantity is zero. Total fee has been set to 0.");
+        } else {
+            JsfUtil.addSuccessMessage("Quantity updated.");
+        }
+    }
+
+    public void baseRateChangeListener(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.getTmpChangedValue() == null || bf.getTmpChangedValue() < 0) {
+            JsfUtil.addErrorMessage("Invalid rate value.");
+            return;
+        }
+        lstBillItems = null;
+        getLstBillItems();
+        calTotals();
+        JsfUtil.addSuccessMessage("Base rate updated.");
+    }
+
     public void changeBillDoctorByFee(BillFee bf) {
         if (bf == null) {
             return;
@@ -3490,6 +3538,30 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
             }
         }
+
+        for (BillEntry be : getLstBillEntries()) {
+            if (be.getBillItem() == null || be.getBillItem().getItem() == null) {
+                continue;
+            }
+            if (!be.getBillItem().getItem().isRequestForQuentity()) {
+                continue;
+            }
+            String itemName = be.getBillItem().getItem().getName();
+            Double qty = be.getBillItem().getQty();
+            if (qty == null) {
+                JsfUtil.addErrorMessage("Quantity is missing for item: " + itemName);
+                return true;
+            }
+            if (qty <= 0) {
+                JsfUtil.addErrorMessage("Quantity must be a positive value for item: " + itemName);
+                return true;
+            }
+            if (qty % 1 != 0) {
+                JsfUtil.addErrorMessage("Quantity cannot be a decimal value for item: " + itemName);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -3599,6 +3671,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
                 setCurrentBillItemQty(null);
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
+                return;
+            }
+            if (getCurrentBillItemQty() < 0) {
+                setCurrentBillItemQty(null);
+                JsfUtil.addErrorMessage("Quantity cannot be negative. Please enter a positive value.");
+                return;
+            }
+            if (getCurrentBillItemQty() % 1 != 0) {
+                JsfUtil.addErrorMessage("Quantity cannot be a decimal value. Please enter a whole number.");
                 return;
             }
         } else {
