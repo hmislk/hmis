@@ -16,6 +16,7 @@ import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OpdBillingStrategy;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
+import static com.divudi.core.data.SessionNumberType.ByCategory;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemDTO;
@@ -3751,22 +3752,40 @@ public class BillBeanController implements Serializable {
             getBillItemFacade().create(billEntry.getBillItem());
         }
         
-        if (billEntry.getBillItem().getItem().isPrintSessionNumber()) {
-            String serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDay(sessionController.getInstitution(), billEntry.getBillItem().getItem().getCategory());
-            billEntry.getBillItem().setSessionId(serialNumber);
-
-            getBillItemFacade().edit(billEntry.getBillItem());
-
+        String serialNumber = "";
+        
+        BillItem currentBillItem = billEntry.getBillItem();
+        System.out.println("currentBillItem = " + currentBillItem);
+        
+        switch (currentBillItem.getItem().getSessionNumberType()){
+            case ByBill:
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingBill(sessionController.getDepartment());
+                break;
+            case ByCategory:
+            case BySubCategory:    
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingCategory(sessionController.getDepartment(),currentBillItem.getItem().getCategory());
+                break;
+            case ByItem:
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingItem(sessionController.getDepartment(),currentBillItem.getItem());
+                break;
+            case ByItemDepatrment:
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingItemDeDepartment(sessionController.getDepartment(),currentBillItem.getItem().getDepartment());
+                break;
+            case ByDoctor:
+            case ByDoctorSession:
+                serialNumber = "";
+                break;
+            case None:
+                break;
         }
+                
+        //Update Session Number
+        billEntry.getBillItem().setSessionId(serialNumber);
+        getBillItemFacade().edit(billEntry.getBillItem());
 
         saveBillComponent(billEntry, bill, user);
         saveBillFee(billEntry, bill, user);
-
-        //System.out.println("BillItems().size() = " + b.getBillItems().size());
-        for (BillItem bi : bill.getBillItems()) {
-            //System.out.println("bif = " + bi.getBillFees().size());
-        }
-
+        
         return billEntry.getBillItem();
     }
 
@@ -3801,14 +3820,39 @@ public class BillBeanController implements Serializable {
         if (billEntry.getBillItem().getId() == null) {
             getBillItemFacade().create(billEntry.getBillItem());
         }
-
-        if (billEntry.getBillItem().getItem().isPrintSessionNumber()) {
-            String serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDay(sessionController.getInstitution(), billEntry.getBillItem().getItem().getCategory());
-            billEntry.getBillItem().setSessionId(serialNumber);
-
-            getBillItemFacade().edit(billEntry.getBillItem());
-
+        
+        String serialNumber = "";
+        
+        BillItem currentBillItem = billEntry.getBillItem();
+        System.out.println("currentBillItem = " + currentBillItem);
+        
+        switch (currentBillItem.getItem().getSessionNumberType()){
+            case ByBill:
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingBill(sessionController.getDepartment());
+                break;
+            case ByCategory:
+            case BySubCategory:    
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingCategory(sessionController.getDepartment(),currentBillItem.getItem().getCategory());
+                break;
+            case ByItem:
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingItem(sessionController.getDepartment(),currentBillItem.getItem());
+                break;
+            case ByItemDepatrment:
+                serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingItemDeDepartment(sessionController.getDepartment(),currentBillItem.getItem().getDepartment());
+                break;
+            case ByDoctor:
+                serialNumber = "";
+                break;
+            case ByDoctorSession:
+                serialNumber = "";
+                break;
+            case None:
+                break;
         }
+                
+        //Update Session Number
+        billEntry.getBillItem().setSessionId(serialNumber);
+        getBillItemFacade().edit(billEntry.getBillItem());
 
         saveBillComponentForOpdBill(billEntry, bill, user);
         saveBillFeeForOpdBill(billEntry, bill, user, billFeeBundleEntries);
