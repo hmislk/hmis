@@ -11066,7 +11066,7 @@ public class PharmacyReportController implements Serializable {
             document.open();
             String institutionName= sessionController.getInstitution()!= null ? sessionController.getInstitution().getName(): "No Logged Institution";
             document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Pharmacy Sale Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Sales Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -12979,14 +12979,14 @@ public class PharmacyReportController implements Serializable {
         response.reset();
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + dates+".xlsx\"");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "_" + dates + ".xlsx\"");
         Map<String, Object> filters = getFiltersForCostOfGoodSoldSaleReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Pharmacy Sales Report");
             int rowIndex = 0;
             if (filters != null && !filters.isEmpty()) {
-                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Cost of Good Sold-Sale Report", filters);
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Pharmacy Sales Report", filters);
             }
             createHeaderRow(sheet, rowIndex);
             populateDataRows(sheet, bills, rowIndex + 1);
