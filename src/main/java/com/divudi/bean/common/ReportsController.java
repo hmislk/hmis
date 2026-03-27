@@ -2063,10 +2063,10 @@ public class ReportsController implements Serializable {
             String[] headers;
 
             if (isVisitOP){
-                headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Recieved Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "Invoice No."};
+                headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Received Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "Invoice No."};
                 columnWidths = new float[]{2f, 2f, 2f, 3f, 2f, 3f, 3f, 2f,1f,3f};
             } else{
-                headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Recieved Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "BHT No.","Invoice No."};
+                headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Received Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "BHT No.","Invoice No."};
                 columnWidths = new float[]{2f, 2f, 2f, 3f, 2f, 3f, 3f, 2f,1f,2f,3f};
             }
             table.setWidths(columnWidths);
