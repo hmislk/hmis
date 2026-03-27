@@ -148,7 +148,9 @@
                                         <p:tab title="Additional Details" >
                                             <h:panelGrid columns="2" >
                                                 <h:outputText value="Session Numbering" ></h:outputText>
-                                                <p:selectOneMenu  value="#{serviceController.current.sessionNumberType}" class="form-control">
+                                                <p:selectOneMenu  
+                                                    value="#{serviceController.current.sessionNumberType}" 
+                                                    class="form-control">
                                                     <f:selectItem itemLabel="Please select Session Numbering"/>
                                                     <f:selectItems value="#{serviceController.sessionNumberType}"/>
                                                 </p:selectOneMenu>
