@@ -4900,4 +4900,27 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    private int staleEncounterDays = 60;
+
+    public void dischargeStaleEncounters() {
+        try {
+            String sql = "UPDATE patientencounter "
+                    + "SET discharged = 1 "
+                    + "WHERE discharged = 0 AND paymentFinalized = 0 "
+                    + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    public int getStaleEncounterDays() {
+        return staleEncounterDays;
+    }
+
+    public void setStaleEncounterDays(int staleEncounterDays) {
+        this.staleEncounterDays = staleEncounterDays;
+    }
+
 }

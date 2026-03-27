@@ -1015,6 +1015,32 @@
                                             <p:messages />
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Discharge Stale Encounters</strong></td>
+                                        <td>
+                                            Marks all undischarged, non-finalized encounters older than the specified
+                                            number of days as discharged. Use this to clear out accumulated historical
+                                            records that were never properly discharged.
+                                            <br/>
+                                            <strong>Days older than:</strong>
+                                            <p:inputText value="#{dataAdministrationController.staleEncounterDays}"
+                                                         size="5" style="width:60px;" />
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.dischargeStaleEncounters()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Discharge Stale"
+                                                styleClass="ui-button-danger m-1"
+                                                icon="pi pi-sign-out"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will discharge all undischarged encounters older than the specified days. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <p:messages />
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </p:tab>
