@@ -634,17 +634,17 @@
                         rendered="#{webUserController.hasPrivilege('InwardReport')}" >
                     </p:menuitem>
 
-                </p:submenu>
+                    <p:menuitem
+                        ajax="false"
+                        id="smNursingWorkBench"
+                        value="Nursing WorkBench"
+                        title="Nursing WorkBench"
+                        icon="fa-solid fa-user-nurse"
+                        rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                        action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">
+                    </p:menuitem>
 
-                <!--            Nurce Section-->
-                <p:menuitem
-                    ajax="false" 
-                    id="smNursingWorkBench"
-                    style="zoom: 1.2;"
-                    icon="fa-solid fa-user-nurse"
-                    rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
-                    action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">   
-                </p:menuitem>
+                </p:submenu>
 
                 <!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
