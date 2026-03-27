@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
             <ui:define name="content">
-                <h:form>
+                <h:form id="nurseForm">
 
                     <h:panelGroup rendered="#{!webUserController.hasPrivilege('NursingWorkBench')}">
                         <na:not_authorize />
@@ -50,6 +50,11 @@
                             <p:splitter  styleClass="mb-3" widgetVar="splitter" onResizeEnd="">
                                 <p:splitterPanel minSize="15" size="15" styleClass="flex align-items-center justify-content-center" >
                                     <div class="card m-3">
+                                        <div class="text-center p-2 fw-bold border-bottom">
+                                            <i class="fa fa-building-o me-1"/>
+                                            <h:outputText value="#{sessionController.department.name}" rendered="#{sessionController.department ne null}"/>
+                                            <h:outputText value="No Department" rendered="#{sessionController.department eq null}" style="color: red;"/>
+                                        </div>
                                         <p:tabView  class="m-2">
                                             <p:tab>
                                                 <f:facet name="title">
@@ -57,13 +62,14 @@
                                                 </f:facet>
 
                                                 <ui:repeat value="#{nursingWorkBenchController.roomList}" var="room">
-                                                    <p:commandButton 
-                                                        ajax="false"
+                                                    <p:commandButton
                                                         value="#{room.currentRoomNo}"
                                                         class="#{room.inPatient ? 'ui-button-warning w-100 mt-2' : 'ui-button-secondary w-100 mt-2'}"
                                                         disabled="#{! room.inPatient}"
                                                         title="#{room.currentRoomNo}"
-                                                        action="#{nursingWorkBenchController.navigateToAdmissionProfilePage(room.admissionId)}">
+                                                        action="#{nursingWorkBenchController.selectAdmission(room.admissionId)}"
+                                                        update=":nurseForm:patientPanel"
+                                                        process="@this">
                                                     </p:commandButton>
                                                 </ui:repeat>
 
@@ -74,12 +80,13 @@
                                                 </f:facet>
 
                                                 <ui:repeat value="#{nursingWorkBenchController.bhtList}" var="bht">
-                                                    <p:commandButton 
-                                                        ajax="false"
+                                                    <p:commandButton
                                                         value="#{bht.bhtNo}"
                                                         class="ui-button-primary w-100 mt-2"
                                                         title="#{bht.bhtNo}"
-                                                        action="#{nursingWorkBenchController.navigateToAdmissionProfilePage(bht.admissionId)}">
+                                                        action="#{nursingWorkBenchController.selectAdmission(bht.admissionId)}"
+                                                        update=":nurseForm:patientPanel"
+                                                        process="@this">
                                                     </p:commandButton>
                                                 </ui:repeat>
 
@@ -89,6 +96,24 @@
                                     </div>
                                 </p:splitterPanel>
                                 <p:splitterPanel minSize="85" size="85" styleClass="flex align-items-center justify-content-center">
+                                    <h:panelGroup id="patientPanel">
+                                    <h:panelGroup rendered="#{admissionController.current ne null and admissionController.current.patient ne null}">
+                                        <div class="m-3">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-user"/>
+                                                    <h:outputLabel value="Selected Patient" class="mx-2"/>
+                                                </f:facet>
+                                                <div class="d-flex gap-4 flex-wrap">
+                                                    <span><strong>Name: </strong><h:outputText value="#{admissionController.current.patient.person.nameWithTitle}"/></span>
+                                                    <span><strong>BHT: </strong><h:outputText value="#{admissionController.current.bhtNo}"/></span>
+                                                    <span><strong>Age: </strong><h:outputText value="#{admissionController.current.patient.person.ageAsString}"/></span>
+                                                    <span><strong>Gender: </strong><h:outputText value="#{admissionController.current.patient.person.sex}"/></span>
+                                                    <span><strong>NIC: </strong><h:outputText value="#{empty admissionController.current.patient.person.nic ? 'N/A' : admissionController.current.patient.person.nic}"/></span>
+                                                </div>
+                                            </p:panel>
+                                        </div>
+                                    </h:panelGroup>
                                     <div class="row m-3">
                                         <h:panelGroup  rendered="true">
                                             <div class="col-2">
@@ -384,7 +409,7 @@
                                             </div>
                                         </h:panelGroup>
                                     </div>
-
+                                    </h:panelGroup>
                                 </p:splitterPanel>
                             </p:splitter>
 
