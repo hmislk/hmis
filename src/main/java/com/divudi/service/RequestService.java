@@ -64,6 +64,24 @@ public class RequestService {
         return req;
     }
 
+    public boolean hasPendingDrawerAdjustmentRequest(WebUser requester) {
+        if (requester == null) {
+            return false;
+        }
+        String jpql = "Select count(q) from Request q "
+                + " where q.retired = :ret "
+                + " and q.requester = :requester "
+                + " and q.requestType = :type "
+                + " and q.status = :status ";
+        HashMap params = new HashMap();
+        params.put("ret", false);
+        params.put("requester", requester);
+        params.put("type", RequestType.DRAWER_ADJUSTMENT);
+        params.put("status", RequestStatus.PENDING);
+        Long count = requestFacade.countByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
     public List<Request> fillAllRequest(
             Date fromDate,
             Date toDate,
