@@ -4758,7 +4758,6 @@ public class FinancialTransactionController implements Serializable {
             boolean hasCollections = bundle != null
                     && bundle.getBundles() != null
                     && !bundle.getBundles().isEmpty()
-                    && bundle.getTotal() != null
                     && bundle.getTotal() > 0.0;
             if (hasCollections) {
                 double totalHandedOver = getTotalCompletedHandoverAmountSinceShiftStart(
@@ -5785,7 +5784,7 @@ public class FinancialTransactionController implements Serializable {
         if (bills == null || bills.isEmpty()) {
             return 0.0;
         }
-        return bills.stream().mapToDouble(b -> b.getTotal() != null ? b.getTotal() : 0.0).sum();
+        return bills.stream().mapToDouble(b -> b.getTotal()).sum();
     }
 
     public boolean isHandoverRequiredButNotComplete() {
@@ -5800,7 +5799,7 @@ public class FinancialTransactionController implements Serializable {
         if (bundle == null || bundle.getBundles() == null || bundle.getBundles().isEmpty()) {
             return false;
         }
-        double totalCollections = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+        double totalCollections = bundle.getTotal();
         if (totalCollections <= 0.0) {
             return false;
         }
