@@ -126,6 +126,104 @@ public class SurgeryBillController implements Serializable {
         return "/theater/inward_bill_surgery?faces-redirect=true";
     }
 
+    public String navigateToSurgeryListFromAdmissionProfile() {
+        PatientEncounter pe1 = getSurgeryBill().getPatientEncounter();
+        resetSurgeryBillValues();
+        getSurgeryBill().setPatientEncounter(pe1);
+        surgeryList = null;
+        return "/theater/inward_bill_surgery_list?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryListFromMenu() {
+        resetSurgeryBillValues();
+        surgeryList = null;
+        return "/theater/inward_bill_surgery_list?faces-redirect=true";
+    }
+
+    // -------------------------------------------------------------------------
+    // Surgery list & delete
+    // -------------------------------------------------------------------------
+
+    private List<Bill> surgeryList;
+    private Bill selectedSurgeryToDelete;
+    private List<Bill> blockingBillsForDelete;
+
+    public List<Bill> getSurgeryList() {
+        if (surgeryList == null && getSurgeryBill().getPatientEncounter() != null) {
+            String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                    + " AND b.billType = :bt AND b.patientEncounter = :pe ORDER BY b.createdAt";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("bt", BillType.SurgeryBill);
+            params.put("pe", getSurgeryBill().getPatientEncounter());
+            surgeryList = getBillFacade().findByJpql(jpql, params);
+        }
+        return surgeryList;
+    }
+
+    /**
+     * Called when user clicks Delete on a surgery row.
+     * Checks for active child bills (professional, service, pharmacy, store)
+     * linked via forwardReferenceBill. If any exist the delete is blocked and
+     * blockingBillsForDelete is populated so the UI can show a warning.
+     */
+    public void checkAndDeleteSurgery(Bill surgery) {
+        if (surgery == null || surgery.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("Admission ?");
+            return;
+        }
+        if (surgery.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
+            return;
+        }
+
+        selectedSurgeryToDelete = surgery;
+        blockingBillsForDelete = findActiveBillsByForwardRef(surgery);
+
+        if (!blockingBillsForDelete.isEmpty()) {
+            // Do not delete — UI will render the warning panel
+            JsfUtil.addErrorMessage("This surgery has related bills that must be cancelled first. See the list below.");
+            return;
+        }
+
+        // Safe to retire
+        retireSurgeryBill(surgery);
+        getBillBean().updateBatchBill(surgery);
+        surgeryList = null; // refresh list
+        JsfUtil.addSuccessMessage("Surgery removed successfully.");
+    }
+
+    private List<Bill> findActiveBillsByForwardRef(Bill surgery) {
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                + " AND b.forwardReferenceBill = :surg";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("surg", surgery);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    private void retireSurgeryBill(Bill surgery) {
+        surgery.setRetired(true);
+        surgery.setRetiredAt(new Date());
+        surgery.setRetirer(getSessionController().getLoggedUser());
+        getBillFacade().edit(surgery);
+
+        // Also retire the linked procedure PatientEncounter
+        if (surgery.getProcedure() != null && surgery.getProcedure().getId() != null) {
+            PatientEncounter proc = surgery.getProcedure();
+            proc.setRetired(true);
+            proc.setRetiredAt(new Date());
+            proc.setRetirer(getSessionController().getLoggedUser());
+            getPatientEncounterFacade().edit(proc);
+        }
+    }
+
+    public Bill getSelectedSurgeryToDelete() {
+        return selectedSurgeryToDelete;
+    }
+
+    public List<Bill> getBlockingBillsForDelete() {
+        return blockingBillsForDelete;
+    }
+
     private void updateBillFee(BillFee bf) {
         getBillFeeFacade().edit(bf);
         updateBillItem(bf.getBillItem());
@@ -253,7 +351,9 @@ public class SurgeryBillController implements Serializable {
         timedEncounterComponents = null;
         departmentBillItems = null;
         pharmacyIssues = null;
-
+        surgeryList = null;
+        selectedSurgeryToDelete = null;
+        blockingBillsForDelete = null;
     }
 
     public void saveProcedure() {
@@ -624,6 +724,21 @@ public class SurgeryBillController implements Serializable {
         if (getSurgeryBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("Final Payment is Finalized");
             return true;
+        }
+
+        // Block duplicate surgery on the same BHT (only for new saves, not edits)
+        if (getSurgeryBill().getId() == null) {
+            String dupJpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                    + " AND b.billType = :bt AND b.patientEncounter = :pe AND b.procedure.item = :item";
+            HashMap<String, Object> dupParams = new HashMap<>();
+            dupParams.put("bt", BillType.SurgeryBill);
+            dupParams.put("pe", getSurgeryBill().getPatientEncounter());
+            dupParams.put("item", getSurgeryBill().getProcedure().getItem());
+            double count = getBillFacade().findDoubleByJpql(dupJpql, dupParams);
+            if (count > 0) {
+                JsfUtil.addErrorMessage("This surgery has already been added to this BHT. Duplicate surgeries are not allowed.");
+                return true;
+            }
         }
 
         return false;
