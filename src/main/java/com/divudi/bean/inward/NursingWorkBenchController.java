@@ -67,7 +67,6 @@ public class NursingWorkBenchController implements Serializable {
     @Inject
     SearchController searchController;
 
-    private List<PatientRoomDTO> roomList;
     private List<PatientRoomDTO> bhtList;
 
     public void clearData() {
@@ -111,9 +110,8 @@ public class NursingWorkBenchController implements Serializable {
     }
 
     public String navigatetoNursingWorkBench() {
-        clearData(); // clear data
-        getPatientRooms(); // Load Room Details
-        getPatientEncounter(); // Load BHT Details
+        clearData();
+        getPatientEncounter();
         return "/nurse/index?faces-redirect=true";
     }
 
@@ -121,32 +119,8 @@ public class NursingWorkBenchController implements Serializable {
         Admission savedCurrent = admissionController.getCurrent();
         clearData();
         admissionController.setCurrent(savedCurrent);
-        getPatientRooms();
         getPatientEncounter();
         return "/nurse/index?faces-redirect=true";
-    }
-
-    public List<PatientRoomDTO> getPatientRooms() {
-        roomList = new ArrayList<>();
-        if (sessionController.getDepartment() == null) {
-            return roomList;
-        }
-
-        String jpql = "select new com.divudi.core.data.dto.PatientRoomDTO("
-                + " p.id, p.bhtNo, p.currentPatientRoom.roomFacilityCharge.room.name) "
-                + "from PatientEncounter p "
-                + "where p.discharged = false "
-                + "and p.paymentFinalized = false "
-                + "and p.currentPatientRoom.roomFacilityCharge.department = :department "
-                + "order by p.currentPatientRoom.roomFacilityCharge.room.name";
-
-        HashMap params = new HashMap();
-        params.put("department", sessionController.getDepartment());
-        roomList = patientEncounterFacade.findLightsByJpql(jpql, params);
-        for (PatientRoomDTO dto : roomList) {
-            dto.setInPatient(Boolean.TRUE);
-        }
-        return roomList;
     }
 
     public List<PatientRoomDTO> getPatientEncounter() {
@@ -168,14 +142,6 @@ public class NursingWorkBenchController implements Serializable {
         bhtList = patientEncounterFacade.findLightsByJpql(jpql, params);
 
         return bhtList;
-    }
-
-    public List<PatientRoomDTO> getRoomList() {
-        return roomList;
-    }
-
-    public void setRoomList(List<PatientRoomDTO> roomList) {
-        this.roomList = roomList;
     }
 
     public List<PatientRoomDTO> getBhtList() {

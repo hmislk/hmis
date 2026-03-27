@@ -55,44 +55,18 @@
                                             <h:outputText value="#{sessionController.department.name}" rendered="#{sessionController.department ne null}"/>
                                             <h:outputText value="No Department" rendered="#{sessionController.department eq null}" style="color: red;"/>
                                         </div>
-                                        <p:tabView  class="m-2">
-                                            <p:tab>
-                                                <f:facet name="title">
-                                                    <span style="width: 150px;">Rooms</span>
-                                                </f:facet>
-
-                                                <ui:repeat value="#{nursingWorkBenchController.roomList}" var="room">
-                                                    <p:commandButton
-                                                        value="#{room.currentRoomNo}"
-                                                        class="#{room.inPatient ? 'ui-button-warning w-100 mt-2' : 'ui-button-secondary w-100 mt-2'}"
-                                                        disabled="#{! room.inPatient}"
-                                                        title="#{room.currentRoomNo}"
-                                                        action="#{nursingWorkBenchController.selectAdmission(room.admissionId)}"
-                                                        update=":nurseForm:patientPanel"
-                                                        process="@this">
-                                                    </p:commandButton>
-                                                </ui:repeat>
-
-                                            </p:tab>
-                                            <p:tab>
-                                                <f:facet name="title">
-                                                    <span>BHT</span>
-                                                </f:facet>
-
-                                                <ui:repeat value="#{nursingWorkBenchController.bhtList}" var="bht">
-                                                    <p:commandButton
-                                                        value="#{bht.bhtNo}"
-                                                        class="ui-button-primary w-100 mt-2"
-                                                        title="#{bht.bhtNo}"
-                                                        action="#{nursingWorkBenchController.selectAdmission(bht.admissionId)}"
-                                                        update=":nurseForm:patientPanel"
-                                                        process="@this">
-                                                    </p:commandButton>
-                                                </ui:repeat>
-
-                                            </p:tab>
-
-                                        </p:tabView>
+                                        <div class="m-2">
+                                            <ui:repeat value="#{nursingWorkBenchController.bhtList}" var="bht">
+                                                <p:commandButton
+                                                    value="#{bht.bhtNo}"
+                                                    class="ui-button-primary w-100 mt-2"
+                                                    title="#{bht.currentRoomNo}"
+                                                    action="#{nursingWorkBenchController.selectAdmission(bht.admissionId)}"
+                                                    update=":nurseForm:patientPanel"
+                                                    process="@this">
+                                                </p:commandButton>
+                                            </ui:repeat>
+                                        </div>
                                     </div>
                                 </p:splitterPanel>
                                 <p:splitterPanel minSize="85" size="85" styleClass="flex align-items-center justify-content-center">
