@@ -2000,8 +2000,8 @@ public class ReportsController implements Serializable {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
 
-        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
-        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("From Date", sdf.format(getFromDate()));
+        filters.put("To Date", sdf.format(getToDate()));
         filters.put("Institution", institution != null ? institution.getName() : "All");
         filters.put("Site", site != null ? site.getName() : "All");
         filters.put("Department", department != null ? department.getName() : "All");
@@ -2012,10 +2012,11 @@ public class ReportsController implements Serializable {
     }
     
     public void exportSampleCarrierReportToPDF() {
-//        if (testWiseCounts == null || testWiseCounts.isEmpty()) {
-//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-//            return;
-//        }
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
         com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -2045,8 +2046,10 @@ public class ReportsController implements Serializable {
             document.add(new com.itextpdf.text.Paragraph("Sample Carrier Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
             document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
             document.add(new com.itextpdf.text.Paragraph(" "));
+            
+            boolean isVisitOP = "OP".equals(visitType);
 
-            int columnCount = "OP".equals(visitType) ? 10 : 11;
+            int columnCount =isVisitOP  ? 10 : 11;
             Map<String, Object> filters = getFiltersForSampleCarrierReport();
             com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
             if (infoTable != null) {
@@ -2059,7 +2062,7 @@ public class ReportsController implements Serializable {
             float[] columnWidths;
             String[] headers;
 
-            if ("OP".equals(visitType)){
+            if (isVisitOP){
                 headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Recieved Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "Invoice No."};
                 columnWidths = new float[]{2f, 2f, 2f, 3f, 2f, 3f, 3f, 2f,1f,3f};
             } else{
@@ -2087,7 +2090,7 @@ public class ReportsController implements Serializable {
                 table.addCell(textCell(row.getPatientInvestigation().getPatient().getPerson().getName(),bodyFontSmall));
                 table.addCell(textCell(patientInvestigationController.getPatientSamplesByInvestigationAsString(row.getPatientInvestigation()),bodyFontSmall));
                 table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc(),bodyFontSmall));
-                if ("IP".equals(visitType)){
+                if (!isVisitOP){
                    table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getBhtNo(),bodyFontSmall)); 
                    String invoiceNumber = row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill() != null ? row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill().getDeptId() : "_";
                    table.addCell(textCell( invoiceNumber,bodyFontSmall)); 
@@ -2106,11 +2109,11 @@ public class ReportsController implements Serializable {
     }
     
     public String fromDateFormatted(){
-        return new SimpleDateFormat("dd_MM_yyyy").format(fromDate);
+        return new SimpleDateFormat("dd_MM_yyyy").format(getFromDate());
     }
     
     public String toDateFormatted(){
-        return new SimpleDateFormat("dd_MM_yyyy").format(toDate);
+        return new SimpleDateFormat("dd_MM_yyyy").format(getToDate());
     }
     
     // PostProcessor for bill_wise_item_movement_report excel export
