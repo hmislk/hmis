@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.inward;
 
+import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
@@ -14,9 +15,12 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.WebUser;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -29,6 +33,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.service.PaymentService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,7 +45,10 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import org.json.JSONArray;
@@ -68,10 +76,13 @@ public class ApiInward {
     BillItemFacade billItemFacade;
     @EJB
     InstitutionFacade institutionFacade;
-
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    PaymentService paymentService;
 
+    @Inject
+    ApiKeyController apiKeyController;
     @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
@@ -89,11 +100,54 @@ public class ApiInward {
     public ApiInward() {
     }
 
-    //--Api
+    // =========================================================================
+    // Auth helper
+    // =========================================================================
+
+    private WebUser validateApiKey(String key) {
+        if (key == null || key.trim().isEmpty()) {
+            return null;
+        }
+        ApiKey apiKey = apiKeyController.findApiKey(key);
+        if (apiKey == null) {
+            return null;
+        }
+        WebUser user = apiKey.getWebUser();
+        if (user == null) {
+            return null;
+        }
+        if (user.isRetired()) {
+            return null;
+        }
+        if (!user.isActivated()) {
+            return null;
+        }
+        if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) {
+            return null;
+        }
+        return user;
+    }
+
+    private String unauthorizedJson() {
+        JSONObject out = new JSONObject();
+        out.put("error", "1");
+        out.put("error_description", "Unauthorized");
+        return out.toString();
+    }
+
+    // =========================================================================
+    // Endpoints
+    // =========================================================================
+
     @GET
     @Path("/admissions")
     @Produces("application/json")
-    public String getAddmissions() {
+    public String getAddmissions(@HeaderParam("Finance") String key) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
+            return unauthorizedJson();
+        }
+
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
 
@@ -102,22 +156,26 @@ public class ApiInward {
             if (!encounters.isEmpty()) {
                 for (PatientEncounter pe : encounters) {
                     JSONObject object = new JSONObject();
-                    object.put("pe_id", pe.getId());
-                    object.put("pe_bht_no", pe.getBhtNo());
-                    if (pe.getPatient().getPerson()!=null) {
-                        object.put("pe_patient_name", pe.getPatient().getPerson().getName());
-                        object.put("pe_patient_home_phone", pe.getPatient().getPerson().getPhone());
-                        object.put("pe_patient_mobile", pe.getPatient().getPerson().getMobile());
-                        object.put("pe_patient_nic", pe.getPatient().getPerson().getNic());
+                    object.put("patient_encounter_id", pe.getId());
+                    object.put("bht_no", pe.getBhtNo());
+                    object.put("patient_mrn", pe.getPatient() != null ? pe.getPatient().getPhn() : "");
+                    if (pe.getPatient() != null && pe.getPatient().getPerson() != null) {
+                        object.put("patient_name", pe.getPatient().getPerson().getName());
+                        object.put("patient_home_phone", pe.getPatient().getPerson().getPhone());
+                        object.put("patient_mobile", pe.getPatient().getPerson().getMobile());
+                        object.put("patient_nic", pe.getPatient().getPerson().getNic());
                     } else {
-                        object.put("pe_patient_name", "No Person Details");
-                        object.put("pe_patient_home_phone", "No Person Details");
-                        object.put("pe_patient_mobile", "No Person Details");
-                        object.put("pe_patient_nic", "No Person Details");
+                        object.put("patient_name", "No Person Details");
+                        object.put("patient_home_phone", "No Person Details");
+                        object.put("patient_mobile", "No Person Details");
+                        object.put("patient_nic", "No Person Details");
                     }
                     if (pe.getFinalBill() != null) {
-                        object.put("pe_patient_final_total", pe.getFinalBill().getNetTotal());
-                        object.put("pe_patient_paid_amount", pe.getFinalBill().getPaidAmount());
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
+                        object.put("net_total", netTotal);
+                        object.put("paid_amount", paidAmount);
+                        object.put("balance", netTotal - paidAmount);
                     }
                     array.put(object);
                 }
@@ -135,14 +193,69 @@ public class ApiInward {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
-        String json = jSONObjectOut.toString();
-        return json;
+        return jSONObjectOut.toString();
+    }
+
+    @GET
+    @Path("/admissions/byPhone/{phone}")
+    @Produces("application/json")
+    public String getAdmissionsByPhone(@HeaderParam("Finance") String key, @PathParam("phone") String phone) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
+            return unauthorizedJson();
+        }
+
+        JSONArray array = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+
+        try {
+            List<PatientEncounter> encounters = fetchAdmissionsByPhone(phone);
+            if (!encounters.isEmpty()) {
+                for (PatientEncounter pe : encounters) {
+                    JSONObject object = new JSONObject();
+                    object.put("patient_encounter_id", pe.getId());
+                    object.put("bht_no", pe.getBhtNo());
+                    object.put("patient_mrn", pe.getPatient() != null ? pe.getPatient().getPhn() : "");
+                    if (pe.getPatient() != null && pe.getPatient().getPerson() != null) {
+                        object.put("patient_name", pe.getPatient().getPerson().getName());
+                    } else {
+                        object.put("patient_name", "No Person Details");
+                    }
+                    if (pe.getFinalBill() != null) {
+                        double netTotal = pe.getFinalBill().getNetTotal();
+                        double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
+                        object.put("net_total", netTotal);
+                        object.put("paid_amount", paidAmount);
+                        object.put("balance", netTotal - paidAmount);
+                    }
+                    array.put(object);
+                }
+                jSONObjectOut.put("admission", array);
+                jSONObjectOut.put("error", "0");
+                jSONObjectOut.put("error_description", "");
+            } else {
+                jSONObjectOut.put("admission", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "No Data.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            jSONObjectOut.put("admission", "");
+            jSONObjectOut.put("error", "1");
+            jSONObjectOut.put("error_description", "Invalid Argument.");
+        }
+        return jSONObjectOut.toString();
     }
 
     @GET
     @Path("/banks")
     @Produces("application/json")
-    public String getBanks() {
+    public String getBanks(@HeaderParam("Finance") String key) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
+            return unauthorizedJson();
+        }
+
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -167,20 +280,25 @@ public class ApiInward {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
-        String json = jSONObjectOut.toString();
-        return json;
-
+        return jSONObjectOut.toString();
     }
 
     @GET
-    @Path("/validateAdmission/{bht_no}")
+    @Path("/validateAdmission/{bht_no}/{phone}")
     @Produces("application/json")
-    public String getAdmissionIsValidate(@PathParam("bht_no") String bht_no) {
+    public String getAdmissionIsValidate(@HeaderParam("Finance") String key,
+            @PathParam("bht_no") String bht_no,
+            @PathParam("phone") String phone) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
+            return unauthorizedJson();
+        }
+
         JSONObject jSONObjectOut = new JSONObject();
         try {
-            if (checkAdmissionIsValied(bht_no)) {
+            if (checkAdmissionIsValied(bht_no, phone)) {
                 jSONObjectOut.put("error", "0");
-                jSONObjectOut.put("error_description", "Valied");
+                jSONObjectOut.put("error_description", "Valid");
             } else {
                 jSONObjectOut.put("error", "1");
                 jSONObjectOut.put("error_description", "Not Valid");
@@ -189,46 +307,124 @@ public class ApiInward {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
-        String json = jSONObjectOut.toString();
-        return json;
-
+        return jSONObjectOut.toString();
     }
 
-//      {
-//"bank_id": 16664599,
-//"bank_name": "Amana Bank"
-//},
-//  {
-//"bank_id": 116759,
-//"bank_name": "Amarican Express"
-//},
-//  {
-//"bank_id": 62127,
-//"bank_name": "Bank Of Ceylon"
-//},
-//  {
-//"bank_id": 4584929,
-//"bank_name": "Citi Bank"
-//},
-//  {
-//"bank_id": 119179,
-//"bank_name": "Commercial Bank"
-//},
+    /**
+     * POST /payment — creates payment bill and records to payment table.
+     * Body JSON: { "bht_no": "...", "bank_id": 123, "reference_no": "...", "amount": 1000.0, "payment_date": "2024-01-01 10:00:00" }
+     */
+    @POST
+    @Path("/payment")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public String postPayment(@HeaderParam("Finance") String key, String body) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
+            return unauthorizedJson();
+        }
+
+        JSONObject jSONObjectOut = new JSONObject();
+        try {
+            JSONObject request = new JSONObject(body);
+            String bht_no = request.getString("bht_no");
+            long bank_id = request.getLong("bank_id");
+            String reference_no = request.getString("reference_no");
+            double amount = request.getDouble("amount");
+            Date paymentDate = new Date();
+            if (request.has("payment_date") && !request.isNull("payment_date")) {
+                String dateStr = request.getString("payment_date");
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    try {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        sdf.setLenient(false);
+                        paymentDate = sdf.parse(dateStr);
+                    } catch (Exception e) {
+                        jSONObjectOut.put("bill", "");
+                        jSONObjectOut.put("error", "1");
+                        jSONObjectOut.put("error_description", "Invalid payment_date format. Expected: yyyy-MM-dd HH:mm:ss");
+                        return jSONObjectOut.toString();
+                    }
+                }
+            }
+
+            PatientEncounter pe = fetchPatientEncounter(bht_no);
+            Institution bank = fetchBank(bank_id);
+
+            if (pe == null) {
+                jSONObjectOut.put("bill", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "Admission not found.");
+                return jSONObjectOut.toString();
+            }
+            if (bank == null) {
+                jSONObjectOut.put("bill", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "Bank not found.");
+                return jSONObjectOut.toString();
+            }
+            if (amount <= 0) {
+                jSONObjectOut.put("bill", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "Amount must be greater than zero.");
+                return jSONObjectOut.toString();
+            }
+
+            PaymentMethodData pmd = new PaymentMethodData();
+            pmd.getOnlineSettlement().setInstitution(bank);
+            pmd.getOnlineSettlement().setReferenceNo(reference_no);
+            pmd.getOnlineSettlement().setTotalValue(amount);
+            pmd.getOnlineSettlement().setDate(paymentDate);
+
+            Bill b = payWithPaymentRecord(PaymentMethod.OnlineSettlement, pe, amount, pmd, authenticatedUser);
+            if (b != null) {
+                JSONObject object = new JSONObject();
+                object.put("bill_no", b.getDeptId());
+                object.put("bht_no", b.getPatientEncounter().getBhtNo());
+                object.put("amount", b.getNetTotal());
+                object.put("reference_no", reference_no);
+                jSONObjectOut.put("bill", object);
+                jSONObjectOut.put("error", "0");
+                jSONObjectOut.put("error_description", "");
+            } else {
+                jSONObjectOut.put("bill", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "Payment Not Done.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            jSONObjectOut.put("bill", "");
+            jSONObjectOut.put("error", "1");
+            jSONObjectOut.put("error_description", "Invalid Argument.");
+        }
+        return jSONObjectOut.toString();
+    }
+
+    /**
+     * Legacy GET payment endpoint — kept for backward compatibility.
+     */
     @GET
     @Path("/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}")
     @Produces("application/json")
-    public String getPayment(@PathParam("bht_no") String bht_no, @PathParam("bank_id") String bank_id,
+    public String getPayment(@HeaderParam("Finance") String key,
+            @PathParam("bht_no") String bht_no, @PathParam("bank_id") String bank_id,
             @PathParam("credit_card_ref") String credit_card_ref, @PathParam("amount") String amount) {
+        WebUser authenticatedUser = validateApiKey(key);
+        if (authenticatedUser == null) {
+            return unauthorizedJson();
+        }
+
         JSONObject jSONObjectOut = new JSONObject();
         try {
             PatientEncounter pe = fetchPatientEncounter(bht_no);
             Institution bank = fetchBank(Long.parseLong(bank_id));
-            if (pe != null && bank != null && Long.parseLong(amount) > 0) {
+            double parsedAmount = Double.parseDouble(amount);
+            if (pe != null && bank != null && parsedAmount > 0) {
                 PaymentMethodData pmd = new PaymentMethodData();
-                pmd.getCreditCard().setNo(credit_card_ref);
-                pmd.getCreditCard().setInstitution(bank);
+                pmd.getOnlineSettlement().setReferenceNo(credit_card_ref);
+                pmd.getOnlineSettlement().setInstitution(bank);
 
-                Bill b = pay(PaymentMethod.OnlineSettlement, pe, Long.parseLong(amount), pmd);
+                Bill b = pay(PaymentMethod.OnlineSettlement, pe, parsedAmount, pmd, authenticatedUser);
                 if (b != null) {
                     JSONObject object = new JSONObject();
                     object.put("bill_no_ins", b.getInsId());
@@ -258,12 +454,13 @@ public class ApiInward {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
-        String json = jSONObjectOut.toString();
-        return json;
-
+        return jSONObjectOut.toString();
     }
 
-    //--Methords
+    // =========================================================================
+    // Private methods
+    // =========================================================================
+
     private List<PatientEncounter> fetchAdmissionToPay() {
         List<PatientEncounter> suggestions;
         String sql;
@@ -277,7 +474,6 @@ public class ApiInward {
                 + " order by pe.id desc";
         m.put("class", Admission.class);
         suggestions = getPatientEncounterFacade().findByJpql(sql, m, 20);
-//        //// // System.out.println("1.suggestions.size() = " + suggestions.size());
 
         sql = "select pe from PatientEncounter pe where pe.retired=false "
                 + " and type(pe)=:class "
@@ -289,38 +485,67 @@ public class ApiInward {
 
         m.put("d", 0.1);
         List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m, 20);
-//        //// // System.out.println("temps.size() = " + temps.size());
         List<PatientEncounter> removeTemps = new ArrayList<>();
         for (PatientEncounter p : temps) {
-//            //// // System.out.println("p.getFinalBill().getNetTotal() = " + p.getFinalBill().getNetTotal());
-//            //// // System.out.println("p.getFinalBill().getPaidAmount() = " + p.getFinalBill().getPaidAmount());
             double d = fetchCreditPaymentTotal(p);
             if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
                 removeTemps.add(p);
             }
-            p.getFinalBill().setPaidAmount(d + p.getFinalBill().getPaidAmount());
         }
-//        //// // System.out.println("removeTemps.size() = " + removeTemps.size());
         temps.removeAll(removeTemps);
-//        //// // System.out.println("temps.size() = " + temps.size());
-
         suggestions.addAll(temps);
-//        //// // System.out.println("2.suggestions.size() = " + suggestions.size());
-//        for (PatientEncounter pe : suggestions) {
-//            //// // System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
-//        }
+
+        return suggestions;
+    }
+
+    private List<PatientEncounter> fetchAdmissionsByPhone(String phone) {
+        List<PatientEncounter> suggestions = new ArrayList<>();
+        String sql;
+        HashMap m = new HashMap();
+
+        // Not-finalized admissions matching phone
+        sql = "select pe from PatientEncounter pe where pe.retired=false "
+                + " and type(pe)=:class "
+                + " and pe.bhtNo is not null "
+                + " and pe.paymentFinalized!=true "
+                + " and pe.discharged!=true "
+                + " and (pe.patient.person.mobile=:phone or pe.patient.person.phone=:phone"
+                + "      or pe.guardian.mobile=:phone or pe.guardian.phone=:phone) "
+                + " order by pe.id desc";
+        m.put("class", Admission.class);
+        m.put("phone", phone);
+        suggestions.addAll(getPatientEncounterFacade().findByJpql(sql, m, 20));
+
+        // Finalized with outstanding balance matching phone
+        sql = "select pe from PatientEncounter pe where pe.retired=false "
+                + " and type(pe)=:class "
+                + " and pe.bhtNo is not null "
+                + " and pe.paymentFinalized=true "
+                + " and pe.discharged=true "
+                + " and (abs(pe.finalBill.netTotal) - abs(pe.finalBill.paidAmount)) >:d "
+                + " and (pe.patient.person.mobile=:phone or pe.patient.person.phone=:phone"
+                + "      or pe.guardian.mobile=:phone or pe.guardian.phone=:phone) "
+                + " order by pe.id desc";
+        m.put("d", 0.1);
+        List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m, 20);
+        List<PatientEncounter> removeTemps = new ArrayList<>();
+        for (PatientEncounter p : temps) {
+            double d = fetchCreditPaymentTotal(p);
+            if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
+                removeTemps.add(p);
+            }
+        }
+        temps.removeAll(removeTemps);
+        suggestions.addAll(temps);
 
         return suggestions;
     }
 
     private List<Institution> fetchBanks() {
-
-        List<Institution> banks = getInstitutionController().completeInstitution(null, InstitutionType.Bank);
-
-        return banks;
+        return getInstitutionController().completeInstitution(null, InstitutionType.Bank);
     }
 
-    public boolean checkAdmissionIsValied(String bhtNo) {
+    public boolean checkAdmissionIsValied(String bhtNo, String phone) {
         String sql;
         HashMap m = new HashMap();
 
@@ -329,11 +554,13 @@ public class ApiInward {
                 + " and pe.bhtNo=:bht "
                 + " and pe.paymentFinalized!=true "
                 + " and pe.discharged!=true "
+                + " and (pe.patient.person.mobile=:phone or pe.patient.person.phone=:phone"
+                + "      or pe.guardian.mobile=:phone or pe.guardian.phone=:phone) "
                 + " order by pe.bhtNo";
         m.put("class", Admission.class);
         m.put("bht", bhtNo);
+        m.put("phone", phone);
         List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m);
-//        //// // System.out.println("1.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
         }
@@ -343,18 +570,21 @@ public class ApiInward {
                 + " and pe.paymentFinalized=true "
                 + " and pe.discharged=true "
                 + " and (abs(pe.finalBill.netTotal) - abs(pe.finalBill.paidAmount)) >:d "
+                + " and (pe.patient.person.mobile=:phone or pe.patient.person.phone=:phone"
+                + "      or pe.guardian.mobile=:phone or pe.guardian.phone=:phone) "
                 + " order by pe.bhtNo ";
-
         m.put("d", 0.1);
         temps = getPatientEncounterFacade().findByJpql(sql, m);
-//        //// // System.out.println("2.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
         }
         return false;
     }
 
-    public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd) {
+    /**
+     * New payment method: creates bill AND records to payment table.
+     */
+    public Bill payWithPaymentRecord(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
         BilledBill bill = new BilledBill();
         bill.setPatientEncounter(patientEncounter);
         bill.setPaymentMethod(paymentMethod);
@@ -364,13 +594,48 @@ public class ApiInward {
             return null;
         }
 
-        bill = saveBill(bill, pmd);
+        bill = saveBill(bill, pmd, createdBy);
+        if (bill == null) {
+            return null;
+        }
+
+        saveBillItem(bill, createdBy);
+
+        // Record payment to payment table (before updateInwardDipositList, matching UI order)
+        paymentService.createPayment(bill, paymentMethod, pmd, bill.getInstitution(), bill.getDepartment(), createdBy);
+
+        getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
+
+        if (bill.getPatientEncounter().isPaymentFinalized()) {
+            getInwardBeanController().updateFinalFill(bill.getPatientEncounter());
+            if (bill.getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                getInwardBeanController().updateCreditDetail(bill.getPatientEncounter(), bill.getPatientEncounter().getFinalBill().getNetTotal());
+            }
+        }
+
+        return getBillFacade().find(bill.getId());
+    }
+
+    /**
+     * Legacy pay method (used by GET /payment endpoint) — no payment table record.
+     */
+    public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
+        BilledBill bill = new BilledBill();
+        bill.setPatientEncounter(patientEncounter);
+        bill.setPaymentMethod(paymentMethod);
+        bill.setTotal(value);
+
+        if (errorCheck(bill, pmd)) {
+            return null;
+        }
+
+        bill = saveBill(bill, pmd, createdBy);
 
         if (bill == null) {
             return null;
         }
 
-        saveBillItem(bill);
+        saveBillItem(bill, createdBy);
 
         getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
 
@@ -385,14 +650,14 @@ public class ApiInward {
         return getBillFacade().find(bill.getId());
     }
 
-    private BilledBill saveBill(BilledBill b, PaymentMethodData pmd) {
+    private BilledBill saveBill(BilledBill b, PaymentMethodData pmd, WebUser createdBy) {
         getBillBeanController().setPaymentMethodData(b, b.getPaymentMethod(), pmd);
         Bill temp = findLastPaymentBill();
-//        //// // System.out.println("temp = " + temp);
         if (temp == null) {
             return null;
         }
         b.setBillType(BillType.InwardPaymentBill);
+        b.setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT);
         if (temp.getInstitution() != null) {
             b.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(temp.getInstitution(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         }
@@ -409,6 +674,7 @@ public class ApiInward {
         b.setTotal(dbl);
         b.setNetTotal(dbl);
         b.setCreatedAt(new Date());
+        b.setCreater(createdBy);
         b.setComments("Online Payment");
 
         if (b.getId() == null) {
@@ -416,20 +682,19 @@ public class ApiInward {
         }
 
         return b;
-
     }
 
-    private void saveBillItem(Bill b) {
+    private void saveBillItem(Bill b, WebUser createdBy) {
         BillItem temBi = new BillItem();
         temBi.setBill(b);
         temBi.setGrossValue(b.getTotal());
         temBi.setNetValue(b.getTotal());
         temBi.setCreatedAt(new Date());
+        temBi.setCreater(createdBy);
 
         if (temBi.getId() == null) {
             getBillItemFacade().create(temBi);
         }
-
     }
 
     private boolean errorCheck(Bill bill, PaymentMethodData pmd) {
@@ -448,7 +713,6 @@ public class ApiInward {
         }
 
         return false;
-
     }
 
     private PatientEncounter fetchPatientEncounter(String bht_no) {
@@ -461,18 +725,16 @@ public class ApiInward {
         m.put("class", Admission.class);
         m.put("bht", bht_no);
         PatientEncounter temp = getPatientEncounterFacade().findFirstByJpql(sql, m);
-//        //// // System.out.println("temp = " + temp);
         return temp;
     }
 
     private Institution fetchBank(Long id) {
-//        //// // System.out.println("id = " + id);
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
-                + " and i.id=" + id;
-        Institution bank = getInstitutionFacade().findFirstByJpql(sql);
-//        //// // System.out.println("bank = " + bank);
+                + " and i.id=:id";
+        m.put("id", id);
+        Institution bank = getInstitutionFacade().findFirstByJpql(sql, m);
         return bank;
     }
 
@@ -488,14 +750,10 @@ public class ApiInward {
         m.put("class", BilledBill.class);
 
         Bill b = getBillFacade().findFirstByJpql(sql, m);
-
-//        //// // System.out.println("b = " + b);
-
         return b;
     }
 
     public double fetchCreditPaymentTotal(PatientEncounter pe) {
-
         String sql;
         Map m = new HashMap();
         sql = "SELECT sum(bi.netValue) FROM BillItem bi "
@@ -507,14 +765,13 @@ public class ApiInward {
         m.put("bhtno", pe);
 
         double d = getBillItemFacade().findDoubleByJpql(sql, m);
-
-//        //// // System.out.println("d = " + d);
-
         return d;
-
     }
 
-    //--Getters and Setters
+    // =========================================================================
+    // Getters and Setters
+    // =========================================================================
+
     public UriInfo getContext() {
         return context;
     }

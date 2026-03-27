@@ -60,6 +60,7 @@ public class VmppController implements Serializable {
     // DTO Management Fields
     private VmppDto selectedVmppDto;
     private List<VmppDto> vmppDtos;
+    private List<VmppDto> pharmacyVmppListDtos;
     private List<AuditEvent> vmppAuditEvents;
 
     // Filter state for active/inactive VMPPs
@@ -433,6 +434,7 @@ public class VmppController implements Serializable {
 
     public void refreshData() {
         recreateModel();
+        pharmacyVmppListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -479,6 +481,41 @@ public class VmppController implements Serializable {
             default:
                 return "Active VMPPs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<VmppDto> getPharmacyVmppListDtos() {
+        if (pharmacyVmppListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VmppDto("
+                    + "a.id, a.name, a.code, "
+                    + "a.retired, a.inactive, v.id, v.name) "
+                    + "FROM Vmpp a "
+                    + "LEFT JOIN a.vmp v "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Pharmacy);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            pharmacyVmppListDtos = (List<VmppDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return pharmacyVmppListDtos;
+    }
+
+    public String navigateToVmppList() {
+        pharmacyVmppListDtos = null;
+        getPharmacyVmppListDtos();
+        return "/pharmacy/admin/vmpp_list?faces-redirect=true";
     }
 
     // ========================== Toggle Status ==========================

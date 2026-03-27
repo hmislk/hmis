@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -86,6 +87,7 @@ public class RequestController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
@@ -106,6 +108,28 @@ public class RequestController implements Serializable {
 
     public String navigateToBackSearchRequest() {
         return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public String navigateToDrawerAdjustmentApproveByBill(Bill billParam) {
+        if (billParam == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return null;
+        }
+        if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve drawer adjustment requests.");
+            return null;
+        }
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("bill", billParam);
+        params.put("type", RequestType.DRAWER_ADJUSTMENT);
+        String jpql = "SELECT r FROM Request r WHERE r.bill = :bill AND r.requestType = :type ORDER BY r.id DESC";
+        List<Request> found = requestFacade.findByJpql(jpql, params);
+        if (found == null || found.isEmpty()) {
+            JsfUtil.addErrorMessage("No drawer adjustment request found for this bill.");
+            return null;
+        }
+        currentRequest = found.get(0);
+        return "/cashier/drawer_adjustment_approve?faces-redirect=true";
     }
 
     public String navigateToCreateRequest(Bill bill) {
@@ -173,12 +197,27 @@ public class RequestController implements Serializable {
             return "";
         }
 
-        // Handle DRAWER_ADJUSTMENT requests by bill type
-        if (currentRequest.getBill().getBillType() == BillType.DrawerAdjustment) {
-            if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
-                JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+        // Centralised privilege check per request type.
+        // Add a new case here whenever a new RequestType requiring approval is introduced.
+        switch (currentRequest.getRequestType()) {
+            case BILL_CANCELLATION:
+                if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve bill cancellation requests.");
+                    return "";
+                }
+                break;
+            case DRAWER_ADJUSTMENT:
+                if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review drawer adjustment requests.");
+                    return "";
+                }
+                break;
+            default:
+                JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
-            }
+        }
+
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
             bills = new ArrayList<>();
             if (currentRequest.getStatus() == RequestStatus.PENDING) {
                 currentRequest.setReviewedBy(sessionController.getLoggedUser());

@@ -137,6 +137,23 @@
                                 icon="pi pi-times-circle"  
                                 styleClass="ui-button-danger">
                             </p:commandButton>
+                            
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark selected items allow to Send SMS."
+                                action="#{itemController.markSelectedItemsToAllowSnedSMS()}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark selected items allow to Send SMS"
+                                action="#{itemController.unMarkSelectedItemsToAllowSnedSMS()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
+                            </p:commandButton>
+
 
                             <p:commandButton 
                                 ajax="false" 
@@ -180,19 +197,21 @@
                                 var="i"   
                                 rowKey="#{i.id}" 
                                 rowIndexVar="s"
-                                rows="50"
+                                rows="25"
                                 selectionMode="multiple"
                                 paginator="true"
+                                style="width: 130%"
                                 selection="#{itemController.selectedList}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="50,100,250,500,1000">
+                                rowsPerPageTemplate="25,50,100,250,500,1000">
 
-                                <p:column selectionBox="true"  exportable="false" style="width: 10px;"></p:column>
+                                <p:column selectionBox="true"  exportable="false" style="width: 3em; padding: 12px;"></p:column>
 
-                                <p:column  
+                                <p:column
                                     rendered="false"
-                                    sortBy="#{i.id}" 
+                                    sortBy="#{i.id}"
                                     width="5em"
+                                    style="padding: 12px;"
                                     filterMatchMode="contains" filterBy="#{i.name}" >  
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Id" />
@@ -200,10 +219,11 @@
                                     <h:outputLabel value="#{i.id}"/>
                                 </p:column>
 
-                                <p:column  
-                                    sortBy="#{i.code}" 
+                                <p:column
+                                    sortBy="#{i.code}"
                                     width="8em;"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.code}" >  
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Code" />
@@ -211,10 +231,10 @@
                                     <h:outputLabel value="#{i.code}"/>
                                 </p:column>
 
-                                <p:column   
-                                    
+                                <p:column
                                     sortBy="#{i.name}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.name}" >  
                                     <f:facet name="header">
                                         <h:outputLabel value="Name" />
@@ -222,10 +242,11 @@
                                     <h:outputLabel value="#{i.name}"/>
                                 </p:column>
                                 
-                                 <p:column 
+                                <p:column
                                     width="9em;"
-                                    sortBy="#{i.category.name}" 
-                                    filterMatchMode="contains" 
+                                    sortBy="#{i.category.name}"
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.category.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Category" />
@@ -233,10 +254,11 @@
                                     <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="12em;"
                                     sortBy="#{i.institution.name}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.institution.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Institution" />
@@ -244,10 +266,11 @@
                                     <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="12em;"
-                                    sortBy="#{i.department.name}" 
-                                    filterMatchMode="contains" 
+                                    sortBy="#{i.department.name}"
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.department.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Department" />
@@ -255,10 +278,11 @@
                                     <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     sortBy="#{i.total}"
                                     width="8em;"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.total}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total Fee" ></h:outputLabel>
@@ -268,10 +292,11 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column 
-                                    sortBy="#{i.totalForForeigner}" 
+                                <p:column
+                                    sortBy="#{i.totalForForeigner}"
                                     width="8em;"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.totalForForeigner}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Forigner Fee" ></h:outputLabel>
@@ -281,96 +306,110 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="4em;"
                                     sortBy="#{i.discountAllowed}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.discountAllowed}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discounts Allowed" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.discountAllowed?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.discountAllowed ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.discountAllowed ? 'Yes' : 'No'}</span>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="4em;"
                                     sortBy="#{i.printFeesForBills}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.printFeesForBills}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Print Fees For Bills" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.printFeesForBills ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.printFeesForBills ? 'Yes' : 'No'}</span>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="4em;"
-                                    sortBy="#{i.requestForQuentity}" 
-                                    filterMatchMode="contains" 
+                                    sortBy="#{i.requestForQuentity}"
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.requestForQuentity}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Need Quantity for Items" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.requestForQuentity?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.requestForQuentity ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.requestForQuentity ? 'Yes' : 'No'}</span>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="4em;"
                                     sortBy="#{i.userChangable}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.userChangable}">
                                     <f:facet name="header">
                                         <h:outputLabel value="User can Change Fees at Billing" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.userChangable ?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.userChangable ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.userChangable ? 'Yes' : 'No'}</span>
                                 </p:column>
 
-                                <p:column 
+                                <p:column
                                     width="4em;"
                                     sortBy="#{i.chargesVisibleForInward}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.chargesVisibleForInward}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Rates visible during Inward Billing" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.chargesVisibleForInward ?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.chargesVisibleForInward ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.chargesVisibleForInward ? 'Yes' : 'No'}</span>
                                 </p:column>
                                 
-                                <p:column 
+                                <p:column
                                     width="4em;"
                                     sortBy="#{i.printSessionNumber}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.printSessionNumber}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Print Session Number" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.printSessionNumber ?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.printSessionNumber ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.printSessionNumber ? 'Yes' : 'No'}</span>
                                 </p:column>
                                 
-                                <p:column 
+                                <p:column
                                     width="4em;"
                                     sortBy="#{i.allowedForBillingPriority}"
-                                    filterMatchMode="contains" 
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
                                     filterBy="#{i.allowedForBillingPriority}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Allow priority for Billing" >
                                         </h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.allowedForBillingPriority ?'Yes':'No'}" >
-                                    </h:outputLabel>
+                                    <span style="background:#{i.allowedForBillingPriority ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.allowedForBillingPriority ? 'Yes' : 'No'}</span>
                                 </p:column>
+                                
+                                <p:column
+                                    width="4em;"
+                                    sortBy="#{i.allowToSendSMS}"
+                                    style="padding: 12px;"
+                                    filterMatchMode="contains"
+                                    filterBy="#{i.allowToSendSMS}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Allow to Send SMS" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <span style="background:#{i.allowToSendSMS ? '#28a745' : '#dc3545'};color:#fff;padding:2px 8px;border-radius:4px;font-size:1em;">#{i.allowToSendSMS ? 'Yes' : 'No'}</span>
+                                </p:column>
+
 
                             </p:dataTable>
                         </p:panel>

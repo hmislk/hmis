@@ -25,9 +25,17 @@
                                     <h:outputLabel value="Nursing Work Bench" class="mx-2"/>
                                 </div>
                                 <div>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
-                                        action="/home?faces-redirect=true" 
+                                        action="#{admissionController.navigateToAdmissionProfilePage()}"
+                                        value="Inpatient Dashboard"
+                                        icon="fa fa-hospital-o"
+                                        class="ui-button-info me-2"
+                                        title="Back to Inpatient Dashboard">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        action="/home?faces-redirect=true"
                                         value="Back to Home"
                                         icon="pi pi-home"
                                         class="ui-button-warning"
@@ -182,15 +190,30 @@
                                                 <p:panel header="Surgeries">
                                                     <div class="d-grid gap-3">
                                                         
-                                                        <p:commandButton 
-                                                            value="Add Surgeries" 
+                                                        <p:commandButton
+                                                            value="Add Surgeries"
                                                             icon="fa fa-clock"
                                                             ajax="false"
+                                                            rendered="#{admissionController.current ne null and not admissionController.current.paymentFinalized}"
                                                             action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                                             class="w-100">
+                                                            <f:setPropertyActionListener
+                                                                value="#{admissionController.current}"
+                                                                target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
                                                         </p:commandButton>
-                                                        
-                                                        <p:commandButton 
+
+                                                        <p:commandButton
+                                                            value="Manage Surgeries"
+                                                            icon="fa fa-list"
+                                                            ajax="false"
+                                                            action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
+                                                            class="w-100">
+                                                            <f:setPropertyActionListener
+                                                                value="#{admissionController.current}"
+                                                                target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
                                                             ajax="false"
                                                             value="Add Services for Surgeries" 
                                                             icon="fa fa-briefcase"

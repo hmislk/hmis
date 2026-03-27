@@ -573,6 +573,18 @@ public class DrawerService {
         return drawer;
     }
 
+    public Drawer findUsersDrawerWithoutCreate(WebUser webUser) {
+        if (webUser == null) {
+            return null;
+        }
+        HashMap m = new HashMap();
+        String jpql = "select d from Drawer d "
+                + " where d.retired=false "
+                + " and d.drawerUser=:user";
+        m.put("user", webUser);
+        return drawerFacade.findFirstByJpql(jpql, m);
+    }
+
     /**
      * Applies a drawer adjustment by creating a DrawerEntry and updating the
      * appropriate balance fields on the drawer for the given payment method.

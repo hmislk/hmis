@@ -90,6 +90,8 @@
                              id="tbl"
                              rendered="true"
                              rowKey="#{sh.id}"
+                             scrollable="true"
+                             scrollHeight="600px"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="10,20,50,100,500,1000">
@@ -98,7 +100,7 @@
                     <p:column 
                         headerText="Stock Hx ID"
                         rendered="#{webUserController.hasPrivilege('Developers')}"
-                        width="10rem">
+                        width="6rem">
                         <p:commandLink 
                             ajax="false"
                             action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
@@ -114,6 +116,9 @@
                         <h:outputText value="#{sh.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="Total" styleClass="fw-bold"/>
+                        </f:facet>
                     </p:column>
 
                     <!-- Transaction Type -->
@@ -138,28 +143,59 @@
 
                     <!-- Quantity In -->
                     <p:column headerText="Quantity In" class="text-end">
-                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
-                                      rendered="#{sh.transThisIsStockIn}"
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}"
+                                      rendered="#{sh.transThisIsStockIn and sh.billTypeAtomic ne 'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
+                                        and sh.billTypeAtomic ne 'PHARMACY_COST_RATE_ADJUSTMENT' 
+                                        and sh.billTypeAtomic ne 'PHARMACY_RETAIL_RATE_ADJUSTMENT'}"
                                       styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{pharmacyErrorChecking.binCardTotalIn}" styleClass="text-success fw-bold">
+                                <f:convertNumber pattern="#,##0.#"/>
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Quantity Out -->
                     <p:column headerText="Quantity Out" class="text-end">
-                        <h:outputText 
-                            value="#{sh.transAbsoluteQtyPlusFreeQty}" 
-                            rendered="#{sh.transThisIsStockOut}"
+                        <h:outputText
+                            value="#{sh.transAbsoluteQtyPlusFreeQty}"
+                            rendered="#{sh.transThisIsStockOut and sh.billTypeAtomic ne 'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
+                                        and sh.billTypeAtomic ne 'PHARMACY_COST_RATE_ADJUSTMENT' 
+                                        and sh.billTypeAtomic ne 'PHARMACY_RETAIL_RATE_ADJUSTMENT'}"
                             styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{pharmacyErrorChecking.binCardTotalOut}" styleClass="text-danger fw-bold">
+                                <f:convertNumber pattern="#,##0.#"/>
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Stock Before Transaction (Item) -->
                     <p:column headerText="Stock Before (Item)" class="text-end">
-                        <h:outputText value="#{sh.transThisIsStockIn ? sh.itemStock - sh.transAbsoluteQtyPlusFreeQty : sh.itemStock + sh.transAbsoluteQtyPlusFreeQty}">
+                        <h:outputText 
+                            rendered="#{sh.billTypeAtomic ne 'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
+                                        and sh.billTypeAtomic ne 'PHARMACY_COST_RATE_ADJUSTMENT' 
+                                        and sh.billTypeAtomic ne 'PHARMACY_RETAIL_RATE_ADJUSTMENT'}"
+                            value="#{sh.transThisIsStockIn ? sh.itemStock - sh.transAbsoluteQtyPlusFreeQty : sh.itemStock + sh.transAbsoluteQtyPlusFreeQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <h:outputLabel rendered="#{sh.billTypeAtomic eq 'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
+                                                   || sh.billTypeAtomic eq 'PHARMACY_COST_RATE_ADJUSTMENT' 
+                                                   || sh.billTypeAtomic eq 'PHARMACY_RETAIL_RATE_ADJUSTMENT'}"
+                                       value="#{sh.itemStock}"
+                                       ><f:convertNumber pattern="#.#"/></h:outputLabel>
+                   
+                        <f:facet name="footer">
+                            <h:outputText value="Net: " styleClass="fw-bold"/>
+                            <h:outputText value="#{pharmacyErrorChecking.binCardNetTotal}"
+                                          styleClass="fw-bold #{pharmacyErrorChecking.binCardNetTotal ge 0 ? 'text-success' : 'text-danger'}">
+                                <f:convertNumber pattern="#,##0.#"/>
+                            </h:outputText>
+                        </f:facet>
                     </p:column>
 
                     <!-- Stock After Transaction (Item) -->
@@ -171,9 +207,18 @@
 
                     <!-- Stock Before Transaction (Batch) -->
                     <p:column headerText="Stock Before (Batch)" class="text-end">
-                        <h:outputText value="#{sh.transThisIsStockIn ? sh.stockQty - sh.transAbsoluteQtyPlusFreeQty : sh.stockQty + sh.transAbsoluteQtyPlusFreeQty}">
+                        <h:outputText 
+                            rendered="#{sh.billTypeAtomic ne 'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
+                                        and sh.billTypeAtomic ne 'PHARMACY_COST_RATE_ADJUSTMENT' 
+                                        and sh.billTypeAtomic ne 'PHARMACY_RETAIL_RATE_ADJUSTMENT'}"
+                            value="#{sh.transThisIsStockIn ? sh.stockQty - sh.transAbsoluteQtyPlusFreeQty : sh.stockQty + sh.transAbsoluteQtyPlusFreeQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+                        <h:outputLabel rendered="#{sh.billTypeAtomic eq 'PHARMACY_PURCHASE_RATE_ADJUSTMENT'
+                                                   || sh.billTypeAtomic eq 'PHARMACY_COST_RATE_ADJUSTMENT' 
+                                                   || sh.billTypeAtomic eq 'PHARMACY_RETAIL_RATE_ADJUSTMENT'}"
+                                       value="#{sh.stockQty}"
+                                       ><f:convertNumber pattern="#.#"/></h:outputLabel>
                     </p:column>
 
                     <!-- Stock After Transaction (Batch) -->

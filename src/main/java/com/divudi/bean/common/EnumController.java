@@ -114,6 +114,18 @@ public class EnumController implements Serializable {
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
+        paymentMethodsForChannelSettling = null;
+        paymentMethodsForPharmacyBilling = null;
+        paymentMethodsUnderMultipleForPharmacyBilling = null;
+        paymentMethodsForPettyCashBilling = null;
+        paymentMethodsForMultiplePaymentMethod = null;
+        paymentMethodsForPatientDepositRefund = null;
+        paymentMethodsForPatientDepositCancel = null;
+        paymentMethodsForStaffCreditSettle = null;
+        paymentMethodsForPatientDeposit = null;
+        paymentMethodsForOpdBillCanceling = null;
+        paymentMethodsForGrn = null;
+        paymentMethodsForDirectPurchase = null;
     }
 
     public void fillPaymentMethodsForPatientDeposit() {

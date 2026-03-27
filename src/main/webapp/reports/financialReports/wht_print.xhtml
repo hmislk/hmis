@@ -1,0 +1,560 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <style>
+                            @media screen{
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }                                
+                            }
+                            
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 6pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper {
+                                    position: static !important;
+                                }      
+                                
+                            }
+
+                            @media screen, print {
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                }
+
+                                .table-summary {
+                                    width: 99.9%;
+                                    font-size: 9pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+
+                                .table-individual {
+                                    width: 99%;
+                                    font-size: 8pt!important;
+                                    margin-top: 3mm!important;
+                                    border-collapse: collapse !important;
+                                }
+
+                                .table-individual thead .ui-column-filter {
+                                    width: 75% !important;
+                                    height: 10px !important;
+                                }
+                                
+                                th, td {
+                                    border: 1pt solid #000000 !important;
+                                    padding: 1pt!important;
+                                    text-align: left;
+                                    overflow-wrap: break-word;
+                                    white-space: normal;
+                                }
+
+                                .report-header-table {
+                                    border-collapse: collapse;
+                                }
+
+                                .report-header-table .label {
+                                    font-weight: 600;
+                                    padding-right: 5px;
+                                    white-space: nowrap;
+                                }
+
+                                .report-header-table td {
+                                    padding: 3px 8px;
+                                    vertical-align: top;
+                                }
+
+                                .table-individual .ui-sortable-column .ui-sortable-column-icon {
+                                    display: none !important;
+                                }
+                            }
+                            
+                        </style>
+                        <h:panelGroup rendered="#{searchController.reportType eq 'individualReceipts'}">
+                            <p:panel header="Individual Receipts Wise WHT Report" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Individual Receipts Wise WHT Report" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="individualRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/financialReports/wht?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="individualRp" class="d-flex justify-content-center">
+                                <style>
+                                    @media print {
+                                        @page { size: A4 landscape !important; }
+                                        #individualRp .paper { width: 297mm !important; }
+
+                                        .table-individual thead .ui-column-filter {
+                                            display: none !important;
+                                            visibility: hidden !important;
+                                            width: 0 !important;
+                                            height: 0 !important;
+                                        }
+                                    }
+                                </style>
+                                <div class="paper">
+                                    <div class="header" >
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="Individual Receipts Wise WHT Report"/>
+                                            </div>
+                                        <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:75%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="Report Type:" styleClass="label"/>
+                                                <h:outputText value="Individual Receipts"/>
+
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Institution:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.institution != null ? searchController.institution.name : 'All'}"/>
+
+                                                <h:outputText value="Site:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.site != null ? searchController.site.name : 'All'}"/>
+
+                                                <h:outputText value="Department:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.department != null ? searchController.department.name : 'All'}"/>
+
+
+                                                <!-- Row 3 -->
+                                                <h:outputText value="Specialty:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.speciality != null ? searchController.speciality.name : 'All'}"/>
+
+                                                <h:outputText value="Doctor:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.staff != null ? searchController.staff.person.nameWithTitle : 'All'}"/>
+
+                                                <h:outputText value="Visit Type:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.getSearchTypeAsString()}"/>
+
+                                            </h:panelGrid>
+                                        </div>   
+                                    </div>
+                                    <p:dataTable 
+                                        rowIndexVar="i" 
+                                        id="tblIndividualReceipts" 
+                                        value="#{searchController.bundle.reportTemplateRows}" 
+                                        var="row" 
+                                        styleClass="table-individual">
+
+                                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" width="10mm" sortBy="#{row.bill.deptId}">
+                                            <h:outputText value="#{row.bill.id}" />
+                                        </p:column>
+
+                                        <p:column headerText="Type" width="20mm"   rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                            <h:outputText value="#{row.bill.billTypeAtomic}" style="font-size: 7pt!important;">
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Date" width="20mm" style="text-align: center;" sortBy="#{row.bill.billDate}" >
+                                            <h:outputText value="#{row.bill.billDate}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputText>
+                                        </p:column>
+
+
+
+                                        <p:column headerText="Time" width="6mm" style="text-align: center;" sortBy="#{row.bill.billTime}">
+                                            <h:outputText value="#{row.bill.billTime}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Receipt No" width="23mm" style="text-align: left;" sortBy="#{row.bill.deptId}">
+                                            <h:outputText value="#{row.bill.deptId}" />
+                                            <br/>
+                                            <h:outputText value="(Cancelled)" rendered="#{row.bill.cancelled}" style="font-weight: 800; color: red;"/>
+                                            <h:outputText value="(Refunded)" rendered="#{row.bill.refunded}" style="font-weight: 800; color: gold;"/>
+                                        </p:column>
+
+
+                                        <p:column headerText="Cashier" width="25mm" style="text-align: left;" 
+                                                sortBy="#{row.bill.creater.webUserPerson.name}">
+                                            <h:outputText value="#{row.bill.creater.webUserPerson.name}" />
+                                            <h:outputText value="&nbsp;(#{row.bill.creater.name})" />
+                                        </p:column>
+
+                                        <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
+                                            <h:outputText value="#{row.bill.deptId}" />
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="Speciality" 
+                                            sortBy="#{row.bill.toStaff.speciality.name}"
+                                            style="text-align: left;"
+                                            width="22mm">
+                                            <h:outputText value="#{row.bill.toStaff.speciality.name}" />
+                                        </p:column>
+
+                                        <p:column 
+                                            headerText="Staff" 
+                                            sortBy="#{row.bill.staff.person.name}"
+                                            filterMatchMode="contains"
+                                            style="text-align: left;"
+                                            width="25mm">
+                                            <h:outputText value="#{row.bill.toStaff.person.name}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: right;" headerText="Gross" sortBy="#{row.bill.total}" width="20mm">                              
+                                            <h:outputText value="#{row.bill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{searchController.bundle.grossTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column 
+                                            style="text-align: right;" 
+                                            headerText="WHT" 
+                                            sortBy="#{row.bill.tax}"
+                                            width="20mm">                              
+                                            <h:outputText value="#{row.bill.tax}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{searchController.bundle.tax}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column 
+                                            style="text-align: right;" headerText="Value" 
+                                            sortBy="#{row.bill.netTotal}"
+                                            width="20mm">                              
+                                            <h:outputText value="#{row.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{searchController.bundle.total}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>     
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        
+                    <h:panelGroup rendered="#{searchController.reportType eq 'monthlySummary'}">
+                        <p:panel header="Monthly Wise Summary report" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Monthly Wise Summary report" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="monthlyRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/financialReports/wht?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                        </p:panel>
+                        <h:panelGroup id="monthlyRp" class="d-flex justify-content-center">
+                            <style>
+                                @media print {
+                                    @page { size: A4 portrait !important; }
+                                    #monthlyRp .paper { width: 210mm !important; }
+                                }
+                            </style>
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Monthly Wise Summary report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:80%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="Report Type:" styleClass="label"/>
+                                                <h:outputText value="Monthly Summary"/>
+
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Institution:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.institution != null ? searchController.institution.name : 'All'}"/>
+
+                                                <h:outputText value="Site:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.site != null ? searchController.site.name : 'All'}"/>
+
+                                                <h:outputText value="Department:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.department != null ? searchController.department.name : 'All'}"/>
+
+
+                                                <!-- Row 3 -->
+                                                <h:outputText value="Specialty:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.speciality != null ? searchController.speciality.name : 'All'}"/>
+
+                                                <h:outputText value="Doctor:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.staff != null ? searchController.staff.person.nameWithTitle : 'All'}"/>
+
+                                                <h:outputText value="Visit Type:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.getSearchTypeAsString()}"/>
+
+                                            </h:panelGrid>
+                                    </div>     
+                                </div>
+                                
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblMonthlySummary"
+                                    value="#{searchController.bundle.reportTemplateRows}" 
+                                    var="row" 
+                                    styleClass="table-summary">
+
+                                    <p:column headerText="Month">
+                                        <h:outputText value="#{row.date}">
+                                            <f:convertDateTime pattern="yyyy MMMMM" ></f:convertDateTime>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Total Amount" style="text-align: right;" >
+                                        <h:outputText value="#{row.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.grossTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Holding Tax"  style="text-align: right;" >
+                                        <h:outputText value="#{row.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.tax}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Amount"  style="text-align: right;" >
+                                        <h:outputText value="#{row.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.total}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>                       
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{searchController.reportType eq 'consultantSummary'}">
+                        <style>
+                            @media print {
+                                @page { size: A4 portrait !important; }
+                                #consultantRp .paper { width: 210mm !important; }
+                            }
+                        </style>
+                        <p:panel header="Consultant Wise Summary report" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Consultant Wise Summary report" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="consultantRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/financialReports/wht?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                        </p:panel>
+                        <h:panelGroup id="consultantRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 20px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Consultant Wise Summary report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="6" styleClass="report-header-table" style="font-size:10px; width:80%;" columnClasses="label,value,label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="Report Type:" styleClass="label"/>
+                                                <h:outputText value="Consultant Summary"/>
+
+
+                                                <!-- Row 2 -->
+                                                <h:outputText value="Institution:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.institution != null ? searchController.institution.name : 'All'}"/>
+
+                                                <h:outputText value="Site:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.site != null ? searchController.site.name : 'All'}"/>
+
+                                                <h:outputText value="Department:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.department != null ? searchController.department.name : 'All'}"/>
+
+
+                                                <!-- Row 3 -->
+                                                <h:outputText value="Specialty:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.speciality != null ? searchController.speciality.name : 'All'}"/>
+
+                                                <h:outputText value="Doctor:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.staff != null ? searchController.staff.person.nameWithTitle : 'All'}"/>
+
+                                                <h:outputText value="Visit Type:" styleClass="label"/>
+                                                <h:outputText value="#{searchController.getSearchTypeAsString()}"/>
+
+                                            </h:panelGrid>
+                                    </div>     
+                                </div>
+                                
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblConsultantSummary"
+                                    value="#{searchController.bundle.reportTemplateRows}" 
+                                    var="row" 
+                                    styleClass="table-summary">
+
+                                    <p:column headerText="Consultant Name">                        
+                                        <h:outputText value="#{row.staff.person.nameWithTitle}" ></h:outputText>    
+                                    </p:column>
+                                    <p:column headerText="Total Amount"  style="text-align: right;" >
+                                        <h:outputText value="#{row.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.grossTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Holding Tax"  style="text-align: right;" >
+                                        <h:outputText value="#{row.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.tax}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Amount"  style="text-align: right;" >
+                                        <h:outputText value="#{row.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.total}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>                          
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

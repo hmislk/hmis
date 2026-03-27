@@ -158,6 +158,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private double dblValue = 0.0f;
     SessionNumberType sessionNumberType;
     boolean priceByBatch;
+    @Deprecated // User Issue Unit
     @ManyToOne
     MeasurementUnit measurementUnit;
     @ManyToOne
@@ -319,6 +320,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private boolean consumptionAllowed = true;
 
     private boolean allowedForBillingPriority;
+    private boolean allowToSendSMS;
+
 
     public double getVatPercentage() {
         return 0;
@@ -816,10 +819,12 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.priceByBatch = priceByBatch;
     }
 
+    @Deprecated // Use getIssueUnit
     public MeasurementUnit getMeasurementUnit() {
-        return measurementUnit;
+        return measurementUnit != null ? measurementUnit : issueUnit;
     }
 
+    @Deprecated // Use setMeasurementUnit
     public void setMeasurementUnit(MeasurementUnit measurementUnit) {
         this.measurementUnit = measurementUnit;
     }
@@ -1689,6 +1694,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setExpired(Boolean expired) {
         this.expired = expired;
+    }
+
+    public boolean isAllowToSendSMS() {
+        return allowToSendSMS;
+    }
+
+    public void setAllowToSendSMS(boolean allowToSendSMS) {
+        this.allowToSendSMS = allowToSendSMS;
     }
     
     static class ReportItemComparator implements Comparator<ReportItem> {
