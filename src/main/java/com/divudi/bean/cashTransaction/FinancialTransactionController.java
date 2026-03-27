@@ -4755,12 +4755,21 @@ public class FinancialTransactionController implements Serializable {
         boolean requireHandoverBeforeShiftEnd = configOptionApplicationController
                 .getBooleanValueByKey("Require Handover Before Shift End", false);
         if (requireHandoverBeforeShiftEnd) {
-            boolean handoverComplete = hasAtLeastOneCompletedHandoverSinceShiftStart(
-                    sessionController.getLoggedUser(),
-                    nonClosedShiftStartFundBill.getCreatedAt());
-            if (!handoverComplete) {
-                JsfUtil.addErrorMessage("Handover not complete. Please complete the handover on the handover page before ending your shift.");
-                return null;
+            boolean hasCollections = bundle != null
+                    && bundle.getBundles() != null
+                    && !bundle.getBundles().isEmpty()
+                    && bundle.getTotal() != null
+                    && bundle.getTotal() > 0.0;
+            if (hasCollections) {
+                double totalHandedOver = getTotalCompletedHandoverAmountSinceShiftStart(
+                        sessionController.getLoggedUser(),
+                        nonClosedShiftStartFundBill.getCreatedAt());
+                double tolerance = configOptionApplicationController
+                        .getDoubleValueByKey("Maximum Allowed Difference for Shift End Handover", 0.01);
+                if ((bundle.getTotal() - totalHandedOver) > tolerance) {
+                    JsfUtil.addErrorMessage("Handover not complete. The full collection amount has not been handed over. Please complete the handover before ending your shift.");
+                    return null;
+                }
             }
         }
 
@@ -5756,6 +5765,29 @@ public class FinancialTransactionController implements Serializable {
         return firstMatch != null;
     }
 
+    public double getTotalCompletedHandoverAmountSinceShiftStart(WebUser fromUser, Date since) {
+        if (fromUser == null || since == null) {
+            return 0.0;
+        }
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select s from Bill s "
+                + "where s.retired = :ret "
+                + "and s.billTypeAtomic = :btype "
+                + "and s.fromWebUser = :fUser "
+                + "and s.completed = true "
+                + "and (s.cancelled = false or s.cancelled is null) "
+                + "and s.createdAt >= :since ";
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        params.put("fUser", fromUser);
+        params.put("since", since);
+        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (bills == null || bills.isEmpty()) {
+            return 0.0;
+        }
+        return bills.stream().mapToDouble(b -> b.getTotal() != null ? b.getTotal() : 0.0).sum();
+    }
+
     public boolean isHandoverRequiredButNotComplete() {
         boolean requireHandoverBeforeShiftEnd = configOptionApplicationController
                 .getBooleanValueByKey("Require Handover Before Shift End", false);
@@ -5765,9 +5797,19 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             return false;
         }
-        return !hasAtLeastOneCompletedHandoverSinceShiftStart(
+        if (bundle == null || bundle.getBundles() == null || bundle.getBundles().isEmpty()) {
+            return false;
+        }
+        double totalCollections = bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+        if (totalCollections <= 0.0) {
+            return false;
+        }
+        double totalHandedOver = getTotalCompletedHandoverAmountSinceShiftStart(
                 sessionController.getLoggedUser(),
                 nonClosedShiftStartFundBill.getCreatedAt());
+        double tolerance = configOptionApplicationController
+                .getDoubleValueByKey("Maximum Allowed Difference for Shift End Handover", 0.01);
+        return (totalCollections - totalHandedOver) > tolerance;
     }
 
     public void fillHandoverBillsForMeToReceive() {
@@ -5843,14 +5885,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
-        String sql;
-        Staff forStaff = row.getUser().getStaff();
-        Date forDate = row.getDate();
-        Department forDepartment = row.getDepartment();
-
+        String jpql;
         List<Bill> bills;
-        Map tempMap = new HashMap();
-        sql = "select s "
+        Map params = new HashMap();
+        jpql = "select s "
                 + "from Bill s "
                 + "where s.retired=:ret "
                 + "and s.billType=:btype "
@@ -5858,10 +5896,10 @@ public class FinancialTransactionController implements Serializable {
                 + "and s.toStaff=:logStaff "
                 + "and s.referenceBill is null "
                 + "order by s.createdAt ";
-        tempMap.put("btype", BillType.CashHandoverAcceptBill);
-        tempMap.put("ret", false);
-        tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
-        bills = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
+        params.put("btype", BillType.CashHandoverAcceptBill);
+        params.put("ret", false);
+        params.put("logStaff", sessionController.getLoggedUser().getStaff());
+        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return bills;
     }
 
@@ -8328,6 +8366,12 @@ public class FinancialTransactionController implements Serializable {
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Require Handover Before Shift End",
                 "When enabled, users must have at least one completed and accepted handover during their current shift before they can end the shift. Default: false (backward compatible).",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Difference for Shift End Handover",
+                "The maximum allowable difference (in currency units) between total collections and total handed-over amount before shift end is blocked. Default: 0.01.",
                 OptionScope.APPLICATION
         ));
 
