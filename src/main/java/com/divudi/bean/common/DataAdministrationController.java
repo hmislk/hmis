@@ -4903,6 +4903,10 @@ public class DataAdministrationController implements Serializable {
     private int staleEncounterDays = 60;
 
     public void dischargeStaleEncounters() {
+        if (staleEncounterDays <= 0) {
+            JsfUtil.addErrorMessage("Please enter a value greater than 0 days.");
+            return;
+        }
         try {
             String sql = "UPDATE patientencounter "
                     + "SET discharged = 1 "

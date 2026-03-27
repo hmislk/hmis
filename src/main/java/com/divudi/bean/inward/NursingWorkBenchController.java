@@ -116,6 +116,7 @@ public class NursingWorkBenchController implements Serializable {
             JsfUtil.addErrorMessage("No Admission Found");
             return "";
         }
+        clearData();
         admissionController.setCurrent((Admission) encounter);
         loadLists();
         return "/nurse/index?faces-redirect=true";

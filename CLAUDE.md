@@ -22,9 +22,9 @@
 10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
 
 ### Git & Branching
-10. **Include issue closing keywords** (`Closes #N`) in commit messages
-11. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
-12. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+11. **Include issue closing keywords** (`Closes #N`) in commit messages
+12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
 
 ## Situational Guidelines (Reference When Needed)
 
