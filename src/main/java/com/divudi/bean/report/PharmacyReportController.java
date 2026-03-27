@@ -11051,7 +11051,6 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void exportPharmacySalesToPdf() {
-        exportExpireItemStockListToPDF();
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
@@ -11071,13 +11070,13 @@ public class PharmacyReportController implements Serializable {
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
-//            if (cogsBillDtos == null || cogsBillDtos.isEmpty()) {
-//                document.add(new Paragraph("No sales data available for the selected period.",
-//                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
-//                document.close();
-//                context.responseComplete();
-//                return;
-//            }
+            if (cogsBillDtos == null || cogsBillDtos.isEmpty()) {
+                document.add(new Paragraph("No sales data available for the selected period.",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                document.close();
+                context.responseComplete();
+                return;
+            }
             Map<String, Object> filters = getFiltersForCostOfGoodSoldSaleReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
             if (infoTable != null) {
@@ -12985,15 +12984,13 @@ public class PharmacyReportController implements Serializable {
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Pharmacy Sales Report");
-            int rowIndex=0;
+            int rowIndex = 0;
             if (filters != null && !filters.isEmpty()) {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Cost of Good Sold-Sale Report", filters);
             }
-            createHeaderRow(sheet);
-            populateDataRows(sheet, bills);
+            createHeaderRow(sheet, rowIndex);
+            populateDataRows(sheet, bills, rowIndex + 1);
 
-
-//            OutputStream outputStream = externalContext.getResponseOutputStream();
             workbook.write(out);
             context.responseComplete();
 
@@ -13002,21 +12999,21 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void createHeaderRow(Sheet sheet) {
+    private void createHeaderRow(Sheet sheet, int rowIndex) {
         String[] headers = {
             "Date", "Doc. No", "NAME", "CODE", "BATCH NO", "QTY", "COST RATE",
             "COST VALUE", "RATE", "VALUE", "Net Total", "Payment Mode/Modes",
             "MRP", "MRP Value", "Discount"
         };
-        Row headerRow = sheet.createRow(6);
+        Row headerRow = sheet.createRow(rowIndex);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
         }
     }
 
-    private void populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills) {
-        AtomicInteger rowNum = new AtomicInteger(7);
+    private void populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills, int startRow) {
+        AtomicInteger rowNum = new AtomicInteger(startRow);
         for (CostOfGoodSoldBillDTO bill : bills) {
             List<BillItemDTO> billItems = bill.getBillItems();
             if (billItems == null || billItems.isEmpty()) {
