@@ -25,16 +25,14 @@
                                     <h:outputLabel value="Nursing Work Bench" class="mx-2"/>
                                 </div>
                                 <div>
-                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                        <p:commandButton
-                                            ajax="false"
-                                            action="#{admissionController.navigateToAdmissionProfilePage()}"
-                                            value="Inpatient Dashboard"
-                                            icon="fa fa-hospital-o"
-                                            class="ui-button-info me-2"
-                                            title="Back to Inpatient Dashboard">
-                                        </p:commandButton>
-                                    </h:panelGroup>
+                                    <p:commandButton
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage()}"
+                                        value="Inpatient Dashboard"
+                                        icon="fa fa-hospital-o"
+                                        class="ui-button-info me-2"
+                                        title="Back to Inpatient Dashboard">
+                                    </p:commandButton>
                                     <p:commandButton
                                         ajax="false"
                                         action="/home?faces-redirect=true"
