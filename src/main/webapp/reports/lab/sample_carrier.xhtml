@@ -235,9 +235,8 @@
                             style="width: 150px"
                             icon="fas fa-file-pdf"
                             ajax="false"
-                            value="PDF">
-                        <p:dataExporter type="pdf" target="tblExport" fileName="sample_carrier.pdf"/>
-                    </p:commandButton>
+                            value="PDF"
+                            action="#{reportsController.exportSampleCarrierReportToPDF()}"/>
 
                     <p:dataTable
                             id="tblExport"
