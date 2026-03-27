@@ -436,6 +436,20 @@
                             actionListener="#{roomChangeController.recreate()}" 
                             rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" >
                         </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{patientTransferController.navigateToInitiateTransfer()}"
+                            value="Initiate Transfer"
+                            icon="fa fa-arrow-right"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomTransferInitiate')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{patientTransferController.navigateToPatientAccept()}"
+                            value="Accept Patients"
+                            icon="fa fa-check-circle"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}" >
+                        </p:menuitem>
                     </p:submenu>  
                     <p:submenu label="Services &amp; Items" icon="fa fa-toolbox" rendered="#{webUserController.hasPrivilege('InwardServicesAndItems')}">
                         <p:menuitem
@@ -1822,13 +1836,21 @@
 
                     </p:submenu>
                 </p:submenu>
-                
+
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
+                </p:menuitem>
+
+                <p:menuitem 
+                    ajax="false" 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Portal - Allow to Display Icon in Menu',false)}"
+                    action="/patient_portal/portal_login?faces-redirect=true" 
+                    title="Patient Portal"  
+                    icon="fas fa-id-card-clip" >
                 </p:menuitem>
 
                 <!--            HR Section-->

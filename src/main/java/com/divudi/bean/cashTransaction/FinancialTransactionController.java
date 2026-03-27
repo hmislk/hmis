@@ -1337,6 +1337,16 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
+    public String navigateToShiftShortagePrint() {
+        if (currentBill == null
+                || currentBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                || currentBillPayments == null
+                || currentBillPayments.isEmpty()) {
+            return navigateToRecordShiftShortage();
+        }
+        return "/cashier/record_shift_shortage_print?faces-redirect=true";
+    }
+
     // Method to navigate to the Transfer Payment Method page
     public String navigateToTransferPaymentMethod() {
         resetClassVariables();
@@ -3778,7 +3788,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         calculateShortageBillTotal();
-        return "/cashier/record_shift_shortage"; // Navigation case
+        return "/cashier/record_shift_shortage?faces-redirect=true"; // Navigation case
     }
 
     public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(

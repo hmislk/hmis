@@ -52,7 +52,8 @@
                                             <p:commandButton value="Record Stock Counts to Start Stock Taking" ajax="false"
                                                              styleClass="ui-button-success mx-2"
                                                              icon="fa fa-check"
-                                                             rendered="#{webUserController.hasPrivilege('PharmacyStockTakeSettle')}"
+                                                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}"
+                                                             onclick="if(window._stockTakeSettling) return false; if(!confirm('Are you sure you want to record the stock counts? This action cannot be undone.')) return false; window._stockTakeSettling=true;"
                                                              action="#{pharmacyStockTakeController.settleStockCount}"/>
                                         </div>
                                     </div>

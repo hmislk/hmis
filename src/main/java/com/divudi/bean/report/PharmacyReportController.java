@@ -2503,7 +2503,7 @@ public class PharmacyReportController implements Serializable {
 
         String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
         SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
-        
+
         try (OutputStream out = response.getOutputStream()) {
 
             Document document = new Document(PageSize.A4.rotate());
@@ -2864,7 +2864,7 @@ public class PharmacyReportController implements Serializable {
             // Date filter
             String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
             SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
-            
+
             Row dateRow = sheet.createRow(rowIndex++);
             Cell dateCell = dateRow.createCell(0);
             dateCell.setCellValue(
@@ -3052,7 +3052,7 @@ public class PharmacyReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition",
                 "attachment; filename=GRN_Credit_Report_COGS.pdf");
-        
+
         String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
 
         SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
@@ -4225,6 +4225,489 @@ public class PharmacyReportController implements Serializable {
         retrieveBillItems("b.billTypeAtomic", billTypes);
     }
 
+    public void exportIpDrugReturnToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=IP_Drug_Return_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("IP Drug Return");
+
+            int rowIndex = 0;
+            int totalColumns = 14;
+
+            // =========================
+            // STYLES
+            // =========================
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // =========================
+            // FILTER HEADER SECTION
+            // =========================
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Site
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Department
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            //Department Types
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From Date : "
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To Date : "
+                    + (toDate != null ? sdf.format(toDate) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("IP Drug Return Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TABLE HEADER
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            String[] headers = {
+                "Date",
+                "Item Name",
+                "Code",
+                "Doc No",
+                "Ref Doc No",
+                "Qty",
+                "Cost Rate",
+                "Cost Value",
+                "Purchase Rate",
+                "Purchase Value",
+                "Net Total",
+                "MRP",
+                "MRP Value",
+                "Discount"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (BillItem bi : billItems) {
+
+                Row row = sheet.createRow(rowIndex++);
+                Cell d0 = row.createCell(0);
+                d0.setCellValue(
+                        sdf.format(bi.getBill().getCreatedAt()));
+                d0.setCellStyle(dataStyle);
+                Cell d1 = row.createCell(1);
+                d1.setCellValue(bi.getItem().getName());
+                d1.setCellStyle(dataStyle);
+
+                Cell d2 = row.createCell(2);
+                d2.setCellValue(bi.getItem().getCode());
+                d2.setCellStyle(dataStyle);
+
+                Cell d3 = row.createCell(3);
+                d3.setCellValue(bi.getBill().getDeptId());
+                d3.setCellStyle(dataStyle);
+
+                Cell d4 = row.createCell(4);
+                d4.setCellValue(
+                        bi.getBill().getReferenceBill().getDeptId());
+                d4.setCellStyle(dataStyle);
+
+                Cell d5 = row.createCell(5);
+                d5.setCellValue(
+                        bi.getQty());
+                d5.setCellStyle(dataStyle);
+
+                Cell costRate = row.createCell(6);
+                costRate.setCellValue(
+                        bi.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+                costRate.setCellStyle(numberStyle);
+
+                Cell costValue = row.createCell(7);
+                costValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty());
+                costValue.setCellStyle(numberStyle);
+
+                Cell purchaseRate = row.createCell(8);
+                purchaseRate.setCellValue(0.0 - bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
+                purchaseRate.setCellStyle(numberStyle);
+
+                Cell purchaseValue = row.createCell(9);
+                purchaseValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty());
+                purchaseValue.setCellStyle(numberStyle);
+
+                Cell netT = row.createCell(10);
+                netT.setCellValue(bi.getBill().getNetTotal());
+                netT.setCellStyle(numberStyle);
+
+                Cell mrp = row.createCell(11);
+                mrp.setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
+                mrp.setCellStyle(numberStyle);
+
+                Cell mrpValue = row.createCell(12);
+                mrpValue.setCellValue(0.0 - bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty());
+                mrpValue.setCellStyle(numberStyle);
+
+                Cell disc = row.createCell(13);
+                disc.setCellValue(bi.getDiscount());
+                disc.setCellStyle(numberStyle);
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            Row totalRow = sheet.createRow(rowIndex++);
+
+            Cell totalLabel = totalRow.createCell(0);
+
+            totalLabel.setCellValue(
+                    "Net Amount");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell totalCValue = totalRow.createCell(7);
+
+            totalCValue.setCellValue(totalCostValue);
+
+            totalCValue.setCellStyle(numberStyle);
+
+            Cell totalPValue = totalRow.createCell(9);
+
+            totalPValue.setCellValue(totalPurchaseValue);
+
+            totalPValue.setCellStyle(numberStyle);
+
+            Cell totalNetValue = totalRow.createCell(10);
+
+            totalNetValue.setCellValue(netTotal);
+
+            totalNetValue.setCellStyle(numberStyle);
+
+            Cell totalRValue = totalRow.createCell(12);
+
+            totalRValue.setCellValue(totalRetailValue);
+
+            totalRValue.setCellStyle(numberStyle);
+
+            // Auto size columns
+            for (int i = 0;
+                    i < totalColumns;
+                    i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportIpDrugReturnToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=IP_Drug_Return_Report.pdf");
+
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            Paragraph filterPara = new Paragraph(
+                    "From: " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To: " + (toDate != null ? sdf.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
+
+            Paragraph reportTitle
+                    = new Paragraph("IP Drug Return Report", subTitleFont);
+            reportTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(reportTitle);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 14;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] widths = {
+                5f, 6f, 3f, 5f, 5f,
+                2f, 3f,
+                3f, 3f,
+                3f, 3f,
+                3f, 3f,
+                3f
+            };
+            table.setWidths(widths);
+
+            String[] headers = {
+                "Date",
+                "Item Name",
+                "Code",
+                "Doc No",
+                "Ref Doc No",
+                "Qty",
+                "Cost Rate",
+                "Cost Value",
+                "Purchase Rate",
+                "Purchase Value",
+                "Net Total",
+                "MRP",
+                "MRP Value",
+                "Discount"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA ROWS
+            // =========================
+            for (BillItem bi : billItems) {
+
+                table.addCell(new Phrase(
+                        sdf.format(bi.getBill().getCreatedAt()), dataFont));
+
+                table.addCell(new Phrase(bi.getItem().getName(), dataFont));
+                table.addCell(new Phrase(bi.getItem().getCode(), dataFont));
+                table.addCell(new Phrase(bi.getBill().getDeptId(), dataFont));
+                table.addCell(new Phrase(
+                        bi.getBill().getReferenceBill().getDeptId(),
+                        dataFont));
+
+                // Qty
+                PdfPCell qty = new PdfPCell(new Phrase(
+                        String.format("%,.0f", bi.getQty()),
+                        dataFont));
+                qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(qty);
+
+                // Cost Rate
+                PdfPCell costRateCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate()), dataFont));
+                costRateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costRateCell);
+
+                // Cost Value
+                PdfPCell costVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty()), dataFont));
+                costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costVCell);
+
+                // Purchase Rate
+                PdfPCell purchaseRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", 0.0 - bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate()), dataFont));
+                purchaseRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(purchaseRCell);
+
+                // Purchase Value
+                PdfPCell purchaseVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty()), dataFont));
+                purchaseVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(purchaseVCell);
+
+                // Net
+                PdfPCell netCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", bi.getBill().getNetTotal()), dataFont));
+                netCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netCell);
+
+                // MRP
+                PdfPCell retailRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()), dataFont));
+                retailRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailRCell);
+
+                // MRP Value
+                PdfPCell retailVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", 0.0 - bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty()), dataFont));
+                retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailVCell);
+
+                // Discount
+                PdfPCell disc = new PdfPCell(
+                        new Phrase(String.format("%,.2f", bi.getDiscount()), dataFont));
+                disc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(disc);
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            PdfPCell blank = new PdfPCell(new Phrase("Net Amount :", headerFont));
+            blank.setColspan(7);
+            blank.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(blank);
+
+            PdfPCell costTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", totalCostValue), headerFont));
+            costTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costTotalCell);
+
+            PdfPCell skipPurchaseRate = new PdfPCell(new Phrase(" "));
+            table.addCell(skipPurchaseRate);
+
+            PdfPCell purchaseTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", totalPurchaseValue), headerFont));
+            purchaseTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseTotalCell);
+
+            PdfPCell netTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", netTotal), headerFont));
+            netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(netTotalCell);
+
+            PdfPCell skipRetailRate = new PdfPCell(new Phrase(" "));
+            table.addCell(skipRetailRate);
+
+            PdfPCell retailTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", totalRetailValue), headerFont));
+            retailTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailTotalCell);
+
+            PdfPCell skipDisc = new PdfPCell(new Phrase(" "));
+            table.addCell(skipDisc);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void processOpDrugReturn() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
@@ -4248,93 +4731,13 @@ public class PharmacyReportController implements Serializable {
         retrieveBillItems("b.billTypeAtomic", billTypes, true);
     }
 
-    public void processStockAdjustmentReceive() {
-        retrieveStockAdjustmentBillItems(">");
-    }
-
-    public void processStockAdjustmentIssue() {
-        retrieveStockAdjustmentBillItems("<");
-    }
-
-    public void retrieveStockAdjustmentBillItems(String operator) {
-        try {
-            List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
-            billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
-            billItemsDtos = new ArrayList<>();
-            netTotal = 0.0;
-
-            StringBuilder jpql = new StringBuilder();
-            jpql.append("SELECT new com.divudi.core.data.dto.BillItemDTO(")
-                    .append("b.createdAt, ")
-                    .append("i.name, ")
-                    .append("i.code, ")
-                    .append("b.deptId, ")
-                    .append("ib.batchNo, ")
-                    .append("pbi.qty, ")
-                    .append("ib.costRate, ")
-                    .append("pbi.retailRate, ")
-                    .append("b.netTotal) ")
-                    .append("FROM BillItem bi ")
-                    .append("LEFT JOIN bi.bill b ")
-                    .append("LEFT JOIN bi.item i ")
-                    .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
-                    .append("LEFT JOIN pbi.itemBatch ib ")
-                    .append("WHERE bi.retired = false ")
-                    .append("AND b.retired = false ")
-                    .append("AND b.billType IN :billTypes ")
-                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
-
-            if (">".equals(operator)) {
-                jpql.append("AND pbi.qty > 0.0 ");
-            } else if ("<".equals(operator)) {
-                jpql.append("AND pbi.qty < 0.0 ");
-            }
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("billTypes", billTypes);
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-
-            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-                jpql.append("AND b.departmentType IN :departmentTypes ");
-                params.put("departmentTypes", selectedDepartmentTypes);
-            }
-
-            billItemsDtos = (List<BillItemDTO>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            netTotal = billItemsDtos.stream()
-                    .filter(Objects::nonNull)
-                    .mapToDouble(dto -> {
-                        Double retailRate = dto.getRetailRate();
-                        Double qty = dto.getQty();
-                        if (retailRate != null && qty != null) {
-                            return retailRate * qty;
-                        }
-                        return 0.0;
-                    })
-                    .sum();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            billItemsDtos = new ArrayList<>();
-            netTotal = 0.0;
-        }
-    }
-
     public void exportPurchaseReturnToExcel() {
-
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response
                 = (HttpServletResponse) context.getExternalContext().getResponse();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition",
-
                 "attachment; filename=Purchase_Return_Report.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
@@ -4649,12 +5052,10 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition",
-
                 "attachment; filename=Purchase_Return_Report.pdf");
 
         String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
         SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
-
 
         try (OutputStream out = response.getOutputStream()) {
 
@@ -4919,13 +5320,91 @@ public class PharmacyReportController implements Serializable {
 
             PdfPCell skip1 = new PdfPCell(new Phrase(" "));
             table.addCell(skip1);
-            
+
             document.add(table);
             document.close();
             context.responseComplete();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void processStockAdjustmentReceive() {
+        retrieveStockAdjustmentBillItems(">");
+    }
+
+    public void processStockAdjustmentIssue() {
+        retrieveStockAdjustmentBillItems("<");
+    }
+
+    public void retrieveStockAdjustmentBillItems(String operator) {
+        try {
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
+            billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+            billItemsDtos = new ArrayList<>();
+            netTotal = 0.0;
+
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                    .append("b.createdAt, ")
+                    .append("i.name, ")
+                    .append("i.code, ")
+                    .append("b.deptId, ")
+                    .append("ib.batchNo, ")
+                    .append("pbi.qty, ")
+                    .append("ib.costRate, ")
+                    .append("pbi.retailRate, ")
+                    .append("b.netTotal) ")
+                    .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.bill b ")
+                    .append("LEFT JOIN bi.item i ")
+                    .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                    .append("LEFT JOIN pbi.itemBatch ib ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND b.retired = false ")
+                    .append("AND b.billType IN :billTypes ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            if (">".equals(operator)) {
+                jpql.append("AND pbi.qty > 0.0 ");
+            } else if ("<".equals(operator)) {
+                jpql.append("AND pbi.qty < 0.0 ");
+            }
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypes", billTypes);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            billItemsDtos = (List<BillItemDTO>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            netTotal = billItemsDtos.stream()
+                    .filter(Objects::nonNull)
+                    .mapToDouble(dto -> {
+                        Double retailRate = dto.getRetailRate();
+                        Double qty = dto.getQty();
+                        if (retailRate != null && qty != null) {
+                            return retailRate * qty;
+                        }
+                        return 0.0;
+                    })
+                    .sum();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            billItemsDtos = new ArrayList<>();
+            netTotal = 0.0;
         }
     }
 
@@ -4936,7 +5415,6 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition",
-
                 "attachment; filename=Stock_Adjustment_Receive_Report_COGS.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
@@ -5145,9 +5623,8 @@ public class PharmacyReportController implements Serializable {
                     .log(Level.SEVERE, e.getMessage());
         }
     }
-  
-    public void exportStockAdjustmentIssueToExcel() {
 
+    public void exportStockAdjustmentIssueToExcel() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response
                 = (HttpServletResponse) context.getExternalContext().getResponse();
@@ -5749,114 +6226,7 @@ public class PharmacyReportController implements Serializable {
         calculateStockConsumptionTotals(billItems);
     }
 
-    public void calculateStockConsumptionTotals(List<BillItem> items) {
-        netTotal = 0.0;
-        purchaseValueTotal = 0.0;
-        costValueTotal = 0.0;
-        retailValueTotal = 0.0;
-
-        for (BillItem item : items) {
-            // Simply sum the values from the columns without bill type manipulation
-            if (item.getBillItemFinanceDetails() != null) {
-                if (item.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) {
-                    purchaseValueTotal += item.getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue();
-                }
-                if (item.getBillItemFinanceDetails().getValueAtCostRate() != null) {
-                    costValueTotal += item.getBillItemFinanceDetails().getValueAtCostRate().doubleValue();
-                }
-                if (item.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
-                    retailValueTotal += item.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
-                }
-            } else {
-                // Fallback: derive values from PharmaceuticalBillItem -> ItemBatch
-                if (item.getPharmaceuticalBillItem() != null && item.getPharmaceuticalBillItem().getItemBatch() != null) {
-                    double qty = item.getQty();
-
-                    Double purchaseRate = item.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
-                    if (purchaseRate != null) {
-                        purchaseValueTotal += purchaseRate * qty;
-                    }
-
-                    Double costRate = item.getPharmaceuticalBillItem().getItemBatch().getCostRate();
-                    if (costRate != null) {
-                        costValueTotal += costRate * qty;
-                    }
-
-                    Double retailRate = item.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
-                    if (retailRate != null) {
-                        retailValueTotal += retailRate * qty;
-                    }
-                }
-            }
-            netTotal += item.getNetValue();
-        }
-    }
-
-    private double calculateItemTotal(BillItem item) {
-        double itemTotal = item.getPharmaceuticalBillItem().getPurchaseRate() * item.getQty();
-        if (item.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE) {
-            return itemTotal;
-        } else {
-            return 0.0 - itemTotal;
-        }
-    }
-
-    public void processTransferIssue() {
-        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferIssue));
-    }
-
-    public void processTransferReceive() {
-        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferReceive));
-    }
-
-    public void processSaleCredit() {
-        List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
-        creditTypePaymentMethods.add(PaymentMethod.Credit);
-        creditTypePaymentMethods.add(PaymentMethod.Staff);
-
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-        );
-
-        retrieveBillItems("b.billTypeAtomic", billTypes, creditTypePaymentMethods);
-    }
-
-    public void processBhtIssue() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
-        );
-        retrieveBillItems("b.billTypeAtomic", billTypes);
-    }
-
-    public void processSaleCreditCard() {
-        List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
-                .filter(pm -> pm != PaymentMethod.Credit)
-                .collect(Collectors.toList());
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-        );
-        retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
-    }
-
-    public void processAddToStockBills() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
-        );
-        retrieveBillWithoutReference("b.billTypeAtomic", billTypes);
-    }
-
-    public void processSaleCash() {
-        List<BillTypeAtomic> billTypes = Arrays.asList(
-                BillTypeAtomic.PHARMACY_RETAIL_SALE,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
-        );
-        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
-    }
-
-    public void exportIpDrugReturnToExcel() {
+    public void exportStockConsumptionToExcel() {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response
@@ -5864,14 +6234,14 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition",
-                "attachment; filename=IP_Drug_Return_Report.xlsx");
+                "attachment; filename=Stock_Consumption_Report.xlsx");
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
-            XSSFSheet sheet = workbook.createSheet("IP Drug Return");
+            XSSFSheet sheet = workbook.createSheet("Stock Consumption");
 
             int rowIndex = 0;
-            int totalColumns = 14;
+            int totalColumns = 17;
 
             // =========================
             // STYLES
@@ -5960,7 +6330,7 @@ public class PharmacyReportController implements Serializable {
             // Report Title
             Row titleRow = sheet.createRow(rowIndex++);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("IP Drug Return Report");
+            titleCell.setCellValue("Stock Consumption Report");
             titleCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
 
@@ -5974,18 +6344,21 @@ public class PharmacyReportController implements Serializable {
             String[] headers = {
                 "Date",
                 "Item Name",
-                "Code",
+                "Batch Code",
                 "Doc No",
-                "Ref Doc No",
-                "Qty",
-                "Cost Rate",
-                "Cost Value",
+                "Ref. Doc No (Original bill No)",
+                "QTY",
+                "Code",
                 "Purchase Rate",
                 "Purchase Value",
+                "Cost Rate",
+                "Cost Value",
+                "Retail Rate",
+                "Retail Value",
                 "Net Total",
-                "MRP",
-                "MRP Value",
-                "Discount"
+                "Consumption Department",
+                "Remarks",
+                "UOM"
             };
 
             for (int i = 0; i < headers.length; i++) {
@@ -5997,69 +6370,109 @@ public class PharmacyReportController implements Serializable {
             // =========================
             // DATA
             // =========================
-            for (BillItem bi : billItems) {
+            for (BillItem f : billItems) {
 
                 Row row = sheet.createRow(rowIndex++);
 
                 Cell d0 = row.createCell(0);
                 d0.setCellValue(
-                        sdf.format(bi.getBill().getCreatedAt()));
+                        sdf.format(f.getCreatedAt()));
                 d0.setCellStyle(dataStyle);
 
                 Cell d1 = row.createCell(1);
-                d1.setCellValue(bi.getItem().getName());
+                d1.setCellValue(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "");
                 d1.setCellStyle(dataStyle);
 
                 Cell d2 = row.createCell(2);
-                d2.setCellValue(bi.getItem().getCode());
+                d2.setCellValue(f.getPharmaceuticalBillItem() != null
+                        && f.getPharmaceuticalBillItem().getItemBatch() != null
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getBatchNo()
+                        : "");
                 d2.setCellStyle(dataStyle);
 
                 Cell d3 = row.createCell(3);
-                d3.setCellValue(bi.getBill().getDeptId());
+                d3.setCellValue(f.getBill() != null ? f.getBill().getDeptId() : "");
                 d3.setCellStyle(dataStyle);
 
                 Cell d4 = row.createCell(4);
-                d4.setCellValue(
-                        bi.getBill().getReferenceBill().getDeptId());
+                d4.setCellValue(f.getBill() != null && f.getBill().getReferenceBill() != null
+                        ? f.getBill().getReferenceBill().getDeptId() : "");
                 d4.setCellStyle(dataStyle);
 
+                Double qty = f.getQty() != null ? f.getQty() : 0;
+                if (f.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN) {
+                    qty = -qty;
+                }
                 Cell d5 = row.createCell(5);
-                d5.setCellValue(
-                        bi.getQty());
+                d5.setCellValue(qty);
                 d5.setCellStyle(dataStyle);
 
-                Cell costRate = row.createCell(6);
-                costRate.setCellValue(
-                        bi.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+                Cell d6 = row.createCell(6);
+                d6.setCellValue(f.getItem() != null ? f.getItem().getCode() : "");
+                d6.setCellStyle(dataStyle);
+
+                Double pRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getPurchaseRate() : 0.0;
+
+                Double pValue = (f.getBillItemFinanceDetails() != null)
+                        ? 0.0 - f.getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0.0;
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double cValue = (f.getBillItemFinanceDetails() != null)
+                        ? 0.0 - f.getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() : 0.0;
+
+                Double rValue = (f.getBillItemFinanceDetails() != null)
+                        ? 0.0 - f.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue() : 0.0;
+
+                Cell costRate = row.createCell(7);
+                costRate.setCellValue(pRate);
                 costRate.setCellStyle(numberStyle);
 
-                Cell costValue = row.createCell(7);
-                costValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty());
+                Cell costValue = row.createCell(8);
+                costValue.setCellValue(pValue);
                 costValue.setCellStyle(numberStyle);
 
-                Cell purchaseRate = row.createCell(8);
-                purchaseRate.setCellValue(0.0 - bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
+                Cell purchaseRate = row.createCell(9);
+                purchaseRate.setCellValue(cRate);
                 purchaseRate.setCellStyle(numberStyle);
 
-                Cell purchaseValue = row.createCell(9);
-                purchaseValue.setCellValue(bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty());
+                Cell purchaseValue = row.createCell(10);
+                purchaseValue.setCellValue(cValue);
                 purchaseValue.setCellStyle(numberStyle);
 
-                Cell netT = row.createCell(10);
-                netT.setCellValue(bi.getBill().getNetTotal());
-                netT.setCellStyle(numberStyle);
+                Cell saleRate = row.createCell(11);
+                saleRate.setCellValue(rRate);
+                saleRate.setCellStyle(numberStyle);
 
-                Cell mrp = row.createCell(11);
-                mrp.setCellValue(bi.getPharmaceuticalBillItem().getRetailRate());
-                mrp.setCellStyle(numberStyle);
+                Cell saleValue = row.createCell(12);
+                saleValue.setCellValue(rValue);
+                saleValue.setCellStyle(numberStyle);
 
-                Cell mrpValue = row.createCell(12);
-                mrpValue.setCellValue(0.0 - bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty());
-                mrpValue.setCellStyle(numberStyle);
+                Cell nTotal = row.createCell(13);
+                nTotal.setCellValue(pValue);
+                nTotal.setCellStyle(numberStyle);
 
-                Cell disc = row.createCell(13);
-                disc.setCellValue(bi.getDiscount());
-                disc.setCellStyle(numberStyle);
+                Cell d7 = row.createCell(14);
+                d7.setCellValue(f.getBill() != null && f.getBill().getToDepartment() != null
+                        ? f.getBill().getToDepartment().getName() : "");
+                d7.setCellStyle(dataStyle);
+
+                Cell d8 = row.createCell(15);
+                d8.setCellValue(f.getBill() != null ? f.getBill().getComments() : "");
+                d8.setCellStyle(dataStyle);
+
+                Cell d9 = row.createCell(16);
+                d9.setCellValue(f.getItem() != null && f.getItem().getMeasurementUnit() != null
+                        ? f.getItem().getMeasurementUnit().getName() : "");
+                d9.setCellStyle(dataStyle);
+
             }
 
             // =========================
@@ -6068,24 +6481,24 @@ public class PharmacyReportController implements Serializable {
             Row totalRow = sheet.createRow(rowIndex++);
 
             Cell totalLabel = totalRow.createCell(0);
-            totalLabel.setCellValue("Net Amount");
+            totalLabel.setCellValue("Total");
             totalLabel.setCellStyle(headerStyle);
 
-            Cell totalCValue = totalRow.createCell(7);
-            totalCValue.setCellValue(totalCostValue);
-            totalCValue.setCellStyle(numberStyle);
+            Cell pTotalValue = totalRow.createCell(8);
+            pTotalValue.setCellValue(0.0 - purchaseValueTotal);
+            pTotalValue.setCellStyle(numberStyle);
 
-            Cell totalPValue = totalRow.createCell(9);
-            totalPValue.setCellValue(totalPurchaseValue);
-            totalPValue.setCellStyle(numberStyle);
+            Cell cTotalValue = totalRow.createCell(10);
+            cTotalValue.setCellValue(0.0 - costValueTotal);
+            cTotalValue.setCellStyle(numberStyle);
 
-            Cell totalNetValue = totalRow.createCell(10);
-            totalNetValue.setCellValue(netTotal);
-            totalNetValue.setCellStyle(numberStyle);
+            Cell rTotalValue = totalRow.createCell(12);
+            rTotalValue.setCellValue(0.0 - retailValueTotal);
+            rTotalValue.setCellStyle(numberStyle);
 
-            Cell totalRValue = totalRow.createCell(12);
-            totalRValue.setCellValue(totalRetailValue);
-            totalRValue.setCellStyle(numberStyle);
+            Cell netTotalValue = totalRow.createCell(13);
+            netTotalValue.setCellValue(0.0 - purchaseValueTotal);
+            netTotalValue.setCellStyle(numberStyle);
 
             // Auto size columns
             for (int i = 0; i < totalColumns; i++) {
@@ -6100,7 +6513,7 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    public void exportIpDrugReturnToPDF() {
+    public void exportStockConsumptionToPDF() {
 
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -6109,7 +6522,1040 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition",
-                "attachment; filename=IP_Drug_Return_Report.pdf");
+                "attachment; filename=Stock_Consumption_Report.pdf");
+
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 6);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            Paragraph filterPara = new Paragraph(
+                    "From: " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To: " + (toDate != null ? sdf.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
+
+            Paragraph reportTitle
+                    = new Paragraph("Stock Consumption Report", subTitleFont);
+            reportTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(reportTitle);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 17;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] widths = {
+                6f, 6f, 6f, 8f, 8f,
+                3f, 4f,
+                4f, 5f,
+                4f, 5f,
+                4f, 5f,
+                5f, 5f,
+                4f, 3f
+            };
+            table.setWidths(widths);
+
+            String[] headers = {
+                "Date",
+                "Item Name",
+                "Batch Code",
+                "Doc No",
+                "Ref. Doc No (Original bill No)",
+                "QTY",
+                "Code",
+                "Purchase Rate",
+                "Purchase Value",
+                "Cost Rate",
+                "Cost Value",
+                "Retail Rate",
+                "Retail Value",
+                "Net Total",
+                "Consumption Department",
+                "Remarks",
+                "UOM"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA ROWS
+            // =========================
+            for (BillItem f : billItems) {
+
+                table.addCell(new Phrase(
+                        sdf.format(f.getCreatedAt()), dataFont));
+
+                table.addCell(new Phrase(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "", dataFont));
+                table.addCell(new Phrase(f.getPharmaceuticalBillItem() != null
+                        && f.getPharmaceuticalBillItem().getItemBatch() != null
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getBatchNo()
+                        : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getReferenceBill() != null
+                        ? f.getBill().getReferenceBill().getDeptId() : "",
+                        dataFont));
+
+                // Qty
+                Double qty = f.getQty() != null ? f.getQty() : 0;
+                if (f.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN) {
+                    qty = -qty;
+                }
+                PdfPCell Qty = new PdfPCell(new Phrase(
+                        String.format("%,.0f", qty),
+                        dataFont));
+                Qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(Qty);
+
+                table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "",
+                        dataFont));
+
+                Double pRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getPurchaseRate() : 0.0;
+
+                Double pValue = (f.getBillItemFinanceDetails() != null)
+                        ? 0.0 - f.getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0.0;
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double cValue = (f.getBillItemFinanceDetails() != null)
+                        ? 0.0 - f.getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() : 0.0;
+
+                Double rValue = (f.getBillItemFinanceDetails() != null)
+                        ? 0.0 - f.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue() : 0.0;
+
+                // Purchase Rate
+                PdfPCell purchaseRateCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pRate), dataFont));
+                purchaseRateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(purchaseRateCell);
+
+                // Purchase Value
+                PdfPCell purchaseVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pValue), dataFont));
+                purchaseVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(purchaseVCell);
+
+                // cost Rate
+                PdfPCell costRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cRate), dataFont));
+                costRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costRCell);
+
+                // cost Value
+                PdfPCell costVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cValue), dataFont));
+                costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costVCell);
+
+                // Retail Rate
+                PdfPCell retailRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", rRate), dataFont));
+                retailRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailRCell);
+
+                // Retail Value
+                PdfPCell retailVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", rValue), dataFont));
+                retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailVCell);
+
+                // Net
+                PdfPCell netCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pValue), dataFont));
+                netCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netCell);
+
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getToDepartment() != null
+                        ? f.getBill().getToDepartment().getName() : "",
+                        dataFont));
+
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getComments() : "",
+                        dataFont));
+
+                table.addCell(new Phrase(f.getItem() != null && f.getItem().getMeasurementUnit() != null
+                        ? f.getItem().getMeasurementUnit().getName() : "",
+                        dataFont));
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            PdfPCell blank = new PdfPCell(new Phrase(" Total ", headerFont));
+            blank.setColspan(8);
+            blank.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(blank);
+
+            PdfPCell pTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", 0.0 - purchaseValueTotal), headerFont));
+            pTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(pTotalCell);
+
+            PdfPCell skipCostRate = new PdfPCell(new Phrase(" "));
+            table.addCell(skipCostRate);
+
+            PdfPCell cTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", 0.0 - costValueTotal), headerFont));
+            cTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(cTotalCell);
+
+            PdfPCell skipRetailRate = new PdfPCell(new Phrase(" "));
+            table.addCell(skipRetailRate);
+
+            PdfPCell rTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", 0.0 - retailValueTotal), headerFont));
+            rTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(rTotalCell);
+
+            PdfPCell netTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", 0.0 - purchaseValueTotal), headerFont));
+            netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(netTotalCell);
+
+            PdfPCell skip1 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip1);
+
+            PdfPCell skip2 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip2);
+
+            PdfPCell skip3 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip3);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void calculateStockConsumptionTotals(List<BillItem> items) {
+        netTotal = 0.0;
+        purchaseValueTotal = 0.0;
+        costValueTotal = 0.0;
+        retailValueTotal = 0.0;
+
+        for (BillItem item : items) {
+            // Simply sum the values from the columns without bill type manipulation
+            if (item.getBillItemFinanceDetails() != null) {
+                if (item.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) {
+                    purchaseValueTotal += item.getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue();
+                }
+                if (item.getBillItemFinanceDetails().getValueAtCostRate() != null) {
+                    costValueTotal += item.getBillItemFinanceDetails().getValueAtCostRate().doubleValue();
+                }
+                if (item.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
+                    retailValueTotal += item.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
+                }
+            } else {
+                // Fallback: derive values from PharmaceuticalBillItem -> ItemBatch
+                if (item.getPharmaceuticalBillItem() != null && item.getPharmaceuticalBillItem().getItemBatch() != null) {
+                    double qty = item.getQty();
+
+                    Double purchaseRate = item.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
+                    if (purchaseRate != null) {
+                        purchaseValueTotal += purchaseRate * qty;
+                    }
+
+                    Double costRate = item.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+                    if (costRate != null) {
+                        costValueTotal += costRate * qty;
+                    }
+
+                    Double retailRate = item.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
+                    if (retailRate != null) {
+                        retailValueTotal += retailRate * qty;
+                    }
+                }
+            }
+            netTotal += item.getNetValue();
+        }
+    }
+
+    private double calculateItemTotal(BillItem item) {
+        double itemTotal = item.getPharmaceuticalBillItem().getPurchaseRate() * item.getQty();
+        if (item.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE) {
+            return itemTotal;
+        } else {
+            return 0.0 - itemTotal;
+        }
+    }
+
+    public void processTransferIssue() {
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferIssue));
+    }
+
+    public void exportTransferIssueToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Transfer_Issue_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Transfer Issue");
+
+            int rowIndex = 0;
+            int totalColumns = 15;
+
+            // =========================
+            // STYLES
+            // =========================
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // =========================
+            // FILTER HEADER SECTION
+            // =========================
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Site
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Department
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            //Department Types
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Date filter
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From Date : "
+                    + (fromDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(fromDate) : "-")
+                    + " | To Date : "
+                    + (toDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(toDate) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Transfer Issue Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TABLE HEADER
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            String[] headers = {
+                "Date", "Item Name", "Doc No", "Ref Doc No (Request Doc No)", "Request Department",
+                "Code", "QTY", "Cost Rate", "Cost Value", "Purchase Rate", "Purchase Value", "Sale Rate", "Sale Value", "Total", "Net Total"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (BillItem f : billItems) {
+
+                Row row = sheet.createRow(rowIndex++);
+
+                Cell d0 = row.createCell(0);
+                d0.setCellValue(
+                        new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(f.getBill().getCreatedAt()));
+                d0.setCellStyle(dataStyle);
+
+                Cell d1 = row.createCell(1);
+                d1.setCellValue(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "");
+                d1.setCellStyle(dataStyle);
+
+                Cell d2 = row.createCell(2);
+                d2.setCellValue(f.getBill() != null ? f.getBill().getDeptId() : "");
+                d2.setCellStyle(dataStyle);
+
+                Cell d3 = row.createCell(3);
+                d3.setCellValue(f.getBill() != null && f.getBill().getReferenceBill() != null
+                        ? f.getBill().getReferenceBill().getDeptId() : "");
+                d3.setCellStyle(dataStyle);
+
+                Cell d4 = row.createCell(4);
+                d4.setCellValue(f.getBill() != null && f.getBill().getToDepartment() != null
+                        ? f.getBill().getToDepartment().getName() : "");
+                d4.setCellStyle(dataStyle);
+
+                Cell d5 = row.createCell(5);
+                d5.setCellValue(f.getItem() != null ? f.getItem().getCode() : "");
+                d5.setCellStyle(dataStyle);
+
+                Double qty = f.getQty();
+                Cell d6 = row.createCell(6);
+                d6.setCellValue(qty != null ? qty : 0.0);
+                d6.setCellStyle(dataStyle);
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double pRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double sRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() : 0.0;
+
+                Double cValue = (qty != null) ? cRate * qty : 0.0;
+
+                Double pValue = (qty != null) ? pRate * qty : 0.0;
+
+                Double sVlaue = (qty != null) ? sRate * qty : 0.0;
+
+                Double total = (qty != null) ? rRate * qty : 0.0;
+
+                Cell costRate = row.createCell(7);
+                costRate.setCellValue(cRate);
+                costRate.setCellStyle(numberStyle);
+
+                Cell costValue = row.createCell(8);
+                costValue.setCellValue(cValue);
+                costValue.setCellStyle(numberStyle);
+
+                Cell purchaseRate = row.createCell(9);
+                purchaseRate.setCellValue(pRate);
+                purchaseRate.setCellStyle(numberStyle);
+
+                Cell purchaseValue = row.createCell(10);
+                purchaseValue.setCellValue(pValue);
+                purchaseValue.setCellStyle(numberStyle);
+
+                Cell saleRate = row.createCell(11);
+                saleRate.setCellValue(rRate);
+                saleRate.setCellStyle(numberStyle);
+
+                Cell saleValue = row.createCell(12);
+                saleValue.setCellValue(sVlaue);
+                saleValue.setCellStyle(numberStyle);
+
+                Cell tot = row.createCell(13);
+                tot.setCellValue(total);
+                tot.setCellStyle(numberStyle);
+
+                Cell nTotal = row.createCell(14);
+                nTotal.setCellValue(f.getBill() != null
+                        ? f.getBill().getNetTotal()
+                        : 0.0);
+                nTotal.setCellStyle(numberStyle);
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            Row totalRow = sheet.createRow(rowIndex++);
+
+            Cell totalLabel = totalRow.createCell(0);
+            totalLabel.setCellValue("Net Amount");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell netTotalValue = totalRow.createCell(14);
+            netTotalValue.setCellValue(netTotal);
+            netTotalValue.setCellStyle(numberStyle);
+
+            // Auto size columns
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportTransferIssueToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Transfer_Issue_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            Paragraph filterPara = new Paragraph(
+                    "From: " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To: " + (toDate != null ? sdf.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
+
+            Paragraph reportTitle
+                    = new Paragraph("Transfer Issue Report", subTitleFont);
+            reportTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(reportTitle);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 15;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] widths = {
+                8f, 6f, 8f, 8f, 6f,
+                3f, 2f,
+                4f, 4f,
+                4f, 4f,
+                4f, 4f,
+                4f, 5f
+            };
+            table.setWidths(widths);
+
+            String[] headers = {
+                "Date", "Item Name", "Doc No", "Ref Doc No (Request Doc No)", "Request Department",
+                "Code", "QTY", "Cost Rate", "Cost Value", "Purchase Rate", "Purchase Value", "Sale Rate", "Sale Value", "Total", "Net Total"
+
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA ROWS
+            // =========================
+            for (BillItem f : billItems) {
+
+                table.addCell(new Phrase(
+                        sdf.format(f.getBill().getCreatedAt()), dataFont));
+
+                table.addCell(new Phrase(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getReferenceBill() != null
+                        ? f.getBill().getReferenceBill().getDeptId() : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getToDepartment() != null
+                        ? f.getBill().getToDepartment().getName() : "",
+                        dataFont));
+
+                table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "",
+                        dataFont));
+                // Qty
+                Double qty = f.getQty();
+                PdfPCell Qty = new PdfPCell(new Phrase(
+                        String.format("%,.0f", qty != null
+                                ? qty
+                                : 0),
+                        dataFont));
+                Qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(Qty);
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double pRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double sRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() : 0.0;
+
+                Double cValue = (qty != null) ? cRate * qty : 0.0;
+
+                Double pValue = (qty != null) ? pRate * qty : 0.0;
+
+                Double sVlaue = (qty != null) ? sRate * qty : 0.0;
+
+                Double total = (qty != null) ? rRate * qty : 0.0;
+
+                // Cost Rate
+                PdfPCell costRateCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cRate), dataFont));
+                costRateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costRateCell);
+
+                // Cost Value
+                PdfPCell costVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cValue), dataFont));
+                costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costVCell);
+
+                // Purchase Rate
+                PdfPCell purchaseRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pRate), dataFont));
+                purchaseRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(purchaseRCell);
+
+                // Purchase Value
+                PdfPCell purchaseVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pValue), dataFont));
+                purchaseVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(purchaseVCell);
+
+                // sale Rate
+                PdfPCell retailRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", rRate), dataFont));
+                retailRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailRCell);
+
+                // Sale Value
+                PdfPCell retailVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", sVlaue), dataFont));
+                retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailVCell);
+
+                // Total
+                PdfPCell tot = new PdfPCell(
+                        new Phrase(String.format("%,.2f", total), dataFont));
+                tot.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(tot);
+
+                // Net
+                PdfPCell netCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getNetTotal()
+                                : 0.0), dataFont));
+                netCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netCell);
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            PdfPCell blank = new PdfPCell(new Phrase(" Net Amount ", headerFont));
+            blank.setColspan(14);
+            blank.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(blank);
+
+            PdfPCell netTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", netTotal), headerFont));
+            netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(netTotalCell);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void processTransferReceive() {
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferReceive));
+    }
+
+    public void exportTransferReceiveToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Transfer_Receive_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Transfer Receive");
+
+            int rowIndex = 0;
+            int totalColumns = 12;
+
+            // =========================
+            // STYLES
+            // =========================
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // =========================
+            // FILTER HEADER SECTION
+            // =========================
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Site
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Department
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            //Department Types
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From Date : "
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To Date : "
+                    + (toDate != null ? sdf.format(toDate) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Transfer Receive Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TABLE HEADER
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            String[] headers = {
+                "Date", "Item Name", "Doc No", "Reference Document No(Issue Doc No)", "Issue Department",
+                "Code", "QTY", "Cost Rate", "Cost Value", "Sale Rate", "Total", "Net Total"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (BillItem f : billItems) {
+
+                Row row = sheet.createRow(rowIndex++);
+
+                Cell d0 = row.createCell(0);
+                d0.setCellValue(
+                        sdf.format(f.getBill().getCreatedAt()));
+                d0.setCellStyle(dataStyle);
+
+                Cell d1 = row.createCell(1);
+                d1.setCellValue(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "");
+                d1.setCellStyle(dataStyle);
+
+                Cell d2 = row.createCell(2);
+                d2.setCellValue(f.getBill() != null ? f.getBill().getDeptId() : "");
+                d2.setCellStyle(dataStyle);
+
+                Cell d3 = row.createCell(3);
+                String deptId = "";
+                if (f.getBill() != null) {
+                    if (f.getBill().getBackwardReferenceBill() != null) {
+                        deptId = f.getBill().getBackwardReferenceBill().getDeptId();
+                    } else if (f.getBill().getReferenceBill() != null) {
+                        deptId = f.getBill().getReferenceBill().getDeptId();
+                    }
+                }
+                d3.setCellValue(deptId);
+                d3.setCellStyle(dataStyle);
+
+                Cell d4 = row.createCell(4);
+                d4.setCellValue(f.getBill() != null && f.getBill().getFromDepartment() != null
+                        ? f.getBill().getFromDepartment().getName() : "");
+                d4.setCellStyle(dataStyle);
+
+                Cell d5 = row.createCell(5);
+                d5.setCellValue(f.getItem() != null ? f.getItem().getCode() : "");
+                d5.setCellStyle(dataStyle);
+
+                Double qty = f.getQty();
+                Cell d6 = row.createCell(6);
+                d6.setCellValue(qty != null ? qty : 0.0);
+                d6.setCellStyle(dataStyle);
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double cValue = (qty != null) ? cRate * qty : 0.0;
+
+                Double total = (qty != null) ? rRate * qty : 0.0;
+
+                Cell costRate = row.createCell(7);
+                costRate.setCellValue(cRate);
+                costRate.setCellStyle(numberStyle);
+
+                Cell costValue = row.createCell(8);
+                costValue.setCellValue(cValue);
+                costValue.setCellStyle(numberStyle);
+
+                Cell saleRate = row.createCell(9);
+                saleRate.setCellValue(rRate);
+                saleRate.setCellStyle(numberStyle);
+
+                Cell tot = row.createCell(10);
+                tot.setCellValue(total);
+                tot.setCellStyle(numberStyle);
+
+                Cell nTotal = row.createCell(11);
+                nTotal.setCellValue(f.getBill() != null
+                        ? f.getBill().getNetTotal()
+                        : 0.0);
+                nTotal.setCellStyle(numberStyle);
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            Row totalRow = sheet.createRow(rowIndex++);
+
+            Cell totalLabel = totalRow.createCell(0);
+            totalLabel.setCellValue("Net Amount");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell netTotalValue = totalRow.createCell(11);
+            netTotalValue.setCellValue(netTotal);
+            netTotalValue.setCellStyle(numberStyle);
+
+            // Auto size columns
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportTransferReceiveToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Transfer_Receive_Report.pdf");
 
         String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
         SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
@@ -6164,7 +7610,7 @@ public class PharmacyReportController implements Serializable {
             document.add(deptTypePara);
 
             Paragraph reportTitle
-                    = new Paragraph("IP Drug Return Report", subTitleFont);
+                    = new Paragraph("Transfer Receive Report", subTitleFont);
             reportTitle.setAlignment(Element.ALIGN_CENTER);
             document.add(reportTitle);
 
@@ -6173,35 +7619,23 @@ public class PharmacyReportController implements Serializable {
             // =========================
             // TABLE
             // =========================
-            int columnCount = 14;
+            int columnCount = 12;
             PdfPTable table = new PdfPTable(columnCount);
             table.setWidthPercentage(100);
 
             float[] widths = {
-                5f, 6f, 3f, 5f, 5f,
-                2f, 3f,
-                3f, 3f,
-                3f, 3f,
-                3f, 3f,
-                3f
+                7f, 6f, 8f, 8f, 6f,
+                4f, 2f,
+                4f, 4f,
+                4f, 4f,
+                5f
             };
             table.setWidths(widths);
 
             String[] headers = {
-                "Date",
-                "Item Name",
-                "Code",
-                "Doc No",
-                "Ref Doc No",
-                "Qty",
-                "Cost Rate",
-                "Cost Value",
-                "Purchase Rate",
-                "Purchase Value",
-                "Net Total",
-                "MRP",
-                "MRP Value",
-                "Discount"
+                "Date", "Item Name", "Doc No", "Reference Document No(Issue Doc No)", "Issue Department",
+                "Code", "QTY", "Cost Rate", "Cost Value", "Sale Rate", "Total", "Net Total"
+
             };
 
             for (String header : headers) {
@@ -6213,111 +7647,95 @@ public class PharmacyReportController implements Serializable {
             // =========================
             // DATA ROWS
             // =========================
-            for (BillItem bi : billItems) {
+            for (BillItem f : billItems) {
 
                 table.addCell(new Phrase(
-                        sdf.format(bi.getBill().getCreatedAt()), dataFont));
+                        sdf.format(f.getBill().getCreatedAt()), dataFont));
 
-                table.addCell(new Phrase(bi.getItem().getName(), dataFont));
-                table.addCell(new Phrase(bi.getItem().getCode(), dataFont));
-                table.addCell(new Phrase(bi.getBill().getDeptId(), dataFont));
-                table.addCell(new Phrase(
-                        bi.getBill().getReferenceBill().getDeptId(),
+                table.addCell(new Phrase(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", dataFont));
+                String deptId = "";
+                if (f.getBill() != null) {
+                    if (f.getBill().getBackwardReferenceBill() != null) {
+                        deptId = f.getBill().getBackwardReferenceBill().getDeptId();
+                    } else if (f.getBill().getReferenceBill() != null) {
+                        deptId = f.getBill().getReferenceBill().getDeptId();
+                    }
+                }
+                table.addCell(new Phrase(deptId, dataFont));
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getFromDepartment() != null
+                        ? f.getBill().getFromDepartment().getName() : "",
                         dataFont));
 
+                table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "",
+                        dataFont));
                 // Qty
-                PdfPCell qty = new PdfPCell(new Phrase(
-                        String.format("%,.0f", bi.getQty()),
+                Double qty = f.getQty();
+                PdfPCell Qty = new PdfPCell(new Phrase(
+                        String.format("%,.0f", qty != null
+                                ? qty
+                                : 0),
                         dataFont));
-                qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                table.addCell(qty);
+                Qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(Qty);
 
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double cValue = (qty != null) ? cRate * qty : 0.0;
+
+                Double total = (qty != null) ? rRate * qty : 0.0;
                 // Cost Rate
                 PdfPCell costRateCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate()), dataFont));
+                        new Phrase(String.format("%,.2f", cRate), dataFont));
                 costRateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(costRateCell);
 
                 // Cost Value
                 PdfPCell costVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * bi.getQty()), dataFont));
+                        new Phrase(String.format("%,.2f", cValue), dataFont));
                 costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(costVCell);
 
-                // Purchase Rate
-                PdfPCell purchaseRCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", 0.0 - bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate()), dataFont));
-                purchaseRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                table.addCell(purchaseRCell);
-
-                // Purchase Value
-                PdfPCell purchaseVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getQty()), dataFont));
-                purchaseVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                table.addCell(purchaseVCell);
-
-                // Net
-                PdfPCell netCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getBill().getNetTotal()), dataFont));
-                netCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                table.addCell(netCell);
-
-                // MRP
+                // sale Rate
                 PdfPCell retailRCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getPharmaceuticalBillItem().getRetailRate()), dataFont));
+                        new Phrase(String.format("%,.2f", rRate), dataFont));
                 retailRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(retailRCell);
 
-                // MRP Value
-                PdfPCell retailVCell = new PdfPCell(
-                        new Phrase(String.format("%,.2f", 0.0 - bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty()), dataFont));
-                retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                table.addCell(retailVCell);
+                // Total
+                PdfPCell tot = new PdfPCell(
+                        new Phrase(String.format("%,.2f", total), dataFont));
+                tot.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(tot);
 
-                // Discount
-                PdfPCell disc = new PdfPCell(
-                        new Phrase(String.format("%,.2f", bi.getDiscount()), dataFont));
-                disc.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                table.addCell(disc);
+                // Net
+                PdfPCell netCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getNetTotal()
+                                : 0.0), dataFont));
+                netCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netCell);
 
             }
 
             // =========================
             // TOTAL ROW
             // =========================
-            PdfPCell blank = new PdfPCell(new Phrase("Net Amount :", headerFont));
-            blank.setColspan(7);
-            blank.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            PdfPCell blank = new PdfPCell(new Phrase(" Net Amount ", headerFont));
+            blank.setColspan(11);
+            blank.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(blank);
-
-            PdfPCell costTotalCell = new PdfPCell(
-                    new Phrase(String.format("%,.2f", totalCostValue), headerFont));
-            costTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(costTotalCell);
-
-            PdfPCell skipPurchaseRate = new PdfPCell(new Phrase(" "));
-            table.addCell(skipPurchaseRate);
-
-            PdfPCell purchaseTotalCell = new PdfPCell(
-                    new Phrase(String.format("%,.2f", totalPurchaseValue), headerFont));
-            purchaseTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(purchaseTotalCell);
 
             PdfPCell netTotalCell = new PdfPCell(
                     new Phrase(String.format("%,.2f", netTotal), headerFont));
             netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(netTotalCell);
-
-            PdfPCell skipRetailRate = new PdfPCell(new Phrase(" "));
-            table.addCell(skipRetailRate);
-
-            PdfPCell retailTotalCell = new PdfPCell(
-                    new Phrase(String.format("%,.2f", totalRetailValue), headerFont));
-            retailTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(retailTotalCell);
-
-            PdfPCell skipDisc = new PdfPCell(new Phrase(" "));
-            table.addCell(skipDisc);
 
             document.add(table);
             document.close();
@@ -6326,6 +7744,1122 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void processSaleCredit() {
+        List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
+        creditTypePaymentMethods.add(PaymentMethod.Credit);
+        creditTypePaymentMethods.add(PaymentMethod.Staff);
+
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+
+        retrieveBillItems("b.billTypeAtomic", billTypes, creditTypePaymentMethods);
+    }
+
+    public void exportOpdCreditToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=OPD_Credit_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("OPD Credit");
+
+            int rowIndex = 0;
+            int totalColumns = 17;
+
+            // =========================
+            // STYLES
+            // =========================
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // =========================
+            // FILTER HEADER SECTION
+            // =========================
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Site
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Department
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            //Department Types
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From Date : "
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To Date : "
+                    + (toDate != null ? sdf.format(toDate) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("OPD Credit Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TABLE HEADER
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            String[] headers = {
+                "Date",
+                "Credit Company",
+                "Item Name",
+                "Doc No",
+                "Code",
+                "Batch Code",
+                "QTY",
+                "Rate",
+                "Gross Value",
+                "Discount",
+                "Net Value",
+                "Bill Net Total",
+                "Bill Discount",
+                "Cost Rate",
+                "Cost Value",
+                "Sale Rate",
+                "Sale Value"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (BillItem f : billItems) {
+
+                Row row = sheet.createRow(rowIndex++);
+
+                Cell d0 = row.createCell(0);
+                d0.setCellValue(
+                        sdf.format(f.getBill().getCreatedAt()));
+                d0.setCellStyle(dataStyle);
+
+                Cell d1 = row.createCell(1);
+                d1.setCellValue(f.getBill() != null && f.getBill().getToInstitution() != null && f.getBill().getToInstitution().getName() != null
+                        ? f.getBill().getToInstitution().getName()
+                        : "");
+                d1.setCellStyle(dataStyle);
+
+                Cell d2 = row.createCell(2);
+                d2.setCellValue(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "");
+                d2.setCellStyle(dataStyle);
+
+                Cell d3 = row.createCell(3);
+                d3.setCellValue(f.getBill() != null ? f.getBill().getDeptId() : "");
+                d3.setCellStyle(dataStyle);
+
+                Cell d4 = row.createCell(4);
+                d4.setCellValue(f.getItem().getCode() != null ? f.getItem().getCode() : "");
+                d4.setCellStyle(dataStyle);
+
+                Cell d5 = row.createCell(5);
+                d5.setCellValue(f.getPharmaceuticalBillItem() != null
+                        && f.getPharmaceuticalBillItem().getItemBatch() != null
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getBatchNo()
+                        : "");
+                d5.setCellStyle(dataStyle);
+
+                Double qty = f.getQty() != null ? f.getQty() : 0;
+                Cell d6 = row.createCell(6);
+                d6.setCellValue(qty);
+                d6.setCellStyle(dataStyle);
+
+                Cell Rate = row.createCell(7);
+                Rate.setCellValue(f.getRate());
+                Rate.setCellStyle(numberStyle);
+
+                Cell grossValue = row.createCell(8);
+                grossValue.setCellValue(f.getGrossValue());
+                grossValue.setCellStyle(numberStyle);
+
+                Cell disc = row.createCell(9);
+                disc.setCellValue(f.getDiscount());
+                disc.setCellStyle(numberStyle);
+
+                Cell nValue = row.createCell(10);
+                nValue.setCellValue(f.getNetValue());
+                nValue.setCellStyle(numberStyle);
+
+                Cell nTotalValue = row.createCell(11);
+                nTotalValue.setCellValue(f.getBill() != null
+                        ? f.getBill().getNetTotal()
+                        : 0.0);
+                nTotalValue.setCellStyle(numberStyle);
+
+                Cell billDisc = row.createCell(12);
+                billDisc.setCellValue(f.getBill() != null
+                        ? f.getBill().getDiscount()
+                        : 0.0);
+                billDisc.setCellStyle(numberStyle);
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double cValue = cRate * qty;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double rValue = rRate * qty;
+
+                Cell costRate = row.createCell(13);
+                costRate.setCellValue(cRate);
+                costRate.setCellStyle(numberStyle);
+
+                Cell costValue = row.createCell(14);
+                costValue.setCellValue(cValue);
+                costValue.setCellStyle(numberStyle);
+
+                Cell saleRate = row.createCell(15);
+                saleRate.setCellValue(rRate);
+                saleRate.setCellStyle(numberStyle);
+
+                Cell saleValue = row.createCell(16);
+                saleValue.setCellValue(rValue);
+                saleValue.setCellStyle(numberStyle);
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            Row totalRow = sheet.createRow(rowIndex++);
+
+            Cell totalLabel = totalRow.createCell(0);
+            totalLabel.setCellValue("Total");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell pTotalValue = totalRow.createCell(11);
+            pTotalValue.setCellValue(netTotal);
+            pTotalValue.setCellStyle(numberStyle);
+
+            Cell cTotalValue = totalRow.createCell(14);
+            cTotalValue.setCellValue(totalCostValue);
+            cTotalValue.setCellStyle(numberStyle);
+
+            Cell rTotalValue = totalRow.createCell(16);
+            rTotalValue.setCellValue(totalSaleValue);
+            rTotalValue.setCellStyle(numberStyle);
+
+            // Auto size columns
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportOpdCreditToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=OPD_Credit_Report.pdf");
+
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            Paragraph filterPara = new Paragraph(
+                    "From: " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To: " + (toDate != null ? sdf.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
+
+            Paragraph reportTitle
+                    = new Paragraph("OPD Credit Report", subTitleFont);
+            reportTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(reportTitle);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 17;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] widths = {
+                6f, 8f, 6f, 8f, 6f,
+                6f, 3f,
+                4f, 4f,
+                4f, 4f,
+                4f, 4f,
+                4f, 4f,
+                4f, 4f
+            };
+            table.setWidths(widths);
+
+            String[] headers = {
+                "Date",
+                "Credit Company",
+                "Item Name",
+                "Doc No",
+                "Code",
+                "Batch Code",
+                "QTY",
+                "Rate",
+                "Gross Value",
+                "Discount",
+                "Net Value",
+                "Bill Net Total",
+                "Bill Discount",
+                "Cost Rate",
+                "Cost Value",
+                "Sale Rate",
+                "Sale Value"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA ROWS
+            // =========================
+            for (BillItem f : billItems) {
+
+                table.addCell(new Phrase(
+                        sdf.format(f.getBill().getCreatedAt()), dataFont));
+
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getToInstitution().getName() != null
+                        ? f.getBill().getToInstitution().getName()
+                        : "", dataFont));
+
+                table.addCell(new Phrase(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "", dataFont));
+
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", dataFont));
+
+                table.addCell(new Phrase(f.getItem().getCode() != null ? f.getItem().getCode() : "", dataFont));
+
+                table.addCell(new Phrase(f.getPharmaceuticalBillItem() != null
+                        && f.getPharmaceuticalBillItem().getItemBatch() != null
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getBatchNo()
+                        : "",
+                        dataFont));
+
+                // Qty
+                Double qty = f.getQty() != null ? f.getQty() : 0;
+                PdfPCell Qty = new PdfPCell(new Phrase(
+                        String.format("%,.0f", qty),
+                        dataFont));
+                Qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(Qty);
+
+                PdfPCell Rate = new PdfPCell(new Phrase(
+                        String.format("%,.2f", f.getRate()),
+                        dataFont));
+                Rate.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(Rate);
+
+                PdfPCell grossValue = new PdfPCell(new Phrase(
+                        String.format("%,.2f", f.getGrossValue()),
+                        dataFont));
+                grossValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(grossValue);
+
+                PdfPCell disc = new PdfPCell(new Phrase(
+                        String.format("%,.2f", f.getDiscount()),
+                        dataFont));
+                disc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(disc);
+
+                PdfPCell nValue = new PdfPCell(new Phrase(
+                        String.format("%,.2f", f.getNetValue()),
+                        dataFont));
+                nValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(nValue);
+
+                PdfPCell billNetTotal = new PdfPCell(new Phrase(
+                        String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getNetTotal()
+                                : 0.0),
+                        dataFont));
+                billNetTotal.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(billNetTotal);
+
+                PdfPCell billDisc = new PdfPCell(new Phrase(
+                        String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getDiscount()
+                                : 0.0),
+                        dataFont));
+                billDisc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(billDisc);
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double cValue = cRate * qty;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double rValue = rRate * qty;
+
+                // cost Rate
+                PdfPCell costRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cRate), dataFont));
+                costRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costRCell);
+
+                // cost Value
+                PdfPCell costVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cValue), dataFont));
+                costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costVCell);
+
+                // Retail Rate
+                PdfPCell retailRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", rRate), dataFont));
+                retailRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailRCell);
+
+                // Retail Value
+                PdfPCell retailVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", rValue), dataFont));
+                retailVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(retailVCell);
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            PdfPCell blank = new PdfPCell(new Phrase(" Total ", headerFont));
+            blank.setColspan(11);
+            blank.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(blank);
+
+            PdfPCell pTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", netTotal), headerFont));
+            pTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(pTotalCell);
+
+            PdfPCell skip1 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip1);
+
+            PdfPCell skip2 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip2);
+
+            PdfPCell cTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", totalCostValue), headerFont));
+            cTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(cTotalCell);
+
+            PdfPCell skipRetailRate = new PdfPCell(new Phrase(" "));
+            table.addCell(skipRetailRate);
+
+            PdfPCell rTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", totalSaleValue), headerFont));
+            rTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(rTotalCell);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void processBhtIssue() {
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes);
+    }
+
+    public void exportBhtIssueToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=BHT_Issue_Report.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("BHT Issue");
+
+            int rowIndex = 0;
+            int totalColumns = 16;
+
+            // =========================
+            // STYLES
+            // =========================
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // =========================
+            // FILTER HEADER SECTION
+            // =========================
+            // Institution
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Site
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Department
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            //Department Types
+            Row deptTypeRow = sheet.createRow(rowIndex++);
+            Cell deptTypeCell = deptTypeRow.createCell(0);
+            deptTypeCell.setCellValue("Department Types: " + getDepartmentTypeFilterValue());
+            deptTypeCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            // Date filter
+            String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From Date : "
+                    + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To Date : "
+                    + (toDate != null ? sdf.format(toDate) : "-")
+            );
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("BHT Issue Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // TABLE HEADER
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            String[] headers = {
+                "Date",
+                "Item Name",
+                "Code",
+                "Doc No",
+                "Batch Code",
+                "QTY",
+                "Rate",
+                "Cost Rate",
+                "Cost Value",
+                "MRP",
+                "BHT Issue",
+                "Net Total",
+                "Margine",
+                "Discount",
+                "BHT No",
+                "MRN"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // DATA
+            // =========================
+            for (BillItem f : billItems) {
+
+                Row row = sheet.createRow(rowIndex++);
+
+                Cell d0 = row.createCell(0);
+                d0.setCellValue(
+                        sdf.format(f.getBill().getCreatedAt()));
+                d0.setCellStyle(dataStyle);
+
+                Cell d1 = row.createCell(1);
+                d1.setCellValue(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "");
+                d1.setCellStyle(dataStyle);
+
+                Cell d2 = row.createCell(2);
+                d2.setCellValue(f.getItem().getCode() != null
+                        ? f.getItem().getCode()
+                        : "");
+                d2.setCellStyle(dataStyle);
+
+                Cell d3 = row.createCell(3);
+                d3.setCellValue(f.getBill() != null ? f.getBill().getDeptId() : "");
+                d3.setCellStyle(dataStyle);
+
+                Cell d4 = row.createCell(4);
+                d4.setCellValue(f.getPharmaceuticalBillItem() != null && f.getPharmaceuticalBillItem().getItemBatch() != null
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "");
+                d4.setCellStyle(dataStyle);
+
+                Double qty = f.getQty() != null ? f.getQty() : 0;
+                Cell d5 = row.createCell(5);
+                d5.setCellValue(qty);
+                d5.setCellStyle(dataStyle);
+
+                Double pRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getPurchaseRate() : 0.0;
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double pValue = pRate * qty;
+
+                Double cValue = cRate * qty;
+
+                Cell Rate = row.createCell(6);
+                Rate.setCellValue(pRate);
+                Rate.setCellStyle(numberStyle);
+
+                Cell costRate = row.createCell(7);
+                costRate.setCellValue(cRate);
+                costRate.setCellStyle(numberStyle);
+
+                Cell costValue = row.createCell(8);
+                costValue.setCellValue(cValue);
+                costValue.setCellStyle(numberStyle);
+
+                Cell mrp = row.createCell(9);
+                mrp.setCellValue(rRate);
+                mrp.setCellStyle(numberStyle);
+
+                Cell bhtIssue = row.createCell(10);
+                bhtIssue.setCellValue(pValue);
+                bhtIssue.setCellStyle(numberStyle);
+
+                Cell nTotal = row.createCell(11);
+                nTotal.setCellValue(f.getBill() != null
+                        ? f.getBill().getNetTotal()
+                        : 0.0);
+                nTotal.setCellStyle(numberStyle);
+
+                Cell d7 = row.createCell(12);
+                d7.setCellValue(f.getBill() != null
+                        ? f.getBill().getMargin() : 0.0);
+                d7.setCellStyle(numberStyle);
+
+                Cell d8 = row.createCell(13);
+                d8.setCellValue(f.getBill() != null
+                        ? f.getBill().getDiscount()
+                        : 0.0);
+                d8.setCellStyle(numberStyle);
+
+                Cell d9 = row.createCell(14);
+                d9.setCellValue(f.getBill() != null && f.getBill().getPatientEncounter() != null && f.getBill().getPatientEncounter().getBhtNo() != null
+                        ? f.getBill().getPatientEncounter().getBhtNo() : "");
+                d9.setCellStyle(dataStyle);
+
+                Cell d10 = row.createCell(15);
+                d10.setCellValue(f.getBill() != null && f.getBill().getPatient() != null && f.getBill().getPatient().getPhn() != null
+                        ? f.getBill().getPatient().getPhn() : "");
+                d10.setCellStyle(dataStyle);
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            Row totalRow = sheet.createRow(rowIndex++);
+
+            Cell totalLabel = totalRow.createCell(0);
+            totalLabel.setCellValue("Total");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell pTotalValue = totalRow.createCell(8);
+            pTotalValue.setCellValue(costValueTotal);
+            pTotalValue.setCellStyle(numberStyle);
+
+            Cell nTotalValue = totalRow.createCell(11);
+            nTotalValue.setCellValue(netTotal);
+            nTotalValue.setCellStyle(numberStyle);
+
+            // Auto size columns
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportBhtIssueToPDF() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=BHT_Issue_Report.pdf");
+
+        String datePattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern);
+
+        try (OutputStream out = response.getOutputStream()) {
+
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // =========================
+            // FONTS
+            // =========================
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15);
+            Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER SECTION
+            // =========================
+            Paragraph instPara = new Paragraph(
+                    institution != null ? institution.getName() : "All Institutions",
+                    titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(
+                    site != null ? site.getName() : "All Sites",
+                    titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(
+                    department != null ? department.getName() : "All Departments",
+                    titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            Paragraph filterPara = new Paragraph(
+                    "From: " + (fromDate != null ? sdf.format(fromDate) : "-")
+                    + " | To: " + (toDate != null ? sdf.format(toDate) : "-"),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            Paragraph deptTypePara = new Paragraph(
+                    "Department Types: " + getDepartmentTypeFilterValue(), filterFont);
+            deptTypePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptTypePara);
+
+            Paragraph reportTitle
+                    = new Paragraph("BHT Issue Report", subTitleFont);
+            reportTitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(reportTitle);
+
+            document.add(new Paragraph(" "));
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 16;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] widths = {
+                6f, 6f, 5f, 8f, 5f,
+                3f, 4f,
+                4f, 4f,
+                4f, 4f,
+                4f, 4f,
+                4f, 5f,
+                5f
+            };
+            table.setWidths(widths);
+
+            String[] headers = {
+                "Date",
+                "Item Name",
+                "Code",
+                "Doc No",
+                "Batch Code",
+                "QTY",
+                "Rate",
+                "Cost Rate",
+                "Cost Value",
+                "MRP",
+                "BHT Issue",
+                "Net Total",
+                "Margine",
+                "Discount",
+                "BHT No",
+                "MRN"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // =========================
+            // DATA ROWS
+            // =========================
+            for (BillItem f : billItems) {
+
+                table.addCell(new Phrase(
+                        sdf.format(f.getBill().getCreatedAt()), dataFont));
+
+                table.addCell(new Phrase(f.getItem().getName() != null
+                        ? f.getItem().getName()
+                        : "", dataFont));
+                table.addCell(new Phrase(f.getItem().getCode() != null
+                        ? f.getItem().getCode()
+                        : "", dataFont));
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", dataFont));
+                table.addCell(new Phrase(f.getPharmaceuticalBillItem() != null && f.getPharmaceuticalBillItem().getItemBatch() != null
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "",
+                        dataFont));
+
+                // Qty
+                Double qty = f.getQty() != null ? f.getQty() : 0;
+                PdfPCell Qty = new PdfPCell(new Phrase(
+                        String.format("%,.0f", qty),
+                        dataFont));
+                Qty.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(Qty);
+
+                Double pRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getPurchaseRate() : 0.0;
+
+                Double cRate = (f.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? f.getPharmaceuticalBillItem().getItemBatch().getCostRate() : 0.0;
+
+                Double rRate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+
+                Double pValue = pRate * qty;
+
+                Double cValue = cRate * qty;
+
+                //  Rate
+                PdfPCell RateCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pRate), dataFont));
+                RateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(RateCell);
+
+                // cost Rate
+                PdfPCell costRCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cRate), dataFont));
+                costRCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costRCell);
+
+                // cost Value
+                PdfPCell costVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", cValue), dataFont));
+                costVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(costVCell);
+
+                // MRP
+                PdfPCell mrpCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", rRate), dataFont));
+                mrpCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(mrpCell);
+
+                // BHT issue
+                PdfPCell bhtIssueVCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", pValue), dataFont));
+                bhtIssueVCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(bhtIssueVCell);
+
+                // Net
+                PdfPCell netCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getNetTotal()
+                                : 0.0), dataFont));
+                netCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(netCell);
+
+                PdfPCell marginCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getMargin() : 0.0), dataFont));
+                marginCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(marginCell);
+
+                PdfPCell discCell = new PdfPCell(
+                        new Phrase(String.format("%,.2f", f.getBill() != null
+                                ? f.getBill().getDiscount()
+                                : 0.0), dataFont));
+                discCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(discCell);
+
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getPatientEncounter() != null && f.getBill().getPatientEncounter().getBhtNo() != null
+                        ? f.getBill().getPatientEncounter().getBhtNo() : "",
+                        dataFont));
+
+                table.addCell(new Phrase(f.getBill() != null && f.getBill().getPatient() != null && f.getBill().getPatient().getPhn() != null
+                        ? f.getBill().getPatient().getPhn() : "",
+                        dataFont));
+
+            }
+
+            // =========================
+            // TOTAL ROW
+            // =========================
+            PdfPCell blank = new PdfPCell(new Phrase(" Total ", headerFont));
+            blank.setColspan(8);
+            blank.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(blank);
+
+            PdfPCell pTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", costValueTotal), headerFont));
+            pTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(pTotalCell);
+
+            PdfPCell skip1 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip1);
+
+            PdfPCell skip2 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip2);
+
+            PdfPCell netTotalCell = new PdfPCell(
+                    new Phrase(String.format("%,.2f", netTotal), headerFont));
+            netTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(netTotalCell);
+
+            PdfPCell skip3 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip3);
+
+            PdfPCell skip4 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip4);
+
+            PdfPCell skip5 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip5);
+
+            PdfPCell skip6 = new PdfPCell(new Phrase(" "));
+            table.addCell(skip6);
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void processSaleCreditCard() {
+        List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
+                .filter(pm -> pm != PaymentMethod.Credit)
+                .collect(Collectors.toList());
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+        retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
+    }
+
+    public void processAddToStockBills() {
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+        );
+        retrieveBillWithoutReference("b.billTypeAtomic", billTypes);
+    }
+
+    public void processSaleCash() {
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
     }
 
 //    public void exportIpDrugReturnPdf() {
@@ -7535,23 +10069,26 @@ public class PharmacyReportController implements Serializable {
         totalRetailValue = 0.0;
         totalSaleValue = 0.0;
 
-        totalPurchaseValue = dtoList.stream()
-                .filter(DirectPurchaseReportDto.class::isInstance)
-                .map(DirectPurchaseReportDto.class::cast)
-                .mapToDouble(DirectPurchaseReportDto::getPurchaseValue)
-                .sum();
+        totalPurchaseValue
+                = dtoList.stream()
+                        .filter(DirectPurchaseReportDto.class::isInstance)
+                        .map(DirectPurchaseReportDto.class::cast)
+                        .mapToDouble(DirectPurchaseReportDto::getPurchaseValue)
+                        .sum();
 
-        totalRetailValue = dtoList.stream()
-                .filter(DirectPurchaseReportDto.class::isInstance)
-                .map(DirectPurchaseReportDto.class::cast)
-                .mapToDouble(DirectPurchaseReportDto::getSaleValue)
-                .sum();
+        totalRetailValue
+                = dtoList.stream()
+                        .filter(DirectPurchaseReportDto.class::isInstance)
+                        .map(DirectPurchaseReportDto.class::cast)
+                        .mapToDouble(DirectPurchaseReportDto::getSaleValue)
+                        .sum();
 
-        totalSaleValue = dtoList.stream()
-                .filter(DirectPurchaseReportDto.class::isInstance)
-                .map(DirectPurchaseReportDto.class::cast)
-                .mapToDouble(DirectPurchaseReportDto::getSaleValue)
-                .sum();
+        totalSaleValue
+                = dtoList.stream()
+                        .filter(DirectPurchaseReportDto.class::isInstance)
+                        .map(DirectPurchaseReportDto.class::cast)
+                        .mapToDouble(DirectPurchaseReportDto::getSaleValue)
+                        .sum();
 
     }
 
@@ -7615,6 +10152,7 @@ public class PharmacyReportController implements Serializable {
 
     public void setNegativeVarianceMap(Map<String, List<StockCorrectionRow>> negativeVarianceMap) {
         this.negativeVarianceMap = negativeVarianceMap;
+
     }
 
     public static class DirectPurchaseReportDto {
@@ -8133,6 +10671,7 @@ public class PharmacyReportController implements Serializable {
         }
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ".pdf");
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         Document document = null;
         try (OutputStream out = response.getOutputStream()) {
@@ -8142,6 +10681,11 @@ public class PharmacyReportController implements Serializable {
 
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
 
+            if (!institutionName.isEmpty()) {
+                Paragraph instPara = new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+                instPara.setAlignment(Element.ALIGN_CENTER);
+                document.add(instPara);
+            }
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
             Paragraph title = new Paragraph("Stock Ledger Report (DTO)", (Font) titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
@@ -9960,7 +12504,8 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
 
         } catch (Exception e) {
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, e.getMessage());
+            Logger.getLogger(PharmacyReportController.class
+                    .getName()).log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -10114,7 +12659,8 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
 
         } catch (Exception e) {
-            Logger.getLogger(PharmacyReportController.class.getName())
+            Logger.getLogger(PharmacyReportController.class
+                    .getName())
                     .log(Level.SEVERE,
                             "Error exporting Cost Of Goods Sold PDF", e);
         }
@@ -10175,8 +12721,8 @@ public class PharmacyReportController implements Serializable {
             JsfUtil.addErrorMessage(e, "Error calculating OP returns");
         }
     }
-    
-     public void exportOpDrugReturnToExcel() {
+
+    public void exportOpDrugReturnToExcel() {
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response
@@ -10429,8 +12975,8 @@ public class PharmacyReportController implements Serializable {
         }
 
     }
-     
-     public void exportOpDrugReturnToPDF() {
+
+    public void exportOpDrugReturnToPDF() {
 
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
@@ -11415,6 +13961,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -11426,9 +13973,11 @@ public class PharmacyReportController implements Serializable {
             document.add(new Paragraph(" "));
 
             // Title
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            }
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
             Paragraph title = new Paragraph(reportController.getReportTemplateFileIndexName() != null ? reportController.getReportTemplateFileIndexName() : "Closing Stock Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(10);
             document.add(title);
 
@@ -11495,7 +14044,9 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+            Logger
+                    .getLogger(PharmacyReportController.class
+                            .getName()).log(Level.SEVERE, "Error generating PDF", e);
         }
     }
 
@@ -11577,6 +14128,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -11587,9 +14139,11 @@ public class PharmacyReportController implements Serializable {
                     FontFactory.getFont(FontFactory.HELVETICA, 8)));
             document.add(new Paragraph(" "));
 
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            }
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
             Paragraph title = new Paragraph(reportController.getReportTemplateFileIndexName() != null ? reportController.getReportTemplateFileIndexName() : "Closing Stock Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(10);
             document.add(title);
 
@@ -11648,7 +14202,9 @@ public class PharmacyReportController implements Serializable {
             context.responseComplete();
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+            Logger
+                    .getLogger(PharmacyReportController.class
+                            .getName()).log(Level.SEVERE, "Error generating PDF", e);
         }
     }
 
@@ -12221,14 +14777,19 @@ public class PharmacyReportController implements Serializable {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
         Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
             document.add(new Paragraph("Expiry Item Report",
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
                     FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
@@ -12516,7 +15077,11 @@ public class PharmacyReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<BillType> bts = Arrays.asList(billTypes);
-        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        Class[] btsa = {PreBill.class,
+            CancelledBill.class,
+            RefundBill.class,
+            BilledBill.class
+        };
         List<Class> bcts = Arrays.asList(btsa);
         m.put("bt", bts);
         m.put("bct", bcts);
@@ -12630,7 +15195,11 @@ public class PharmacyReportController implements Serializable {
         m.put("td", toDate);
         m.put("bt", bts);
 
-        Class[] btsa = {PreBill.class, CancelledBill.class, RefundBill.class, BilledBill.class};
+        Class[] btsa = {PreBill.class,
+            CancelledBill.class,
+            RefundBill.class,
+            BilledBill.class
+        };
         List<Class> bcts = Arrays.asList(btsa);
         m.put("bct", bcts);
 
@@ -12878,7 +15447,9 @@ public class PharmacyReportController implements Serializable {
         );
         m.put("bType", bTypes);  // Use 'bType' for IN clause
 
-        m.put("invType", Investigation.class);
+        m
+                .put("invType", Investigation.class
+                );
 
         if (institution != null) {
             m.put("ins", institution);
@@ -14021,6 +16592,13 @@ public class PharmacyReportController implements Serializable {
             headerStyle.setFont(headerFont);
             headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
+            CellStyle instStyle = wb.createCellStyle();
+            org.apache.poi.ss.usermodel.Font instFont = wb.createFont();
+            instFont.setFontHeightInPoints((short) 16);
+            instFont.setBold(true);
+            instStyle.setFont(instFont);
+            instStyle.setAlignment(HorizontalAlignment.CENTER);
+
             org.apache.poi.ss.usermodel.Font metaFont = wb.createFont();
             metaFont.setFontName("Arial");
             CellStyle metaStyle = wb.createCellStyle();
@@ -14032,23 +16610,38 @@ public class PharmacyReportController implements Serializable {
             CellStyle metaStyleBold = wb.createCellStyle();
             metaStyleBold.setFont(metaFontBold);
 
+            String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "";
+
             // Shift existing rows down to make room for header rows
-            int headerRows = 5;
+            int headerRows = 6;
+            int rowIndex = 0;
+            int mergeCol = 0;
             sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
             if (reportType != null && reportType.equals("batchWise")) {
-                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+                mergeCol = 15;
             } else {
-                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 9));
+                mergeCol = 9;
+            }
+
+            if (!institutionName.isEmpty()) {
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, mergeCol));
+                Row institutionRow = sheet.createRow(rowIndex++);
+                Cell institutionCell = institutionRow.createCell(0);
+                institutionCell.setCellValue(institutionName);
+                institutionCell.setCellStyle(instStyle);
             }
 
             SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
-            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, mergeCol));
+            Row titleRow = sheet.createRow(rowIndex++);
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellStyle(headerStyle);
             titleCell.setCellValue(reportController.getReportTemplateFileIndexName() != null ? reportController.getReportTemplateFileIndexName() : "Closing Stock Report");
 
-            Row metaRow = sheet.createRow(1);
+            Row metaRow = sheet.createRow(rowIndex++);
             metaRow.createCell(0).setCellValue("Report Type:");
             metaRow.getCell(0).setCellStyle(metaStyleBold);
             if ("itemWise".equalsIgnoreCase(reportType)) {
@@ -14074,7 +16667,7 @@ public class PharmacyReportController implements Serializable {
             metaRow.createCell(7).setCellValue(category != null ? category.getName() : "All Categories");
             metaRow.getCell(7).setCellStyle(metaStyle);
 
-            Row instRow = sheet.createRow(2);
+            Row instRow = sheet.createRow(rowIndex++);
             instRow.createCell(0).setCellValue("Institution:");
             instRow.getCell(0).setCellStyle(metaStyleBold);
             instRow.createCell(1).setCellValue(institution != null ? institution.getName() : "All Institutions");
@@ -14088,7 +16681,7 @@ public class PharmacyReportController implements Serializable {
             instRow.createCell(7).setCellValue(dosageForm != null ? dosageForm.getName() : "All Dosage Forms");
             instRow.getCell(7).setCellStyle(metaStyle);
 
-            Row deptRow = sheet.createRow(3);
+            Row deptRow = sheet.createRow(rowIndex++);
             deptRow.createCell(0).setCellValue("Department:");
             deptRow.getCell(0).setCellStyle(metaStyleBold);
             deptRow.createCell(1).setCellValue(department != null ? department.getName() : "All Departments");
@@ -14107,7 +16700,8 @@ public class PharmacyReportController implements Serializable {
             deptRow.getCell(10).setCellStyle(metaStyle);
 
         } catch (Exception ex) {
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error in Excel preProcessor", ex);
+            Logger.getLogger(PharmacyReportController.class
+                    .getName()).log(Level.SEVERE, "Error in Excel preProcessor", ex);
         }
     }
 
@@ -14232,7 +16826,7 @@ public class PharmacyReportController implements Serializable {
         filters.put("Department", department != null ? department.getName() : "All");
         filters.put("Category", category != null ? category.getName() : "All");
         filters.put("Dosage Form", dosageForm != null ? dosageForm.getName() : "All");
-        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "-");
+        filters.put("Item", selectedAmpDto != null ? selectedAmpDto.getName() : "All");
         filters.put("Report Type", "byItem".equals(stockLedgerReportType) ? "By Item" : "By Batch");
         filters.put("Department Type", getSelectedDepartmentTypesString());
 
@@ -14324,13 +16918,17 @@ public class PharmacyReportController implements Serializable {
         DecimalFormat df = new DecimalFormat("#,##0.##");
         Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
         Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Good In Transit", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Good In Transit", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -14478,8 +17076,10 @@ public class PharmacyReportController implements Serializable {
             document.add(table);
             document.close();
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Good In Transit Report to PDF", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Good In Transit Report to PDF", e);
         }
     }
 
@@ -14629,8 +17229,10 @@ public class PharmacyReportController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Good In Transit Report to Excel", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Good In Transit Report to Excel", e);
         }
     }
 
@@ -14748,8 +17350,10 @@ public class PharmacyReportController implements Serializable {
 
             document.close();
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Slow/Fast Movement Report to PDF", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Slow/Fast Movement Report to PDF", e);
         }
     }
 
@@ -14764,10 +17368,8 @@ public class PharmacyReportController implements Serializable {
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
-
         response.reset();
-        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());    
-
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
 
         String fileName = "";
 
@@ -14854,8 +17456,10 @@ public class PharmacyReportController implements Serializable {
 
             document.close();
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
         }
     }
 
@@ -14901,22 +17505,6 @@ public class PharmacyReportController implements Serializable {
                 reportTitle = "Slow Movement Report";
             } else {
                 reportTitle = "Movement Report";
-            }
-
-            // Institution name row
-            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
-            if (!institutionName.isEmpty()) {
-                CellStyle instStyle = workbook.createCellStyle();
-                org.apache.poi.ss.usermodel.Font instFont = workbook.createFont();
-                instFont.setFontHeightInPoints((short) 16);
-                instFont.setBold(true);
-                instStyle.setFont(instFont);
-                instStyle.setAlignment(HorizontalAlignment.CENTER);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
-                Row instRow = sheet.createRow(rowIndex++);
-                Cell instCell = instRow.createCell(0);
-                instCell.setCellValue(institutionName);
-                instCell.setCellStyle(instStyle);
             }
 
             if (filters != null && !filters.isEmpty()) {
@@ -14965,8 +17553,10 @@ public class PharmacyReportController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Movement Report to Excel", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Movement Report to Excel", e);
         }
     }
 
@@ -15000,22 +17590,6 @@ public class PharmacyReportController implements Serializable {
 
             XSSFSheet sheet = workbook.createSheet("Movement Report");
             int rowIndex = 0;
-
-            // Institution name row
-            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
-            if (!institutionName.isEmpty()) {
-                CellStyle instStyle = workbook.createCellStyle();
-                org.apache.poi.ss.usermodel.Font instFont = workbook.createFont();
-                instFont.setFontHeightInPoints((short) 16);
-                instFont.setBold(true);
-                instStyle.setFont(instFont);
-                instStyle.setAlignment(HorizontalAlignment.CENTER);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, 7));
-                Row instRow = sheet.createRow(rowIndex++);
-                Cell instCell = instRow.createCell(0);
-                instCell.setCellValue(institutionName);
-                instCell.setCellStyle(instStyle);
-            }
 
             if (filters != null && !filters.isEmpty()) {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Non Movement Report", filters);
@@ -15053,8 +17627,10 @@ public class PharmacyReportController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Movement Report to Excel", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Movement Report to Excel", e);
         }
     }
 
@@ -15090,7 +17666,7 @@ public class PharmacyReportController implements Serializable {
             int rowIndex = 0;
 
             if (filters != null && !filters.isEmpty()) {
-                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Stock Ledger Report", filters);
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Stock Ledger Report (DTO)", filters);
             }
 
             // Create header row 
@@ -15260,8 +17836,10 @@ public class PharmacyReportController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Stock Ledger Report to Excel", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Stock Ledger Report to Excel", e);
         }
     }
 
@@ -15279,20 +17857,20 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList_" + dates + ".xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList_" + dates + ".xlsx");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList.xlsx");
         }
 
         Map<String, Object> filters = getFiltersForExpiryItemReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
-            XSSFSheet sheet = workbook.createSheet("Expiring Item Report");
+            XSSFSheet sheet = workbook.createSheet("Expiry Item Report");
             int rowIndex = 0;
 
             if (filters != null && !filters.isEmpty()) {
-                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiring Item Report", filters);
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiry Item Report", filters);
             }
 
             // Create header row 
@@ -15345,8 +17923,9 @@ public class PharmacyReportController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiring Item Report to Excel", e);
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
         }
     }
 
@@ -15365,20 +17944,24 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/pdf");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList_" + dates + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList_" + dates + ".pdf");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_StockList.pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_StockList.pdf");
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Expiring Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Expiry Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -15432,8 +18015,10 @@ public class PharmacyReportController implements Serializable {
             document.add(table);
             document.close();
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
         }
     }
 
@@ -15451,22 +18036,26 @@ public class PharmacyReportController implements Serializable {
 
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList_" + dates + ".pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList_" + dates + ".pdf");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList.pdf");
         }
 
         response.setContentType("application/pdf");
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
         DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("Expiring Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("Expiry Item Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
             document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
@@ -15519,8 +18108,10 @@ public class PharmacyReportController implements Serializable {
             document.add(table);
             document.close();
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
+            Logger.getLogger(PharmacyController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Non Movement Report to PDF", e);
         }
     }
 
@@ -15538,20 +18129,20 @@ public class PharmacyReportController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         if (dates != null && !dates.isEmpty()) {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList_" + dates + ".xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList_" + dates + ".xlsx");
         } else {
-            response.setHeader("Content-Disposition", "attachment; filename=Expiring_Item_Report_ItemList.xlsx");
+            response.setHeader("Content-Disposition", "attachment; filename=Expiry_Item_Report_ItemList.xlsx");
         }
 
         Map<String, Object> filters = getFiltersForExpiryItemReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
-            XSSFSheet sheet = workbook.createSheet("Expiring Item Report");
+            XSSFSheet sheet = workbook.createSheet("Expiry Item Report");
             int rowIndex = 0;
 
             if (filters != null && !filters.isEmpty()) {
-                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiring Item Report", filters);
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Expiry Item Report", filters);
             }
 
             // Create header row 
@@ -15597,8 +18188,9 @@ public class PharmacyReportController implements Serializable {
 
             workbook.write(out);
             context.responseComplete();
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error exporting Expiring Item Report to Excel", e);
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error exporting Expiry Item Report to Excel", e);
         }
     }
 
@@ -15625,7 +18217,7 @@ public class PharmacyReportController implements Serializable {
         table.addCell(cell);
     }
 
-     // Closing_stock_report excel file name
+    // Closing_stock_report excel file name
     public String getClosingStockReportFileName() {
         String filename = "";
 

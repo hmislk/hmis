@@ -477,6 +477,13 @@
                                                     <h:outputText value="#{patientDepositController.checkDepositOfThePatient(opdBillController.patient, sessionController.department).balance}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
+                                                    
+                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <p:badge 
+                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
+                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
+                                                    </p:badge>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -490,7 +497,6 @@
                                                     <h:outputLabel value="Discount Scheme " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
                                                     <h:outputLabel value=" : " class="mx-3"  rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
                                                     <h:outputText value="#{opdBillController.patient.person.membershipScheme.paymentScheme.name}"   rendered="#{opdBillController.patient.person.membershipScheme.paymentScheme ne null}"/>
-
 
                                                 </h:panelGrid>
                                             </h:panelGroup>
@@ -745,8 +751,23 @@
                                                     <h:outputText value="#{bi.billItem.item.name}" style="width: 5em;"  ></h:outputText>
                                                     <p:spacer width="10" ></p:spacer>
                                                     <h:outputText value="#{bi.billItem.item.code}" style="width: 5em;"  ></h:outputText>
-                                                    <h:outputText value="#{bi.billItem.qty}" class="mx-3" rendered="#{bi.billItem.item.requestForQuentity}" ></h:outputText>
 
+                                                </p:column>
+
+                                                <p:column style="width: 5em; text-align: center;">
+                                                    <f:facet name="header">Qty</f:facet>
+                                                    <p:inputText
+                                                        value="#{bi.billItem.qty}"
+                                                        rendered="#{bi.billItem.item.requestForQuentity}"
+                                                        style="width:4em; text-align:center;"
+                                                        onfocus="this.select();">
+                                                        <f:convertNumber pattern="#,##0" />
+                                                        <p:ajax
+                                                            event="blur"
+                                                            execute="@this"
+                                                            listener="#{opdBillController.qtyChangeListener(bi)}"
+                                                            update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" />
+                                                    </p:inputText>
                                                 </p:column>
 
                                                 <p:column  style="width: 6em; text-align: left;" >
@@ -761,17 +782,28 @@
                                                         <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
                                                     </p:selectOneMenu>
                                                 </p:column>
-                                                <p:column style="width: 4em;">
-                                                    <f:facet name="header">Fee</f:facet>
+                                                <p:column style="width: 5em; text-align: right;">
+                                                    <f:facet name="header">Base Fee</f:facet>
+                                                    <h:outputText value="#{bi.billItem.rate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column style="width: 5em; text-align: right;">
+                                                    <f:facet name="header">Total Fee</f:facet>
                                                     <h:outputText value="#{bi.billItem.netValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:column>
-                                                <p:column style="width: 2em;">
-                                                    <h:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" >
-                                                        <f:setPropertyActionListener  value="#{rowIndex}" target="#{opdBillController.index}" />
-                                                        <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
-                                                    </h:commandButton>
+                                                <p:column style="width: 3em; text-align: center;">
+                                                    <p:commandButton
+                                                        icon="fa fa-trash"
+                                                        styleClass="ui-button-danger ui-button-rounded ui-button-sm"
+                                                        title="Remove"
+                                                        action="#{opdBillController.removeBillItem}"
+                                                        process="@this"
+                                                        update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                                        <f:setPropertyActionListener value="#{rowIndex}" target="#{opdBillController.index}" />
+                                                    </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
                                         </p:tab>
@@ -1000,62 +1032,36 @@
                                                                 </h:panelGroup>
                                                             </td>
 
-                                                            <td >
-                                                                <p:outputLabel id="lblFeeBundleFeeValue" value="#{billFeeBundleEntry.selectedBillFee.fee.fee}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </p:outputLabel>
+                                                            <td>
+                                                                <p:inputText
+                                                                    id="txtBaseRate"
+                                                                    value="#{billFeeBundleEntry.selectedBillFee.displayRate}"
+                                                                    style="width:6em; text-align:right;"
+                                                                    onfocus="this.select();"
+                                                                    autocomplete="off">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                    <p:ajax
+                                                                        event="blur"
+                                                                        execute="@this"
+                                                                        listener="#{opdBillController.baseRateChangeListener(billFeeBundleEntry.selectedBillFee)}"
+                                                                        update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" />
+                                                                </p:inputText>
                                                             </td>
 
-                                                            <td >
-                                                                <p:inputText 
-                                                                    class="m-2" 
-                                                                    onfocus="this.select();"
-                                                                    id="txtFeeBundleqty" 
-                                                                    value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" 
-                                                                    style="width:6em;" 
-                                                                    rendered="#{billFeeBundleEntry.selectedBillFee.billItem.item.requestForQuentity}">
-                                                                    <f:convertNumber pattern="##0.0" ></f:convertNumber>
-                                                                </p:inputText>
-                                                                <p:outputLabel 
-                                                                    id="lblFeeTotal" 
-                                                                    value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}" 
-                                                                    style="width:6em;" 
-                                                                    rendered="#{!billFeeBundleEntry.selectedBillFee.billItem.item.requestForQuentity}">
-                                                                    <f:convertNumber pattern="#,##0.0" ></f:convertNumber>
+                                                            <td>
+                                                                <p:outputLabel
+                                                                    value="#{billFeeBundleEntry.selectedBillFee.billItem.qty}">
+                                                                    <f:convertNumber pattern="#,##0" />
                                                                 </p:outputLabel>
                                                             </td>
 
                                                             <td>
-
-                                                                <p:inputText 
-                                                                    autocomplete="off"  
-                                                                    required="true" 
-                                                                    requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
-                                                                    id="txtFeeVal" 
-                                                                    class="m-2"
-                                                                    style="width: 6em;"
-                                                                    value="#{billFeeBundleEntry.selectedBillFee.feeGrossValue}" 
-                                                                    disabled="#{!billFeeBundleEntry.selectedBillFee.billItem.item.userChangable}" 
-                                                                    onfocus="this.select();"
-                                                                    >
+                                                                <p:outputLabel
+                                                                    id="lblFeeGrossValue"
+                                                                    value="#{billFeeBundleEntry.selectedBillFee.feeGrossValue}"
+                                                                    style="font-weight:bold;">
                                                                     <f:convertNumber pattern="#,##0.00" />
-                                                                    <f:ajax 
-                                                                        event="keyup" 
-                                                                        execute="@this" 
-                                                                        render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                        listener="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
-                                                                    <f:ajax 
-                                                                        event="blur" 
-                                                                        execute="@this :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId}" 
-                                                                        render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                        listener="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
-
-                                                                </p:inputText>
-                                                                <p:commandButton 
-                                                                    ajax="false" 
-                                                                    icon="fa fa-refresh" 
-                                                                    disabled="#{!billFeeBundleEntry.selectedBillFee.billItem.item.userChangable}"
-                                                                    action="#{opdBillController.feeChangeListener(billFeeBundleEntry.selectedBillFee)}" />
+                                                                </p:outputLabel>
                                                             </td>
 
                                                         </tr>
@@ -1256,7 +1262,18 @@
                                                 layout="block"  
                                                 id="credit" 
                                                 rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
-                                                <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the past Credit Company List',false)}">
+                                                    <pa:credit_with_last_company 
+                                                        paymentMethodData="#{opdBillController.paymentMethodData}" 
+                                                        controller ="#{opdBillController}"
+                                                        companyList = "#{opdBillController.previousCreditCompany}">
+                                                    </pa:credit_with_last_company>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Display the past Credit Company List',false)}">
+                                                    <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
                                             </h:panelGroup>
                                             <h:panelGroup 
                                                 class="row my-1"

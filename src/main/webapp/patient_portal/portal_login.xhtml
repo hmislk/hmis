@@ -1,0 +1,1897 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+        <title>Patient Portal</title>
+
+        <!-- Fonts: Syne (display) + DM Sans (body) -->
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"/>
+
+        <style>
+            /* ================================================
+               PATIENT PORTAL  ·  Forest Health Aesthetic
+               Responsive: mobile-first, split layout on ≥992px
+               ================================================ */
+
+            :root {
+                --forest-mid:    #{configOptionApplicationController.getColorValueByKey('Patient Portal -  Theme Color','#1b4332')};
+                --forest-deep:   color-mix(in srgb, var(--forest-mid) 60%, #000);
+                --forest-bright: color-mix(in srgb, var(--forest-mid) 80%, #fff);
+                --emerald:       color-mix(in hsl, var(--forest-mid), white 55%);
+                --emerald-light: color-mix(in hsl, var(--forest-mid), white 65%);
+                --cream:         color-mix(in srgb, var(--forest-mid) 5%, #fff);
+                --white:         #ffffff;
+                --text-dark:     color-mix(in srgb, var(--forest-mid) 12%, #111);
+                --text-muted:    color-mix(in srgb, var(--forest-mid) 20%, #555);
+                --border:        color-mix(in srgb, var(--forest-mid) 12%, #fff);
+                --shadow-lg:     0 24px 64px color-mix(in srgb, var(--forest-mid) 20%, transparent);
+                --radius-sm:     10px;
+            }
+
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body, html {
+                font-family: 'DM Sans', sans-serif;
+                background: var(--cream);
+                min-height: 100vh;
+                color: var(--text-dark);
+            }
+
+            /* Logout button */
+            .btn-logout .ui-button {
+                background: transparent !important;
+                border: 1.5px solid color-mix(in srgb, var(--forest-mid) 55%, transparent) !important;
+                color: var(--forest-mid) !important;
+                border-radius: 8px !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.83rem !important;
+                padding: 0.65rem 4.5rem !important;
+                transition: all 0.2s ease !important;
+                white-space: nowrap;
+            }
+            .btn-logout .ui-button:hover {
+                background: color-mix(in srgb, var(--forest-mid) 8%, transparent) !important;
+                border-color: var(--forest-mid) !important;
+                color: var(--forest-deep) !important;
+            }
+            .btn-logout .ui-button .ui-button-text {
+                padding: 0 !important;
+            }
+            .btn-logout .ui-button .ui-icon {
+                color: var(--forest-mid) !important;
+                margin-right: 5px !important;
+            }
+
+            /* ── PAGE WRAPPER ────────────────────────────────────── */
+            .portal-wrapper {
+                min-height: 100vh;
+                display: flex;
+                align-items: stretch;
+            }
+
+            /* ── LEFT HERO PANEL  (visible ≥992px only) ──────────── */
+            .portal-hero {
+                display: none;
+                position: relative;
+                overflow: hidden;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding: 3rem 3.5rem;
+                --hero-color: var(--forest-mid); /* fallback — overridden by config option inline style */
+                background: linear-gradient(155deg,
+                    color-mix(in srgb, var(--hero-color) 55%, #000) 0%,
+                    var(--hero-color) 55%,
+                    color-mix(in srgb, var(--hero-color) 75%, #fff) 100%);
+            }
+
+            .hero-footer {
+                position: relative;
+                z-index: 2;
+                width: 100%;
+                padding-top: 2rem;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                display: flex;
+                justify-content: center;
+            }
+
+            @media (min-width: 992px) {
+                .portal-hero {
+                    display: flex;
+                    width: 44%;
+                    min-width: 400px;
+                    max-width: 540px;
+                }
+            }
+
+            /* Dot grid texture */
+            .hero-dots {
+                position: absolute;
+                inset: 0;
+                background-image: radial-gradient(circle, color-mix(in srgb, var(--emerald-light) 22%, transparent) 1px, transparent 1px);
+                background-size: 30px 30px;
+            }
+
+            /* Decorative rings */
+            .hero-ring {
+                position: absolute;
+                border-radius: 50%;
+                border: 1px solid color-mix(in srgb, var(--emerald) 13%, transparent);
+            }
+            .hero-ring-1 {
+                width: 500px;
+                height: 500px;
+                top: -140px;
+                right: -190px;
+            }
+            .hero-ring-2 {
+                width: 330px;
+                height: 330px;
+                top: -60px;
+                right: -110px;
+                border-color: color-mix(in srgb, var(--emerald) 20%, transparent);
+            }
+            .hero-ring-3 {
+                width: 620px;
+                height: 620px;
+                bottom: -220px;
+                left: -220px;
+            }
+            .hero-ring-4 {
+                width: 380px;
+                height: 380px;
+                bottom: -100px;
+                left: -80px;
+                border: none;
+                background: radial-gradient(circle, color-mix(in srgb, var(--emerald) 7%, transparent) 0%, transparent 70%);
+            }
+
+            /* Small medical cross decorations */
+            .hero-cross {
+                position: absolute;
+                width: 26px;
+                height: 26px;
+            }
+            .hero-cross::before, .hero-cross::after {
+                content: '';
+                position: absolute;
+                background: var(--emerald-light);
+                border-radius: 2px;
+            }
+            .hero-cross::before {
+                width: 4px;
+                height: 26px;
+                left: 11px;
+                top: 0;
+            }
+            .hero-cross::after  {
+                width: 26px;
+                height: 4px;
+                top: 11px;
+                left: 0;
+            }
+
+            /* Large faint cross (bottom-right corner) */
+            .hero-cross-lg {
+                position: absolute;
+                bottom: 2.5rem;
+                right: 2.5rem;
+                width: 72px;
+                height: 72px;
+                opacity: 0.07;
+            }
+            .hero-cross-lg::before {
+                content: '';
+                position: absolute;
+                background: white;
+                border-radius: 3px;
+                width: 18px;
+                height: 72px;
+                left: 27px;
+                top: 0;
+            }
+            .hero-cross-lg::after {
+                content: '';
+                position: absolute;
+                background: white;
+                border-radius: 3px;
+                width: 72px;
+                height: 18px;
+                top: 27px;
+                left: 0;
+            }
+
+            /* Hero text content */
+            .hero-content {
+                position: relative;
+                z-index: 2;
+            }
+
+            /* Hero logo */
+            .hero-logo-wrap {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.85rem 1.25rem;
+                margin-bottom: 2rem;
+                backdrop-filter: blur(4px);
+                width: 100%;
+            }
+            .hero-logo-img {
+                width: 80%;
+                height: 80%;
+                object-fit: contain;
+                object-position: left center;
+                display: block;
+            }
+
+            /* Mobile logo */
+            .mobile-logo-img {
+                max-width: 220px;
+                max-height: 120px;
+                object-fit: contain;
+                display: block;
+                margin: 0 auto 0.75rem;
+            }
+
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                background: color-mix(in srgb, var(--emerald) 14%, transparent);
+                border: 1px solid color-mix(in srgb, var(--emerald) 28%, transparent);
+                border-radius: 100px;
+                padding: 0.32rem 1rem;
+                font-size: 0.7rem;
+                color: var(--emerald-light);
+                font-weight: 500;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                margin-bottom: 1.75rem;
+            }
+
+            .hero-badge-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--emerald);
+                animation: blink 2s infinite;
+            }
+
+            @keyframes blink {
+                0%, 100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                50%       {
+                    opacity: 0.4;
+                    transform: scale(0.75);
+                }
+            }
+
+            .hero-title {
+                font-family: 'Syne', sans-serif;
+                font-size: 3.25rem;
+                font-weight: 800;
+                color: var(--white);
+                line-height: 1.08;
+                letter-spacing: -0.025em;
+                margin-bottom: 1rem;
+            }
+            .hero-title .accent {
+                color: var(--emerald-light);
+            }
+
+            .hero-desc {
+                font-size: 0.95rem;
+                color: rgba(255,255,255,0.6);
+                line-height: 1.75;
+                margin-bottom: 2.25rem;
+                max-width: 320px;
+                font-weight: 300;
+            }
+
+            .hero-features {
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 0.85rem;
+            }
+            .hero-features li {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                color: rgba(255,255,255,0.78);
+                font-size: 0.9rem;
+            }
+            .feat-icon {
+                width: 32px;
+                height: 32px;
+                background: color-mix(in srgb, var(--emerald) 18%, transparent);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--emerald-light);
+                font-size: 0.82rem;
+                flex-shrink: 0;
+            }
+
+            /* ── RIGHT FORM PANEL ────────────────────────────────── */
+            .portal-form-panel {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2.5rem 1.5rem;
+                background: var(--cream);
+            }
+
+            .form-container {
+                width: 100%;
+                max-width: 480px;
+            }
+
+            @media (min-width: 992px) {
+                .form-container {
+                    max-width: 700px;
+                }
+            }
+
+            /* Mobile-only brand header (hidden on desktop) */
+            .mobile-brand-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            @media (min-width: 992px) {
+                .mobile-brand-header {
+                    display: none;
+                }
+            }
+            .mobile-icon {
+                width: 64px;
+                height: 64px;
+                background: linear-gradient(135deg, var(--forest-mid), var(--emerald));
+                border-radius: 18px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.75rem;
+                color: white;
+                margin-bottom: 0.75rem;
+                box-shadow: 0 8px 24px color-mix(in srgb, var(--forest-mid) 28%, transparent);
+            }
+            .mobile-inst-name {
+                display: block;
+                font-family: 'Syne', sans-serif;
+                font-weight: 700;
+                font-size: 1.2rem;
+                color: var(--forest-mid);
+            }
+            .mobile-portal-label {
+                display: block;
+                font-size: 0.78rem;
+                color: var(--text-muted);
+                margin-top: 0.15rem;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+
+            /* ── OTP CARD ────────────────────────────────────────── */
+            .otp-card {
+                background: var(--white);
+                border-radius: 22px;
+                padding: 2.25rem 2rem;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border);
+                animation: fadeUp 0.45s ease forwards;
+            }
+
+            @keyframes fadeUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(22px);
+                }
+                to   {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .card-lead-icon {
+                width: 52px;
+                height: 52px;
+                background: linear-gradient(135deg, color-mix(in srgb, var(--emerald) 20%, white), color-mix(in srgb, var(--emerald) 35%, white));
+                border-radius: 13px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.3rem;
+                color: var(--forest-mid);
+                margin-bottom: 1.1rem;
+            }
+
+            .card-title {
+                font-family: 'Syne', sans-serif;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--forest-deep);
+                margin-bottom: 0.35rem;
+                line-height: 1.2;
+            }
+
+            .card-subtitle {
+                font-size: 0.87rem;
+                color: var(--text-muted);
+                line-height: 1.65;
+                margin-bottom: 1.75rem;
+                font-weight: 400;
+            }
+
+            /* ── STEP INDICATORS ─────────────────────────────────── */
+            .steps-bar {
+                display: flex;
+                align-items: center;
+                margin-bottom: 1.75rem;
+            }
+            .step-item {
+                display: flex;
+                align-items: center;
+                gap: 0.45rem;
+            }
+            .step-connector {
+                flex: 1;
+                height: 2px;
+                background: var(--border);
+                margin: 0 0.6rem;
+            }
+            .step-dot {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                background: var(--border);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: var(--text-muted);
+                flex-shrink: 0;
+                transition: all 0.3s;
+            }
+            .step-dot.active {
+                background: var(--forest-mid);
+                color: white;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-mid) 15%, transparent);
+            }
+            .step-label {
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                font-weight: 500;
+                white-space: nowrap;
+            }
+
+            /* ── FORM FIELDS ─────────────────────────────────────── */
+            .field-group {
+                margin-bottom: 1.1rem;
+            }
+
+            .field-label {
+                display: block;
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--text-dark);
+                margin-bottom: 0.45rem;
+                letter-spacing: 0.025em;
+            }
+
+            .field-wrap {
+                position: relative;
+            }
+
+            .field-wrap .f-icon {
+                position: absolute;
+                left: 0.9rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--text-muted);
+                font-size: 0.88rem;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            /* PrimeFaces input overrides — full width, no min-width */
+            .portal-form-panel .ui-inputtext {
+                width: 100% !important;
+                padding: 0.8rem 1rem 0.8rem 2.6rem !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.97rem !important;
+                color: var(--text-dark) !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
+                transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
+                box-shadow: none !important;
+                outline: none !important;
+                min-width: unset !important;
+            }
+            .portal-form-panel .ui-inputtext:hover {
+                border-color: var(--emerald) !important;
+            }
+            .portal-form-panel .ui-inputtext:focus {
+                border-color: var(--forest-bright) !important;
+                background: var(--white) !important;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent) !important;
+            }
+
+            /* ── PRIMARY BUTTON (Send OTP) ───────────────────────── */
+            .btn-send .ui-button {
+                width: 100% !important;
+                padding: 0.85rem 1.5rem !important;
+                background: linear-gradient(135deg, var(--forest-mid) 0%, var(--forest-bright) 100%) !important;
+                border: none !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'Syne', sans-serif !important;
+                font-weight: 600 !important;
+                font-size: 0.92rem !important;
+                color: white !important;
+                cursor: pointer !important;
+                transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                box-shadow: 0 4px 16px color-mix(in srgb, var(--forest-mid) 28%, transparent) !important;
+                letter-spacing: 0.01em !important;
+                min-width: unset !important;
+            }
+            .btn-send .ui-button:hover {
+                transform: translateY(-1px) !important;
+                box-shadow: 0 7px 22px color-mix(in srgb, var(--forest-mid) 34%, transparent) !important;
+            }
+            .btn-send .ui-button:active {
+                transform: translateY(0) !important;
+            }
+            .btn-send .ui-button .ui-button-text {
+                padding: 0 !important;
+            }
+            .btn-send .ui-button .ui-icon {
+                color: rgba(255,255,255,0.85) !important;
+                margin-right: 6px !important;
+            }
+
+            /* ── SECONDARY BUTTON (Verify OTP) ──────────────────── */
+            .btn-verify .ui-button {
+                width: 100% !important;
+                padding: 0.85rem 1.5rem !important;
+                background: var(--cream) !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'Syne', sans-serif !important;
+                font-weight: 600 !important;
+                font-size: 0.92rem !important;
+                color: var(--forest-mid) !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                min-width: unset !important;
+            }
+            .btn-verify .ui-button:hover {
+                border-color: var(--emerald) !important;
+                background: color-mix(in srgb, var(--emerald) 12%, white) !important;
+                color: var(--forest-deep) !important;
+            }
+            .btn-verify .ui-button .ui-button-text {
+                padding: 0 !important;
+            }
+            .btn-verify .ui-button .ui-icon {
+                color: var(--forest-mid) !important;
+                margin-right: 6px !important;
+            }
+
+            /* ── DIVIDER ─────────────────────────────────────────── */
+            .form-divider {
+                display: flex;
+                align-items: center;
+                gap: 0.7rem;
+                margin: 1.4rem 0;
+            }
+            .form-divider::before, .form-divider::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: var(--border);
+            }
+            .form-divider span {
+                font-size: 0.73rem;
+                color: var(--text-muted);
+                font-weight: 500;
+                white-space: nowrap;
+            }
+
+            /* ── RESEND LINK ─────────────────────────────────────── */
+            .resend-wrap {
+                text-align: center;
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                margin-top: 1.25rem;
+            }
+            .resend-wrap .ui-commandlink {
+                color: var(--forest-bright) !important;
+                font-weight: 600 !important;
+                text-decoration: none !important;
+                font-family: 'DM Sans', sans-serif !important;
+                transition: color 0.2s !important;
+            }
+            .resend-wrap .ui-commandlink:hover {
+                color: var(--emerald) !important;
+                text-decoration: underline !important;
+            }
+
+            /* ── GLOBAL TOP MESSAGES ─────────────────────────────── */
+            .global-messages-wrap {
+                margin-bottom: 1.25rem;
+            }
+            .portal-error-msg {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                background: #fff5f5;
+                color: #c0392b;
+                border: 1px solid #f5c6cb;
+                border-left: 4px solid #e74c3c;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                font-size: 0.88rem;
+                margin-bottom: 0.5rem;
+                font-family: inherit;
+                text-align: left;
+                box-shadow: 0 2px 8px rgba(192,57,43,0.08);
+            }
+            .portal-error-msg::before {
+                content: '\f071';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                font-size: 0.82rem;
+                flex-shrink: 0;
+            }
+            .portal-info-msg {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                background: #f0f7ff;
+                color: #1a6fb3;
+                border: 1px solid #bee3f8;
+                border-left: 4px solid #3498db;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                font-size: 0.88rem;
+                margin-bottom: 0.5rem;
+                font-family: inherit;
+                box-shadow: 0 2px 8px rgba(52,152,219,0.08);
+            }
+            .portal-warn-msg {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                background: #fffbf0;
+                color: #b45309;
+                border: 1px solid #fcd34d;
+                border-left: 4px solid #f59e0b;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                font-size: 0.88rem;
+                margin-bottom: 0.5rem;
+                font-family: inherit;
+                box-shadow: 0 2px 8px rgba(245,158,11,0.08);
+            }
+
+            /* ── OTP COUNTDOWN ───────────────────────────────────── */
+            .otp-countdown-wrap {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                margin-bottom: 1.25rem;
+            }
+            .otp-countdown-label {
+                font-size: 0.82rem;
+                color: var(--text-muted);
+            }
+            .otp-countdown-timer {
+                font-family: 'Syne', sans-serif;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--forest-mid);
+                background: color-mix(in srgb, var(--emerald) 10%, white);
+                border: 1.5px solid var(--border);
+                border-radius: 8px;
+                padding: 0.2rem 0.7rem;
+                min-width: 3.5rem;
+                text-align: center;
+                transition: color 0.3s, background 0.3s, border-color 0.3s;
+            }
+            .otp-countdown-timer.warning {
+                color: #b45309;
+                background: #fef3c7;
+                border-color: #fcd34d;
+            }
+            .otp-countdown-timer.expired {
+                color: #dc2626;
+                background: #fee2e2;
+                border-color: #fca5a5;
+            }
+
+            /* ── FOOTER NOTE ─────────────────────────────────────── */
+            .portal-footer-note {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                font-size: 0.73rem;
+                color: var(--text-muted);
+                margin-top: 1.5rem;
+            }
+            .portal-footer-note i {
+                color: var(--emerald);
+            }
+
+            /* ── RESPONSIVE TWEAKS ───────────────────────────────── */
+            @media (max-width: 480px) {
+                .otp-card {
+                    padding: 1.75rem 1.25rem;
+                    border-radius: 18px;
+                }
+                .card-title  {
+                    font-size: 1.3rem;
+                }
+                .step-label  {
+                    display: none;
+                }
+                .patient-select-card {
+                    max-width: 320px;
+                    padding: 1.5rem 1rem;
+                    border-radius: 16px;
+                }
+                .patient-row {
+                    padding: 0.7rem 0.75rem;
+                    gap: 0.6rem;
+                }
+                .patient-avatar {
+                    width: 34px;
+                    height: 34px;
+                    font-size: 0.85rem;
+                }
+                .patient-name {
+                    font-size: 0.85rem;
+                }
+                .patient-meta-pill {
+                    font-size: 0.65rem;
+                    padding: 0.1rem 0.4rem;
+                }
+            }
+            @media (max-width: 360px) {
+                .portal-form-panel {
+                    padding: 1.5rem 0.85rem;
+                }
+            }
+
+            /* ── PATIENT SELECTION CARD ──────────────────────────── */
+            .patient-select-card {
+                background: var(--white);
+                border-radius: 22px;
+                padding: 2.25rem 2rem;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border);
+                animation: fadeUp 0.45s ease forwards;
+                width: 100%;
+                max-width: 480px;
+            }
+
+            @media (min-width: 992px) {
+                .patient-select-card {
+                    max-width: 680px;
+                }
+            }
+
+            .patient-select-title {
+                font-family: 'Syne', sans-serif;
+                font-size: 1.4rem;
+                font-weight: 700;
+                color: var(--forest-deep);
+                margin-bottom: 0.3rem;
+            }
+
+            .patient-select-subtitle {
+                font-size: 0.87rem;
+                color: var(--text-muted);
+                margin-bottom: 1.5rem;
+                line-height: 1.6;
+            }
+
+            .patient-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+                max-height: 420px;
+                overflow-y: auto;
+                padding-right: 0.25rem;
+            }
+
+            .patient-list::-webkit-scrollbar {
+                width: 4px;
+            }
+            .patient-list::-webkit-scrollbar-track {
+                background: var(--border);
+                border-radius: 4px;
+            }
+            .patient-list::-webkit-scrollbar-thumb {
+                background: var(--emerald);
+                border-radius: 4px;
+            }
+
+            .patient-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.9rem 1rem;
+                border: 2px solid var(--border);
+                border-radius: var(--radius-sm);
+                background: color-mix(in srgb, var(--forest-mid) 4%, white);
+                transition: all 0.2s ease;
+            }
+
+            .patient-row:hover {
+                border-color: var(--emerald);
+                background: color-mix(in srgb, var(--emerald) 10%, white);
+            }
+
+            .patient-avatar {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--forest-mid), var(--emerald));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .patient-info {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .patient-name {
+                font-family: 'Syne', sans-serif;
+                font-weight: 600;
+                font-size: 0.95rem;
+                color: var(--forest-deep);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .patient-meta {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                flex-wrap: wrap;
+                margin-top: 0.25rem;
+            }
+
+            .patient-meta-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                background: var(--cream);
+                border: 1px solid var(--border);
+                border-radius: 100px;
+                padding: 0.15rem 0.55rem;
+                font-weight: 500;
+            }
+
+            .patient-meta-pill i {
+                font-size: 0.65rem;
+                color: var(--emerald);
+            }
+
+            .btn-select-patient .ui-button {
+                padding: 0.45rem 2.5rem !important;
+                background: linear-gradient(135deg, var(--forest-mid), var(--forest-bright)) !important;
+                border: none !important;
+                border-radius: 8px !important;
+                font-family: 'Syne', sans-serif !important;
+                font-weight: 600 !important;
+                font-size: 0.82rem !important;
+                color: white !important;
+                white-space: nowrap !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                box-shadow: 0 2px 8px color-mix(in srgb, var(--forest-mid) 22%, transparent) !important;
+                min-width: unset !important;
+            }
+            .btn-select-patient .ui-button:hover {
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px color-mix(in srgb, var(--forest-mid) 30%, transparent) !important;
+            }
+            .btn-select-patient .ui-button .ui-button-text {
+                padding: 0 !important;
+            }
+            .btn-select-patient .ui-button .ui-icon {
+                color: rgba(255,255,255,0.85) !important;
+                margin-right: 4px !important;
+            }
+
+            .no-patient-wrap {
+                text-align: center;
+                padding: 1.5rem 0 0.5rem;
+            }
+            .no-patient-wrap i {
+                font-size: 2.5rem;
+                color: var(--border);
+                margin-bottom: 0.75rem;
+                display: block;
+            }
+            .no-patient-wrap p {
+                font-size: 0.9rem;
+                color: var(--text-muted);
+                margin-bottom: 1.25rem;
+            }
+
+            /* ── NEW PATIENT FORM ────────────────────────────────── */
+            .new-patient-row {
+                display: flex;
+                gap: 0.75rem;
+            }
+            .new-patient-row .field-group {
+                min-width: 0;
+            }
+
+            /* Age + DOB single row */
+            .age-dob-row {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            .age-input-wrap {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                flex: 0 0 auto;
+            }
+            .age-input-wrap .ui-inputtext {
+                width: 52px !important;
+                padding: 0.7rem 0.5rem !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.9rem !important;
+                text-align: center !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
+                min-width: unset !important;
+                box-shadow: none !important;
+            }
+            .age-input-wrap .ui-inputtext:focus {
+                border-color: var(--forest-bright) !important;
+                background: var(--white) !important;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent) !important;
+                outline: none !important;
+            }
+            .age-unit {
+                font-size: 0.72rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                white-space: nowrap;
+            }
+            .dob-input-wrap {
+                flex: 1;
+                min-width: 130px;
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+            .dob-input-wrap .dob-icon {
+                position: absolute;
+                left: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--text-muted);
+                font-size: 0.82rem;
+                pointer-events: none;
+                z-index: 3;
+            }
+            /* PrimeFaces datePicker wrapper must stretch full width */
+            .dob-input-wrap .ui-datepicker {
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+            /* Ensure the actual input fills the wrapper and has icon clearance */
+            .dob-input-wrap .ui-datepicker-input,
+            .dob-input-wrap .portal-datepicker .ui-inputtext,
+            .dob-input-wrap .ui-inputtext {
+                flex: 1 !important;
+                width: 100% !important;
+                padding-left: 2.4rem !important;
+            }
+            @media (max-width: 480px) {
+                .age-dob-row {
+                    gap: 0.4rem;
+                }
+                .age-input-wrap .ui-inputtext {
+                    width: 44px !important;
+                }
+            }
+            /* SelectOneMenu — border/radius on outer div, padding on inner label */
+            .portal-form-panel .portal-select.ui-selectonemenu,
+            .portal-form-panel .field-wrap .ui-selectonemenu {
+                width: 100% !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
+                min-width: unset !important;
+                box-shadow: none !important;
+                transition: border-color 0.2s !important;
+            }
+            .portal-form-panel .portal-select.ui-selectonemenu:hover,
+            .portal-form-panel .field-wrap .ui-selectonemenu:hover {
+                border-color: var(--emerald) !important;
+            }
+            .portal-form-panel .portal-select .ui-selectonemenu-label,
+            .portal-form-panel .field-wrap .ui-selectonemenu-label {
+                padding: 0.8rem 1rem 0.8rem 2.6rem !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.97rem !important;
+                color: var(--text-dark) !important;
+                background: transparent !important;
+                border: none !important;
+            }
+            .portal-form-panel .portal-select .ui-selectonemenu-trigger,
+            .portal-form-panel .field-wrap .ui-selectonemenu-trigger {
+                border: none !important;
+                background: transparent !important;
+            }
+
+            /* DatePicker — padding on the actual input */
+            .portal-form-panel .portal-datepicker .ui-inputtext,
+            .portal-form-panel .field-wrap .ui-datepicker-input {
+                width: 100% !important;
+                padding: 0.8rem 1rem 0.8rem 2.6rem !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.97rem !important;
+                background: color-mix(in srgb, var(--forest-mid) 5%, white) !important;
+                min-width: unset !important;
+                box-shadow: none !important;
+            }
+            .portal-form-panel .portal-datepicker .ui-inputtext:focus,
+            .portal-form-panel .field-wrap .ui-datepicker-input:focus {
+                border-color: var(--forest-bright) !important;
+                background: var(--white) !important;
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent) !important;
+            }
+            @media (max-width: 480px) {
+                .new-patient-row {
+                    flex-direction: column;
+                    gap: 0;
+                }
+            }
+
+            /* ── ADD NEW PATIENT BUTTON ───────────────────────────── */
+            .add-patient-wrap {
+                margin-top: 1rem;
+                text-align: center;
+            }
+            .btn-add-patient-link.ui-button {
+                background: transparent !important;
+                border: 1.5px dashed var(--emerald) !important;
+                color: var(--forest-bright) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                padding: 0.55rem 1.25rem !important;
+                width: 100% !important;
+                min-width: unset !important;
+                transition: all 0.2s ease !important;
+                box-shadow: none !important;
+            }
+            .btn-add-patient-link.ui-button:hover {
+                background: color-mix(in srgb, var(--emerald) 8%, transparent) !important;
+                border-color: var(--forest-bright) !important;
+            }
+            .btn-add-patient-link.ui-button .ui-button-text {
+                padding: 0 !important;
+            }
+            .btn-add-patient-link.ui-button .ui-icon {
+                color: var(--emerald) !important;
+                margin-right: 5px !important;
+            }
+
+            /* ── WELCOME CARD ────────────────────────────────────── */
+            .welcome-card {
+                background: var(--white);
+                border-radius: 22px;
+                padding: 2.5rem 2rem;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border);
+                animation: fadeUp 0.45s ease forwards;
+                width: 100%;
+                max-width: 480px;
+                text-align: center;
+            }
+            @media (min-width: 992px) {
+                .welcome-card {
+                    max-width: 680px;
+                }
+            }
+            .welcome-avatar {
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--forest-mid), var(--emerald));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.8rem;
+                color: white;
+                margin: 0 auto 1.25rem;
+                box-shadow: 0 8px 24px color-mix(in srgb, var(--forest-mid) 25%, transparent);
+            }
+            .welcome-greeting {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: var(--emerald);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                margin-bottom: 0.35rem;
+            }
+            .welcome-name {
+                font-family: 'Syne', sans-serif;
+                font-size: 1.6rem;
+                font-weight: 800;
+                color: var(--forest-deep);
+                margin-bottom: 0.75rem;
+            }
+            .welcome-card .patient-meta {
+                justify-content: center;
+                margin-bottom: 1.25rem;
+            }
+            .welcome-subtitle {
+                font-size: 0.88rem;
+                color: var(--text-muted);
+                line-height: 1.65;
+                margin-bottom: 1.75rem;
+            }
+            .welcome-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            /* ── SELF-REGISTERED BADGE ───────────────────────────── */
+            .badge-self-registered {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                background: color-mix(in srgb, var(--emerald) 22%, white);
+                color: var(--forest-deep);
+                margin-top: 0.35rem;
+                padding: 0.2rem 0.55rem;
+                border-radius: 20px;
+                font-size: 0.68rem;
+                font-weight: 600;
+                border: 1px solid color-mix(in srgb, var(--emerald) 30%, transparent);
+            }
+            .badge-self-registered i {
+                font-size: 0.6rem;
+            }
+        </style>
+        <script type="text/javascript">
+            //<![CDATA[
+            function ageAutoFocus(inputEl, maxLen, nextId) {
+                var val = inputEl.value.replace(/\D/g, '');
+                inputEl.value = val;
+                if (val.length >= maxLen && nextId) {
+                    var next = document.getElementById(nextId);
+                    if (next) {
+                        next.focus();
+                        next.select();
+                    }
+                }
+            }
+
+            var otpCountdownInterval = null;
+
+            function startOtpCountdown(expiryEpochMs) {
+                clearInterval(otpCountdownInterval);
+                var el = document.getElementById('otpCountdownTimer');
+                if (!el)
+                    return;
+                function tick() {
+                    var remaining = expiryEpochMs - Date.now();
+                    if (remaining <= 0) {
+                        clearInterval(otpCountdownInterval);
+                        el.textContent = 'OTP Expired';
+                        el.className = 'otp-countdown-timer expired';
+                        var label = document.querySelector('.otp-countdown-label');
+                        if (label)
+                            label.style.display = 'none';
+                        var msgWrap = document.getElementById('form:globalMessages');
+                        if (msgWrap)
+                            msgWrap.innerHTML = '';
+                        var otpSection = document.getElementById('otpEntrySection');
+                        if (otpSection)
+                            otpSection.style.display = 'none';
+                        return;
+                    }
+                    var mins = Math.floor(remaining / 60000);
+                    var secs = Math.floor((remaining % 60000) / 1000);
+                    el.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                    el.className = 'otp-countdown-timer' + (remaining < 30000 ? ' warning' : '');
+                }
+                tick();
+                otpCountdownInterval = setInterval(tick, 1000);
+            }
+            //]]>
+        </script>
+    </h:head>
+
+    <h:body style="margin:0; padding:0;">
+        <h:form id="form">
+
+            <!-- ═══════════════════════════════════════════
+                 MAIN WRAPPER  (hero left + form right)
+                 ═══════════════════════════════════════════ -->
+            <div class="portal-wrapper">
+
+                <!-- ── LEFT HERO PANEL (desktop ≥992px only) ── -->
+                <div class="portal-hero" style="--hero-color: #{configOptionApplicationController.getColorValueByKey('Patient Portal -  Theme Color','#1b4332')}">
+                    <div class="hero-dots"/>
+                    <div class="hero-ring hero-ring-1"/>
+                    <div class="hero-ring hero-ring-2"/>
+                    <div class="hero-ring hero-ring-3"/>
+                    <div class="hero-ring hero-ring-4"/>
+                    <div class="hero-cross-lg"/>
+                    <div class="hero-cross" style="top:16%; right:22%; opacity:0.22;"/>
+                    <div class="hero-cross" style="bottom:28%; right:14%; opacity:0.14;"/>
+                    <div class="hero-cross" style="top:52%; left:8%;  opacity:0.12;"/>
+
+                    <div class="hero-content">
+                        <div class="hero-logo-wrap">
+                            <img 
+                                src="#{configOptionApplicationController.getLongTextValueByKey('Patient Portal - Logo URL')}"
+                                alt="Hospital Logo"
+                                class="hero-logo-img"/>
+                        </div>
+                        <div class="hero-badge">
+                            <div class="hero-badge-dot"/>
+                            Patient Portal
+                        </div>
+
+                        <div class="hero-title">
+                            Your Health,<br/>
+                            <span class="accent">At Your</span><br/>
+                            Fingertips.
+                        </div>
+
+                        <p class="hero-desc">
+                            Securely access your appointments, reports, and medical
+                            history — from any device, anywhere, anytime.
+                        </p>
+
+                        <ul class="hero-features">
+                            <li>
+                                <span class="feat-icon"><i class="fas fa-calendar-check"/></span>
+                                View &amp; Manage Appointments
+                            </li>
+                            <li>
+                                <span class="feat-icon"><i class="fas fa-file-medical"/></span>
+                                Access Lab Reports &amp; Records
+                            </li>
+                            <li>
+                                <span class="feat-icon"><i class="fas fa-shield-halved"/></span>
+                                Secure OTP Authentication
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- END HERO PANEL -->
+
+                <!-- ── RIGHT FORM PANEL ───────────────────── -->
+                <div class="portal-form-panel">
+                    <div class="form-container">
+
+                        <!-- Mobile brand header (hidden on desktop) -->
+                        <div class="mobile-brand-header">
+                            <img src="#{configOptionApplicationController.getLongTextValueByKey('Patient Portal - Logo URL')}"
+                                 alt="Hospital Logo"
+                                 class="mobile-logo-img"/>
+                        </div>
+
+                        <!-- Global error messages (middle-top, all steps) -->
+                        <h:panelGroup id="globalMessages" layout="block" styleClass="global-messages-wrap">
+                            <h:messages
+                                layout="list"
+                                showDetail="true"
+                                showSummary="false"
+                                errorClass="portal-error-msg"
+                                warnClass="portal-warn-msg"
+                                infoClass="portal-info-msg"/>
+                        </h:panelGroup>
+
+                        <!-- Main switchable content panel -->
+                        <h:panelGroup id="portalContentPanel" layout="block">
+
+                            <!-- OTP Verification - Fail -->
+                            <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}">
+                                <div class="otp-card">
+
+                                    <div class="card-lead-icon">
+                                        <i class="fas fa-mobile-screen-button"/>
+                                    </div>
+
+                                    <div class="card-title">OTP Verification</div>
+
+                                    <h:panelGroup id="otpFormPanel">
+
+                                        <!-- STEP 1: Mobile number + Send OTP (hidden after OTP sent) -->
+                                        <h:panelGroup rendered="#{!patientPortalController.otpSendSuccess}">
+                                            <div class="card-subtitle">
+                                                Enter your registered mobile number to receive
+                                                a secure one-time password.
+                                            </div>
+                                            <div class="field-group">
+                                                <label class="field-label">Mobile Number</label>
+                                                <div class="field-wrap">
+                                                    <i class="fas fa-phone f-icon"/>
+                                                    <p:inputText
+                                                        value="#{patientPortalController.patientphoneNumber}"
+                                                        onfocus="this.select()"
+                                                        placeholder="Enter your mobile number">
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+                                            <div class="btn-send">
+                                                <p:commandButton
+                                                    value="Send OTP"
+                                                    icon="fas fa-paper-plane"
+                                                    action="#{patientPortalController.sendOtp}"
+                                                    update="globalMessages otpFormPanel">
+                                                </p:commandButton>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <!-- STEP 2: OTP entry (shown after OTP sent) -->
+                                        <h:panelGroup rendered="#{patientPortalController.otpSendSuccess}">
+                                            <script type="text/javascript">
+                                                //<![CDATA[
+                                                startOtpCountdown(#{patientPortalController.otpExpiryEpochMs});
+                                                //]]>
+                                            </script>
+                                            <div class="card-subtitle">
+                                                OTP sent to <strong>#{patientPortalController.patientphoneNumber}</strong>.
+                                                Enter it below to continue.
+                                            </div>
+
+                                            <!-- Countdown timer -->
+                                            <div class="otp-countdown-wrap">
+                                                <span class="otp-countdown-label">OTP expires in</span>
+                                                <span id="otpCountdownTimer" class="otp-countdown-timer">
+                                                    #{patientPortalController.otpTimeoutMinutes}:00
+                                                </span>
+                                            </div>
+
+                                            <div id="otpEntrySection">
+                                                <div class="field-group">
+                                                    <label class="field-label">One-Time Password</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-key f-icon"/>
+                                                        <p:inputText
+                                                            value="#{patientPortalController.patientEnteredOtp}"
+                                                            onfocus="this.select()"
+                                                            placeholder="Enter OTP">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                                <div class="btn-verify">
+                                                    <p:commandButton
+                                                        value="Verify OTP"
+                                                        icon="fas fa-circle-check"
+                                                        action="#{patientPortalController.otpVerification}"
+                                                        update="globalMessages portalContentPanel"/>
+                                                </div>
+                                            </div>
+                                            <div class="resend-wrap">
+                                                Didn't receive it?&#160;
+                                                <p:commandLink
+                                                    value="Resend OTP"
+                                                    action="#{patientPortalController.sendOtp}"
+                                                    update="globalMessages otpFormPanel"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- OTP Verification - Pass -->
+                            <h:panelGroup rendered="#{patientPortalController.otpVerify eq true}">
+
+                                <!-- New Patient Data Entry Form -->
+                                <h:panelGroup rendered="#{patientPortalController.addNewPatient}" layout="block">
+                                    <div class="otp-card">
+                                        <div class="card-lead-icon">
+                                            <i class="fas fa-user-plus"/>
+                                        </div>
+                                        <div class="card-title">New Patient Registration</div>
+                                        <div class="card-subtitle">
+                                            Register a new patient profile for
+                                            <strong>#{patientPortalController.patientphoneNumber}</strong>
+                                        </div>
+
+                                        <div class="new-patient-row">
+                                            <div class="field-group" style="flex:0 0 130px">
+                                                <label class="field-label">Title <span style="color:#e74c3c">*</span></label>
+                                                <div class="field-wrap">
+                                                    <i class="fas fa-id-badge f-icon"/>
+                                                    <p:selectOneMenu
+                                                        value="#{patientPortalController.patient.person.title}"
+                                                        styleClass="portal-select">
+                                                        <f:selectItem itemLabel="Select" itemValue=""/>
+                                                        <f:selectItems value="#{billController.title}" var="t"
+                                                                       itemLabel="#{t.label}" itemValue="#{t}"/>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="field-group" style="flex:1">
+                                                <label class="field-label">Full Name <span style="color:#e74c3c">*</span></label>
+                                                <div class="field-wrap">
+                                                    <i class="fas fa-user f-icon"/>
+                                                    <p:inputText id="newPatientName"
+                                                                 value="#{patientPortalController.patient.person.name}"
+                                                                 placeholder="Enter full name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label class="field-label">Gender <span style="color:#e74c3c">*</span></label>
+                                            <div class="field-wrap">
+                                                <i class="fas fa-venus-mars f-icon"/>
+                                                <p:selectOneMenu
+                                                    value="#{patientPortalController.patient.person.sex}"
+                                                    styleClass="portal-select">
+                                                    <f:selectItem itemLabel="Select" itemValue=""/>
+                                                    <f:selectItems value="#{billController.sex}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label class="field-label">Age &amp; Date of Birth <span style="color:#e74c3c">*</span></label>
+                                            <div class="age-dob-row">
+                                                <div class="age-input-wrap">
+                                                    <p:inputText
+                                                        id="ageYears"
+                                                        value="#{patientPortalController.patient.person.ageYearsComponent}"
+                                                        placeholder="YY"
+                                                        onfocus="this.select()"
+                                                        styleClass="age-input"
+                                                        maxlength="3"
+                                                        oninput="ageAutoFocus(this,3,'form:ageMonths')">
+                                                        <p:ajax event="blur" process="ageYears" update="newPatientDob"/>
+                                                    </p:inputText>
+                                                    <span class="age-unit">Yrs</span>
+                                                </div>
+                                                <div class="age-input-wrap">
+                                                    <p:inputText
+                                                        id="ageMonths"
+                                                        value="#{patientPortalController.patient.person.ageMonthsComponent}"
+                                                        placeholder="MM"
+                                                        onfocus="this.select()"
+                                                        styleClass="age-input"
+                                                        maxlength="2"
+                                                        oninput="ageAutoFocus(this,2,'form:ageDays')">
+                                                        <p:ajax event="blur" process="ageMonths" update="newPatientDob"/>
+                                                    </p:inputText>
+                                                    <span class="age-unit">Mos</span>
+                                                </div>
+                                                <div class="age-input-wrap">
+                                                    <p:inputText
+                                                        id="ageDays"
+                                                        value="#{patientPortalController.patient.person.ageDaysComponent}"
+                                                        placeholder="DD"
+                                                        onfocus="this.select()"
+                                                        styleClass="age-input"
+                                                        maxlength="2">
+                                                        <p:ajax event="blur" process="ageDays" update="newPatientDob"/>
+                                                    </p:inputText>
+                                                    <span class="age-unit">Days</span>
+                                                </div>
+                                                <div class="dob-input-wrap mx-3">
+                                                    <p:datePicker
+                                                        id="newPatientDob"
+                                                        value="#{patientPortalController.patient.person.dob}"
+                                                        placeholder="DD/MM/YYYY"
+                                                        pattern="dd/MM/yyyy"
+                                                        monthNavigator="true" 
+                                                        yearNavigator="true"
+                                                        styleClass="portal-datepicker">
+                                                    </p:datePicker>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label class="field-label">Mobile Number</label>
+                                            <div class="field-wrap">
+                                                <i class="fas fa-phone f-icon"/>
+                                                <p:inputText
+                                                    value="#{patientPortalController.patientphoneNumber}"
+                                                    disabled="true"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-2">
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">NIC / Passport No</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-id-card f-icon"/>
+                                                        <p:inputText
+                                                            id="newPatientNic"
+                                                            value="#{patientPortalController.patient.person.nic}"
+                                                            placeholder="Enter NIC or Passport number"
+                                                            autocomplete="off"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">Email</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-envelope f-icon"/>
+                                                        <p:inputText
+                                                            id="newPatientEmail"
+                                                            value="#{patientPortalController.patient.person.email}"
+                                                            placeholder="Enter email address"
+                                                            autocomplete="off">
+                                                        </p:inputText>
+                                                        <p:message for="newPatientEmail" display="text"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-2">
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">Address</label>
+                                                    <div class="field-wrap">
+                                                        <i class="fas fa-map-marker-alt f-icon"/>
+                                                        <p:inputText
+                                                            id="newPatientAddress"
+                                                            value="#{patientPortalController.patient.person.address}"
+                                                            placeholder="Enter address"
+                                                            autocomplete="off"
+                                                            style="width:100%"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="field-group">
+                                                    <label class="field-label">Area</label>
+                                                    <div class="field-wrap">
+                                                        <p:autoComplete
+                                                            id="newPatientArea"
+                                                            value="#{patientPortalController.patient.person.area}"
+                                                            completeMethod="#{areaController.completeArea}"
+                                                            var="pa"
+                                                            itemLabel="#{pa.name}"
+                                                            itemValue="#{pa}"
+                                                            forceSelection="true"
+                                                            placeholder="Search and select area"
+                                                            style="width:100%"
+                                                            inputStyleClass="form-control"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="btn-send" style="margin-top:1.25rem">
+                                            <p:commandButton
+                                                value="Save Patient"
+                                                icon="fas fa-floppy-disk"
+                                                action="#{patientPortalController.saveNewPatient}"
+                                                update="globalMessages portalContentPanel newPatientEmail"/>
+                                        </div>
+                                        <div class="add-patient-wrap">
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-arrow-left"
+                                                styleClass="btn-add-patient-link"
+                                                action="#{patientPortalController.GoBackfromPatientAddAction}"
+                                                update="globalMessages portalContentPanel"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Patient Selection (shown after OTP verified, not adding new patient) -->
+                                <h:panelGroup rendered="#{patientPortalController.patientSelected eq false and not patientPortalController.addNewPatient and not patientPortalController.allowNavigation}">
+                                    <div class="patient-select-card">
+
+                                        <div class="card-lead-icon">
+                                            <i class="fas fa-users"/>
+                                        </div>
+
+                                        <div class="patient-select-title">Select Your Profile</div>
+                                        <div class="patient-select-subtitle">
+                                            Choose a patient profile registered to
+                                            <strong>#{patientPortalController.patientphoneNumber}</strong>
+                                        </div>
+
+                                        <!-- Patients found -->
+                                        <h:panelGroup rendered="#{not empty patientPortalController.searchedPatients}">
+                                            <div class="patient-list">
+                                                <ui:repeat value="#{patientPortalController.searchedPatients}" var="pt">
+                                                    <div class="patient-row">
+                                                        <div class="patient-avatar">
+                                                            <i class="fas fa-user"/>
+                                                        </div>
+                                                        <div class="patient-info">
+                                                            <div class="patient-name">#{pt.person.nameWithTitle}</div>
+                                                            <div class="patient-meta">
+                                                                <span class="patient-meta-pill">
+                                                                    <i class="fas fa-cake-candles"/>
+                                                                    #{pt.person.ageYearsComponent}Y #{pt.person.ageMonthsComponent}M
+                                                                </span>
+                                                                <span class="patient-meta-pill">
+                                                                    <i class="fas fa-venus-mars"/>
+                                                                    #{pt.person.sex.label}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="btn-select-patient">
+                                                            <p:commandButton
+                                                                value="Select"
+                                                                icon="fas fa-arrow-right"
+                                                                action="#{patientPortalController.selectPatientProfile(pt)}"
+                                                                update=":form:globalMessages :form:portalContentPanel :form:portalContentPanel"/>
+                                                        </div>
+                                                    </div>
+                                                </ui:repeat>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <!-- Add New Patient button (always visible in list) -->
+                                        <h:panelGroup rendered="#{not empty patientPortalController.searchedPatients}" layout="block">
+                                            <div class="add-patient-wrap">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Add New Patient"
+                                                    icon="fas fa-user-plus"
+                                                    styleClass="btn-add-patient-link"
+                                                    action="#{patientPortalController.addNewPatientAction}">
+                                                </p:commandButton>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <!-- No patients found -->
+                                        <h:panelGroup rendered="#{empty patientPortalController.searchedPatients}" layout="block">
+                                            <div class="no-patient-wrap">
+                                                <i class="fas fa-user-slash"/>
+                                                <p>No profiles found for this mobile number.</p>
+                                                <div class="btn-send">
+                                                    <p:commandButton
+                                                        ajax="false"
+                                                        value="Add New Patient"
+                                                        icon="fas fa-user-plus"
+                                                        action="#{patientPortalController.addNewPatientAction}">
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <div class="btn-logout" style="margin-top:0.75rem; display:flex; justify-content:center;">
+                                            <p:commandButton
+                                                value="Logout"
+                                                icon="fas fa-right-from-bracket"
+                                                ajax="false"
+                                                action="#{patientPortalController.reset}">
+                                            </p:commandButton>
+                                        </div>
+
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Welcome Section (shown after patient selected) -->
+                                <h:panelGroup rendered="#{patientPortalController.patientSelected}" layout="block">
+                                    <div class="welcome-card">
+                                        <div class="welcome-avatar">
+                                            <i class="fas fa-user-check"/>
+                                        </div>
+                                        <div class="welcome-greeting">Welcome Back</div>
+                                        <div class="welcome-name">
+                                            #{patientPortalController.patient.person.nameWithTitle}
+                                        </div>
+                                        <div class="welcome-meta">
+                                            <span class="patient-meta-pill">
+                                                <i class="fas fa-cake-candles"/>
+                                                #{patientPortalController.patient.person.ageYearsComponent}Y
+                                                #{patientPortalController.patient.person.ageMonthsComponent}M
+                                            </span>
+                                            <span class="patient-meta-pill">
+                                                <i class="fas fa-venus-mars"/>
+                                                #{patientPortalController.patient.person.sex.label}
+                                            </span>
+                                            <span class="patient-meta-pill">
+                                                <i class="fas fa-mobile-screen-button"/>
+                                                #{patientPortalController.patient.person.mobile}
+                                            </span>
+                                        </div>
+                                        
+                                        <h:panelGroup rendered="#{patientPortalController.patient.selfRegistered}" layout="block">
+                                            <span class="badge-self-registered">
+                                                <i class="fas fa-user-pen"/>
+                                                Self Registered
+                                            </span>
+                                        </h:panelGroup>
+                                        
+                                        <p class="welcome-subtitle mt-2">
+                                            You are now signed in to the Patient Portal.
+                                            Use the options below to manage your health information.
+                                        </p>
+                                        <div class="welcome-actions">
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Portal - Allow to Laboratory',true)}">
+                                                <div class="btn-send">
+                                                    <p:commandButton
+                                                        value="Go to Laboratory"
+                                                        icon="fas fa-arrow-right"
+                                                        ajax="false"
+                                                        action="#{patientPortalController.navigateToLabaratory()}">
+                                                    </p:commandButton>
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Portal -  Allow to Channelling',true)}">
+                                                <div class="btn-send">
+                                                    <p:commandButton
+                                                        value="Go to Channelling"
+                                                        icon="fas fa-arrow-right"
+                                                        ajax="false"
+                                                        action="#{patientPortalController.navigateToChannellinig()}">
+                                                    </p:commandButton>
+                                                </div>
+                                            </h:panelGroup>
+
+
+                                            <hr/>
+
+                                            <h:panelGroup rendered="#{patientPortalController.searchedPatients.size() gt 1}" layout="block">
+                                                <div class="btn-verify">
+                                                    <p:commandButton
+                                                        value="Switch Profile"
+                                                        icon="fas fa-users"
+                                                        actionListener="#{patientPortalController.setPatientSelected(false)}"
+                                                        action="#{patientPortalController.findPatients()}"
+                                                        update="globalMessages portalContentPanel">
+                                                    </p:commandButton>
+                                                </div>
+                                            </h:panelGroup>
+                                            <div class="add-patient-wrap">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Add New Patient"
+                                                    icon="fas fa-user-plus"
+                                                    styleClass="btn-add-patient-link"
+                                                    action="#{patientPortalController.addNewPatientAction}">
+                                                </p:commandButton>
+                                            </div>
+                                            <div class="btn-logout" style="margin-top:0.75rem">
+                                                <p:commandButton
+                                                    value="Logout"
+                                                    icon="fas fa-right-from-bracket"
+                                                    ajax="false"
+                                                    action="#{patientPortalController.reset}">
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Laboratory Section -->
+                                <h:panelGroup rendered="#{patientPortalController.allowLabaratory and patientPortalController.allowNavigation}" layout="block">
+                                    <div class="welcome-card">
+                                        <div class="welcome-avatar">
+                                            <i class="fas fa-flask"/>
+                                        </div>
+                                        <div class="welcome-greeting" style="font-size:2rem;">Laboratory</div>
+                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:var(--text-muted);">
+                                            View your lab test results and reports
+                                        </div>
+                                        <div style="margin:1.5rem 0; padding:2rem 1.5rem; background:#fef9c3; border:2px solid #fde68a; border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:1rem; color:#92400e;">
+                                            <i class="fas fa-tools" style="font-size:3rem;"/>
+                                            <span style="font-size:1.15rem; font-weight:700;">Under Development</span>
+                                            <span style="font-size:0.9rem; font-weight:400; color:#a16207; text-align:center;">This section is currently under development. Coming soon!</span>
+                                        </div>
+                                        <div class="btn-verify">
+                                            <p:commandButton
+                                                value="Back to Profile"
+                                                icon="fas fa-arrow-left"
+                                                ajax="false"
+                                                action="#{patientPortalController.navigateToBackProfile()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Channelling Section -->
+                                <h:panelGroup rendered="#{patientPortalController.allowChannellinig and patientPortalController.allowNavigation}" layout="block">
+                                    <div class="welcome-card">
+                                        <div class="welcome-avatar">
+                                            <i class="fas fa-calendar-check"/>
+                                        </div>
+                                        <div class="welcome-greeting" style="font-size:2rem;">Channelling</div>
+                                        <div class="welcome-name" style="font-size:1rem; font-weight:500; color:var(--text-muted);">
+                                            Book and manage your doctor appointments
+                                        </div>
+                                        <div style="margin:1.5rem 0; padding:2rem 1.5rem; background:#fef9c3; border:2px solid #fde68a; border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:1rem; color:#92400e;">
+                                            <i class="fas fa-tools" style="font-size:3rem;"/>
+                                            <span style="font-size:1.15rem; font-weight:700;">Under Development</span>
+                                            <span style="font-size:0.9rem; font-weight:400; color:#a16207; text-align:center;">This section is currently under development. Coming soon!</span>
+                                        </div>
+                                        <div class="btn-verify">
+                                            <p:commandButton
+                                                value="Back to Profile"
+                                                icon="fas fa-arrow-left"
+                                                ajax="false"
+                                                action="#{patientPortalController.navigateToBackProfile()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                        <!-- END portalContentPanel -->
+
+                        <!-- Footer note -->
+                        <div class="portal-footer-note">
+                            <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Patient Portal - CareCode Logo URL','https://i.ibb.co/V0bCPdZZ/fcare.png')}">
+                                <img src="#{configOptionApplicationController.getLongTextValueByKey('Patient Portal - CareCode Logo URL','https://i.ibb.co/V0bCPdZZ/fcare.png')}"
+                                     alt="CareCode"
+                                     style="height:28px; vertical-align:middle; margin-right:6px;"/>
+                            </h:panelGroup>
+                            Powered by CareCode (Pvt) Ltd.
+                        </div>
+
+                    </div>
+                </div>
+                <!-- END FORM PANEL -->
+
+            </div>
+            <!-- END PORTAL WRAPPER -->
+
+        </h:form>
+    </h:body>
+</html>

@@ -60,11 +60,11 @@
                         </div>
                     </div>
 
-                    <div class="row" >
+<!--                    <div class="row" >
                         <div class="col-12" >
                             <p:messages id="pageMessages" ></p:messages>
                         </div>
-                    </div>
+                    </div>-->
 
                     <div class="row">
                         <div class="col-8">
@@ -125,8 +125,7 @@
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                                 txtRetailValue txtCostValue
                                                 txtPurchaseValue txtUnitsPerPack txtPackOrUnit @this
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
-                                                :#{p:resolveFirstComponentWithId('pageMessages', view).clientId}" />
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -143,8 +142,7 @@
                                                 event="blur"
                                                 process="@this"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue @this
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
-                                                :#{p:resolveFirstComponentWithId('pageMessages', view).clientId}"
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"
                                                 listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
                                         </p:inputText>
                                     </div>

@@ -10,9 +10,21 @@
         <h:form>
             <p:panel class="w-100">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
-                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>      
-
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
+                            <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"/>
+                        </div>
+                    </div>
                 </f:facet>
                 <div class="row">
                     <div class="col-md-2">

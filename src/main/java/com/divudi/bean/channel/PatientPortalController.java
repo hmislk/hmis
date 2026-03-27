@@ -1,5 +1,6 @@
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PaymentGatewayController;
 import com.divudi.bean.common.SessionController;
@@ -16,6 +17,7 @@ import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentGatewayTransaction;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.Speciality;
@@ -32,19 +34,18 @@ import java.io.Serializable;
 import java.util.*;
 import javax.ejb.EJB;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 import com.divudi.core.util.CommonFunctions;
-import org.primefaces.model.ScheduleModel;
 
 /**
  *
  * @author acer
  */
 @Named
-@SessionScoped
+@ViewScoped
 public class PatientPortalController implements Serializable {
 
     @EJB
@@ -63,13 +64,13 @@ public class PatientPortalController implements Serializable {
     PatientFacade patientFacade;
     @EJB
     SmsFacade smsFacade;
-
     @EJB
     BillSessionFacade billSessionFacade;
 
     @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
     private SessionController sessionController;
-
     @Inject
     PatientController patientController;
     @Inject
@@ -83,7 +84,7 @@ public class PatientPortalController implements Serializable {
     @Inject
     BookingControllerViewScope bookingControllerViewScope;
 
-    private String PatientphoneNumber;
+    private String patientphoneNumber;
     private boolean bookDoctor;
     private Staff selectedConsultant;
     private List<Bill> patientBills;
@@ -106,9 +107,12 @@ public class PatientPortalController implements Serializable {
     private boolean searchedPatientIsNull;
     private SessionInstance selectedSessionInstance;
     private boolean selectPatient;
+    private boolean patientSelected;
     private boolean addNewProfile;
     private boolean addNewPatient;
+    private boolean otpSendSuccess = false;
     private boolean bookingCompleted;
+    private Date otpSentTime;
 
     private List<BillSession> pastBookings;
     private List<Payment> pastPayments;
@@ -118,11 +122,11 @@ public class PatientPortalController implements Serializable {
 
     private PaymentGatewayTransaction currentPaymentGatewayTransaction;
 
-    ScheduleModel eventModel;
-    Staff staff;
-    ServiceSession serviceSession;
-
     private ChannelBean channelBean;
+
+    private boolean allowLabaratory;
+    private boolean allowChannellinig;
+    boolean allowNavigation;
 
     public String navigateBookingMenue() {
         bookingControllerViewScope.fillBillSessions(Collections.singletonList(selectedSessionInstance));
@@ -134,22 +138,22 @@ public class PatientPortalController implements Serializable {
         return "/channel/patient_portal.xhtml";
     }
 
-    public String navigateToPayBooking(){
+    public String navigateToPayBooking() {
         if (selectedSessionInstance != null) {
 
-        bookingController.setPatient(patient);
-        bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
-        bookingController.setStaff(selectedConsultant);
-        bookingController.setSelectedSessionInstance(selectedSessionInstance);
-        bookingController.setSelectedServiceSession(selectedChannelSession);
+            bookingController.setPatient(patient);
+            bookingController.setPaymentMethod(PaymentMethod.OnlineSettlement);
+            bookingController.setStaff(selectedConsultant);
+            bookingController.setSelectedSessionInstance(selectedSessionInstance);
+            bookingController.setSelectedServiceSession(selectedChannelSession);
 
-        double amount = selectedSessionInstance.getOriginatingSession().getTotal();
-        paymentGatewayController.setOrderAmount(String.valueOf(amount));
-        paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
-        paymentGatewayController.setPatient(patient);
-        paymentGatewayController.generateTemplateForOrderDescription();
-        paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
-        return paymentGatewayController.createCheckoutSession();
+            double amount = selectedSessionInstance.getOriginatingSession().getTotal();
+            paymentGatewayController.setOrderAmount(String.valueOf(amount));
+            paymentGatewayController.setOrderId(String.valueOf(selectedSessionInstance.getId()));
+            paymentGatewayController.setPatient(patient);
+            paymentGatewayController.generateTemplateForOrderDescription();
+            paymentGatewayController.setSelectedSessioninstance(selectedSessionInstance);
+            return paymentGatewayController.createCheckoutSession();
         }
         return null;
 
@@ -184,8 +188,65 @@ public class PatientPortalController implements Serializable {
     }
 
     public void saveNewPatient() {
+        if (patient == null || patient.getPerson() == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Error in Development.");
+            return;
+        }
+
+        if (patient.getPerson().getTitle() == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Title is Required.");
+            return;
+        }
+
+        if (patient.getPerson().getName() == null || patient.getPerson().getName().trim().isEmpty()) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Patient Name is Required.");
+            return;
+        }
+
+        if (patient.getPerson().getSex() == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Patient Gender is Required.");
+            return;
+        }
+
+        if (patient.getPerson().getDob() == null) {
+            com.divudi.core.util.JsfUtil.addErrorMessage("Patient DOB is Required.");
+            return;
+        }
+
+        if (!Person.checkAgeSex(patient.getPerson().getDob(), patient.getPerson().getSex(), patient.getPerson().getTitle())) {
+            JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
+            return;
+        }
+
+        String email = patient.getPerson().getEmail();
+        if (email != null && !email.trim().isEmpty()) {
+            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                JsfUtil.addErrorMessage("Invalid Email Address. Please enter a valid email (e.g. user@example.com).");
+                return;
+            }
+        }
+
+        Long phoneAsLong = com.divudi.core.util.CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
+        patient.setPatientPhoneNumber(phoneAsLong);
+        patient.setPatientMobileNumber(phoneAsLong);
+        patient.getPerson().setPhone(patientphoneNumber);
+        patient.getPerson().setMobile(patientphoneNumber);
+        patient.setSelfRegistered(true);
         patientController.save(patient);
         addNewPatient = false;
+        patientSelected = true;
+        Long phoneAsLongForSearch = com.divudi.core.util.CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
+        java.util.Map<String, Object> searchMap = new java.util.HashMap<>();
+        searchMap.put("pp", phoneAsLongForSearch);
+        searchedPatients = patientFacade.findByJpql("select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp", searchMap);
+
+    }
+
+    public void selectPatientProfile(Patient selectedPt) {
+        this.patient = selectedPt;
+        this.patientSelected = true;
+        this.selectPatient = false;
+        this.addNewPatient = false;
     }
 
     public void reset() {
@@ -196,7 +257,37 @@ public class PatientPortalController implements Serializable {
         addNewProfile = false;
         bookingCompleted = false;
         addNewPatient = false;
+        patientSelected = false;
         sessionInstances = null;
+        otpSendSuccess = false;
+        patientEnteredOtp = null;
+        otpSentTime = null;
+        allowLabaratory = false;
+        allowChannellinig = false;
+        allowNavigation = false;
+        patientphoneNumber = null;
+        otp = null;
+    }
+
+    public void navigateToLabaratory() {
+        patientSelected = false;
+        allowLabaratory = true;
+        allowChannellinig = false;
+        allowNavigation = true;
+    }
+
+    public void navigateToChannellinig() {
+        patientSelected = false;
+        allowLabaratory = false;
+        allowChannellinig = true;
+        allowNavigation = true;
+    }
+
+    public void navigateToBackProfile() {
+        patientSelected = true;
+        allowLabaratory = false;
+        allowChannellinig = false;
+        allowNavigation = false;
     }
 
     public List<Staff> fillConsultants() {
@@ -224,11 +315,18 @@ public class PatientPortalController implements Serializable {
     }
 
     public void addNewPatientAction() {
+        com.divudi.core.entity.Person person = new com.divudi.core.entity.Person();
+        person.setPhone(patientphoneNumber);
+        person.setMobile(patientphoneNumber);
+        patient = new Patient();
+        patient.setPerson(person);
         addNewPatient = true;
+        patientSelected = false;
     }
 
     public void GoBackfromPatientAddAction() {
         addNewPatient = false;
+        patient = null;
     }
 
 //    public void addNewPatientAction() {
@@ -269,7 +367,7 @@ public class PatientPortalController implements Serializable {
     }
 
     public void otpCodeConverter() {
-        int codeSize = 4;
+        Long codeSize = configOptionApplicationController.getLongValueByKey("Patient Portal - OTP Length", 6L);
         String numbers = "0123456789";
         Random random = new Random();
         StringBuilder otpBuilder = new StringBuilder();
@@ -282,30 +380,119 @@ public class PatientPortalController implements Serializable {
     }
 
     public void sendOtp() {
-        otpCodeConverter();
-        if (PatientphoneNumber == null) {
-            JsfUtil.addErrorMessage("Pleace Enter Phone Number");
+        java.util.Iterator<javax.faces.application.FacesMessage> iter = javax.faces.context.FacesContext.getCurrentInstance().getMessages();
+        while (iter.hasNext()) {
+            iter.next();
+            iter.remove();
+        }
+        if (patientphoneNumber == null || patientphoneNumber.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Mobile number is required.");
+        } else if (!patientphoneNumber.trim().matches("^(07[0-9]{8}|\\+[1-9][0-9]{6,14})$")) {
+            JsfUtil.addErrorMessage("Invalid mobile number. Enter a local number (e.g. 0712345678) or international format with country code (e.g. +447911123456).");
+        } else {
+            otpCodeConverter();
+            otpSendSuccess = false;
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(patientphoneNumber);
+            e.setSendingMessage(smsBody(otp));
+            e.setPending(false);
+            e.setSmsType(MessageType.PatientPortalOTP);
+            e.setOtp(otp);
+            getSmsFacade().create(e);
+            Boolean sent = smsManager.sendSms(e);
+            if (sent) {
+                otpSendSuccess = true;
+                otpSentTime = new Date();
+                System.out.println("otpSendSuccess = " + otpSendSuccess);
+                System.out.println("Successfuly OTP Send");
+                JsfUtil.addErrorMessage("Successfuly OTP Send");
+            } else {
+                // for tempory use
+                otpSendSuccess = true;
+
+                // for original
+//            otpSendSuccess = false;
+                System.out.println("otpSendSuccess = " + otpSendSuccess);
+                System.out.println("OTP SMS Failed");
+                JsfUtil.addErrorMessage("OTP SMS Failed");
+
+            }
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
+            otpSentTime = new Date();
+        }
+    }
+
+    public String smsBody(String otp) {
+        String smsBody = "";
+        String otpSendingTemplate = configOptionApplicationController.getLongTextValueByKey("Patient Portal - Custom SMS Body Massage for Send OTP");
+        if (!otpSendingTemplate.equalsIgnoreCase("")) {
+            smsBody = replaceOTPSMSBody(otpSendingTemplate, otp);
+        } else {
+            smsBody = "Your authentication code is " + otp;
+        }
+        return smsBody;
+    }
+    
+    public String smsBody(Patient pt) {
+        String smsBody = "";
+        String linkSendingTemplate = configOptionApplicationController.getLongTextValueByKey("Patient Portal - Custom SMS Body Massage for Send Link");
+        String baseURL = CommonFunctions.getBaseUrl() + "faces/patient_portal/portal_login.xhtml";
+        
+        if (!linkSendingTemplate.equalsIgnoreCase("")) {
+            smsBody = replaceOTPSMSBody(linkSendingTemplate, pt, baseURL);
+        } else {
+            smsBody = "Hi "+ pt.getPerson().getNameWithTitle() +",\nUse the following link for Loging your Patient portal.\n Link : " + baseURL;
+        }
+        return smsBody;
+    }
+
+    public void sendPortalLinkToPatinet(Patient patient) {
+        if (patient == null || patient.getPerson() == null) {
+            JsfUtil.addErrorMessage("Error in the Patient.");
+            return;
+        }
+
+        if (patient.getPerson().getSmsNumber() == null || patient.getPerson().getSmsNumber().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Patient has no Mobile.");
             return;
         }
 
         Sms e = new Sms();
         e.setCreatedAt(new Date());
-        e.setSmsType(MessageType.LabReport);
         e.setCreater(sessionController.getLoggedUser());
-        e.setReceipientNumber(PatientphoneNumber);
-        e.setSendingMessage("Your authentication code is " + otp);
+        e.setReceipientNumber(patient.getPerson().getSmsNumber());
+        e.setSendingMessage(smsBody(patient));
         e.setPending(false);
-        e.setOtp(otp);
+        e.setSmsType(MessageType.PatientPortal_Link);
         getSmsFacade().create(e);
         Boolean sent = smsManager.sendSms(e);
         if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
+            System.out.println("LinkSendSuccess = " + sent);
+            JsfUtil.addErrorMessage("Successfuly Link Send");
         } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
+            System.out.println("LinkSendSuccess = " + sent);
+            JsfUtil.addErrorMessage("Link Sending Fail.");
         }
         e.setSentSuccessfully(sent);
         getSmsFacade().edit(e);
+    }
 
+    public String replaceOTPSMSBody(String template, String otp) {
+        String output;
+        String processedTemplate = template.replace("\\n", "\n");
+        output = processedTemplate.replace("{otp}", otp);
+        return output;
+    }
+    
+    public String replaceOTPSMSBody(String template, Patient pt, String baseUrl) {
+        String output;
+        String processedTemplate = template.replace("\\n", "\n");
+        output = processedTemplate.replace("{patient_name}", pt.getPerson().getNameWithTitle());
+        output = processedTemplate.replace("{base_url}", baseUrl);
+        return output;
     }
 
     public Date getSessionStartDateTime(SessionInstance session) {
@@ -324,42 +511,96 @@ public class PatientPortalController implements Serializable {
     }
 
     public void findPatients() {
-        if (patient == null) {
-            patient = new Patient();
-        }
+        System.out.println("Run Start findPatients()");
+
+        patient = new Patient();
+
         if (otpVerify) {
             searchedPatients = new ArrayList<>();
             String j;
-            Long PatientphoneNumberLong = CommonFunctions.convertStringToLongOrZero(PatientphoneNumber);
+            Long PatientphoneNumberLong = CommonFunctions.convertStringToLongOrZero(patientphoneNumber);
             Map m = new HashMap();
             j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
             m.put("pp", PatientphoneNumberLong);
             searchedPatients = patientFacade.findByJpql(j, m);
 
+            System.out.println("searchedPatients = " + searchedPatients);
+
             if (searchedPatients == null || searchedPatients.isEmpty()) {
+                patient.setPerson(new Person());
+                System.out.println("Patient not Found ( Active - Add New Patinet)");
                 selectPatient = false;
-
                 addNewPatient = true;
+            } else if (searchedPatients.size() == 1) {
+                System.out.println("Found one Patient ( Active - Set Found Patient)");
+                setPatient(searchedPatients.get(0));
+                patientSelected = true;
+                selectPatient = false;
+                addNewPatient = false;
+            } else {
+                System.out.println("Found Multiple Patients ( Active - Select Patient from List)");
+                selectPatient = true;
+                addNewPatient = false;
             }
-            selectPatient = true;
-            addNewPatient = false;
-
         }
     }
 
+    public int getOtpTimeoutMinutes() {
+        return configOptionApplicationController.getIntegerValueByKey("Patient Portal - OTP Timeout Minutes", 2);
+    }
+
+    public long getOtpExpiryEpochMs() {
+        if (otpSentTime == null) {
+            return 0;
+        }
+        return otpSentTime.getTime() + ((long) getOtpTimeoutMinutes() * 60 * 1000L);
+    }
+
     public void otpVerification() {
-        List<Sms> smss = new ArrayList<>();
-        String j;
-        Map m = new HashMap();
-        j = "select s from Sms s where s.otp=:oc";
-        m.put("oc", patientEnteredOtp);
-        smss = smsFacade.findByJpql(j, m);
-        if (smss.isEmpty() || smss.size() > 1) {
-            JsfUtil.addErrorMessage("Enter correct authentication code");
+        System.out.println("OTP Verifycation Start");
+
+        if (otpSentTime != null && System.currentTimeMillis() > getOtpExpiryEpochMs()) {
+            System.out.println("OTP Expired.");
+            JsfUtil.addErrorMessage("OTP has expired. Please request a new OTP.");
+            otp = null;
+            patientEnteredOtp = null;
+            otpSentTime = null;
             return;
+        }
+
+        String Jpql;
+        Map m = new HashMap();
+        Jpql = "select s from Sms s where s.retired =:ret and s.receipientNumber =:mobile and s.smsType =:type order by s.id desc";
+        m.put("ret", false);
+        m.put("type", MessageType.PatientPortalOTP);
+        m.put("mobile", patientphoneNumber);
+
+        Sms sms = smsFacade.findFirstByJpql(Jpql, m);
+
+        System.out.println("Last Sended SMS = " + sms);
+
+        if (sms == null) {
+            System.out.println("Authentication Request SMS not Found.");
+            otpVerify = false;
+            patientEnteredOtp = null;
+            JsfUtil.addErrorMessage("Authentication Request SMS Fail.");
         } else {
-            otpVerify = true;
-            findPatients();
+            if (patientEnteredOtp == null || patientEnteredOtp.trim().isEmpty()) {
+                System.out.println("---> OTP Code is Missing. <---");
+                JsfUtil.addErrorMessage("Enter the authentication code.");
+            } else {
+                if (patientEnteredOtp.equalsIgnoreCase(sms.getOtp())) {
+                    System.out.println("---> OTP Authentication Pass. <---");
+                    otpVerify = true;
+                    findPatients();
+                } else {
+                    System.out.println("<--- OTP Authentication Fail. --->");
+                    otpVerify = false;
+                    patientEnteredOtp = null;
+                    JsfUtil.addErrorMessage("Enter correct authentication code");
+                }
+            }
+
         }
     }
 
@@ -377,11 +618,11 @@ public class PatientPortalController implements Serializable {
     }
 
     public String getPatientphoneNumber() {
-        return PatientphoneNumber;
+        return patientphoneNumber;
     }
 
-    public void setPatientphoneNumber(String PatientphoneNumber) {
-        this.PatientphoneNumber = PatientphoneNumber;
+    public void setPatientphoneNumber(String patientphoneNumber) {
+        this.patientphoneNumber = patientphoneNumber;
     }
 
     public boolean isBookDoctor() {
@@ -614,6 +855,14 @@ public class PatientPortalController implements Serializable {
         this.selectPatient = selectPatient;
     }
 
+    public boolean isPatientSelected() {
+        return patientSelected;
+    }
+
+    public void setPatientSelected(boolean patientSelected) {
+        this.patientSelected = patientSelected;
+    }
+
     public boolean isAddNewProfile() {
         return addNewProfile;
     }
@@ -676,6 +925,38 @@ public class PatientPortalController implements Serializable {
 
     public void setCurrentPaymentGatewayTransaction(PaymentGatewayTransaction currentPaymentGatewayTransaction) {
         this.currentPaymentGatewayTransaction = currentPaymentGatewayTransaction;
+    }
+
+    public boolean isOtpSendSuccess() {
+        return otpSendSuccess;
+    }
+
+    public void setOtpSendSuccess(boolean otpSendSuccess) {
+        this.otpSendSuccess = otpSendSuccess;
+    }
+
+    public boolean isAllowLabaratory() {
+        return allowLabaratory;
+    }
+
+    public void setAllowLabaratory(boolean allowLabaratory) {
+        this.allowLabaratory = allowLabaratory;
+    }
+
+    public boolean isAllowChannellinig() {
+        return allowChannellinig;
+    }
+
+    public void setAllowChannellinig(boolean allowChannellinig) {
+        this.allowChannellinig = allowChannellinig;
+    }
+
+    public boolean isAllowNavigation() {
+        return allowNavigation;
+    }
+
+    public void setAllowNavigation(boolean allowNavigation) {
+        this.allowNavigation = allowNavigation;
     }
 
 }
