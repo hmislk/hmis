@@ -79,12 +79,16 @@
                                                     <p:outputLabel value="Collected Payment Summary" class="font-weight-bold text-center" />
                                                 </div>
                                                 <div class="col" >
-                                                    <p:commandButton 
-                                                        class="ui-button-danger mx-2" 
-                                                        ajax="false" 
-                                                        value="End the Current Shift" 
+                                                    <h:panelGroup rendered="#{financialTransactionController.handoverRequiredButNotComplete}">
+                                                        <p:message severity="warn" summary="Handover Required" detail="Please complete the handover on the handover page before ending your shift." styleClass="mx-2" />
+                                                    </h:panelGroup>
+                                                    <p:commandButton
+                                                        class="ui-button-danger mx-2"
+                                                        ajax="false"
+                                                        value="End the Current Shift"
                                                         action="#{financialTransactionController.settleShiftEnd()}"
-                                                        icon="pi pi-power-off" 
+                                                        icon="pi pi-power-off"
+                                                        disabled="#{financialTransactionController.handoverRequiredButNotComplete}"
                                                         onclick="return confirm('Are you sure you want to end the current shift?');">
                                                     </p:commandButton>
                                                 </div>

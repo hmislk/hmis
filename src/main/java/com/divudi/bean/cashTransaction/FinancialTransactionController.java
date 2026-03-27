@@ -4752,7 +4752,19 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        //ToDo: more checks for others . Will have individual issues 
+        boolean requireHandoverBeforeShiftEnd = configOptionApplicationController
+                .getBooleanValueByKey("Require Handover Before Shift End", false);
+        if (requireHandoverBeforeShiftEnd) {
+            boolean handoverComplete = hasAtLeastOneCompletedHandoverSinceShiftStart(
+                    sessionController.getLoggedUser(),
+                    nonClosedShiftStartFundBill.getCreatedAt());
+            if (!handoverComplete) {
+                JsfUtil.addErrorMessage("Handover not complete. Please complete the handover on the handover page before ending your shift.");
+                return null;
+            }
+        }
+
+        //ToDo: more checks for others . Will have individual issues
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_END_BILL);
         currentBill.setDeptId(deptId);
         currentBill.setInsId(deptId);
@@ -5722,6 +5734,40 @@ public class FinancialTransactionController implements Serializable {
         Bill firstMatch = billFacade.findFirstByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         // If there's at least one matching Bill, return true
         return firstMatch != null;
+    }
+
+    public boolean hasAtLeastOneCompletedHandoverSinceShiftStart(WebUser fromUser, Date since) {
+        if (fromUser == null || since == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select s from Bill s "
+                + "where s.retired = :ret "
+                + "and s.billTypeAtomic = :btype "
+                + "and s.fromWebUser = :fUser "
+                + "and s.completed = true "
+                + "and (s.cancelled = false or s.cancelled is null) "
+                + "and s.createdAt >= :since ";
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        params.put("fUser", fromUser);
+        params.put("since", since);
+        Bill firstMatch = billFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return firstMatch != null;
+    }
+
+    public boolean isHandoverRequiredButNotComplete() {
+        boolean requireHandoverBeforeShiftEnd = configOptionApplicationController
+                .getBooleanValueByKey("Require Handover Before Shift End", false);
+        if (!requireHandoverBeforeShiftEnd) {
+            return false;
+        }
+        if (nonClosedShiftStartFundBill == null) {
+            return false;
+        }
+        return !hasAtLeastOneCompletedHandoverSinceShiftStart(
+                sessionController.getLoggedUser(),
+                nonClosedShiftStartFundBill.getCreatedAt());
     }
 
     public void fillHandoverBillsForMeToReceive() {
@@ -8276,6 +8322,12 @@ public class FinancialTransactionController implements Serializable {
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Must Wait Until Other User Accepts All Handovers Before Closing Shift",
                 "When enabled, users must wait for recipients to accept all outgoing handovers before ending shift. Affects shift end authorization.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Require Handover Before Shift End",
+                "When enabled, users must have at least one completed and accepted handover during their current shift before they can end the shift. Default: false (backward compatible).",
                 OptionScope.APPLICATION
         ));
 
