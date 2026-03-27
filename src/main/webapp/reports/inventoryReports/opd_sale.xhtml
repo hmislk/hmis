@@ -28,10 +28,10 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputText value="&#xf073;" styleClass="fa mr-1" />
                                 <p:outputLabel value="To Date" for="toDate" class="m-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
@@ -45,8 +45,8 @@
                                 />
 
 
-                            <p:spacer width="20"/>
-
+                            
+                            <p:spacer width="10"></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
                                 <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
@@ -85,7 +85,7 @@
                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
                             </p:selectOneMenu>
 
-
+                            <p:spacer width="10"></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2" />
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3" >
@@ -102,7 +102,7 @@
                             </p:selectOneMenu>        
 
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="10"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -120,7 +120,6 @@
                             </p:selectOneMenu>
 
 
-                            <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -159,7 +158,7 @@
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
                                 </p:selectOneMenu>
-
+                                
                                 <!-- Component 3: With Institution Only --> 
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
@@ -174,7 +173,7 @@
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />
                                 </p:selectOneMenu>
-
+                                
                                 <!-- Component 4: With Both Institution and Site --> 
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
@@ -224,7 +223,7 @@
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
                                 value="Download"
-                                action="#{pharmacyReportController.exportBillsToExcel('Pharmacy Sales',pharmacyReportController.cogsBillDtos)}">
+                                action="#{pharmacyReportController.exportBillsToExcel('Pharmacy Sales Report',pharmacyReportController.cogsBillDtos)}">
                             </p:commandButton>
 
                             <p:commandButton 

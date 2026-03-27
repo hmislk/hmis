@@ -20,8 +20,8 @@
 
                     <p:panel >
                         <f:facet name="header">
-                            <i class="fa fa-money-bill-wave mt-2"/>
-                            <p:outputLabel value="Transfer Float" class="mx-2 mt-2"></p:outputLabel>
+                            <i class="fa fa-exchange-alt mt-2"/>
+                            <p:outputLabel value="Float Transfer" class="mx-2 mt-2"></p:outputLabel>
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                 <p:commandButton
                                     value="Config"
@@ -35,7 +35,7 @@
                         </f:facet>
 
                         <p:panelGrid columns="2" class="w-100" >
-                            <p:outputLabel value="Transfer To User" ></p:outputLabel>
+                            <p:outputLabel value="Transfer To" for="acStaff"></p:outputLabel>
                             <p:autoComplete
                                 completeMethod="#{webUserController.completeUser}"
                                 class="mx-2 w-100"
@@ -63,17 +63,18 @@
                                 value="#{financialTransactionController.currentBill.comments}" ></p:inputTextarea>
 
                             <p:spacer ></p:spacer>
-                            <p:commandButton 
-                                icon="fa-solid fa-check"
+                            <p:commandButton
+                                icon="fa fa-paper-plane"
                                 class="ui-button-success"
-                                value="Settle" 
-                                ajax="false" 
+                                value="Transfer Float Out"
+                                title="Finalise and send the float to the selected user"
+                                ajax="false"
                                 action="#{financialTransactionController.settleFundTransferBill()}" >
                             </p:commandButton>
 
                         </p:panelGrid>
 
-                        <p:panel header="Add Floats" >
+                        <p:panel header="Add Funds to Transfer" >
 
                             <div class="row">
                                 <div class="col-md-3">
@@ -184,10 +185,10 @@
                                 <h:panelGroup id="totals">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h:outputText value="Float List" ></h:outputText>
+                                            <h:outputText value="Funds to Transfer" ></h:outputText>
                                         </div>
                                         <div class="d-flex">
-                                            <h:outputText value=" Total Floats : " ></h:outputText>
+                                            <h:outputText value=" Transfer Total : " ></h:outputText>
                                             <p:outputLabel 
                                                 class="mx-2"
                                                 value="#{financialTransactionController.currentBill.total}" >
