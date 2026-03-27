@@ -1,0 +1,293 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="Sample Carrier Report Print" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Sample Carrier Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="sample_carrier?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+                                
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                
+                                .header{
+                                    font-size: 16px!important;
+                                }
+                                
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 landscape;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="Sample Carrier Report"/>
+                                        <h:panelGroup  rendered="#{reportsController.department ne null}">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
+                                                <h:outputText value="#{pharmacySummaryReportController.department.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-2" style="font-size:12px; flex-wrap:wrap; gap:16px;">
+    
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="From Date" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportsController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="To Date" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportsController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Institution" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.institution ? 'All institutions' : reportsController.institution.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Site" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.site ? 'All Sites' : reportsController.site.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Department" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.department ? 'All departments' : reportsController.department.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Visit Type" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportsController.visitType}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Staff" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.staff ? 'All Staffs' : reportsController.staff.person.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Investigation" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.item ? 'All investigations' : reportsController.item.name}"/>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="No" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Patient Investigation Created At" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Sending Date and Time" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Received Date and Time" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Staff" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Duration (Minutes)" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Investigation" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Patient Name" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Sample ID" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Type" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <ui:fragment rendered="#{reportsController.visitType == 'IP'}">
+                                                    <th style="font-weight: 700;">
+                                                        <h:outputText value="BHT No" style="margin-left: 1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Invoice No." style="margin-left: 1mm;"/>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{reportsController.bundle.reportTemplateRows}" var="bi" varStatus="i">
+                                                <tr>
+                                                    <td>
+                                                        <h:outputText value="#{i.index + 1}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.createdAt}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.sampleSentAt}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.receivedAt}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.sampleTransportedToLabByStaff.person.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.duration}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.investigation.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.patient.person.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(bi.patientInvestigation)}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.billItem.bill.ipOpOrCc}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <ui:fragment rendered="#{reportsController.visitType == 'IP'}">
+                                                        <td>
+                                                            <h:outputText value="#{bi.patientInvestigation.billItem.bill.patientEncounter.bhtNo}" style="margin-left: 1mm;"/>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <td>
+                                                        <h:outputText value="#{bi.patientInvestigation.billItem.bill.deptId}"
+                                                                      style="margin-left: 1mm;"
+                                                                      rendered="#{reportsController.visitType == 'OP'}"/>
+                                                        <h:outputText value="#{bi.patientInvestigation.billItem.bill.patientEncounter.finalBill.deptId}"
+                                                                      style="margin-left: 1mm;"
+                                                                      rendered="#{reportsController.visitType == 'IP'}"/>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
