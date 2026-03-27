@@ -110,6 +110,17 @@ public class NursingWorkBenchController implements Serializable {
         admissionController.setCurrent((Admission) encounter);
     }
 
+    public String navigateToNursingWorkBenchWithAdmission(Long admissionId) {
+        PatientEncounter encounter = patientEncounterFacade.find(admissionId);
+        if (encounter == null || !(encounter instanceof Admission)) {
+            JsfUtil.addErrorMessage("No Admission Found");
+            return "";
+        }
+        admissionController.setCurrent((Admission) encounter);
+        loadLists();
+        return "/nurse/index?faces-redirect=true";
+    }
+
     public String navigatetoNursingWorkBench() {
         clearData();
         loadLists();

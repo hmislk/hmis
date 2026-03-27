@@ -251,12 +251,21 @@
                                         </p:column>
                                         <p:column headerText="Actions" >
                                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 ajax="false"
                                                 class="m-1"
                                                 icon="fa fa-fw fa-bed"
+                                                title="Inpatient Dashboard"
                                                 action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1 ui-button-operating-theatre"
+                                                icon="fa fa-stethoscope"
+                                                title="Nursing WorkBench"
+                                                rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                                                action="#{nursingWorkBenchController.navigateToNursingWorkBenchWithAdmission(a.id)}">
                                             </p:commandButton>
 
                                             <p:commandButton 
