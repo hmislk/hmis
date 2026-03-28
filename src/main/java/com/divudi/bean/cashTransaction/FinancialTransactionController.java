@@ -4186,6 +4186,12 @@ public class FinancialTransactionController implements Serializable {
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
+                // Fund transfer payments are managed entirely by the drawer system.
+                // Including them here causes their negative (float out) or positive (float in)
+                // values to distort the cash total on the shift end handover page.
+                if (isFundTransferPayment(p)) {
+                    continue;
+                }
                 // Retrieve the payment handover type
                 PaymentHandover ph = p.getTransientPaymentHandover(); // Assuming a getter that returns the enum
 
@@ -4775,6 +4781,14 @@ public class FinancialTransactionController implements Serializable {
                     JsfUtil.addErrorMessage("Handover not complete. The full collection amount has not been handed over. Please complete the handover before ending your shift.");
                     return null;
                 }
+            }
+            // Also block if a handover has been created but not yet accepted by the recipient.
+            // This covers the case where all collections are already included in a pending handover
+            // (bundle.getTotal() == 0) but the recipient has not confirmed receipt yet.
+            boolean hasPendingHandover = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
+            if (hasPendingHandover) {
+                JsfUtil.addErrorMessage("Handover pending acceptance. Please wait for the recipient to accept your handover before ending your shift.");
+                return null;
             }
         }
 
