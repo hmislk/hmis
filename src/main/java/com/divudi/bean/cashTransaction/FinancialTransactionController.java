@@ -250,6 +250,7 @@ public class FinancialTransactionController implements Serializable {
 
     private Department department;
     private WebUser user;
+    private WebUser toUser;
     private Staff fromStaff;
     private Staff toStaff;
     private Department forDepartment;
@@ -2106,6 +2107,33 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToUserHandovers() {
         return "/reports/cashier_reports/handovers?faces-redirect=true";
+    }
+
+    public String navigateToHandoverStatusReport() {
+        return "/reports/cashier_reports/handover_status_report?faces-redirect=true";
+    }
+
+    public void fillHandoverStatusReport() {
+        currentBills = new ArrayDeque<>();
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select s "
+                + "from Bill s "
+                + "where (s.retired=false or s.retired is null) "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.createdAt between :fd and :td ";
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+        if (user != null) {
+            jpql += "and s.fromWebUser=:fromUser ";
+            params.put("fromUser", user);
+        }
+        if (toUser != null) {
+            jpql += "and s.toWebUser=:toUser ";
+            params.put("toUser", toUser);
+        }
+        jpql += "order by s.createdAt desc ";
+        currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public String navigateToActiveShiftsReport() {
@@ -7922,6 +7950,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
+    }
+
+    public WebUser getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(WebUser toUser) {
+        this.toUser = toUser;
     }
 
     public Staff getFromStaff() {

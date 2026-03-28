@@ -14,7 +14,7 @@
                 <h:form>
                     <p:panel  class="m-1 p-1 container-flex">
                         <f:facet name="header">
-                            <p:outputLabel value="My Shifts" />
+                            <p:outputLabel value="All Shifts" />
                         </f:facet>
 
                         <p:panelGrid layout="tabular" columns="2" class="w-100" >
@@ -69,8 +69,8 @@
                             <h:panelGroup layout="block" styleClass="form-group">
 
                                 <!-- Button to List All Shifts -->
-                                <p:commandButton 
-                                    value="List All My Shifts"
+                                <p:commandButton
+                                    value="List All Shifts"
                                     action="#{financialTransactionController.fillUserShifts}"
                                     ajax="false"
                                     styleClass="ui-button-success m-1"
@@ -87,12 +87,21 @@
                                     ></p:commandButton>
 
                                 <!-- Button to List Handover Uncompleted Bills -->
-                                <p:commandButton 
+                                <p:commandButton
                                     value="List Handover Uncompleted Bills"
                                     action="#{financialTransactionController.fillUserUncompletedShifts}"
-                                    icon="pi pi-times" 
+                                    icon="pi pi-times"
                                     ajax="false"
                                     styleClass="ui-button-danger m-1"
+                                    ></p:commandButton>
+
+                                <!-- Navigation to Handover Status Report -->
+                                <p:commandButton
+                                    value="Handover Status Report"
+                                    action="#{financialTransactionController.navigateToHandoverStatusReport()}"
+                                    icon="pi pi-chart-bar"
+                                    ajax="false"
+                                    styleClass="ui-button-info ui-button-outlined m-1"
                                     ></p:commandButton>
 
                             </h:panelGroup>
