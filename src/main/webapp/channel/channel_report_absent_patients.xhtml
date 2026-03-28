@@ -30,7 +30,7 @@
                                               multiple="true"
                                               value="#{channelReportController.paymentMethods}" class="w-100"
                                               filter="true" filterMatchMode="contains">
-                            <f:selectItems value="#{enumController.paymentMethods}" var="method"
+                            <f:selectItems value="#{enumController.paymentMethodsForChannelAbsentReport}" var="method"
                                            itemLabel="#{method.label}" itemValue="#{method}" />
                         </p:selectCheckboxMenu>
                     </p:panelGrid>
@@ -121,7 +121,7 @@
                             <p:outputLabel value="#{b.billedBill.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" />
                         </p:column>
 
-                        <p:column style="text-align: center;" >
+                        <p:column style="text-align: center;" filterMatchMode="contains" filterBy="#{b.creater.name}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Cashier Name" />
                             </f:facet>
