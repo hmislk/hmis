@@ -30,6 +30,12 @@
                             <f:facet name="header">
                                 <i class="fa fa-inbox mt-2"/>
                                 <h:outputLabel value="Incoming Float Transfers" class="mx-2" />
+                                <p:commandButton
+                                    value="View History"
+                                    icon="pi pi-history"
+                                    action="#{financialTransactionController.navigateToMyFundTransferBillsIn()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-3" />
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
                                         value="Config"
@@ -37,7 +43,7 @@
                                         title="Page Configuration Management"
                                         action="#{pageAdminController.navigateToPageAdmin('cashier/fund_transfer_bills_for_me_to_receive')}"
                                         ajax="false"
-                                        styleClass="ui-button-secondary ms-5">
+                                        styleClass="ui-button-secondary ms-3">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </f:facet>

@@ -277,6 +277,9 @@ public class FinancialTransactionController implements Serializable {
     private String fundTransferDeclineReason;
     private Date myFloatOutsFromDate;
     private Date myFloatOutsToDate;
+    private List<Bill> myFundTransferBillsIn;
+    private Date myFloatInsFromDate;
+    private Date myFloatInsToDate;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -5438,6 +5441,31 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
     }
 
+    public void fillMyFundTransferBillsIn() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.toWebUser=:toUser "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("toUser", sessionController.getLoggedUser());
+        params.put("fd", getMyFloatInsFromDate());
+        params.put("td", getMyFloatInsToDate());
+        jpql.append("order by s.createdAt desc");
+        myFundTransferBillsIn = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public String navigateToMyFundTransferBillsIn() {
+        myFloatInsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        myFloatInsToDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyFundTransferBillsIn();
+        return "/cashier/fund_transfer_bills_my_float_ins?faces-redirect=true";
+    }
+
     /**
      * Navigates to the fund transfer bill cancellation page.
      *
@@ -7131,6 +7159,36 @@ public class FinancialTransactionController implements Serializable {
 
     public void setMyFloatOutsToDate(Date myFloatOutsToDate) {
         this.myFloatOutsToDate = myFloatOutsToDate;
+    }
+
+    public List<Bill> getMyFundTransferBillsIn() {
+        return myFundTransferBillsIn;
+    }
+
+    public void setMyFundTransferBillsIn(List<Bill> myFundTransferBillsIn) {
+        this.myFundTransferBillsIn = myFundTransferBillsIn;
+    }
+
+    public Date getMyFloatInsFromDate() {
+        if (myFloatInsFromDate == null) {
+            myFloatInsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getStartOfMonth());
+        }
+        return myFloatInsFromDate;
+    }
+
+    public void setMyFloatInsFromDate(Date myFloatInsFromDate) {
+        this.myFloatInsFromDate = myFloatInsFromDate;
+    }
+
+    public Date getMyFloatInsToDate() {
+        if (myFloatInsToDate == null) {
+            myFloatInsToDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return myFloatInsToDate;
+    }
+
+    public void setMyFloatInsToDate(Date myFloatInsToDate) {
+        this.myFloatInsToDate = myFloatInsToDate;
     }
 
     // </editor-fold>
