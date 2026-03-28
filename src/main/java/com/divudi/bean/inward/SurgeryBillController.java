@@ -63,6 +63,9 @@ public class SurgeryBillController implements Serializable {
     private List<EncounterComponent> timedEncounterComponents;
     private List<DepartmentBillItems> departmentBillItems;
     private boolean duplicateConfirmationPending = false;
+    // Clinical details (no billing)
+    private EncounterComponent clinicalEncounterComponent;
+    private List<EncounterComponent> clinicalEncounterComponents;
     //////
 
     @EJB
@@ -358,6 +361,8 @@ public class SurgeryBillController implements Serializable {
         selectedSurgeryToDelete = null;
         blockingBillsForDelete = null;
         duplicateConfirmationPending = false;
+        clinicalEncounterComponent = null;
+        clinicalEncounterComponents = null;
     }
 
     public void saveProcedure() {
@@ -565,6 +570,99 @@ public class SurgeryBillController implements Serializable {
      * Creates a new instance of SurgeryBill
      */
     public SurgeryBillController() {
+    }
+
+    // -------------------------------------------------------------------------
+    // Clinical Details (Performed By / Assisted By / Anaesthesia By / Op Notes)
+    // -------------------------------------------------------------------------
+
+    public String navigateToSurgicalDetails(Bill surgery) {
+        clinicalEncounterComponent = null;
+        clinicalEncounterComponents = null;
+        this.surgeryBill = surgery;
+        fetchClinicalEncounterComponents();
+        return "/theater/surgery_clinical_details?faces-redirect=true";
+    }
+
+    private void fetchClinicalEncounterComponents() {
+        clinicalEncounterComponents = null;
+        if (surgeryBill == null || surgeryBill.getProcedure() == null
+                || surgeryBill.getProcedure().getId() == null) {
+            clinicalEncounterComponents = new ArrayList<>();
+            return;
+        }
+        String jpql = "SELECT ec FROM EncounterComponent ec"
+                + " WHERE ec.retired = false"
+                + " AND ec.patientEncounter = :proc"
+                + " AND ec.billFee IS NULL"
+                + " ORDER BY ec.orderNo";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("proc", surgeryBill.getProcedure());
+        clinicalEncounterComponents = getEncounterComponentFacade().findByJpql(jpql, params);
+    }
+
+    public void addClinicalStaff() {
+        if (surgeryBill == null || surgeryBill.getProcedure() == null) {
+            JsfUtil.addErrorMessage("No surgery selected.");
+            return;
+        }
+        if (getClinicalEncounterComponent().getStaff() == null) {
+            JsfUtil.addErrorMessage("Select Staff.");
+            return;
+        }
+        if (getClinicalEncounterComponent().getPatientEncounterComponentType() == null) {
+            JsfUtil.addErrorMessage("Select Role.");
+            return;
+        }
+        clinicalEncounterComponent.setOrderNo(getClinicalEncounterComponents().size());
+        clinicalEncounterComponent.setPatientEncounter(surgeryBill.getProcedure());
+        clinicalEncounterComponent.setCreatedAt(new Date());
+        clinicalEncounterComponent.setCreater(getSessionController().getLoggedUser());
+        getEncounterComponentFacade().create(clinicalEncounterComponent);
+        getClinicalEncounterComponents().add(clinicalEncounterComponent);
+        clinicalEncounterComponent = null;
+        JsfUtil.addSuccessMessage("Staff member added.");
+    }
+
+    public void removeClinicalStaff(EncounterComponent ec) {
+        ec.setRetired(true);
+        ec.setRetiredAt(new Date());
+        ec.setRetirer(getSessionController().getLoggedUser());
+        getEncounterComponentFacade().edit(ec);
+        getClinicalEncounterComponents().remove(ec);
+        JsfUtil.addSuccessMessage("Removed.");
+    }
+
+    public void saveSurgicalDetails() {
+        if (surgeryBill == null || surgeryBill.getProcedure() == null) {
+            JsfUtil.addErrorMessage("No surgery selected.");
+            return;
+        }
+        PatientEncounter proc = surgeryBill.getProcedure();
+        getPatientEncounterFacade().edit(proc);
+        JsfUtil.addSuccessMessage("Surgical details saved.");
+    }
+
+    public EncounterComponent getClinicalEncounterComponent() {
+        if (clinicalEncounterComponent == null) {
+            clinicalEncounterComponent = new EncounterComponent();
+        }
+        return clinicalEncounterComponent;
+    }
+
+    public void setClinicalEncounterComponent(EncounterComponent clinicalEncounterComponent) {
+        this.clinicalEncounterComponent = clinicalEncounterComponent;
+    }
+
+    public List<EncounterComponent> getClinicalEncounterComponents() {
+        if (clinicalEncounterComponents == null) {
+            fetchClinicalEncounterComponents();
+        }
+        return clinicalEncounterComponents;
+    }
+
+    public void setClinicalEncounterComponents(List<EncounterComponent> clinicalEncounterComponents) {
+        this.clinicalEncounterComponents = clinicalEncounterComponents;
     }
 
     public Bill getSurgeryBill() {
