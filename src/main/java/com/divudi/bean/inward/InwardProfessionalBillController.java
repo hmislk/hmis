@@ -873,6 +873,12 @@ public class InwardProfessionalBillController implements Serializable {
         return "/theater/surgery_professional_fees_list?faces-redirect=true";
     }
 
+    public String navigateToSurgeryProfessionalFeeCancel(Bill profFeeBill) {
+        inwardSearch.setBill(profFeeBill);
+        inwardSearch.setComment(null);
+        return "/theater/surgery_professional_fees_cancel?faces-redirect=true";
+    }
+
     private void fetchSurgeryProfessionalFeeBills() {
         surgeryProfessionalFeeBills = null;
         if (selectedSurgeryBill == null) {

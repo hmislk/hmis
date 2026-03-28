@@ -71,7 +71,7 @@
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton
-                                    value="Save Bill"
+                                    value="Settle Bill"
                                     ajax="false"
                                     icon="fa fa-save"
                                     class="ui-button-success"
@@ -101,15 +101,13 @@
                                     </p:commandButton>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                    <p:commandButton
-                                        value="Surgery WorkBench"
-                                        ajax="false"
-                                        action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
-                                        class="ui-button-operating-theatre"
-                                        icon="fa fa-arrow-left">
-                                    </p:commandButton>
-                                </h:panelGroup>
+                                <p:commandButton
+                                    value="Surgery WorkBench"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
@@ -133,17 +131,6 @@
                                     <h:outputText value="Add Professional Fee" class="mx-4"/>
                                 </f:facet>
                                 <h:panelGrid columns="2" id="profPanel">
-                                    <h:outputLabel value="Performance"/>
-                                    <p:selectOneMenu class="mx-4 my-1" style="width: 565px"
-                                                     value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}">
-                                        <f:selectItem itemLabel="Please select Performance"/>
-                                        <f:selectItems value="#{enumController.patientEncounterComponentTypes}"/>
-                                    </p:selectOneMenu>
-
-                                    <h:outputLabel value="Description"/>
-                                    <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="txtDes"
-                                                 value="#{inwardProfessionalBillController.proEncounterComponent.description}"/>
-
                                     <h:outputText value="Speciality"/>
                                     <p:autoComplete forceSelection="true" id="cmbSpe"
                                                     value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}"
@@ -161,6 +148,10 @@
                                                     style="width: 400px;" class="mx-4 my-1">
                                         <f:ajax event="itemSelect" execute="cmbDoc" render="pIxAdd"/>
                                     </p:autoComplete>
+
+                                    <h:outputLabel value="Description"/>
+                                    <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="txtDes"
+                                                 value="#{inwardProfessionalBillController.proEncounterComponent.description}"/>
 
                                     <h:outputLabel value="Fee"/>
                                     <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="prof"
@@ -182,7 +173,7 @@
                         <f:facet name="header">
                             <h:outputText styleClass="fas fa-list-check"/>
                             <h:outputText value="Current Bill — Unsaved Fees" class="mx-2"/>
-                            <h:outputText value=" (click 'Save Bill' to save as a new bill)"
+                            <h:outputText value=" (click 'Settle Bill' to save as a new bill)"
                                           style="font-style: italic; font-size: 0.9em; color: #888;"/>
                         </f:facet>
 

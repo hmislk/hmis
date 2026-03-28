@@ -98,15 +98,13 @@
                                     </p:commandButton>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                    <p:commandButton
-                                        value="Surgery WorkBench"
-                                        ajax="false"
-                                        action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
-                                        class="ui-button-operating-theatre"
-                                        icon="fa fa-arrow-left">
-                                    </p:commandButton>
-                                </h:panelGroup>
+                                <p:commandButton
+                                    value="Surgery WorkBench"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
@@ -120,6 +118,7 @@
 
                     <p:dataTable value="#{inwardProfessionalBillController.surgeryProfessionalFeeBills}" var="profBill"
                                  emptyMessage="No professional fee bills found for this surgery."
+                                 rowKey="#{profBill.id}"
                                  rowExpandMode="single">
 
                         <p:column style="width:32px">
@@ -167,8 +166,7 @@
                                 class="ui-button-danger"
                                 ajax="false"
                                 rendered="#{!profBill.cancelled}"
-                                action="#{inwardProfessionalBillController.cancelSurgeryProfessionalFeeBill(profBill)}"
-                                onclick="return confirm('Cancel this professional fee bill? This cannot be undone.');">
+                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeeCancel(profBill)}">
                             </p:commandButton>
                             <h:outputLabel value="—" rendered="#{profBill.cancelled}" style="color: grey;"/>
                         </p:column>
