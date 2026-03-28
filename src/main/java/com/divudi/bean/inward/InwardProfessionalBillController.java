@@ -46,6 +46,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import com.divudi.bean.common.ConfigOptionController;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -68,6 +69,8 @@ public class InwardProfessionalBillController implements Serializable {
     AdmissionController admissionController;
     @Inject
     InwardSearch inwardSearch;
+    @Inject
+    ConfigOptionController configOptionController;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -124,6 +127,10 @@ public class InwardProfessionalBillController implements Serializable {
     List<EncounterComponent> proEncounterComponents;
     @EJB
     EncounterComponentFacade encounterComponentFacade;
+    // Print config temp fields (loaded into dialog, not persisted directly)
+    boolean profFeeA4;
+    boolean profFee5x5;
+    boolean profFeePos;
 
     public List<Staff> completeItems(String qry) {
         HashMap hm = new HashMap();
@@ -451,6 +458,26 @@ public class InwardProfessionalBillController implements Serializable {
         hm.put("bill", bill);
         return getEncounterComponentFacade().findByJpql(jpql, hm);
     }
+
+    public void loadProfFeeConfig() {
+        profFeeA4 = configOptionController.getBooleanValueByKey("Surgery Professional Fee Bill is A4Paper", true);
+        profFee5x5 = configOptionController.getBooleanValueByKey("Surgery Professional Fee Bill is FiveFivePaper", false);
+        profFeePos = configOptionController.getBooleanValueByKey("Surgery Professional Fee Bill is PosPaper", false);
+    }
+
+    public void saveProfFeeConfig() {
+        configOptionController.setBooleanValueByKey("Surgery Professional Fee Bill is A4Paper", profFeeA4);
+        configOptionController.setBooleanValueByKey("Surgery Professional Fee Bill is FiveFivePaper", profFee5x5);
+        configOptionController.setBooleanValueByKey("Surgery Professional Fee Bill is PosPaper", profFeePos);
+        JsfUtil.addSuccessMessage("Print settings saved.");
+    }
+
+    public boolean isProfFeeA4() { return profFeeA4; }
+    public void setProfFeeA4(boolean profFeeA4) { this.profFeeA4 = profFeeA4; }
+    public boolean isProfFee5x5() { return profFee5x5; }
+    public void setProfFee5x5(boolean profFee5x5) { this.profFee5x5 = profFee5x5; }
+    public boolean isProfFeePos() { return profFeePos; }
+    public void setProfFeePos(boolean profFeePos) { this.profFeePos = profFeePos; }
 
     public Bill getBatchBill() {
         return batchBill;

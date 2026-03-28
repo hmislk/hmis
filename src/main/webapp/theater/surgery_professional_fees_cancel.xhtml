@@ -104,14 +104,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <p:outputLabel value="Professional Fee Bill Cancelled" class="mt-2"/>
                             <div class="d-flex gap-2 align-items-center">
-                                <p:outputLabel value="Paper:" class="mt-1"/>
-                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}"
-                                                 style="width: 14em;">
-                                    <f:selectItem itemLabel="— Select Paper —" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItem itemLabel="A4 Paper" itemValue="A4Paper"/>
-                                    <f:selectItem itemLabel="5x5 Paper" itemValue="FiveFivePaper"/>
-                                    <f:selectItem itemLabel="POS Paper" itemValue="PosPaper"/>
-                                </p:selectOneMenu>
+                                <p:commandButton
+                                    value=""
+                                    icon="fa fa-cog"
+                                    class="ui-button"
+                                    title="Print Settings"
+                                    type="button"
+                                    onclick="PF('profFeeCancelConfigDialog').show()"/>
                                 <p:commandButton value="" icon="fa fa-sync-alt" class="ui-button" title="Redraw" ajax="false"/>
                                 <p:commandButton
                                     value="Print"
@@ -149,19 +148,19 @@
                     </f:facet>
 
                     <h:panelGroup id="gpBillPreview">
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}">
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Surgery Professional Fee Bill is A4Paper', true)}">
                             <bi:surgery_professional_fee_a4
                                 bill="#{inwardSearch.bill}"
                                 encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
                                 cancelled="true"/>
                         </h:panelGroup>
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Surgery Professional Fee Bill is FiveFivePaper', false)}">
                             <bi:surgery_professional_fee_5x5
                                 bill="#{inwardSearch.bill}"
                                 encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
                                 cancelled="true"/>
                         </h:panelGroup>
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Surgery Professional Fee Bill is PosPaper', false)}">
                             <bi:surgery_professional_fee_pos
                                 bill="#{inwardSearch.bill}"
                                 encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
@@ -170,6 +169,28 @@
                     </h:panelGroup>
 
                 </p:panel>
+
+                <!-- Print config dialog for cancel page -->
+                <p:dialog header="Print Settings" widgetVar="profFeeCancelConfigDialog" modal="true" responsive="true" style="width: 350px;">
+                    <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeCancelConfigForm"/>
+                    <h:form id="profFeeCancelConfigForm">
+                        <h:panelGrid columns="2" cellpadding="5">
+                            <h:selectBooleanCheckbox id="chkA4Cancel" value="#{inwardProfessionalBillController.profFeeA4}"/>
+                            <h:outputLabel for="chkA4Cancel" value="A4 Paper"/>
+                            <h:selectBooleanCheckbox id="chk5x5Cancel" value="#{inwardProfessionalBillController.profFee5x5}"/>
+                            <h:outputLabel for="chk5x5Cancel" value="5x5 Inch Paper"/>
+                            <h:selectBooleanCheckbox id="chkPosCancel" value="#{inwardProfessionalBillController.profFeePos}"/>
+                            <h:outputLabel for="chkPosCancel" value="POS Paper"/>
+                        </h:panelGrid>
+                        <p:commandButton
+                            value="Save"
+                            icon="fa fa-save"
+                            class="ui-button-success mt-2"
+                            ajax="false"
+                            action="#{inwardProfessionalBillController.saveProfFeeConfig()}"
+                            onclick="PF('profFeeCancelConfigDialog').hide()"/>
+                    </h:form>
+                </p:dialog>
 
             </h:form>
         </h:panelGroup>
