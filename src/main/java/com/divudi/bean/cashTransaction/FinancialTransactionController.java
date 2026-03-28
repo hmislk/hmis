@@ -5065,43 +5065,17 @@ public class FinancialTransactionController implements Serializable {
             return null;
         }
 
-        // Check for pending transactions before allowing handover creation
-        boolean restrictHandoverWhenIncomingFundTransfers = configOptionApplicationController
-                .getBooleanValueByKey("Restrict Handover When Incoming Fund Transfers Exist", false);
-        boolean restrictHandoverWhenIncomingHandovers = configOptionApplicationController
-                .getBooleanValueByKey("Restrict Handover When Incoming Handovers Exist", false);
-        boolean restrictHandoverWhenOutgoingFundTransfers = configOptionApplicationController
-                .getBooleanValueByKey("Restrict Handover When Outgoing Fund Transfers Exist", false);
-        boolean restrictHandoverWhenOutgoingHandovers = configOptionApplicationController
-                .getBooleanValueByKey("Restrict Handover When Outgoing Handovers Exist", false);
-
-        if (restrictHandoverWhenIncomingFundTransfers) {
-            boolean hasIncomingFundTransfers = hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
-            if (hasIncomingFundTransfers) {
-                JsfUtil.addErrorMessage("Cannot create handover: You have pending fund transfers to receive. Please accept them first before creating a handover.");
-                return null;
-            }
-        }
-
-        if (restrictHandoverWhenIncomingHandovers) {
-            boolean hasIncomingHandovers = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
-            if (hasIncomingHandovers) {
+        // Config-gated checks for pending shift handovers (fund-transfer checks are handled
+        // by the mandatory blocks above and do not need to be repeated here)
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover When Incoming Handovers Exist", false)) {
+            if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
                 JsfUtil.addErrorMessage("Cannot create handover: You have pending handovers to receive. Please accept them first before creating a handover.");
                 return null;
             }
         }
 
-        if (restrictHandoverWhenOutgoingFundTransfers) {
-            boolean hasOutgoingFundTransfers = hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null);
-            if (hasOutgoingFundTransfers) {
-                JsfUtil.addErrorMessage("Cannot create handover: You have outgoing fund transfers pending acceptance. Please wait for recipients to accept them before creating a handover.");
-                return null;
-            }
-        }
-
-        if (restrictHandoverWhenOutgoingHandovers) {
-            boolean hasOutgoingHandovers = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
-            if (hasOutgoingHandovers) {
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover When Outgoing Handovers Exist", false)) {
+            if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
                 JsfUtil.addErrorMessage("Cannot create handover: You have outgoing handovers pending acceptance. Please wait for recipients to accept them before creating a handover.");
                 return null;
             }
