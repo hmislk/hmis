@@ -11,14 +11,14 @@
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="My Float Outs">
+                    <p:panel header="My Float Ins">
                         <div class="row mb-3">
                             <div class="col-md-3">
                                 <h:outputLabel value="From Date" class="fw-bold" />
                                 <p:datePicker
                                     id="fromDate"
                                     showTime="true"
-                                    value="#{financialTransactionController.myFloatOutsFromDate}"
+                                    value="#{financialTransactionController.myFloatInsFromDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     class="w-100" />
                             </div>
@@ -27,7 +27,7 @@
                                 <p:datePicker
                                     id="toDate"
                                     showTime="true"
-                                    value="#{financialTransactionController.myFloatOutsToDate}"
+                                    value="#{financialTransactionController.myFloatInsToDate}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     class="w-100" />
                             </div>
@@ -35,15 +35,23 @@
                                 <p:commandButton
                                     value="Search"
                                     icon="pi pi-search"
-                                    action="#{financialTransactionController.fillMyFundTransferBillsOut()}"
-                                    update="tblMyFloatOuts"
-                                    class="ui-button-primary" />
+                                    action="#{financialTransactionController.fillMyFundTransferBillsIn()}"
+                                    update="tblMyFloatIns"
+                                    styleClass="ui-button-primary" />
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end justify-content-end">
+                                <p:commandButton
+                                    value="Pending Transfers"
+                                    icon="fa fa-inbox"
+                                    action="#{financialTransactionController.navigateBackToMyFloatIns()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary" />
                             </div>
                         </div>
 
                         <p:dataTable
-                            id="tblMyFloatOuts"
-                            value="#{financialTransactionController.myFundTransferBillsOut}"
+                            id="tblMyFloatIns"
+                            value="#{financialTransactionController.myFundTransferBillsIn}"
                             var="bp"
                             rowKey="#{bp.id}"
                             emptyMessage="No float transfers found for the selected period"
@@ -55,14 +63,14 @@
                                 <h:outputText value="#{bp.deptId}" />
                             </p:column>
 
-                            <p:column headerText="Created At">
+                            <p:column headerText="Received At">
                                 <h:outputText value="#{bp.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="To User">
-                                <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}" />
+                            <p:column headerText="From User">
+                                <h:outputText value="#{bp.fromWebUser.webUserPerson.nameWithTitle}" />
                             </p:column>
 
                             <p:column headerText="Amount" style="text-align: right;">
@@ -79,32 +87,24 @@
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bp.cancelled and bp.cancelledBill ne null and bp.cancelledBill.billTypeAtomic ne null and bp.cancelledBill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL_DECLINED'}">
-                                    <span class="badge bg-danger">Declined by Recipient</span>
+                                    <span class="badge bg-danger">Declined by You</span>
                                     <h:panelGroup rendered="#{not empty bp.cancelledBill.comments}">
                                         <br />
                                         <small class="text-muted"><i class="pi pi-info-circle me-1" /><h:outputText value="#{bp.cancelledBill.comments}" /></small>
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bp.cancelled and (bp.cancelledBill eq null or bp.cancelledBill.billTypeAtomic eq null or bp.cancelledBill.billTypeAtomic.name() ne 'FUND_TRANSFER_BILL_DECLINED')}">
-                                    <span class="badge bg-secondary">Cancelled</span>
+                                    <span class="badge bg-secondary">Cancelled by Sender</span>
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Actions" style="width: 200px;">
+                            <p:column headerText="Actions">
                                 <p:commandButton
                                     value="View"
                                     icon="pi pi-eye"
                                     action="#{financialTransactionController.navigateToViewFundTransferBill(bp)}"
                                     ajax="false"
-                                    class="ui-button-info ui-button-sm me-1" />
-
-                                <p:commandButton
-                                    value="Cancel"
-                                    icon="pi pi-times"
-                                    action="#{financialTransactionController.navigateToFundTransferBillCancel(bp)}"
-                                    ajax="false"
-                                    rendered="#{bp.referenceBill eq null and not bp.cancelled}"
-                                    class="ui-button-danger ui-button-sm" />
+                                    styleClass="ui-button-info ui-button-sm" />
                             </p:column>
 
                         </p:dataTable>
