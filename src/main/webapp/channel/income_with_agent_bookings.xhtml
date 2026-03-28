@@ -167,11 +167,11 @@
                                     <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
                                 </p:column>
 
-                                <p:column headerText="Bill Type" style=" text-align: center;">
+<!--                                <p:column headerText="Bill Type" style=" text-align: center;">
                                     <h:outputText value="#{row.bill.billType}"/>
-                                </p:column>
+                                </p:column>-->
 
-                                <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
+                                <p:column headerText="Patient" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
                                     <h:outputText value="#{row.bill.patient.person.name}"/>
                                 </p:column>
 
