@@ -1491,9 +1491,6 @@ public class InwardSearch implements Serializable {
             }
 
             cancelBillComponents(can, b);
-            if (getBill().getSurgeryBillType() != null) {
-                retireEncounterComponents();
-            }
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);

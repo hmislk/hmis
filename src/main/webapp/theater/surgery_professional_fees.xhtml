@@ -138,7 +138,7 @@
                                                     completeMethod="#{specialityController.completeSpeciality}" var="sp"
                                                     itemLabel="#{sp.name}"
                                                     itemValue="#{sp}" size="70" style="width: 400px;" class="mx-4 my-1">
-                                        <f:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc pIxAdd"/>
+                                        <p:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc"/>
                                     </p:autoComplete>
 
                                     <h:outputText value="Doctor/Staff"/>
@@ -147,7 +147,6 @@
                                                     completeMethod="#{inwardProfessionalBillController.completeItems}" var="st"
                                                     itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="70"
                                                     style="width: 400px;" class="mx-4 my-1">
-                                        <f:ajax event="itemSelect" execute="cmbDoc" render="pIxAdd"/>
                                     </p:autoComplete>
 
                                     <h:outputLabel value="Description"/>
@@ -244,13 +243,13 @@
                             <p:outputLabel value="Professional Fee Bill Settled" class="mt-2"/>
                             <div class="d-flex gap-2 align-items-center">
                                 <p:commandButton
-                                    value=""
+                                    value="Settings"
                                     icon="fa fa-cog"
                                     class="ui-button"
                                     title="Print Settings"
                                     type="button"
                                     onclick="PF('profFeeSettleConfigDialog').show()"/>
-                                <p:commandButton value="" icon="fa fa-sync-alt" class="ui-button" title="Redraw" ajax="false"/>
+                                <p:commandButton value="Redraw" icon="fa fa-sync-alt" class="ui-button" title="Redraw" ajax="false"/>
                                 <p:commandButton
                                     value="Print"
                                     icon="fa fa-print"
