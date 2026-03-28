@@ -103,7 +103,23 @@
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center">
                             <p:outputLabel value="Professional Fee Bill Cancelled" class="mt-2"/>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:outputLabel value="Paper:" class="mt-1"/>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}"
+                                                 style="width: 14em;">
+                                    <f:selectItem itemLabel="— Select Paper —" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="A4 Paper" itemValue="A4Paper"/>
+                                    <f:selectItem itemLabel="5x5 Paper" itemValue="FiveFivePaper"/>
+                                    <f:selectItem itemLabel="POS Paper" itemValue="PosPaper"/>
+                                </p:selectOneMenu>
+                                <p:commandButton value="" icon="fa fa-sync-alt" class="ui-button" title="Redraw" ajax="false"/>
+                                <p:commandButton
+                                    value="Print"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    ajax="false">
+                                    <p:printer target="gpBillPreview"/>
+                                </p:commandButton>
                                 <p:commandButton
                                     value="Prof. Fee List"
                                     icon="fa fa-list"
@@ -128,20 +144,28 @@
                                             target="#{admissionController.current}"/>
                                     </p:commandButton>
                                 </h:panelGroup>
-                                <p:commandButton
-                                    value="Print"
-                                    icon="fa fa-print"
-                                    class="ui-button-info"
-                                    ajax="false">
-                                    <p:printer target="gpBillPreview"/>
-                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
 
                     <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}">
+                            <bi:surgery_professional_fee_a4
+                                bill="#{inwardSearch.bill}"
+                                encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
+                                cancelled="true"/>
+                        </h:panelGroup>
                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                            <bi:cancel_professional_fee_5x5 bill="#{inwardSearch.bill}"/>
+                            <bi:surgery_professional_fee_5x5
+                                bill="#{inwardSearch.bill}"
+                                encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
+                                cancelled="true"/>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}">
+                            <bi:surgery_professional_fee_pos
+                                bill="#{inwardSearch.bill}"
+                                encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
+                                cancelled="true"/>
                         </h:panelGroup>
                     </h:panelGroup>
 
