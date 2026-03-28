@@ -54,6 +54,28 @@ public String cancelBill() {
 }
 ```
 
+## ⚠️ EncounterComponent — Do NOT Retire on Cancellation
+
+`EncounterComponent` records linked to a bill must **never be `retired=true`** during bill cancellation.
+
+- `retired` is a **soft-delete flag** for admin use only (like removing a record entirely)
+- When a bill is cancelled, `bill.cancelled=true` plus the `CancelledBill` entity are the correct signals
+- Retiring encounter components on cancel breaks the cancel print page — the fee lines query (`retired=false`) returns nothing, so the cancelled bill appears with a correct total but empty fee rows
+
+**Specifically:** `InwardSearch.cancelBillItems()` previously called `retireEncounterComponents()` for surgery bills — this was wrong and has been removed. Do not re-introduce it.
+
+**Correct pattern:**
+```java
+// ✅ Bill cancellation signals:
+bill.setCancelled(true);
+bill.setCancelledBill(cancelledBill);
+billFacade.edit(bill);
+// EncounterComponents are left untouched — they remain retired=false
+
+// ❌ Never do this on cancel:
+encounterComponent.setRetired(true); // retire = admin soft-delete, not cancel
+```
+
 ### BillTypeAtomic Configuration
 
 ```java

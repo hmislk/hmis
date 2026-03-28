@@ -4,6 +4,22 @@
 
 The Printer Configuration System provides a unified interface for managing paper formats and printer settings across various operations. This system centralizes printer configurations for receipts, bills, and reports, making it easier for administrators to control paper types without code changes.
 
+## ⚠️ Deprecated Pattern — Do Not Use
+
+**`p:selectOneMenu` / `sessionController.departmentPreference.opdBillPaperType` for paper selection is DEPRECATED.**
+
+Do NOT add new print pages using this pattern:
+```xhtml
+<!-- ❌ OLD — do not use -->
+<p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}">
+    <f:selectItem itemLabel="A4 Paper" itemValue="A4Paper"/>
+    <f:selectItem itemLabel="5x5 Paper" itemValue="FiveFivePaper"/>
+    <f:selectItem itemLabel="POS Paper" itemValue="PosPaper"/>
+</p:selectOneMenu>
+```
+
+**All new print pages must use the config button pattern** described below — a gear/settings button that opens a `p:dialog` with `h:selectBooleanCheckbox` options, persisted per department via `configOptionController`.
+
 ## Architecture
 
 ### Core Components
