@@ -4782,6 +4782,14 @@ public class FinancialTransactionController implements Serializable {
                     return null;
                 }
             }
+            // Also block if a handover has been created but not yet accepted by the recipient.
+            // This covers the case where all collections are already included in a pending handover
+            // (bundle.getTotal() == 0) but the recipient has not confirmed receipt yet.
+            boolean hasPendingHandover = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
+            if (hasPendingHandover) {
+                JsfUtil.addErrorMessage("Handover pending acceptance. Please wait for the recipient to accept your handover before ending your shift.");
+                return null;
+            }
         }
 
         //ToDo: more checks for others . Will have individual issues
