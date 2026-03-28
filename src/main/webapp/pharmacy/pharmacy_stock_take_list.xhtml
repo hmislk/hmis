@@ -133,13 +133,17 @@
                                     emptyMessage="No bills found."
                                     sortMode="multiple">
 
+                                    <p:column headerText="ID" sortBy="#{d.id}" style="width: 90px; text-align: right;">
+                                        <h:outputText value="#{d.id}" style="font-family: monospace;"/>
+                                    </p:column>
+
                                     <p:column headerText="Bill No" sortBy="#{d.deptId}" filterBy="#{d.deptId}" style="width: 160px;">
                                         <h:outputText value="#{d.deptId}" style="font-family: monospace;"/>
                                     </p:column>
 
-                                    <p:column headerText="Date" sortBy="#{d.createdAt}" style="width: 140px; text-align:center;">
+                                    <p:column headerText="Date" sortBy="#{d.createdAt}" style="width: 170px; text-align:center;">
                                         <h:outputText value="#{d.createdAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
                                     </p:column>
 

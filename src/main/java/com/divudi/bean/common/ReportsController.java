@@ -1,6 +1,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.ManagementReport;
@@ -119,6 +121,10 @@ public class ReportsController implements Serializable {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PharmacyController pharmacyController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
 
     /**
      * Properties
@@ -1959,7 +1965,183 @@ public class ReportsController implements Serializable {
         b.calculateTotalsWithCredit();
         return b;
     }
+    
+    private String fmt(Object v) {
+        if (v == null) return "-";
+        if (v instanceof BigDecimal) {
+            return ((BigDecimal) v).setScale(2, RoundingMode.HALF_UP).toString();
+        }
+        if (v instanceof Number) {
+            return String.format("%,.2f", ((Number) v).doubleValue());
+        }
+        return v.toString();
+    }
+    
+    private com.itextpdf.text.pdf.PdfPCell textCell(String text, com.itextpdf.text.Font font) {
+        com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(text == null ? "-" : text, font));
+        cell.setPadding(2f); // smaller padding
+        cell.setVerticalAlignment(com.itextpdf.text.Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_LEFT);
+        return cell;
+    }
+    
+    private com.itextpdf.text.pdf.PdfPCell numCell(Object val, com.itextpdf.text.Font font) {
+        String s = fmt(val);   // your existing formatter
 
+        com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(s, font));
+        cell.setPadding(2f);
+        cell.setVerticalAlignment(com.itextpdf.text.Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+        return cell;
+    }
+    
+      // Filters for sample_carrier_report
+    public Map<String, Object> getFiltersForSampleCarrierReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", sdf.format(getFromDate()));
+        filters.put("To Date", sdf.format(getToDate()));
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Visit Type",visitType);
+        filters.put("Staff",staff != null ? staff.getPerson().getName() : "All");
+        filters.put("Investigation",item != null ? item.getName() : "All");
+        return filters;
+    }
+    
+    public void exportSampleCarrierReportToPDF() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Sample_Carrier_Report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Sample_Carrier.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Sample Carrier Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+            
+            boolean isVisitOP = "OP".equals(visitType);
+
+            int columnCount =isVisitOP  ? 10 : 11;
+            Map<String, Object> filters = getFiltersForSampleCarrierReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            if (isVisitOP){
+                headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Received Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "Invoice No."};
+                columnWidths = new float[]{2f, 2f, 2f, 3f, 2f, 3f, 3f, 2f,1f,3f};
+            } else{
+                headers = new String[]{"Patient Investigation Created at", "Sending Date and Time", "Received Date and Time", "Staff", "Duration (Minutes)","Investigation","Patient Name","Sample ID", "Type", "BHT No.","Invoice No."};
+                columnWidths = new float[]{2f, 2f, 2f, 3f, 2f, 3f, 3f, 2f,1f,2f,3f};
+            }
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            // list of the sanple carrier reports
+            List<ReportTemplateRow> rows = bundle.getReportTemplateRows();
+            for (ReportTemplateRow row : rows) {
+                table.addCell(textCell(row.getPatientInvestigation().getCreatedAt() != null ? sdf.format(row.getPatientInvestigation().getCreatedAt() ) : "-",bodyFontSmall));
+                table.addCell(textCell(row.getPatientInvestigation().getSampleSentAt() != null ? sdf.format(row.getPatientInvestigation().getSampleSentAt()  ) : "-",bodyFontSmall));
+                table.addCell(textCell(row.getPatientInvestigation().getReceivedAt() != null ? sdf.format(row.getPatientInvestigation().getReceivedAt() ) : "-",bodyFontSmall));
+                table.addCell(textCell(row.getPatientInvestigation().getSampleTransportedToLabByStaff().getPerson().getName(), bodyFontSmall));
+                table.addCell(textCell(String.valueOf(row.getDuration()), bodyFontSmall));
+                
+                table.addCell(textCell(row.getPatientInvestigation().getInvestigation().getName(),bodyFontSmall));
+                table.addCell(textCell(row.getPatientInvestigation().getPatient().getPerson().getName(),bodyFontSmall));
+                table.addCell(textCell(patientInvestigationController.getPatientSamplesByInvestigationAsString(row.getPatientInvestigation()),bodyFontSmall));
+                table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc(),bodyFontSmall));
+                if (!isVisitOP){
+                   table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getBhtNo(),bodyFontSmall)); 
+                   String invoiceNumber = row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill() != null ? row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill().getDeptId() : "_";
+                   table.addCell(textCell( invoiceNumber,bodyFontSmall)); 
+                } else {
+                    table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getDeptId(),bodyFontSmall));
+                }    
+            }
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+        } 
+    }
+    
+    public String fromDateFormatted(){
+        return new SimpleDateFormat("dd_MM_yyyy").format(getFromDate());
+    }
+    
+    public String toDateFormatted(){
+        return new SimpleDateFormat("dd_MM_yyyy").format(getToDate());
+    }
+    
+    // PostProcessor for bill_wise_item_movement_report excel export
+    public void postProcessSampleCarrierReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Sample Carrier Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForSampleCarrierReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Sample Carrier Report", filters);
+        }
+    }
+    
     public void generatePackageReport() {
         reportTimerController.trackReportExecution(() -> {
             bundle = new ReportTemplateRowBundle();

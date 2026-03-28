@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.entity.Institution;
 
 import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.entity.Patient;
@@ -59,6 +60,8 @@ public class RoomChangeController implements Serializable {
     @Inject
     BhtSummeryController bhtSummeryController;
     @Inject
+    AdmissionController admissionController;
+    @Inject
     NotificationController notificationController;
     @Inject
     private InwardBeanController inwardBean;
@@ -81,6 +84,7 @@ public class RoomChangeController implements Serializable {
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
+    private Institution institution;
     private List<Patient> patientList;
     String selectText = "";
     private RoomFacilityCharge newRoomFacilityCharge;
@@ -106,6 +110,26 @@ public class RoomChangeController implements Serializable {
 
     public void setNewPrimeConsultant(Consultant newPrimeConsultant) {
         this.newPrimeConsultant = newPrimeConsultant;
+    }
+
+    public List<Admission> completePatientByInstitution(String query) {
+        return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
+    }
+
+    public List<Admission> completePatientFromWaitingRoomByInstitution(String query) {
+        return admissionController.completePatientFromWaitingRoomByInstitution(query, getInstitution());
+    }
+
+    public void onInstitutionChange() {
+        recreate();
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
 // Helper method to save consultant information
@@ -178,6 +202,7 @@ public class RoomChangeController implements Serializable {
     public String navigateToAdmitRoomFromMenu() {
         setCurrent(null);
         setCurrentPatientRoom(null);
+        institution = sessionController.getInstitution();
         return "/inward/admit_room?faces-redirect=true";
     }
 

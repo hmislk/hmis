@@ -80,6 +80,8 @@ public enum Privileges {
     WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
+    InwardRoomTransferInitiate("Inward Room Transfer Initiate"),
+    InwardRoomPatientAccept("Inward Room Patient Accept"),
     InwardServicesAndItems("Inward Services and Items"),
     InwardServicesAndItemsAddServices("Inward Add Services"),
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
@@ -116,6 +118,7 @@ public enum Privileges {
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
+    InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -1009,8 +1012,9 @@ public enum Privileges {
             case InwardAppointmentAdmission:
             case InwardAppointmentUpdate:
             case InwardAppointmentCancel:
+            case InpatientClinicalAssessment:
                 return "Inward";
-                
+
             default:
                 return this.toString();
         }

@@ -5,6 +5,10 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <f:metadata>
+        <f:viewParam name="billId" value="#{pharmacyStockTakeController.viewBillId}"/>
+        <f:event type="preRenderView" listener="#{pharmacyStockTakeController.onPreRenderView}"/>
+    </f:metadata>
     <h:head />
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
@@ -152,11 +156,11 @@
                                             <!-- Filtered download section -->
                                             <div class="card mt-3">
                                                 <div class="card-header">
-                                                    <h:outputText value="Download by Category / Dosage Form" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
+                                                    <h:outputText value="Download by Category / Dosage Form / Department Type" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
                                                 </div>
                                                 <div class="card-body">
                                                     <div class="row mb-2">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <h:outputLabel for="categoryFilter" value="Category (optional):" styleClass="form-label font-weight-bold"/>
                                                             <p:autoComplete id="categoryFilter"
                                                                             value="#{pharmacyStockTakeController.selectedCategory}"
@@ -174,7 +178,7 @@
                                                                 <p:ajax event="itemUnselect" update="filteredDownloadButtons"/>
                                                             </p:autoComplete>
                                                         </div>
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-4">
                                                             <h:outputLabel for="dosageFormFilter" value="Dosage Form (optional):" styleClass="form-label font-weight-bold"/>
                                                             <p:autoComplete id="dosageFormFilter"
                                                                             value="#{pharmacyStockTakeController.selectedDosageForm}"
@@ -192,6 +196,19 @@
                                                                 <p:ajax event="itemUnselect" update="filteredDownloadButtons"/>
                                                             </p:autoComplete>
                                                         </div>
+                                                        <div class="col-lg-4">
+                                                            <h:outputLabel for="departmentTypeFilter" value="Department Type (optional):" styleClass="form-label font-weight-bold"/>
+                                                            <p:selectOneMenu id="departmentTypeFilter"
+                                                                             value="#{pharmacyStockTakeController.selectedDepartmentType}"
+                                                                             styleClass="w-100">
+                                                                <f:selectItem itemLabel="-- All --" itemValue="#{null}" noSelectionOption="true"/>
+                                                                <f:selectItems value="#{pharmacyStockTakeController.availableDepartmentTypes}"
+                                                                               var="dt"
+                                                                               itemLabel="#{dt.label}"
+                                                                               itemValue="#{dt}"/>
+                                                                <p:ajax update="filteredDownloadButtons"/>
+                                                            </p:selectOneMenu>
+                                                        </div>
                                                     </div>
                                                     <div class="row mt-2">
                                                         <div class="col-12">
@@ -200,14 +217,14 @@
                                                                                  ajax="false"
                                                                                  styleClass="ui-button-success mx-1"
                                                                                  icon="fa fa-download"
-                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null}">
+                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null and pharmacyStockTakeController.selectedDepartmentType == null}">
                                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadFilteredGuidedSheet}" />
                                                                 </p:commandButton>
                                                                 <p:commandButton value="Download Blind Sheet"
                                                                                  ajax="false"
                                                                                  styleClass="ui-button-warning mx-1"
                                                                                  icon="fa fa-download"
-                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null}">
+                                                                                 disabled="#{pharmacyStockTakeController.selectedCategory == null and pharmacyStockTakeController.selectedDosageForm == null and pharmacyStockTakeController.selectedDepartmentType == null}">
                                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadFilteredBlindSheet}" />
                                                                 </p:commandButton>
                                                             </h:panelGroup>

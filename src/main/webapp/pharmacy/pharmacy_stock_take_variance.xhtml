@@ -108,6 +108,12 @@
                                             <p:column headerText="Code" style="min-width: 100px;">
                                                 <h:outputText value="#{r.code}"/>
                                             </p:column>
+                                            <p:column headerText="Category" sortBy="#{r.category}" filterBy="#{r.category}" filterMatchMode="contains" style="width: 120px;">
+                                                <h:outputText value="#{r.category}"/>
+                                            </p:column>
+                                            <p:column headerText="Dosage Form" sortBy="#{r.dosageForm}" filterBy="#{r.dosageForm}" filterMatchMode="contains" style="width: 120px;">
+                                                <h:outputText value="#{r.dosageForm}"/>
+                                            </p:column>
                                             <p:column headerText="Item" style="min-width: 220px;">
                                                 <h:outputText value="#{r.itemName}"/>
                                             </p:column>

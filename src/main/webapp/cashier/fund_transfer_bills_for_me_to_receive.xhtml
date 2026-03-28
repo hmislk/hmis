@@ -28,7 +28,8 @@
                     <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" >
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputLabel value="Floats for me to Receive" class="mx-2" />
+                                <i class="fa fa-inbox mt-2"/>
+                                <h:outputLabel value="Incoming Float Transfers" class="mx-2" />
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
                                         value="Config"
@@ -51,12 +52,14 @@
                                 selectionMode="single"
                                 selection="#{financialTransactionController.selectedBill}">
 
-                                <p:column headerText="Staff">
+                                <p:column headerText="Transferred From">
                                     <h:outputText value="#{bp.staff.person.nameWithTitle}" />
                                 </p:column>
 
-                                <p:column headerText="Created At">
-                                    <h:outputText value="#{bp.createdAt}" />
+                                <p:column headerText="Transfer Date/Time">
+                                    <h:outputText value="#{bp.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Payments">
@@ -73,17 +76,20 @@
                                     </ui:repeat>
                                 </p:column>
 
-                                <p:column headerText="Net Total">
-                                    <h:outputText value="#{bp.netTotal}" />
+                                <p:column headerText="Net Total" styleClass="text-end">
+                                    <h:outputText value="#{bp.absoluteNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Actions" >
-                                    <p:commandButton 
-                                        value="To Receive"
+                                    <p:commandButton
+                                        value="Receive Float"
+                                        icon="fa fa-check-circle"
+                                        title="Accept and receive this float transfer"
                                         action="#{financialTransactionController.navigateToReceiveFloatTransferForMe(bp)}"
                                         ajax="false"
-                                        class="my-2 ui-button-success"
-                                        >
+                                        class="my-2 ui-button-success" >
                                     </p:commandButton>
                                 </p:column>
 

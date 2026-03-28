@@ -8,6 +8,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.hr.StaffController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.core.data.BillNumberSuffix;
@@ -239,6 +240,8 @@ public class SearchController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
+    @Inject
+    private StaffController staffController;
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
@@ -452,6 +455,9 @@ public class SearchController implements Serializable {
 
     private Department serviceDepartment;
     private Department billedDepartment;
+
+    // doctor list for filtering based on speciality change in the search criteria
+    private List<Staff> staffListBySpeciality;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigators">
@@ -1039,15 +1045,21 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, parametersForSearching, TemporalType.TIMESTAMP);
 
     }
+    
+    public String navigateToApproveRequests() {
+        setBills(null);
+        fillPharmacyTransferRequestsToApprove();
+        return "/pharmacy/pharmacy_transfer_request_list_to_approve?faces-redirect=true";
+    }
 
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
-        return "/lab/patient_lab_reports";
+        return "/lab/patient_lab_reports?faces-redirect=true";
     }
 
     public String navigateToPatientAcceptPayment() {
         fillPatientPreBills(null, patient, null, true);
-        return "/opd/patient_accept_payment";
+        return "/opd/patient_accept_payment?faces-redirect=true";
     }
 
     public String menuBarSearch() {
@@ -1189,6 +1201,7 @@ public class SearchController implements Serializable {
 
     public String navigateToProfessionalFeePayments() {
         bundle = new ReportTemplateRowBundle();
+        recreateProPayementModel();
         return "/reports/professional_payment_reports/professional_fee_payments_opd?faces-redirect=true";
     }
 
@@ -1320,6 +1333,7 @@ public class SearchController implements Serializable {
         mrnNo = null;
         speciality = null;
         staff = null;
+        staffListBySpeciality = null;
     }
 
     public void listAllBills() {
@@ -1539,6 +1553,7 @@ public class SearchController implements Serializable {
         speciality = null;
         staff = null;
         webUser = null;
+        staffListBySpeciality = null;
     }
 
     public String navigatToAllCashierSummary() {
@@ -10828,6 +10843,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             bundle = createBundleByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
             bundle.calculateTotalsForProfessionalFees();
+            bundle.setName("OPD Professional Fee Payments Report");
+            bundle.setBundleType("opdProfessionalFeePayments");
         }, ProfessionalPaymentReport.OPD_PROFESSIONAL_FEE_PAYMENTS_REPORT, sessionController.getLoggedUser());
     }
 
@@ -22134,6 +22151,10 @@ public class SearchController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
+
+        // to trigger the doctor list update based on speciality change in the search criteria
+        staffListBySpeciality = null;
+        getstaffListBySpeciality();
     }
 
     public PatientEncounter getPatientEncounter() {
@@ -22150,6 +22171,14 @@ public class SearchController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    // fetch staff list for filtering based on speciality change in the search criteria
+    public List<Staff> getstaffListBySpeciality() {
+        if (staffListBySpeciality == null) {
+            staffListBySpeciality = staffController.getSpecialityStaffOptional(speciality);
+        }
+        return staffListBySpeciality;   
     }
 
     public Item getItem() {
@@ -22580,12 +22609,55 @@ public class SearchController implements Serializable {
 
         StreamedContent pdfSc = null;
         try {
-            pdfSc = pdfController.createPdfForWHTReport(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport());
+            String fileName = "WHT_Report";
+            if (bundle.getBundleType() != null) {
+                switch (bundle.getBundleType()) {
+                    case "whtIndividualReceipts":
+                        fileName = "Individual_Receipts_Wise_WHT_Report";
+                        break;
+                    case "whtMonthlySummary":
+                        fileName = "Monthly_Wise_Summary_WHT_Report";
+                        break;
+                    case "whtConsultantSummary":
+                        fileName = "Consultant_Wise_Summary_WHT_Report";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForWhtReport(), fileName);
         } catch (IOException e) {
             logger.error("getWHTReportAsPdf: Error creating pdfSc via pdfController.ceratePdfForWhtReport", e);
             pdfSc = null;
             JsfUtil.addErrorMessage("Failed to generate WHT Report PDF file. Please try again.");
         } 
+        return pdfSc;
+    }
+
+    // PDF Export: OPD Professional Fee Payments
+    public StreamedContent getOpdProfessionalFeePaymentsAsPdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Professional Fee Payments report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "OPD_Professional_Fee_Payments_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            pdfSc = pdfController.createPdfForReportTemplateRows(bundle, PageSize.A4.rotate(), true, getFiltersForOpdProfessionalFeePaymentsReport(),  fileName);
+        } catch (IOException e) {
+            logger.error("getOpdProfessionalFeePaymentsAsPdf: Error creating pdfSc via pdfController.createPdfForOpdProfessionalFeePayments", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate OPD Professional Fee Payments PDF file. Please try again.");
+        }
         return pdfSc;
     }
 
@@ -22597,11 +22669,53 @@ public class SearchController implements Serializable {
         }
 
         try {
-            downloadingExcel = excelController.createExcelForWhtReport(bundle, getFiltersForWhtReport());
+            String fileName = "WHT_Report";
+            if (bundle.getBundleType() != null) {
+                switch (bundle.getBundleType()) {
+                    case "whtIndividualReceipts":
+                        fileName = "Individual_Receipts_Wise_WHT_Report";
+                        break;
+                    case "whtMonthlySummary":
+                        fileName = "Monthly_Wise_Summary_WHT_Report";
+                        break;
+                    case "whtConsultantSummary":
+                        fileName = "Consultant_Wise_Summary_WHT_Report";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForWhtReport(), fileName);
         } catch (IOException e) {
             logger.error("getWHTReportAsExcel: Error creating downloadingExcel via excelController.createExcelForWhtReport", e);
             downloadingExcel = null;
             JsfUtil.addErrorMessage("Failed to generate WHT Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // Excel Export: OPD Professional Fee Payments
+    public StreamedContent getOpdProfessionalFeePaymentsAsExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the OPD Professional Fee Payments report before exporting.");
+            return null;
+        }
+
+        try {
+            String fileName =  "OPD_Professional_Fee_Payments_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForReportTemplateRows(bundle, getFiltersForOpdProfessionalFeePaymentsReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getOpdProfessionalFeePaymentsAsExcel: Error creating downloadingExcel via excelController.createExcelForOpdProfessionalFeePayments", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate OPD Professional Fee Payments Excel file. Please try again.");
         }
         return downloadingExcel;
     }
@@ -22792,10 +22906,31 @@ public class SearchController implements Serializable {
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Site", site != null ? site.getName() : "All Sites");
         params.put("Department", department != null ? department.getName() : "All Departments");
-        params.put("Speciality", speciality != null && speciality.getName() != null ? speciality.getName() : "All Specialities");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All Specialities");
         params.put("Staff", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All Staff");
         params.put("Visit Type", getSearchTypeAsString());
 
         return params; 
     }
+
+    // Filters for OPD Professional Fee Payments Report
+    private Map<String, Object> getFiltersForOpdProfessionalFeePaymentsReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Site", site != null ? site.getName() : "All Sites");
+        params.put("Department", department != null ? department.getName() : "All Departments");
+        params.put("Category", category != null ? category.getName() : "All");
+        params.put("Item", item != null && item.getName() != null ? item.getName() : "All");
+        params.put("MRN", (mrnNo != null && !mrnNo.isEmpty()) ? mrnNo : "All");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+        params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+
+        return params; 
+    }  
 }

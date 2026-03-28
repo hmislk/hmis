@@ -18,11 +18,13 @@
 6. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
 7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
 8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
+9. **🚨 JPQL FIRST, NATIVE SQL LAST**: Always use JPQL for database queries. Native SQL (`nativeScalarQuery`, `executeNativeSql`) is only permitted when there is a significant, demonstrated performance constraint that JPQL cannot address. Never reach for native SQL just because JPQL is harder to write.
+10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
 
 ### Git & Branching
-9. **Include issue closing keywords** (`Closes #N`) in commit messages
-10. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
-11. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+11. **Include issue closing keywords** (`Closes #N`) in commit messages
+12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
 
 ## Situational Guidelines (Reference When Needed)
 
@@ -48,6 +50,9 @@
 - [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
 - **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
 - **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
+
+### When Working on Inward / Inpatient Module
+- [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
 
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
