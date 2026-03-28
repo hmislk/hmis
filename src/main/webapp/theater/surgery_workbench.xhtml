@@ -149,6 +149,14 @@
                                                 target="#{patientController.current}">
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Professional Fees"
+                                            icon="fa fa-money-bill"
+                                            class="ui-button-success"
+                                            action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(null)}">
+                                        </p:commandButton>
                                     </div>
                                 </h:panelGroup>
 
