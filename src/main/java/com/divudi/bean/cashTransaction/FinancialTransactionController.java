@@ -4760,11 +4760,12 @@ public class FinancialTransactionController implements Serializable {
                     && !bundle.getBundles().isEmpty()
                     && bundle.getTotal() > 0.0;
             if (hasCollections) {
-                double totalHandedOver = getTotalCompletedHandoverAmountSinceShiftStart(
+                double totalHandedOver = getTotalCompletedHandoverAmountForShift(
                         sessionController.getLoggedUser(),
-                        nonClosedShiftStartFundBill.getCreatedAt());
-                double tolerance = configOptionApplicationController
+                        nonClosedShiftStartFundBill);
+                Double configuredTolerance = configOptionApplicationController
                         .getDoubleValueByKey("Maximum Allowed Difference for Shift End Handover", 0.01);
+                double tolerance = (configuredTolerance == null) ? 0.01 : Math.max(0.0, configuredTolerance);
                 if ((bundle.getTotal() - totalHandedOver) > tolerance) {
                     JsfUtil.addErrorMessage("Handover not complete. The full collection amount has not been handed over. Please complete the handover before ending your shift.");
                     return null;
@@ -5754,8 +5755,8 @@ public class FinancialTransactionController implements Serializable {
         return firstMatch != null;
     }
 
-    public boolean hasAtLeastOneCompletedHandoverSinceShiftStart(WebUser fromUser, Date since) {
-        if (fromUser == null || since == null) {
+    public boolean hasAtLeastOneCompletedHandoverForShift(WebUser fromUser, Bill startBill) {
+        if (fromUser == null || startBill == null) {
             return false;
         }
         Map<String, Object> params = new HashMap<>();
@@ -5763,38 +5764,34 @@ public class FinancialTransactionController implements Serializable {
                 + "where s.retired = :ret "
                 + "and s.billTypeAtomic = :btype "
                 + "and s.fromWebUser = :fUser "
+                + "and s.referenceBill = :startBill "
                 + "and s.completed = true "
-                + "and (s.cancelled = false or s.cancelled is null) "
-                + "and s.createdAt >= :since ";
+                + "and (s.cancelled = false or s.cancelled is null) ";
         params.put("ret", false);
         params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         params.put("fUser", fromUser);
-        params.put("since", since);
+        params.put("startBill", startBill);
         Bill firstMatch = billFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         return firstMatch != null;
     }
 
-    public double getTotalCompletedHandoverAmountSinceShiftStart(WebUser fromUser, Date since) {
-        if (fromUser == null || since == null) {
+    public double getTotalCompletedHandoverAmountForShift(WebUser fromUser, Bill startBill) {
+        if (fromUser == null || startBill == null) {
             return 0.0;
         }
         Map<String, Object> params = new HashMap<>();
-        String jpql = "select s from Bill s "
+        String jpql = "select sum(s.total) from Bill s "
                 + "where s.retired = :ret "
                 + "and s.billTypeAtomic = :btype "
                 + "and s.fromWebUser = :fUser "
+                + "and s.referenceBill = :startBill "
                 + "and s.completed = true "
-                + "and (s.cancelled = false or s.cancelled is null) "
-                + "and s.createdAt >= :since ";
+                + "and (s.cancelled = false or s.cancelled is null) ";
         params.put("ret", false);
         params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         params.put("fUser", fromUser);
-        params.put("since", since);
-        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        if (bills == null || bills.isEmpty()) {
-            return 0.0;
-        }
-        return bills.stream().mapToDouble(b -> b.getTotal()).sum();
+        params.put("startBill", startBill);
+        return billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public boolean isHandoverRequiredButNotComplete() {
@@ -5813,11 +5810,12 @@ public class FinancialTransactionController implements Serializable {
         if (totalCollections <= 0.0) {
             return false;
         }
-        double totalHandedOver = getTotalCompletedHandoverAmountSinceShiftStart(
+        double totalHandedOver = getTotalCompletedHandoverAmountForShift(
                 sessionController.getLoggedUser(),
-                nonClosedShiftStartFundBill.getCreatedAt());
-        double tolerance = configOptionApplicationController
+                nonClosedShiftStartFundBill);
+        Double configuredTolerance = configOptionApplicationController
                 .getDoubleValueByKey("Maximum Allowed Difference for Shift End Handover", 0.01);
+        double tolerance = (configuredTolerance == null) ? 0.01 : Math.max(0.0, configuredTolerance);
         return (totalCollections - totalHandedOver) > tolerance;
     }
 
@@ -8374,7 +8372,7 @@ public class FinancialTransactionController implements Serializable {
 
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Require Handover Before Shift End",
-                "When enabled, users must have at least one completed and accepted handover during their current shift before they can end the shift. Default: false (backward compatible).",
+                "When enabled, shift end is blocked until the total of all accepted handovers for the current shift matches the collection total within the configured tolerance (see 'Maximum Allowed Difference for Shift End Handover'). Shifts with no collections are unaffected. Default: false.",
                 OptionScope.APPLICATION
         ));
 
