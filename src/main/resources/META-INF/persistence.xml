@@ -7,13 +7,6 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
-            <!-- EclipseLink concurrency manager tuning (issue #19397) - Do NOT Remove -->
-            <!-- Reduce cache lock wait from default 900s to 10s to fail fast -->
-            <property name="eclipselink.concurrency.manager.waittime" value="10000"/>
-            <!-- Throw exception instead of silently waiting on cache lock contention -->
-            <property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
-            <!-- Log cache contention warnings for early detection -->
-            <property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">

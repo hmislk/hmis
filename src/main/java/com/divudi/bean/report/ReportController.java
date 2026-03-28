@@ -111,9 +111,11 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -3199,6 +3201,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.grossValue, ");
         jpql.append("bi.marginValue, ");
         jpql.append("bi.discount, ");
+        jpql.append("bi.bill.netTotal, ");
+        jpql.append("bi.bill.billTypeAtomic, ");
         jpql.append("bi.netValue) ");
         jpql.append("FROM BillItem bi ");
         jpql.append("JOIN bi.item item ");
@@ -3248,6 +3252,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
     }
 
+    private static final Set<BillTypeAtomic> RETURN_BILL_TYPES = new HashSet<>(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+    ));
+
     private List<PharmacySaleDepartmentDTO> buildHierarchy(List<PharmacySaleItemDTO> flatItems) {
         if (flatItems == null || flatItems.isEmpty()) {
             return new ArrayList<>();
@@ -3288,6 +3296,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 bhtDto.setItems(new ArrayList<>());
                 billMap.put(billKey, bhtDto);
                 deptDto.getBhtBills().add(bhtDto);
+            }
+
+            if (RETURN_BILL_TYPES.contains(item.getBillTypeAtomic())) {
+                item.setQty(item.getQty() != null ? -Math.abs(item.getQty()) : null);
+                item.setGrossValue(item.getGrossValue() != null ? -Math.abs(item.getGrossValue()) : null);
+                item.setDiscount(item.getDiscount() != null ? -Math.abs(item.getDiscount()) : null);
+                item.setNetValue(item.getNetValue() != null ? -Math.abs(item.getNetValue()) : null);
+                item.setMarginValue(item.getMarginValue() != null ? -Math.abs(item.getMarginValue()) : null);
             }
 
             bhtDto.getItems().add(item);
@@ -5421,6 +5437,149 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             }
         }
     }
+    
+    
+   // Filters for test_wise_count_report
+    public Map<String, Object> getFiltersForTestWiseCountReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        return filters;
+    }
+    
+    public void exportTestWiseCountReportToPDF() {
+        if (testWiseCounts == null || testWiseCounts.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Test_Wise_Count_Report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Test_Wise_Count_Report.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Test Wise Count Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+
+            int columnCount = 11;
+
+            Map<String, Object> filters = getFiltersForTestWiseCountReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            columnWidths = new float[]{1f, 3f, 1f, 2f, 2f, 2f, 2f, 2f,2f,2f,2f};
+            headers = new String[]{"No.", "Test Name", "Count", "Hospital Fee", "Professional Fee","Reagent Fee","CC Fee","Other Fee", "Net Hos. Fee", "Discount", "Total Amount"};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+            int indexRow=1;
+            for (TestWiseCountReport row : testWiseCounts) {
+                table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
+                table.addCell(textCell(row.getTestName(), bodyFontSmall));
+                
+                table.addCell(textCell(String.valueOf(row.getCount()),bodyFontSmall));
+                table.addCell(numCell(row.getHosFee(), bodyFontSmall));
+                table.addCell(numCell(row.getProFee(), bodyFontSmall));
+                table.addCell(numCell(row.getReagentFee(), bodyFontSmall));
+                table.addCell(numCell(row.getCcFee(), bodyFontSmall));
+                table.addCell(numCell(row.getOtherFee(), bodyFontSmall));
+                table.addCell(numCell(row.getHosFee()-row.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(row.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(row.getTotal(), bodyFontSmall));
+                indexRow++;
+                
+            }
+            com.itextpdf.text.pdf.PdfPCell footerCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 10)));
+                footerCell.setColspan(2);
+                footerCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(footerCell);
+                table.addCell(numCell(totalCount, bodyFontSmall));
+                table.addCell(numCell(totalHosFee, bodyFontSmall));
+                table.addCell(numCell(totalProFee, bodyFontSmall));
+                table.addCell(numCell(totalReagentFee, bodyFontSmall));
+                table.addCell(numCell(totalCCFee, bodyFontSmall));
+                table.addCell(numCell(totalAdditionalFee, bodyFontSmall));
+                table.addCell(numCell(totalNetHosFee, bodyFontSmall));
+                table.addCell(numCell(totalDiscount, bodyFontSmall));
+                table.addCell(numCell(totalNetTotal, bodyFontSmall));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+        } 
+    }
+    
+    
+    // PostProcessor for lab report test_wise_count_report excel export
+    public void postProcessTestWiseCountReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Document is null in postProcessTestWiseCountReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Test Wise Count Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 6);
+
+        Map<String, Object> filters = getFiltersForTestWiseCountReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Test Wise Count Report", filters);
+        }
+    }
 
     private List<TestWiseCountReport> testWiseCounts;
 
@@ -6201,7 +6360,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             XSSFSheet sheet = workbook.createSheet("Petty Cash Payment Report");
             int rowIndex = 0;
-            
+
             if (filters != null && !filters.isEmpty()) {
                 rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Petty Cash Payment Report", filters);
             }
@@ -6231,9 +6390,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 dataRow.createCell(colIndex++).setCellValue((b.getCreater() != null && b.getCreater().getWebUserPerson() != null) ? b.getCreater().getWebUserPerson().getName() : "");
 
                 if (b.getCancelledBill() != null) {
-                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + " (Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + " (Cancelled)") ) : "");
+                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + " (Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + " (Cancelled)")) : "");
                 } else if (b.getRefundedBill() != null) {
-                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + " (Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + " (Refunded)") ) : "");
+                    dataRow.createCell(colIndex++).setCellValue((b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + " (Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + " (Refunded)")) : "");
                 } else {
                     dataRow.createCell(colIndex++).setCellValue(b.getDeptId() != null ? b.getDeptId() : "");
                 }
@@ -6243,14 +6402,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 dataRow.createCell(colIndex++).setCellValue(b.getBillDate() != null ? sdf.format(b.getBillDate()) : "");
 
                 if (b.getStaff() != null) {
-                    dataRow.createCell(colIndex++).setCellValue((b.getStaff().getPerson() != null && b.getStaff().getPerson().getName() != null ) ? b.getStaff().getPerson().getName() : "");
+                    dataRow.createCell(colIndex++).setCellValue((b.getStaff().getPerson() != null && b.getStaff().getPerson().getName() != null) ? b.getStaff().getPerson().getName() : "");
                 } else if (b.getPerson() != null) {
                     dataRow.createCell(colIndex++).setCellValue(b.getPerson().getName() != null ? b.getPerson().getName() : "");
                 } else {
                     dataRow.createCell(colIndex++).setCellValue("");
                 }
 
-                dataRow.createCell(colIndex++).setCellValue(b.getToDepartment() != null && b.getToDepartment().getName() != null? b.getToDepartment().getName() : "");
+                dataRow.createCell(colIndex++).setCellValue(b.getToDepartment() != null && b.getToDepartment().getName() != null ? b.getToDepartment().getName() : "");
                 dataRow.createCell(colIndex++).setCellValue(b.getComments() != null ? b.getComments() : "");
                 dataRow.createCell(colIndex++).setCellValue(b.getApproveUser() != null ? "Approved" : "Not Approved");
                 dataRow.createCell(colIndex++).setCellValue((0 - b.getTotal()));
@@ -6305,7 +6464,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             int columnCount = 11;
 
             Map<String, Object> filters = getFiltersForPettyCasgPaymentReport();
-            
+
             PdfPTable infoTable = createInfoTable(filters);
             if (infoTable != null) {
                 document.add(infoTable);
@@ -6335,11 +6494,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 addPdfTextCell(table, String.valueOf(serialNo++), normalFont, null, Element.ALIGN_RIGHT);
                 addPdfTextCell(table, ((b.getCreater() != null && b.getCreater().getWebUserPerson() != null) ? b.getCreater().getWebUserPerson().getName() : ""), normalFont, null, Element.ALIGN_LEFT);
 
-                String deptInfo="";
+                String deptInfo = "";
                 if (b.getCancelledBill() != null) {
-                    deptInfo = (b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + "\n(Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + "\n(Cancelled)") ) : "";
+                    deptInfo = (b.getDeptId() != null) ? (b.getCancelledBill().getDeptId() != null ? (b.getDeptId() + "\n(Cancelled - " + b.getCancelledBill().getDeptId() + ")") : (b.getDeptId() + "\n(Cancelled)")) : "";
                 } else if (b.getRefundedBill() != null) {
-                    deptInfo = (b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + "\n(Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + "\n(Refunded)") ) : "";
+                    deptInfo = (b.getDeptId() != null) ? (b.getRefundedBill().getDeptId() != null ? (b.getDeptId() + "\n(Refunded - " + b.getRefundedBill().getDeptId() + ")") : (b.getDeptId() + "\n(Refunded)")) : "";
                 } else {
                     deptInfo = b.getDeptId() != null ? b.getDeptId() : "";
                 }
@@ -6348,7 +6507,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 addPdfTextCell(table, b.getBillDate() != null ? sdf2.format(b.getBillDate()) : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getInvoiceNumber() != null ? b.getInvoiceNumber() : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getBillDate() != null ? sdf1.format(b.getBillDate()) : "", normalFont, null, Element.ALIGN_LEFT);
-                
+
                 String forWhom = "";
                 if (b.getStaff() != null) {
                     forWhom = (b.getStaff().getPerson() != null && b.getStaff().getPerson().getName() != null) ? b.getStaff().getPerson().getName() : "";
@@ -6357,7 +6516,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 }
                 addPdfTextCell(table, forWhom, normalFont, null, Element.ALIGN_LEFT);
 
-                addPdfTextCell(table, b.getToDepartment() != null && b.getToDepartment().getName() != null? b.getToDepartment().getName() : "", normalFont, null, Element.ALIGN_LEFT);
+                addPdfTextCell(table, b.getToDepartment() != null && b.getToDepartment().getName() != null ? b.getToDepartment().getName() : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getComments() != null ? b.getComments() : "", normalFont, null, Element.ALIGN_LEFT);
                 addPdfTextCell(table, b.getApproveUser() != null ? "Approved" : "Not Approved", normalFont, null, Element.ALIGN_LEFT);
                 addPdfNumberCell(table, (0 - b.getTotal()), normalFont, null);
@@ -6458,7 +6617,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private Map<String, Object> getFiltersForBillWiseItemMovementReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
-        
+
         filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "N/A");
         filters.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
         filters.put("Institution", institution != null ? institution.getName() : "All Institutions");

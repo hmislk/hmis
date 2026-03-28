@@ -4880,4 +4880,51 @@ public class DataAdministrationController implements Serializable {
 
     }
 
+    public void dischargeOldDuplicateEncounters() {
+        try {
+            String sql = "UPDATE patientencounter pe "
+                    + "JOIN ( "
+                    + "  SELECT MAX(id) AS keep_id, currentPatientRoom_id "
+                    + "  FROM patientencounter "
+                    + "  WHERE discharged = 0 AND paymentFinalized = 0 AND currentPatientRoom_id IS NOT NULL "
+                    + "  GROUP BY currentPatientRoom_id "
+                    + ") latest ON pe.currentPatientRoom_id = latest.currentPatientRoom_id "
+                    + "SET pe.discharged = 1 "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.id != latest.keep_id "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, keeping the latest per room.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    private int staleEncounterDays = 60;
+
+    public void dischargeStaleEncounters() {
+        if (staleEncounterDays <= 0) {
+            JsfUtil.addErrorMessage("Please enter a value greater than 0 days.");
+            return;
+        }
+        try {
+            String sql = "UPDATE patientencounter "
+                    + "SET discharged = 1 "
+                    + "WHERE discharged = 0 AND paymentFinalized = 0 "
+                    + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    public int getStaleEncounterDays() {
+        return staleEncounterDays;
+    }
+
+    public void setStaleEncounterDays(int staleEncounterDays) {
+        this.staleEncounterDays = staleEncounterDays;
+    }
+
 }
