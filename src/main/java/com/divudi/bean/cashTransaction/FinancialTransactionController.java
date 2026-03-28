@@ -5054,6 +5054,16 @@ public class FinancialTransactionController implements Serializable {
             return null;
         }
 
+        // Mandatory server-side validation: block handover if any float transfers are pending
+        if (hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("Cannot create handover: You have pending float transfers to receive. Please accept them before creating a handover.");
+            return null;
+        }
+        if (hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("Cannot create handover: You have float transfers you sent that are not yet accepted. Please ensure they are accepted before creating a handover.");
+            return null;
+        }
+
         // Check for pending transactions before allowing handover creation
         boolean restrictHandoverWhenIncomingFundTransfers = configOptionApplicationController
                 .getBooleanValueByKey("Restrict Handover When Incoming Fund Transfers Exist", false);
