@@ -5832,9 +5832,19 @@ public class FinancialTransactionController implements Serializable {
         List<Payment> declinePayments = new ArrayList<>();
         double totalValue = 0.0;
 
-        List<Payment> originalPayments = findPaymentsForBill(fundTransferBillToDecline);
+        List<Payment> originalPayments = findPaymentsForBill(freshBill);
 
         for (Payment originalPayment : originalPayments) {
+            // Re-enable original non-cash source payment for future handover/shift-end
+            if (originalPayment.getReferancePayment() != null
+                    && originalPayment.getPaymentMethod() != null
+                    && originalPayment.getPaymentMethod() != PaymentMethod.Cash) {
+                Payment sourcePayment = originalPayment.getReferancePayment();
+                sourcePayment.setHandingOverStarted(false);
+                sourcePayment.setHandingOverCompleted(false);
+                paymentController.save(sourcePayment);
+            }
+
             Payment declinePayment = new Payment();
             declinePayment.setBill(declineBill);
             declinePayment.setPaymentMethod(originalPayment.getPaymentMethod());
