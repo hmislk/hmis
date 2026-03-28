@@ -5216,6 +5216,11 @@ public class FinancialTransactionController implements Serializable {
                     if (p.getPaymentMethod() == null) {
                         continue;
                     }
+                    // Skip fund transfer payments - they have their own drawer lifecycle
+                    // and must not be reprocessed during handover creation
+                    if (isFundTransferPayment(p)) {
+                        continue;
+                    }
                     if (p.getPaymentMethod() != PaymentMethod.Cash && p.isSelectedForHandover() == false) {
                         continue;
                     }
@@ -5669,6 +5674,23 @@ public class FinancialTransactionController implements Serializable {
             WebUser toUser,
             Staff toStaff) {
         return hasAtLeastOneToReceived(BillTypeAtomic.FUND_TRANSFER_BILL, fromUser, fromStaff, toUser, toStaff);
+    }
+
+    /**
+     * Returns true if the payment belongs to a fund transfer bill type.
+     * Such payments must be excluded from handover processing because their
+     * drawer impact is fully handled at the time of transfer creation, receipt,
+     * or cancellation.
+     */
+    private boolean isFundTransferPayment(Payment payment) {
+        if (payment == null || payment.getBill() == null) {
+            return false;
+        }
+        BillTypeAtomic bta = payment.getBill().getBillTypeAtomic();
+        return bta == BillTypeAtomic.FUND_TRANSFER_BILL
+                || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+                || bta == BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+                || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED;
     }
 
     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
@@ -6205,6 +6227,11 @@ public class FinancialTransactionController implements Serializable {
 //                    continue;
 //                }
                 Payment p = row.getPayment();
+                // Skip fund transfer payments - they have their own drawer lifecycle
+                // and must not be reprocessed during handover acceptance
+                if (isFundTransferPayment(p)) {
+                    continue;
+                }
                 p.setCashbook(bundleCb);
                 p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
