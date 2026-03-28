@@ -4186,6 +4186,12 @@ public class FinancialTransactionController implements Serializable {
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
+                // Fund transfer payments are managed entirely by the drawer system.
+                // Including them here causes their negative (float out) or positive (float in)
+                // values to distort the cash total on the shift end handover page.
+                if (isFundTransferPayment(p)) {
+                    continue;
+                }
                 // Retrieve the payment handover type
                 PaymentHandover ph = p.getTransientPaymentHandover(); // Assuming a getter that returns the enum
 
