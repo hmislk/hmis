@@ -78,14 +78,14 @@
                                 <h:panelGroup rendered="#{bp.referenceBill eq null and not bp.cancelled}">
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{bp.cancelled and bp.cancelledBill ne null and bp.cancelledBill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL_DECLINED'}">
+                                <h:panelGroup rendered="#{bp.cancelled and bp.cancelledBill ne null and bp.cancelledBill.billTypeAtomic ne null and bp.cancelledBill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL_DECLINED'}">
                                     <span class="badge bg-danger">Declined by Recipient</span>
                                     <h:panelGroup rendered="#{not empty bp.cancelledBill.comments}">
                                         <br />
                                         <small class="text-muted"><i class="pi pi-info-circle me-1" /><h:outputText value="#{bp.cancelledBill.comments}" /></small>
                                     </h:panelGroup>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{bp.cancelled and (bp.cancelledBill eq null or bp.cancelledBill.billTypeAtomic.name() ne 'FUND_TRANSFER_BILL_DECLINED')}">
+                                <h:panelGroup rendered="#{bp.cancelled and (bp.cancelledBill eq null or bp.cancelledBill.billTypeAtomic eq null or bp.cancelledBill.billTypeAtomic.name() ne 'FUND_TRANSFER_BILL_DECLINED')}">
                                     <span class="badge bg-secondary">Cancelled</span>
                                 </h:panelGroup>
                             </p:column>
