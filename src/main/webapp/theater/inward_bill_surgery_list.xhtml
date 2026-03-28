@@ -168,6 +168,24 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Professional Fees" styleClass="text-center">
+                            <p:commandButton
+                                value="Add Fees"
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                ajax="false"
+                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFees(surg)}"
+                                rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="View Fees"
+                                icon="fa fa-list"
+                                class="ui-button-secondary"
+                                ajax="false"
+                                action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(surg)}">
+                            </p:commandButton>
+                        </p:column>
+
                         <p:column headerText="Action" styleClass="text-center"
                                   rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
                             <p:commandButton

@@ -66,6 +66,8 @@ public class InwardProfessionalBillController implements Serializable {
     SessionController sessionController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    InwardSearch inwardSearch;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -114,6 +116,8 @@ public class InwardProfessionalBillController implements Serializable {
     boolean toClearBill = false;
     boolean printPreview;
     Bill batchBill;
+    Bill selectedSurgeryBill;
+    List<Bill> surgeryProfessionalFeeBills;
     EncounterComponent proEncounterComponent;
     List<EncounterComponent> proEncounterComponents;
     @EJB
@@ -759,6 +763,8 @@ public class InwardProfessionalBillController implements Serializable {
         Date toDate = null;
         current = null;
         batchBill = null;
+        selectedSurgeryBill = null;
+        surgeryProfessionalFeeBills = null;
         printPreview = false;
         institution = sessionController.getInstitution();
         makeNullList();
@@ -818,6 +824,66 @@ public class InwardProfessionalBillController implements Serializable {
 
     public String navigateToAddEstimatedProfessionalFeeFromInpatientProfile() {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryProfessionalFees(Bill surgeryBill) {
+        makeNull();
+        selectedSurgeryBill = surgeryBill;
+        batchBill = surgeryBill;
+        getCurrent().setPatientEncounter(surgeryBill.getPatientEncounter());
+        fetchEncounterProfessionalFees();
+        fetchSurgeryProfessionalFeeBills();
+        return "/theater/surgery_professional_fees?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryProfessionalFeesList(Bill surgeryBill) {
+        makeNull();
+        selectedSurgeryBill = surgeryBill;
+        fetchSurgeryProfessionalFeeBills();
+        return "/theater/surgery_professional_fees_list?faces-redirect=true";
+    }
+
+    private void fetchSurgeryProfessionalFeeBills() {
+        surgeryProfessionalFeeBills = null;
+        if (selectedSurgeryBill == null) {
+            return;
+        }
+        String jpql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " AND b.forwardReferenceBill=:surg "
+                + " AND b.billType=:bt ORDER BY b.createdAt DESC";
+        HashMap hm = new HashMap();
+        hm.put("surg", selectedSurgeryBill);
+        hm.put("bt", BillType.InwardProfessional);
+        surgeryProfessionalFeeBills = getEjbFacade().findByJpql(jpql, hm);
+    }
+
+    public List<Bill> getSurgeryProfessionalFeeBills() {
+        if (surgeryProfessionalFeeBills == null) {
+            fetchSurgeryProfessionalFeeBills();
+        }
+        return surgeryProfessionalFeeBills;
+    }
+
+    public void refreshSurgeryProfessionalFeeBills() {
+        surgeryProfessionalFeeBills = null;
+    }
+
+    public void cancelSurgeryProfessionalFeeBill(Bill bill) {
+        inwardSearch.setBill(bill);
+        inwardSearch.cancelBillService();
+        surgeryProfessionalFeeBills = null;
+    }
+
+    public void setSurgeryProfessionalFeeBills(List<Bill> surgeryProfessionalFeeBills) {
+        this.surgeryProfessionalFeeBills = surgeryProfessionalFeeBills;
+    }
+
+    public Bill getSelectedSurgeryBill() {
+        return selectedSurgeryBill;
+    }
+
+    public void setSelectedSurgeryBill(Bill selectedSurgeryBill) {
+        this.selectedSurgeryBill = selectedSurgeryBill;
     }
 
     public void makeNullList() {
