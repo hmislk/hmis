@@ -71,11 +71,20 @@
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton
-                                    value="New Bill"
+                                    value="Save Bill"
                                     ajax="false"
-                                    icon="fas fa-plus"
+                                    icon="fa fa-save"
+                                    class="ui-button-success"
+                                    action="#{inwardProfessionalBillController.saveProfessionalFeeBill()}"
+                                    disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Clear Form"
+                                    ajax="false"
+                                    icon="fa fa-times"
                                     class="ui-button-warning"
-                                    actionListener="#{inwardProfessionalBillController.makeNull()}">
+                                    action="#{inwardProfessionalBillController.clearProfessionalFeeForm()}"
+                                    onclick="return confirm('Discard unsaved fee rows?');">
                                 </p:commandButton>
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
@@ -166,79 +175,73 @@
                                                  disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}"/>
                             </p:panel>
 
-                            <p:panel id="pBillDetails" class="w-100 my-1">
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list"/>
-                                    <h:outputText value="Bill Details" class="mx-4"/>
-                                </f:facet>
-                                <h:panelGrid columns="2" columnClasses="numberCol, textCol">
-                                    <h:outputLabel value="Total"/>
-                                    <h:outputLabel class="mx-4 my-1" id="tot"
-                                                   value="#{inwardProfessionalBillController.current.total}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </h:panelGrid>
-                            </p:panel>
                         </div>
                     </div>
 
+                    <p:panel class="mt-3">
+                        <f:facet name="header">
+                            <h:outputText styleClass="fas fa-list-check"/>
+                            <h:outputText value="Current Bill — Unsaved Fees" class="mx-2"/>
+                            <h:outputText value=" (click 'Save Bill' to save as a new bill)"
+                                          style="font-style: italic; font-size: 0.9em; color: #888;"/>
+                        </f:facet>
+
                     <h:panelGroup id="panelBillItems">
-                        <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}" var="c">
-                            <p:column headerText="">
-                                <h:outputLabel value="#{c.id}"/>
-                            </p:column>
-                            <p:column headerText="Bill Id">
-                                <h:outputLabel value="#{c.billFee.id}"/>
-                            </p:column>
-                            <p:column headerText="Performance">
+                        <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}" var="c"
+                                     emptyMessage="No fees added yet. Use the form above to add fees, then click 'Save Bill'.">
+                            <p:column headerText="Role">
                                 <h:outputLabel value="#{c.patientEncounterComponentType}"/>
                             </p:column>
-                            <p:column headerText="Name">
+                            <p:column headerText="Doctor/Staff">
                                 <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Fee">
                                 <p:inputText autocomplete="off" style="width: 130px"
-                                             value="#{c.billFee.feeValue}"
-                                             disabled="#{c.billFee.paidValue!=0}"/>
-                            </p:column>
-                            <p:column headerText="Date Added">
-                                <h:outputLabel value="#{c.billFee.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo"
-                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
-                                <br/>
-                                <h:panelGroup rendered="#{c.billFee.retired}">
-                                    <h:outputLabel style="color: red;" value="Deleted at "/>
-                                    <h:outputLabel style="color: red;" value="#{c.billFee.retiredAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                </h:panelGroup>
-                            </p:column>
-                            <p:column headerText="Added By">
-                                <h:outputLabel value="#{c.billFee.creater.webUserPerson.name}"/>
-                                <br/>
-                                <h:panelGroup rendered="#{c.billFee.retired}">
-                                    <h:outputLabel style="color: red;" value="Deleted By "/>
-                                    <h:outputLabel style="color: red;" value="#{c.billFee.retirer.webUserPerson.name}"/>
-                                </h:panelGroup>
-                            </p:column>
-                            <p:column headerText="Update">
-                                <p:commandButton ajax="false" value="Update"
-                                                 action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
-                                                 disabled="#{c.billFee.id eq null or inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}"/>
+                                             value="#{c.billFee.feeValue}"/>
                             </p:column>
                             <p:column headerText="Remove">
                                 <p:commandButton ajax="false" value="Remove"
-                                                 rendered="#{c.billFee.id eq null}"
+                                                 icon="fa fa-times"
+                                                 class="ui-button-danger"
                                                  action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
-                                                 disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}"/>
-                                <p:commandButton ajax="false" value="Remove"
-                                                 rendered="#{c.billFee.id ne null}"
-                                                 action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
                                                  disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}"/>
                             </p:column>
                         </p:dataTable>
                     </h:panelGroup>
+                    </p:panel>
+
+                    <!-- Saved professional fee bills for this surgery -->
+                    <p:panel class="mt-3" rendered="#{not empty inwardProfessionalBillController.surgeryProfessionalFeeBills}">
+                        <f:facet name="header">
+                            <h:outputText styleClass="fas fa-receipt"/>
+                            <h:outputText value="Saved Professional Fee Bills" class="mx-2"/>
+                        </f:facet>
+                        <p:dataTable value="#{inwardProfessionalBillController.surgeryProfessionalFeeBills}" var="sb"
+                                     emptyMessage="No saved bills yet.">
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{sb.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputLabel value="#{sb.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Total" styleClass="text-end">
+                                <h:outputLabel value="#{sb.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:panelGroup rendered="#{!sb.cancelled}">
+                                    <h:outputLabel value="Active" style="color: green; font-weight: bold;"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sb.cancelled}">
+                                    <h:outputLabel value="Cancelled" style="color: red; font-weight: bold;"/>
+                                </h:panelGroup>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
 
                 </p:panel>
 

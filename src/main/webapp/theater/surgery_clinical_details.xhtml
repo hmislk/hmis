@@ -47,7 +47,7 @@
 
                                 <p:commandButton
                                     value="Surgery WorkBench"
-                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile()}"
+                                    action="/theater/surgery_workbench?faces-redirect=true"
                                     ajax="false"
                                     class="ui-button-operating-theatre"
                                     icon="fa fa-arrow-left">
@@ -121,30 +121,42 @@
                                     <h:outputText value="Surgical Team" class="mx-2"/>
                                 </f:facet>
 
-                                <h:panelGrid columns="2" columnClasses="col-4, col-8" style="width:100%"
+                                <h:panelGrid columns="2" id="clinStaffPanel"
                                              rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
                                     <h:outputLabel value="Role"/>
-                                    <p:selectOneMenu
+                                    <p:selectOneMenu id="cmbClinRole"
                                         value="#{surgeryBillController.clinicalEncounterComponent.patientEncounterComponentType}"
                                         class="my-1" style="width:300px">
                                         <f:selectItem itemLabel="— Select Role —" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems value="#{enumController.patientEncounterComponentTypes}"
                                                        var="ect"
-                                                       itemLabel="#{ect.name}"
+                                                       itemLabel="#{ect}"
                                                        itemValue="#{ect}"/>
                                     </p:selectOneMenu>
 
-                                    <h:outputLabel value="Doctor / Staff"/>
-                                    <p:autoComplete
-                                        forceSelection="true"
-                                        id="cmbClinStaff"
-                                        value="#{surgeryBillController.clinicalEncounterComponent.staff}"
-                                        completeMethod="#{staffController.completeItems}"
-                                        var="st"
-                                        itemLabel="#{st.person.nameWithTitle}"
-                                        itemValue="#{st}"
-                                        size="40"
-                                        class="my-1"/>
+                                    <h:outputText value="Speciality"/>
+                                    <p:autoComplete forceSelection="true" id="cmbClinSpe"
+                                                    value="#{surgeryBillController.clinicalSpeciality}"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    var="sp"
+                                                    itemLabel="#{sp.name}"
+                                                    itemValue="#{sp}"
+                                                    size="40"
+                                                    class="my-1">
+                                        <f:ajax event="itemSelect" execute="cmbClinRole cmbClinSpe" render="cmbClinDoc"/>
+                                    </p:autoComplete>
+
+                                    <h:outputText value="Doctor / Staff"/>
+                                    <p:autoComplete forceSelection="true" id="cmbClinDoc"
+                                                    value="#{surgeryBillController.clinicalEncounterComponent.staff}"
+                                                    completeMethod="#{surgeryBillController.completeClinicalStaff}"
+                                                    var="st"
+                                                    itemLabel="#{st.person.nameWithTitle}"
+                                                    itemValue="#{st}"
+                                                    size="40"
+                                                    class="my-1">
+                                        <f:ajax event="itemSelect" execute="cmbClinRole cmbClinSpe cmbClinDoc" render="cmbClinDoc"/>
+                                    </p:autoComplete>
 
                                     <h:outputLabel value="Notes"/>
                                     <p:inputText

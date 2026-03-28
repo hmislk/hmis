@@ -399,9 +399,39 @@ public class InwardProfessionalBillController implements Serializable {
         proEncounterComponent.setOrderNo(getProEncounterComponents().size() + 1);
         getProEncounterComponents().add(proEncounterComponent);
 
-        saveSurgeryProfessional();
-
         proEncounterComponent = null;
+        JsfUtil.addSuccessMessage("Fee added. Click 'Save Bill' to confirm.");
+    }
+
+    public void saveProfessionalFeeBill() {
+        if (generalChecking()) {
+            return;
+        }
+        if (getProEncounterComponents().isEmpty()) {
+            JsfUtil.addErrorMessage("Add at least one fee before saving.");
+            return;
+        }
+        saveSurgeryProfessional();
+        fetchSurgeryProfessionalFeeBills();
+        makeNullList();
+        current = null;
+        JsfUtil.addSuccessMessage("Professional fee bill saved.");
+    }
+
+    public void clearProfessionalFeeForm() {
+        makeNullList();
+        current = null;
+    }
+
+    public List<EncounterComponent> getEncounterComponentsForBill(Bill bill) {
+        if (bill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT ec FROM EncounterComponent ec"
+                + " WHERE ec.retired=false AND ec.billItem.bill=:bill ORDER BY ec.orderNo";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", bill);
+        return getEncounterComponentFacade().findByJpql(jpql, hm);
     }
 
     public Bill getBatchBill() {

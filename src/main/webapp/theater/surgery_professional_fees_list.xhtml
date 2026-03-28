@@ -119,7 +119,12 @@
                     </div>
 
                     <p:dataTable value="#{inwardProfessionalBillController.surgeryProfessionalFeeBills}" var="profBill"
-                                 emptyMessage="No professional fee bills found for this surgery.">
+                                 emptyMessage="No professional fee bills found for this surgery."
+                                 rowExpandMode="single">
+
+                        <p:column style="width:32px">
+                            <p:rowToggler/>
+                        </p:column>
 
                         <p:column headerText="Bill No">
                             <h:outputLabel value="#{profBill.deptId}"/>
@@ -167,6 +172,25 @@
                             </p:commandButton>
                             <h:outputLabel value="—" rendered="#{profBill.cancelled}" style="color: grey;"/>
                         </p:column>
+
+                        <p:rowExpansion>
+                            <p:dataTable value="#{inwardProfessionalBillController.getEncounterComponentsForBill(profBill)}"
+                                         var="ec"
+                                         emptyMessage="No fee lines found."
+                                         styleClass="mt-2 ms-4">
+                                <p:column headerText="Role">
+                                    <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                                </p:column>
+                                <p:column headerText="Doctor/Staff">
+                                    <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Fee" styleClass="text-end">
+                                    <h:outputLabel value="#{ec.billFee.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:rowExpansion>
 
                     </p:dataTable>
 

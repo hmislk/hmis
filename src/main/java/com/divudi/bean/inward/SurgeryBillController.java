@@ -27,6 +27,8 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -34,6 +36,7 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,6 +69,7 @@ public class SurgeryBillController implements Serializable {
     // Clinical details (no billing)
     private EncounterComponent clinicalEncounterComponent;
     private List<EncounterComponent> clinicalEncounterComponents;
+    private Speciality clinicalSpeciality;
     //////
 
     @EJB
@@ -86,6 +90,8 @@ public class SurgeryBillController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PharmacyBean pharmacyBean;
+    @EJB
+    private StaffFacade staffFacade;
 
     //////
     @Inject
@@ -363,6 +369,7 @@ public class SurgeryBillController implements Serializable {
         duplicateConfirmationPending = false;
         clinicalEncounterComponent = null;
         clinicalEncounterComponents = null;
+        clinicalSpeciality = null;
     }
 
     public void saveProcedure() {
@@ -579,7 +586,16 @@ public class SurgeryBillController implements Serializable {
     public String navigateToSurgicalDetails(Bill surgery) {
         clinicalEncounterComponent = null;
         clinicalEncounterComponents = null;
+        clinicalSpeciality = null;
         this.surgeryBill = surgery;
+        if (surgery != null && surgery.getProcedure() != null) {
+            if (surgery.getProcedure().getFromTime() == null) {
+                surgery.getProcedure().setFromTime(new Date());
+            }
+            if (surgery.getProcedure().getToTime() == null) {
+                surgery.getProcedure().setToTime(new Date());
+            }
+        }
         fetchClinicalEncounterComponents();
         return "/theater/surgery_clinical_details?faces-redirect=true";
     }
@@ -621,6 +637,7 @@ public class SurgeryBillController implements Serializable {
         getEncounterComponentFacade().create(clinicalEncounterComponent);
         getClinicalEncounterComponents().add(clinicalEncounterComponent);
         clinicalEncounterComponent = null;
+        clinicalSpeciality = null;
         JsfUtil.addSuccessMessage("Staff member added.");
     }
 
@@ -641,6 +658,34 @@ public class SurgeryBillController implements Serializable {
         PatientEncounter proc = surgeryBill.getProcedure();
         getPatientEncounterFacade().edit(proc);
         JsfUtil.addSuccessMessage("Surgical details saved.");
+    }
+
+    public List<Staff> completeClinicalStaff(String qry) {
+        String sql = "select c from Staff c where c.retired=false";
+        HashMap<String, Object> hm = new HashMap<>();
+        if (clinicalSpeciality != null) {
+            sql += " and c.speciality=:sp";
+            hm.put("sp", clinicalSpeciality);
+        }
+        sql += " and ((c.person.name) like :q or (c.code) like :q) order by c.person.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        return staffFacade.findByJpql(sql, hm, 20);
+    }
+
+    public Speciality getClinicalSpeciality() {
+        return clinicalSpeciality;
+    }
+
+    public void setClinicalSpeciality(Speciality clinicalSpeciality) {
+        this.clinicalSpeciality = clinicalSpeciality;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
     }
 
     public EncounterComponent getClinicalEncounterComponent() {
