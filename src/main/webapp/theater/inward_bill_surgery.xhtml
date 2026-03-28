@@ -210,6 +210,16 @@
                                                 style="float: right"
                                                 action="#{surgeryBillController.checkBeforeSave()}"
                                                 update="@form"
+                                                rendered="#{surgeryBillController.surgeryBill.id == null}"
+                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Edit Surgery"
+                                                class="w-100 ui-button-success m-2"
+                                                style="float: right"
+                                                action="#{surgeryBillController.edit()}"
+                                                ajax="false"
+                                                rendered="#{surgeryBillController.surgeryBill.id != null}"
                                                 disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
                                             </p:commandButton>
                                         </div>
