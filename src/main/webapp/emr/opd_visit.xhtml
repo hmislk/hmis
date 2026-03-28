@@ -64,6 +64,17 @@
                                 process="panelPt" update="panelPt" ></p:commandButton>
 
 
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                <p:commandButton
+                                    icon="fa fa-cog"
+                                    title="Page Settings"
+                                    oncomplete="PF('dlgOpdVisitSettings').show()"
+                                    process="@this"
+                                    update="pnlSettingsDialog"
+                                    styleClass="ui-button-secondary p-0 m-1">
+                                </p:commandButton>
+                            </h:panelGroup>
+
                         </div>
                     </div>
 
@@ -523,23 +534,23 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
-                                                            <p:commandButton 
+                                                            <p:commandButton
                                                                 value="Add"
                                                                 class="ui-button-success"
                                                                 id="btnAddRx"
                                                                 icon="pi pi-plus"
                                                                 process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                update="tblRxx pnlIssuableSuggestions chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                 action="#{patientEncounterController.addEncounterMedicine}" />
 
-                                                            <p:commandButton 
+                                                            <p:commandButton
                                                                 id="btnAddRxFav"
-                                                                value="Add Favourite" 
-                                                                process="btnAddRxFav acMedicine" 
-                                                                class='ui-button-success' 
-                                                                icon='fas fa-star' 
-                                                                style="float: right; margin-right: 5px;" 
-                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                value="Add Favourite"
+                                                                process="@this"
+                                                                class='ui-button-success'
+                                                                icon='fas fa-star'
+                                                                style="float: right; margin-right: 5px;"
+                                                                update="tblRxx pnlIssuableSuggestions chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                 action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
 
                                                         </div>
@@ -553,18 +564,55 @@
                                                         <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
                                                     </p:column>
                                                     <p:column>
-                                                        <p:commandButton icon="fas fa-trash" 
+                                                        <p:commandButton icon="fas fa-trash"
                                                                          id="btnRemove"
                                                                          process="btnRemove"
-                                                                         update="tblRxx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         update="tblRxx pnlIssuableSuggestions :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          class="ui-button-danger"
-                                                                         action="#{patientEncounterController.removeCfv()}">
+                                                                         action="#{patientEncounterController.removeEncounterMedicine()}">
                                                             <f:setPropertyActionListener value="#{rx}" target="#{patientEncounterController.removingCfv}" ></f:setPropertyActionListener>
 
                                                         </p:commandButton>
                                                     </p:column>
                                                 </p:dataTable>
                                             </p:panel>
+                                            <h:panelGroup id="pnlIssuableSuggestions" layout="block">
+                                                <p:panel class="w-100 m-1">
+                                                    <f:facet name="header">
+                                                        <h:outputText styleClass="fas fa-pills"/>
+                                                        <h:outputText class="mx-4" value="Issuable Medicines"/>
+                                                    </f:facet>
+                                                    <h:outputText value="Outdoor Pharmacy: #{patientEncounterController.defaultOutdoorPharmacy ne null ? patientEncounterController.defaultOutdoorPharmacy.name : 'NOT SET'}" style="display:block" />
+                                                    <h:outputText value="Indoor Pharmacy: #{patientEncounterController.defaultIndoorPharmacy ne null ? patientEncounterController.defaultIndoorPharmacy.name : 'NOT SET'}" style="display:block" />
+                                                    <h:outputText value="Medicines count: #{patientEncounterController.encounterMedicines ne null ? patientEncounterController.encounterMedicines.size() : 'null'}" style="display:block" />
+                                                    <h:outputText value="Suggestions count: #{patientEncounterController.issuableSuggestions ne null ? patientEncounterController.issuableSuggestions.size() : 'null'}" style="display:block" />
+                                                    <h:panelGroup rendered="#{not empty patientEncounterController.issuableSuggestions}" layout="block">
+                                                        <p:dataTable id="tblIssuable"
+                                                                     value="#{patientEncounterController.issuableSuggestions}"
+                                                                     var="sug"
+                                                                     rowStyleClass="#{sug.inStock ? 'bg-success-subtle' : 'bg-danger-subtle'}">
+                                                            <p:column headerText="Select" style="width:50px">
+                                                                <p:selectBooleanCheckbox value="#{sug.selected}" />
+                                                            </p:column>
+                                                            <p:column headerText="Medicine">
+                                                                <h:outputText value="#{sug.displayText}" />
+                                                            </p:column>
+                                                            <p:column headerText="Qty" style="width:80px">
+                                                                <p:inputNumber value="#{sug.calculatedIssueQty}"
+                                                                               decimalPlaces="0"
+                                                                               style="width:60px" />
+                                                            </p:column>
+                                                            <p:column headerText="Unit" style="width:100px">
+                                                                <h:outputText value="#{sug.issueUnit.name}" />
+                                                            </p:column>
+                                                            <p:column headerText="Stock" style="width:80px">
+                                                                <h:outputText value="#{sug.availableStock}"
+                                                                              styleClass="#{sug.inStock ? 'text-success fw-bold' : 'text-danger fw-bold'}" />
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </h:panelGroup>
                                             <p:panel header="Add Test Results" class="w-100 m-1">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-vial-virus"/>
@@ -927,9 +975,8 @@
                                                         <p:outputLabel value="Select a Template" class="form-label"></p:outputLabel>
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <div class="col-8">
-                                                        <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
+                                                <div class="d-flex justify-content-between">
+                                                    <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems
                                                                 value="#{patientEncounterController.userDocumentTemplates}"
@@ -937,26 +984,23 @@
                                                                 itemLabel="#{dt.name}"
                                                                 itemValue="#{dt}"></f:selectItems>
                                                             <p:ajax update="medicalCertDatePanel" process="somTemplates" />
-                                                        </p:selectOneMenu>
-                                                    </div>
-                                                    <div class="col-2">
+                                                    </p:selectOneMenu>
+                                                    <div class="d-flex gap-2">
                                                         <p:commandButton
                                                             id="btnRefreshTemplates"
                                                             value="Refresh"
-                                                            class="ui-button-info"
+                                                            class="ui-button-info mx-2"
                                                             icon="fas fa-sync-alt"
                                                             title="Refresh template list"
                                                             process="btnRefreshTemplates"
                                                             update="somTemplates"
                                                             action="#{patientEncounterController.refreshUserDocumentTemplates}">
                                                         </p:commandButton>
-                                                    </div>
-                                                    <div class="col-2">
                                                         <p:commandButton
                                                             id="btnGenerateNewDocument"
                                                             value="Generate"
                                                             class="ui-button-warning"
-                                                            icon="fas fa-arrows-rotate"
+                                                            icon="fas fa-spinner"
                                                             process="btnGenerateNewDocument somTemplates medicalCertDatePanel"
                                                             update="lstEncounterDocs gpReferralDoc"
                                                             action="#{patientEncounterController.generateAndAddDocumentFromTemplate}">
@@ -1782,6 +1826,48 @@
                             </div>
                         </div>
                     </div>
+
+                    <p:dialog header="OPD Visit Settings" widgetVar="dlgOpdVisitSettings"
+                             modal="true" responsive="true" width="500" appendTo="@(form)">
+                        <h:panelGroup id="pnlSettingsDialog" layout="block">
+                            <div class="p-3">
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-1">Default Outdoor Pharmacy Department</label>
+                                    <p:selectOneMenu id="cmbOutdoorPharmacy"
+                                                     value="#{patientEncounterController.defaultOutdoorPharmacy}"
+                                                     style="width:100%">
+                                        <f:selectItem itemLabel="-- Select --" itemValue="" />
+                                        <f:selectItems value="#{patientEncounterController.pharmacyDepartments}"
+                                                       var="dept"
+                                                       itemLabel="#{dept.name}"
+                                                       itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton value="Save" icon="pi pi-save"
+                                                     class="ui-button-success mt-2"
+                                                     process="cmbOutdoorPharmacy @this"
+                                                     update=":#{p:resolveFirstComponentWithId('pnlIssuableSuggestions',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                     action="#{patientEncounterController.saveDefaultOutdoorPharmacy()}" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="fw-bold d-block mb-1">Default Indoor Pharmacy Department</label>
+                                    <p:selectOneMenu id="cmbIndoorPharmacy"
+                                                     value="#{patientEncounterController.defaultIndoorPharmacy}"
+                                                     style="width:100%">
+                                        <f:selectItem itemLabel="-- Select --" itemValue="" />
+                                        <f:selectItems value="#{patientEncounterController.pharmacyDepartments}"
+                                                       var="dept"
+                                                       itemLabel="#{dept.name}"
+                                                       itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton value="Save" icon="pi pi-save"
+                                                     class="ui-button-success mt-2"
+                                                     process="cmbIndoorPharmacy @this"
+                                                     update=":#{p:resolveFirstComponentWithId('pnlIssuableSuggestions',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                     action="#{patientEncounterController.saveDefaultIndoorPharmacy()}" />
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:dialog>
 
                 </h:form>
 

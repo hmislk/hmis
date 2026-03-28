@@ -126,14 +126,15 @@
                                             action="#{patientController.navigateToSearchPatients()}">
                                         </p:commandButton>
 
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            icon="fa fa-id-card" 
-                                            class="ui-button-warning" 
-                                            action="#{bhtSummeryController.navigateToInpatientProfile()}">
-                                            <f:setPropertyActionListener 
-                                                value="#{surgeryBillController.surgeryBill.patientEncounter}" 
-                                                target="#{bhtSummeryController.patientEncounter}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Inpatient Dashboard"
+                                            icon="fa fa-id-card"
+                                            class="ui-button-secondary"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <f:setPropertyActionListener
+                                                value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                                target="#{admissionController.current}">
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
 
@@ -203,14 +204,51 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-3">
-                                            <p:commandButton 
-                                                value="Add New Surgery" ajax="false" class="w-100 ui-button-success m-2 "
+                                            <p:commandButton
+                                                value="Add New Surgery"
+                                                class="w-100 ui-button-success m-2"
                                                 style="float: right"
-                                                action="#{surgeryBillController.save()}" 
-                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}" >
+                                                action="#{surgeryBillController.checkBeforeSave()}"
+                                                update="@form"
+                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
                                             </p:commandButton>
                                         </div>
                                     </div>
+
+                                    <p:dialog id="dlgDupConfirm"
+                                              widgetVar="dlgDupConfirm"
+                                              header="&#9888; Duplicate Surgery Warning"
+                                              modal="true"
+                                              resizable="false"
+                                              closable="true"
+                                              style="width:480px">
+                                        <div style="padding:12px">
+                                            <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                                &#9888; WARNING: This surgery is already recorded for this admission.
+                                            </p>
+                                            <p>
+                                                Adding the same surgery twice is <strong>highly unusual</strong> and may indicate a data-entry error.
+                                                Duplicate entries can lead to incorrect billing and audit issues.
+                                            </p>
+                                            <p style="font-weight:bold;">
+                                                Are you absolutely sure this surgery was genuinely performed a second time on this patient?
+                                            </p>
+                                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                                <p:commandButton
+                                                    value="Cancel — Do Not Add"
+                                                    icon="fa fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('dlgDupConfirm').hide(); return false;"/>
+                                                <p:commandButton
+                                                    value="Yes, Add Duplicate Surgery"
+                                                    icon="fa fa-exclamation-triangle"
+                                                    class="ui-button-danger"
+                                                    action="#{surgeryBillController.saveConfirmed()}"
+                                                    ajax="false"
+                                                    onclick="PF('dlgDupConfirm').hide();"/>
+                                            </div>
+                                        </div>
+                                    </p:dialog>
 
                                 </div>
                             </p:panel>

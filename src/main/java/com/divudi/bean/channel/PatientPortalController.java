@@ -48,7 +48,6 @@ import com.divudi.core.util.CommonFunctions;
 @ViewScoped
 public class PatientPortalController implements Serializable {
 
-    
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -240,7 +239,7 @@ public class PatientPortalController implements Serializable {
         java.util.Map<String, Object> searchMap = new java.util.HashMap<>();
         searchMap.put("pp", phoneAsLongForSearch);
         searchedPatients = patientFacade.findByJpql("select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp", searchMap);
-        
+
     }
 
     public void selectPatientProfile(Patient selectedPt) {
@@ -436,11 +435,63 @@ public class PatientPortalController implements Serializable {
         }
         return smsBody;
     }
+    
+    public String smsBody(Patient pt) {
+        String smsBody = "";
+        String linkSendingTemplate = configOptionApplicationController.getLongTextValueByKey("Patient Portal - Custom SMS Body Massage for Send Link");
+        String baseURL = CommonFunctions.getBaseUrl() + "faces/patient_portal/portal_login.xhtml";
+        
+        if (!linkSendingTemplate.equalsIgnoreCase("")) {
+            smsBody = replaceOTPSMSBody(linkSendingTemplate, pt, baseURL);
+        } else {
+            smsBody = "Hi "+ pt.getPerson().getNameWithTitle() +",\nUse the following link for Loging your Patient portal.\n Link : " + baseURL;
+        }
+        return smsBody;
+    }
+
+    public void sendPortalLinkToPatinet(Patient patient) {
+        if (patient == null || patient.getPerson() == null) {
+            JsfUtil.addErrorMessage("Error in the Patient.");
+            return;
+        }
+
+        if (patient.getPerson().getSmsNumber() == null || patient.getPerson().getSmsNumber().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Patient has no Mobile.");
+            return;
+        }
+
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(patient.getPerson().getSmsNumber());
+        e.setSendingMessage(smsBody(patient));
+        e.setPending(false);
+        e.setSmsType(MessageType.PatientPortal_Link);
+        getSmsFacade().create(e);
+        Boolean sent = smsManager.sendSms(e);
+        if (sent) {
+            System.out.println("LinkSendSuccess = " + sent);
+            JsfUtil.addErrorMessage("Successfuly Link Send");
+        } else {
+            System.out.println("LinkSendSuccess = " + sent);
+            JsfUtil.addErrorMessage("Link Sending Fail.");
+        }
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
+    }
 
     public String replaceOTPSMSBody(String template, String otp) {
         String output;
         String processedTemplate = template.replace("\\n", "\n");
         output = processedTemplate.replace("{otp}", otp);
+        return output;
+    }
+    
+    public String replaceOTPSMSBody(String template, Patient pt, String baseUrl) {
+        String output;
+        String processedTemplate = template.replace("\\n", "\n");
+        output = processedTemplate.replace("{patient_name}", pt.getPerson().getNameWithTitle());
+        output = processedTemplate.replace("{base_url}", baseUrl);
         return output;
     }
 
@@ -537,7 +588,7 @@ public class PatientPortalController implements Serializable {
             if (patientEnteredOtp == null || patientEnteredOtp.trim().isEmpty()) {
                 System.out.println("---> OTP Code is Missing. <---");
                 JsfUtil.addErrorMessage("Enter the authentication code.");
-            }else{
+            } else {
                 if (patientEnteredOtp.equalsIgnoreCase(sms.getOtp())) {
                     System.out.println("---> OTP Authentication Pass. <---");
                     otpVerify = true;
@@ -549,7 +600,7 @@ public class PatientPortalController implements Serializable {
                     JsfUtil.addErrorMessage("Enter correct authentication code");
                 }
             }
-            
+
         }
     }
 

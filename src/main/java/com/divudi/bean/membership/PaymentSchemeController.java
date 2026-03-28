@@ -215,12 +215,12 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void saveSelected() {
+        
+        if(getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please Add the Scheme Name");
+            return;
+        }
 
-        //  getCurrent().setMembershipScheme(membershipScheme);
-//        if (getCurrent().getPaymentMethod() == null) {
-//            JsfUtil.addErrorMessage("Payment Method?");
-//            return;
-//        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(paymentScheme);
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -230,10 +230,6 @@ public class PaymentSchemeController implements Serializable {
             getFacade().create(paymentScheme);
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
-
-        paymentScheme = null;
-        //  createPaymentSchemesMembership();
-        //    recreateModel();
 
     }
 

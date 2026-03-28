@@ -175,15 +175,17 @@
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
 
-                                    <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                        <p:commandButton
-                                            class="my-1 w-100 ui-button-warning"
-                                            value="Float Transfers for me to Receive"
-                                            icon="pi pi-inbox"
-                                            ajax="false"
-                                            action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
-                                        </p:commandButton>
-                                    </p:badge>
+                                    <div class="w-100">
+                                        <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
+                                            <p:commandButton
+                                                class="my-1 w-100 ui-button-warning"
+                                                value="Float Transfers for me to Receive"
+                                                icon="pi pi-inbox"
+                                                ajax="false"
+                                                action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
+                                            </p:commandButton>
+                                        </p:badge>
+                                    </div>
 
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-info"
