@@ -117,6 +117,8 @@ public class InwardProfessionalBillController implements Serializable {
     boolean printPreview;
     Bill batchBill;
     Bill selectedSurgeryBill;
+    Bill lastSavedProfessionalFeeBill;
+    boolean settlePreview = false;
     List<Bill> surgeryProfessionalFeeBills;
     EncounterComponent proEncounterComponent;
     List<EncounterComponent> proEncounterComponents;
@@ -412,15 +414,31 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
         saveSurgeryProfessional();
+        lastSavedProfessionalFeeBill = current;
         fetchSurgeryProfessionalFeeBills();
         makeNullList();
         current = null;
+        settlePreview = true;
         JsfUtil.addSuccessMessage("Professional fee bill saved.");
     }
 
     public void clearProfessionalFeeForm() {
         makeNullList();
         current = null;
+        lastSavedProfessionalFeeBill = null;
+        settlePreview = false;
+    }
+
+    public Bill getLastSavedProfessionalFeeBill() {
+        return lastSavedProfessionalFeeBill;
+    }
+
+    public boolean isSettlePreview() {
+        return settlePreview;
+    }
+
+    public void setSettlePreview(boolean settlePreview) {
+        this.settlePreview = settlePreview;
     }
 
     public List<EncounterComponent> getEncounterComponentsForBill(Bill bill) {
@@ -795,6 +813,8 @@ public class InwardProfessionalBillController implements Serializable {
         batchBill = null;
         selectedSurgeryBill = null;
         surgeryProfessionalFeeBills = null;
+        lastSavedProfessionalFeeBill = null;
+        settlePreview = false;
         printPreview = false;
         institution = sessionController.getInstitution();
         makeNullList();

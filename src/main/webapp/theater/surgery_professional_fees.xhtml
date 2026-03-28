@@ -6,14 +6,15 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/Inward">
 
     <ui:define name="content">
 
         <h:panelGroup rendered="true" styleClass="opdPanel">
             <h:form id="form">
 
-                <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null}">
+                <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null and !inwardProfessionalBillController.settlePreview}">
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
                             <div>
@@ -62,7 +63,7 @@
                     </p:commandButton>
                 </p:panel>
 
-                <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null}">
+                <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null and !inwardProfessionalBillController.settlePreview}">
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
                             <div>
@@ -233,6 +234,62 @@
                             </p:column>
                         </p:dataTable>
                     </p:panel>
+
+                </p:panel>
+
+                <!-- Post-settle: print and navigation -->
+                <p:panel rendered="#{inwardProfessionalBillController.settlePreview}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p:outputLabel value="Professional Fee Bill Settled" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Add More Fees"
+                                    icon="fa fa-plus"
+                                    class="ui-button-success"
+                                    ajax="false"
+                                    action="#{inwardProfessionalBillController.clearProfessionalFeeForm()}"/>
+                                <p:commandButton
+                                    value="Prof. Fee List"
+                                    icon="fa fa-list"
+                                    class="ui-button-secondary"
+                                    ajax="false"
+                                    action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(inwardProfessionalBillController.batchBill)}"/>
+                                <p:commandButton
+                                    value="Surgery Workbench"
+                                    icon="fa fa-scalpel"
+                                    class="ui-button-operating-theatre"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true"/>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{inwardProfessionalBillController.batchBill.patientEncounter}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <p:commandButton
+                                    value="Print"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    ajax="false">
+                                    <p:printer target="gpSettleBillPreview"/>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:panelGroup id="gpSettleBillPreview">
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                            <bi:cancel_professional_fee_5x5
+                                bill="#{inwardProfessionalBillController.lastSavedProfessionalFeeBill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
 
                 </p:panel>
 

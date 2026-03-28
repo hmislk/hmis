@@ -5,93 +5,145 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml">
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/Inward">
 
     <ui:define name="content">
 
         <h:panelGroup styleClass="opdPanel">
             <h:form id="form">
 
-                <p:panel>
+                <!-- Pre-cancel: reason form -->
+                <h:panelGroup rendered="#{!inwardSearch.printPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-ban" style="color: red;"/>
+                                    <p:outputLabel value="Cancel Professional Fee Bill" class="m-2"/>
+                                    <p:outputLabel value="#{inwardSearch.bill.deptId}" style="font-weight: bold;"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <p:outputLabel value="Reason for Cancellation" style="font-weight: 600;"/>
+                                    <p:inputText
+                                        value="#{inwardSearch.comment}"
+                                        placeholder="Enter a reason to cancel"
+                                        style="width: 350px;"/>
+                                    <p:commandButton
+                                        value="Confirm Cancel"
+                                        icon="fas fa-ban"
+                                        class="ui-button-danger"
+                                        ajax="false"
+                                        action="#{inwardSearch.cancelBillService()}"
+                                        onclick="return confirm('Are you sure you want to cancel this bill?');"/>
+                                    <p:commandButton
+                                        value="Back to List"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(inwardSearch.bill.forwardReferenceBill)}"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel header="Patient Details">
+                                <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                    <h:outputLabel value="Patient Name"/>
+                                    <h:outputLabel value=":"/>
+                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}"/>
+                                    <h:outputLabel value="BHT No"/>
+                                    <h:outputLabel value=":"/>
+                                    <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}"/>
+                                    <h:outputLabel value="Surgery"/>
+                                    <h:outputLabel value=":"/>
+                                    <h:outputLabel value="#{inwardSearch.bill.forwardReferenceBill.procedure.item.name}"/>
+                                </h:panelGrid>
+                            </p:panel>
+                            <p:panel header="Bill Details">
+                                <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                    <h:outputLabel value="Bill No"/>
+                                    <h:outputLabel value=":"/>
+                                    <h:outputLabel value="#{inwardSearch.bill.deptId}"/>
+                                    <h:outputLabel value="Total"/>
+                                    <h:outputLabel value=":"/>
+                                    <h:outputLabel value="#{inwardSearch.bill.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Added By"/>
+                                    <h:outputLabel value=":"/>
+                                    <h:outputLabel value="#{inwardSearch.bill.creater.webUserPerson.name}"/>
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:panelGrid>
+
+                        <p:panel header="Fee Lines" class="mt-3">
+                            <p:dataTable value="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
+                                         var="ec"
+                                         emptyMessage="No fee lines found.">
+                                <p:column headerText="Role">
+                                    <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                                </p:column>
+                                <p:column headerText="Doctor/Staff">
+                                    <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Fee" styleClass="text-end">
+                                    <h:outputLabel value="#{ec.billFee.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+                    </p:panel>
+                </h:panelGroup>
+
+                <!-- Post-cancel: print and navigation -->
+                <p:panel rendered="#{inwardSearch.printPreview}">
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h:outputText styleClass="fa-solid fa-ban fa-lg" style="color: red;"/>
-                                <p:outputLabel value="Cancel Professional Fee Bill" class="m-2"/>
-                                <p:outputLabel value="#{inwardSearch.bill.deptId}"
-                                               style="font-weight: bold;"/>
-                            </div>
-                            <div class="d-flex gap-2 align-items-center">
-                                <p:outputLabel value="Reason for Cancellation" style="font-weight: 600;"/>
-                                <p:inputText
-                                    value="#{inwardSearch.comment}"
-                                    placeholder="Enter a reason to cancel"
-                                    style="width: 350px;"/>
+                            <p:outputLabel value="Professional Fee Bill Cancelled" class="mt-2"/>
+                            <div class="d-flex gap-2">
                                 <p:commandButton
-                                    value="Confirm Cancel"
-                                    icon="fas fa-ban"
-                                    class="ui-button-danger"
-                                    ajax="false"
-                                    action="#{inwardSearch.cancelBillService()}"
-                                    onclick="return confirm('Are you sure you want to cancel this bill?');"/>
-                                <p:commandButton
-                                    value="Back to List"
-                                    icon="fa fa-arrow-left"
+                                    value="Prof. Fee List"
+                                    icon="fa fa-list"
                                     class="ui-button-secondary"
                                     ajax="false"
                                     action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(inwardSearch.bill.forwardReferenceBill)}"/>
+                                <p:commandButton
+                                    value="Surgery Workbench"
+                                    icon="fa fa-scalpel"
+                                    class="ui-button-operating-theatre"
+                                    ajax="false"
+                                    action="/theater/surgery_workbench?faces-redirect=true"/>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{inwardSearch.bill.patientEncounter}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <p:commandButton
+                                    value="Print"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    ajax="false">
+                                    <p:printer target="gpBillPreview"/>
+                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
 
-                    <p:panelGrid columns="2" style="width: 100%;">
-                        <p:panel header="Patient Details">
-                            <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
-                                <h:outputLabel value="Patient Name"/>
-                                <h:outputLabel value=":"/>
-                                <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}"/>
-                                <h:outputLabel value="BHT No"/>
-                                <h:outputLabel value=":"/>
-                                <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}"/>
-                                <h:outputLabel value="Surgery"/>
-                                <h:outputLabel value=":"/>
-                                <h:outputLabel value="#{inwardSearch.bill.forwardReferenceBill.procedure.item.name}"/>
-                            </h:panelGrid>
-                        </p:panel>
-                        <p:panel header="Bill Details">
-                            <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value=":"/>
-                                <h:outputLabel value="#{inwardSearch.bill.deptId}"/>
-                                <h:outputLabel value="Total"/>
-                                <h:outputLabel value=":"/>
-                                <h:outputLabel value="#{inwardSearch.bill.total}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <h:outputLabel value="Added By"/>
-                                <h:outputLabel value=":"/>
-                                <h:outputLabel value="#{inwardSearch.bill.creater.webUserPerson.name}"/>
-                            </h:panelGrid>
-                        </p:panel>
-                    </p:panelGrid>
-
-                    <p:panel header="Fee Lines" class="mt-3">
-                        <p:dataTable value="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
-                                     var="ec"
-                                     emptyMessage="No fee lines found.">
-                            <p:column headerText="Role">
-                                <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
-                            </p:column>
-                            <p:column headerText="Doctor/Staff">
-                                <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
-                            </p:column>
-                            <p:column headerText="Fee" styleClass="text-end">
-                                <h:outputLabel value="#{ec.billFee.feeValue}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
+                    <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                            <bi:cancel_professional_fee_5x5 bill="#{inwardSearch.bill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
 
                 </p:panel>
 
