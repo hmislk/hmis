@@ -1256,17 +1256,14 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void updateFee(ItemFee f) {
-        System.out.println("f = " + f);
-        System.out.println("f.isPrimaryFee() = " + f.isPrimaryFee());
         if (f.isPrimaryFee()) {
-            System.out.println("itemFees = " + itemFees);
-
             boolean hasOtherPrimaryFee = itemFees.stream()
                     .anyMatch(fee -> fee.isPrimaryFee() && fee.getId() != f.getId());
 
             if (hasOtherPrimaryFee) {
-                JsfUtil.addErrorMessage("You can't set PrimaryFee: another primary fee already exists");
                 f.setPrimaryFee(false);
+                JsfUtil.addErrorMessage("You can't set PrimaryFee: another primary fee already exists");
+                return ;
             }
         }
         itemFeeFacade.edit(f);
