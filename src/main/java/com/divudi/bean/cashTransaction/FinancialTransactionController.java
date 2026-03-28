@@ -273,6 +273,8 @@ public class FinancialTransactionController implements Serializable {
     private Bill fundTransferBillToCancel;
     private Bill fundTransferCancellationBill;
     private String fundTransferCancellationReason;
+    private Bill fundTransferBillToDecline;
+    private String fundTransferDeclineReason;
     private Date myFloatOutsFromDate;
     private Date myFloatOutsToDate;
 
@@ -5669,6 +5671,178 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
     }
 
+    public String navigateBackToMyFloatIns() {
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
+    }
+
+    /**
+     * Navigates to the fund transfer bill decline page.
+     * Only the intended recipient (toWebUser) may decline a pending transfer.
+     */
+    public String navigateToFundTransferBillDecline(Bill bill) {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_BILL) {
+            JsfUtil.addErrorMessage("Invalid bill type");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has already been cancelled");
+            return "";
+        }
+        if (bill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This float transfer has already been accepted and cannot be declined");
+            return "";
+        }
+        if (bill.getToWebUser() == null
+                || !bill.getToWebUser().equals(sessionController.getLoggedUser())) {
+            String beforeJson = String.format(
+                    "{\"billId\": %d, \"billDeptId\": \"%s\", \"recipientUserId\": %d, \"attemptingUserId\": %d}",
+                    bill.getId(),
+                    bill.getDeptId() != null ? bill.getDeptId() : "",
+                    bill.getToWebUser() != null ? bill.getToWebUser().getId() : 0,
+                    sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : 0
+            );
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Unauthorized Fund Transfer Decline Attempt - Navigation",
+                    beforeJson,
+                    bill.getId()
+            );
+            auditEventController.failAuditEvent(auditEvent,
+                    "Non-recipient user attempted to access fund transfer decline page");
+            JsfUtil.addErrorMessage("You can only decline float transfers sent to you");
+            return "";
+        }
+        fundTransferBillToDecline = bill;
+        fundTransferDeclineReason = null;
+        if (fundTransferBillToDecline.getPayments() == null || fundTransferBillToDecline.getPayments().isEmpty()) {
+            fundTransferBillToDecline.setPayments(findPaymentsForBill(fundTransferBillToDecline));
+        }
+        return "/cashier/fund_transfer_bill_decline?faces-redirect=true";
+    }
+
+    /**
+     * Executes the fund transfer bill decline by the recipient.
+     * Reverses the sender's drawer deduction by setting the cancellation
+     * payment's creater to the original sender (fromWebUser), ensuring
+     * DrawerService credits the correct drawer.
+     */
+    public String declineFundTransferBill() {
+        if (fundTransferBillToDecline == null) {
+            JsfUtil.addErrorMessage("No bill selected for decline");
+            return "";
+        }
+        Bill freshBill = billFacade.find(fundTransferBillToDecline.getId());
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has already been cancelled");
+            return "";
+        }
+        if (freshBill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This float transfer has been accepted and cannot be declined");
+            return "";
+        }
+        if (freshBill.getToWebUser() == null
+                || !freshBill.getToWebUser().equals(sessionController.getLoggedUser())) {
+            String beforeJson = String.format(
+                    "{\"billId\": %d, \"billDeptId\": \"%s\", \"recipientUserId\": %d, \"attemptingUserId\": %d}",
+                    freshBill.getId(),
+                    freshBill.getDeptId() != null ? freshBill.getDeptId() : "",
+                    freshBill.getToWebUser() != null ? freshBill.getToWebUser().getId() : 0,
+                    sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : 0
+            );
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Unauthorized Fund Transfer Decline Attempt - Execution",
+                    beforeJson,
+                    freshBill.getId()
+            );
+            auditEventController.failAuditEvent(auditEvent,
+                    "Non-recipient user attempted to execute fund transfer decline");
+            JsfUtil.addErrorMessage("You are not authorized to decline this float transfer");
+            return "";
+        }
+        if (fundTransferDeclineReason == null || fundTransferDeclineReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Decline reason is required");
+            return "";
+        }
+
+        CancelledBill declineBill = new CancelledBill();
+        declineBill.setBillType(BillType.FundTransferBill);
+        declineBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED);
+        declineBill.setBillClassType(BillClassType.CancelledBill);
+
+        declineBill.setDepartment(fundTransferBillToDecline.getDepartment());
+        declineBill.setInstitution(fundTransferBillToDecline.getInstitution());
+
+        declineBill.setFromStaff(fundTransferBillToDecline.getFromStaff());
+        declineBill.setFromWebUser(fundTransferBillToDecline.getFromWebUser());
+        declineBill.setToStaff(fundTransferBillToDecline.getToStaff());
+        declineBill.setToWebUser(fundTransferBillToDecline.getToWebUser());
+
+        declineBill.setCreater(sessionController.getLoggedUser());
+        declineBill.setCreatedAt(new Date());
+        declineBill.setBillDate(new Date());
+        declineBill.setBillTime(new Date());
+        declineBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        declineBill.setComments(fundTransferDeclineReason);
+
+        declineBill.setBilledBill(fundTransferBillToDecline);
+        declineBill.setBackwardReferenceBill(fundTransferBillToDecline);
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED
+        );
+        declineBill.setDeptId(deptId);
+        declineBill.setInsId(deptId);
+
+        billController.save(declineBill);
+
+        List<Payment> declinePayments = new ArrayList<>();
+        double totalValue = 0.0;
+
+        List<Payment> originalPayments = findPaymentsForBill(fundTransferBillToDecline);
+
+        for (Payment originalPayment : originalPayments) {
+            Payment declinePayment = new Payment();
+            declinePayment.setBill(declineBill);
+            declinePayment.setPaymentMethod(originalPayment.getPaymentMethod());
+            declinePayment.setCreatedAt(new Date());
+            // Use sender (fromWebUser) as creater so DrawerService updates the sender's drawer
+            declinePayment.setCreater(freshBill.getFromWebUser());
+
+            declinePayment.setPaidValue(Math.abs(originalPayment.getPaidValue()));
+            totalValue += declinePayment.getPaidValue();
+
+            declinePayment.setBank(originalPayment.getBank());
+            declinePayment.setChequeRefNo(originalPayment.getChequeRefNo());
+            declinePayment.setChequeDate(originalPayment.getChequeDate());
+            declinePayment.setCreditCardRefNo(originalPayment.getCreditCardRefNo());
+            declinePayment.setInstitution(originalPayment.getInstitution());
+
+            paymentController.save(declinePayment);
+            declinePayments.add(declinePayment);
+
+            // Add back to sender's drawer (payment.getCreater() = sender)
+            drawerController.updateDrawerForIns(declinePayment);
+        }
+
+        declineBill.setTotal(totalValue);
+        declineBill.setNetTotal(totalValue);
+        declineBill.getPayments().addAll(declinePayments);
+        billController.save(declineBill);
+
+        fundTransferBillToDecline.setCancelled(true);
+        fundTransferBillToDecline.setCancelledBill(declineBill);
+        billController.save(fundTransferBillToDecline);
+
+        JsfUtil.addSuccessMessage("Float transfer declined successfully");
+        return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
+    }
+
     public boolean hasAtLeastOneFundTransferBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
@@ -5690,6 +5864,7 @@ public class FinancialTransactionController implements Serializable {
         return bta == BillTypeAtomic.FUND_TRANSFER_BILL
                 || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
                 || bta == BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+                || bta == BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED
                 || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED;
     }
 
@@ -6918,6 +7093,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferCancellationReason(String fundTransferCancellationReason) {
         this.fundTransferCancellationReason = fundTransferCancellationReason;
+    }
+
+    public Bill getFundTransferBillToDecline() {
+        return fundTransferBillToDecline;
+    }
+
+    public void setFundTransferBillToDecline(Bill fundTransferBillToDecline) {
+        this.fundTransferBillToDecline = fundTransferBillToDecline;
+    }
+
+    public String getFundTransferDeclineReason() {
+        return fundTransferDeclineReason;
+    }
+
+    public void setFundTransferDeclineReason(String fundTransferDeclineReason) {
+        this.fundTransferDeclineReason = fundTransferDeclineReason;
     }
 
     public Date getMyFloatOutsFromDate() {
