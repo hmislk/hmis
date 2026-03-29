@@ -736,6 +736,17 @@ public class SurgeryBillController implements Serializable {
         return surgeryBill;
     }
 
+    /**
+     * Re-fetches the current surgery bill from the database so that the
+     * in-memory object reflects any totals updated by child-bill operations
+     * (e.g. professional fee cancellation) that ran in a different bean.
+     */
+    public void refreshSurgeryBillFromDb() {
+        if (surgeryBill != null && surgeryBill.getId() != null) {
+            surgeryBill = getBillFacade().find(surgeryBill.getId());
+        }
+    }
+
 //    private List<Bill> getBillsByForwardRef(Bill b) {
 //        String sql = "Select bf from Bill bf where bf.cancelled=false and "
 //                + " bf.retired=false and bf.forwardReferenceBill=:bill";

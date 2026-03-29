@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import com.divudi.bean.common.ConfigOptionController;
 import javax.ejb.EJB;
+import com.divudi.bean.inward.SurgeryBillController;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
@@ -69,6 +70,8 @@ public class InwardProfessionalBillController implements Serializable {
     AdmissionController admissionController;
     @Inject
     InwardSearch inwardSearch;
+    @Inject
+    SurgeryBillController surgeryBillController;
     @Inject
     ConfigOptionController configOptionController;
     ////////////////////
@@ -956,6 +959,7 @@ public class InwardProfessionalBillController implements Serializable {
         inwardSearch.setBill(bill);
         inwardSearch.cancelTheatreProfessionalFeeBill();
         surgeryProfessionalFeeBills = null;
+        surgeryBillController.refreshSurgeryBillFromDb();
     }
 
     public void setSurgeryProfessionalFeeBills(List<Bill> surgeryProfessionalFeeBills) {
