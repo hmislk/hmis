@@ -11,140 +11,179 @@
             <ui:define name="subcontent">
                 <h:form id="frm">
 
-                    <p:panel header="BHT Deposit and Credit Settlement Summary">
+                    <p:panel header="BHT Deposit and Credit Settlement Summary" class="m-1">
 
-                        <div class="row mb-2">
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
 
-                            <div class="col-md-2">
-                                <p:outputLabel value="From Date" />
-                                <p:datePicker
-                                    value="#{bhtPaymentSummaryReportController.fromDate}"
-                                    class="w-100"
-                                    showTime="true"
-                                    showButtonBar="true"
-                                    timeInput="true"
-                                    inputStyleClass="form-control"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </div>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{bhtPaymentSummaryReportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                            <div class="col-md-2">
-                                <p:outputLabel value="To Date" />
-                                <p:datePicker
-                                    value="#{bhtPaymentSummaryReportController.toDate}"
-                                    class="w-100"
-                                    showTime="true"
-                                    showButtonBar="true"
-                                    timeInput="true"
-                                    inputStyleClass="form-control"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </div>
+                            <p:spacer width="50" />
 
-                            <div class="col-md-2">
-                                <p:outputLabel value="Date Basis" />
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{bhtPaymentSummaryReportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf017;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Basis" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                styleClass="w-100 form-control"
+                                value="#{bhtPaymentSummaryReportController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf05a;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Status" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                styleClass="w-100 form-control"
+                                value="#{bhtPaymentSummaryReportController.admissionStatus}">
+                                <f:selectItems
+                                    value="#{enumController.admissionStatuses}"
+                                    var="s"
+                                    itemValue="#{s}"
+                                    itemLabel="#{s.label}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                styleClass="w-100 form-control"
+                                value="#{bhtPaymentSummaryReportController.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems
+                                    value="#{admissionTypeController.items}"
+                                    var="at"
+                                    itemValue="#{at}"
+                                    itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{bhtPaymentSummaryReportController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{bhtPaymentSummaryReportController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
                                 <p:selectOneMenu
-                                    value="#{bhtPaymentSummaryReportController.dateBasis}"
-                                    class="w-100">
-                                    <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
-                                    <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
-                                </p:selectOneMenu>
-                            </div>
-
-                            <div class="col-md-2">
-                                <p:outputLabel value="Admission Status" />
-                                <p:selectOneMenu
-                                    value="#{bhtPaymentSummaryReportController.admissionStatus}"
-                                    class="w-100">
-                                    <f:selectItems
-                                        value="#{enumController.admissionStatuses}"
-                                        var="s"
-                                        itemValue="#{s}"
-                                        itemLabel="#{s.label}" />
-                                </p:selectOneMenu>
-                            </div>
-
-                            <div class="col-md-2">
-                                <p:outputLabel value="Admission Type" />
-                                <p:selectOneMenu
-                                    value="#{bhtPaymentSummaryReportController.admissionType}"
-                                    class="w-100">
-                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
-                                    <f:selectItems
-                                        value="#{admissionTypeController.items}"
-                                        var="at"
-                                        itemValue="#{at}"
-                                        itemLabel="#{at.name}" />
-                                </p:selectOneMenu>
-                            </div>
-
-                        </div>
-
-                        <div class="row mb-2">
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Institution" />
-                                <p:selectOneMenu
-                                    id="cmbIns"
-                                    value="#{bhtPaymentSummaryReportController.institution}"
-                                    class="w-100"
-                                    filter="true"
-                                    autoWidth="false">
-                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
-                                    <f:selectItems
-                                        value="#{institutionController.companies}"
-                                        var="ins"
-                                        itemLabel="#{ins.name}"
-                                        itemValue="#{ins}" />
-                                    <p:ajax process="cmbIns" update="cmbSite" />
-                                </p:selectOneMenu>
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Site" />
-                                <p:selectOneMenu
-                                    id="cmbSite"
-                                    value="#{bhtPaymentSummaryReportController.site}"
-                                    class="w-100"
-                                    filter="true"
-                                    autoWidth="false">
-                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
-                                    <f:selectItems
-                                        value="#{institutionController.sites}"
-                                        var="site"
-                                        itemLabel="#{site.name}"
-                                        itemValue="#{site}" />
-                                    <p:ajax process="cmbSite" update="cmbDept" />
-                                </p:selectOneMenu>
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Department" />
-                                <p:selectOneMenu
-                                    id="cmbDept"
+                                    rendered="#{bhtPaymentSummaryReportController.institution eq null and bhtPaymentSummaryReportController.site eq null}"
+                                    styleClass="w-100 form-control"
                                     value="#{bhtPaymentSummaryReportController.department}"
-                                    class="w-100"
-                                    filter="true"
-                                    autoWidth="false">
-                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="#{bhtPaymentSummaryReportController.institution eq null and bhtPaymentSummaryReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtPaymentSummaryReportController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="#{bhtPaymentSummaryReportController.institution ne null and bhtPaymentSummaryReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(bhtPaymentSummaryReportController.institution)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="#{bhtPaymentSummaryReportController.institution ne null and bhtPaymentSummaryReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtPaymentSummaryReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems
                                         value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtPaymentSummaryReportController.institution, bhtPaymentSummaryReportController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" />
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
-                            </div>
 
-                            <div class="col-md-3 d-flex align-items-end">
-                                <p:commandButton
-                                    value="Generate"
-                                    icon="fas fa-play"
-                                    action="#{bhtPaymentSummaryReportController.generateReport()}"
-                                    ajax="true"
-                                    process="@form"
-                                    update="pnlResults"
-                                    class="ui-button-warning w-100" />
-                            </div>
+                            </h:panelGroup>
 
-                        </div>
+                        </h:panelGrid>
+
+                        <p:commandButton
+                            value="Generate"
+                            icon="fas fa-cogs"
+                            action="#{bhtPaymentSummaryReportController.generateReport()}"
+                            ajax="false"
+                            class="ui-button-success m-1"
+                            style="background-color: #28a745; border-color: #28a745;" />
 
                     </p:panel>
 
@@ -154,6 +193,22 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h:outputText value="Results" />
+                                <div>
+                                    <p:commandButton value="Print"
+                                                     icon="fas fa-print"
+                                                     class="ui-button-info me-1"
+                                                     ajax="false">
+                                        <p:printer target="tblReport" />
+                                    </p:commandButton>
+                                    <p:commandButton value="Excel"
+                                                     icon="fas fa-file-excel"
+                                                     class="ui-button-success"
+                                                     ajax="false">
+                                        <p:dataExporter type="xlsx"
+                                                        target="tblReport"
+                                                        fileName="BHT_Payment_Summary" />
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </f:facet>
 
@@ -195,7 +250,6 @@
                                 </h:outputText>
                             </p:column>
 
-                            <!-- One column per PaymentMethod -->
                             <p:columns
                                 value="#{bhtPaymentSummaryReportController.allPaymentMethods}"
                                 var="pm"

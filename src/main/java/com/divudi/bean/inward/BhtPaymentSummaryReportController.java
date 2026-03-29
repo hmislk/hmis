@@ -17,6 +17,7 @@ import com.divudi.bean.common.SessionController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +58,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     // Filter fields
     // -------------------------------------------------------------------------
-    private Date fromDate;
-    private Date toDate;
+    private Date fromDate = startOfCurrentMonth();
+    private Date toDate = new Date();
 
     /** "admissionDate" or "dischargeDate" */
     private String dateBasis = "dischargeDate";
@@ -213,7 +214,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     /**
      * Fetch all Payment records linked to INWARD_DEPOSIT bills for this encounter.
-     * Joins through BillItem since deposit bills link to the encounter via BillItem.
+     * Deposit bills link to the encounter via bill.patientEncounter directly.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         String jpql = "select p from Payment p"
@@ -221,12 +222,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " and p.bill.retired = false"
                 + " and p.bill.cancelled = false"
                 + " and p.bill.billTypeAtomic = :bta"
-                + " and p.bill.id in ("
-                + "   select distinct bi.bill.id from BillItem bi"
-                + "   where bi.patientEncounter = :enc"
-                + "   and bi.retired = false"
-                + "   and bi.bill.billTypeAtomic = :bta"
-                + " )";
+                + " and p.bill.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
         params.put("enc", enc);
@@ -258,9 +254,19 @@ public class BhtPaymentSummaryReportController implements Serializable {
         return columnTotals.getOrDefault(pm, 0.0);
     }
 
+    private static Date startOfCurrentMonth() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
     public void makeNull() {
-        fromDate = null;
-        toDate = null;
+        fromDate = startOfCurrentMonth();
+        toDate = new Date();
         dateBasis = "dischargeDate";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
