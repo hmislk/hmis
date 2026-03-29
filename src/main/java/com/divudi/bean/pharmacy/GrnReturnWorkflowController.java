@@ -787,8 +787,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 totalReturnQty = qty + freeQty;
             }
 
+            // Also check quantityByUnits and totalQuantity as a safety net
+            // to prevent retiring items that have non-zero unit quantities
+            // (protects against quantity/quantityByUnits mismatch from validation side-effects)
+            double qtyByUnits = fd.getQuantityByUnits() != null ? Math.abs(fd.getQuantityByUnits().doubleValue()) : 0.0;
+            double totalQty = fd.getTotalQuantity() != null ? Math.abs(fd.getTotalQuantity().doubleValue()) : 0.0;
+
             // If no return quantity, mark for retirement (use == 0.0 since we use absolute values)
-            if (totalReturnQty == 0.0) {
+            if (totalReturnQty == 0.0 && qtyByUnits == 0.0 && totalQty == 0.0) {
                 itemsToRetire.add(bi);
             }
         }
@@ -2055,8 +2061,25 @@ public class GrnReturnWorkflowController implements Serializable {
         double remainingQty = getRemainingQtyToReturn(billItem.getReferanceBillItem());
         double remainingFreeQty = getRemainingFreeQtyToReturn(billItem.getReferanceBillItem());
 
+        // Save original quantities before stock validation to prevent JPA auto-flush
+        // from persisting validation side-effects on managed entities
+        BigDecimal savedQuantity = fd.getQuantity();
+        BigDecimal savedFreeQuantity = fd.getFreeQuantity();
+        BigDecimal savedQuantityByUnits = fd.getQuantityByUnits();
+        BigDecimal savedFreeQuantityByUnits = fd.getFreeQuantityByUnits();
+        BigDecimal savedTotalQuantityByUnits = fd.getTotalQuantityByUnits();
+        BigDecimal savedTotalQuantity = fd.getTotalQuantity();
+
         // Validate stock availability - critical check
         if (!validateStockAvailability(billItem, true)) {
+            // Restore original quantities to prevent JPA auto-flush from
+            // persisting the reset values (which would corrupt the entity)
+            fd.setQuantity(savedQuantity);
+            fd.setFreeQuantity(savedFreeQuantity);
+            fd.setQuantityByUnits(savedQuantityByUnits);
+            fd.setFreeQuantityByUnits(savedFreeQuantityByUnits);
+            fd.setTotalQuantityByUnits(savedTotalQuantityByUnits);
+            fd.setTotalQuantity(savedTotalQuantity);
             isValid = false;
         }
 
@@ -2182,11 +2205,20 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 if (isAmppItem) {
                     double availableInPacks = availableForThisItem / unitsPerPack;
+                    double availableInUnits = availableForThisItem;
                     fd.setQuantity(BigDecimal.valueOf(availableInPacks));
                     fd.setFreeQuantity(BigDecimal.ZERO);
+                    fd.setQuantityByUnits(BigDecimal.valueOf(availableInUnits).negate());
+                    fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+                    fd.setTotalQuantityByUnits(BigDecimal.valueOf(availableInUnits).negate());
+                    fd.setTotalQuantity(BigDecimal.valueOf(availableInPacks).negate());
                 } else {
                     fd.setQuantity(BigDecimal.valueOf(availableForThisItem));
                     fd.setFreeQuantity(BigDecimal.ZERO);
+                    fd.setQuantityByUnits(BigDecimal.valueOf(availableForThisItem).negate());
+                    fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+                    fd.setTotalQuantityByUnits(BigDecimal.valueOf(availableForThisItem).negate());
+                    fd.setTotalQuantity(BigDecimal.valueOf(availableForThisItem).negate());
                 }
             }
             return false;
@@ -2280,11 +2312,11 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            // Skip items with zero quantities
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
+            // Skip items with zero quantities (use Math.abs since quantities are negated after finalization)
+            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
-            if (returnQty <= 0 && returnFreeQty <= 0) {
+            if (returnQty == 0 && returnFreeQty == 0) {
                 continue;
             }
 
