@@ -179,8 +179,8 @@ Patients pay deposits during or after admission. Deposits are deducted from the 
 
 | Page | Purpose | Controller |
 |---|---|---|
-| `/theater/inward_bill_surgery.xhtml` | Surgery billing | `SurgeryBillController` |
-| `/theater/surgery_workbench.xhtml` | Surgery workbench (replaces old `inward_bill_surgery.xhtml`) | `SurgeryBillController` |
+| `/theater/inward_bill_surgery.xhtml` | Surgery billing — **legacy, replaced by `surgery_workbench.xhtml`** | `SurgeryBillController` |
+| `/theater/surgery_workbench.xhtml` | Surgery workbench (current page) | `SurgeryBillController` |
 | `/theater/surgery_professional_fees.xhtml` | Add surgery professional fees (bill-per-session) | `InwardProfessionalBillController.navigateToSurgeryProfessionalFees(Bill)` |
 | `/theater/surgery_professional_fees_list.xhtml` | List of professional fee bills for a surgery | `InwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(Bill)` |
 | `/theater/surgery_professional_fees_cancel.xhtml` | Cancel a professional fee bill (with reason + print) | `InwardProfessionalBillController.navigateToSurgeryProfessionalFeeCancel(Bill)` |

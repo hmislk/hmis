@@ -149,6 +149,14 @@
                                                 target="#{patientController.current}">
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Professional Fees"
+                                            icon="fa fa-money-bill"
+                                            class="ui-button-success"
+                                            action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(surgeryBillController.surgeryBill)}">
+                                        </p:commandButton>
                                     </div>
                                 </h:panelGroup>
 
@@ -369,9 +377,9 @@
                                                 <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"/>
                                             </p:column>
                                             <p:column headerText="Fee">
-                                                <p:inputText autocomplete="off" style="width: 110px"
-                                                             value="#{c.billFee.feeValue}"
-                                                             disabled="#{c.billFee.paidValue!=0}"/>
+                                                <h:outputLabel value="#{c.billFee.feeValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Date">
                                                 <h:outputLabel value="#{c.billFee.createdAt}">
@@ -404,14 +412,16 @@
                                                 #{ti.billFee.patientItem.item.name}
                                             </p:column>
                                             <p:column headerText="Start Time">
-                                                <p:calendar navigator="true"
-                                                            value="#{ti.billFee.patientItem.fromTime}"
-                                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                <h:outputLabel value="#{ti.billFee.patientItem.fromTime}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Stopped Time">
-                                                <p:calendar navigator="true"
-                                                            value="#{ti.billFee.patientItem.toTime}"
-                                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                <h:outputLabel value="#{ti.billFee.patientItem.toTime}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Total">
                                                 #{ti.billFee.patientItem.serviceValue}

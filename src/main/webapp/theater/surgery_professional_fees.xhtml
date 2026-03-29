@@ -132,6 +132,13 @@
                                     <h:outputText value="Add Professional Fee" class="mx-4"/>
                                 </f:facet>
                                 <h:panelGrid columns="2" id="profPanel">
+                                    <h:outputLabel value="Role"/>
+                                    <p:selectOneMenu class="mx-4 my-1" style="width: 400px;"
+                                                     value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}">
+                                        <f:selectItem itemLabel="Please select Role"/>
+                                        <f:selectItems value="#{enumController.patientEncounterComponentTypes}"/>
+                                    </p:selectOneMenu>
+
                                     <h:outputText value="Speciality"/>
                                     <p:autoComplete forceSelection="true" id="cmbSpe"
                                                     value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}"
@@ -292,19 +299,19 @@
                     </f:facet>
 
                     <h:panelGroup id="gpSettleBillPreview">
-                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Surgery Professional Fee Bill is A4Paper', true)}">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Surgery Professional Fee Bill is A4Paper', true)}">
                             <bi:surgery_professional_fee_a4
                                 bill="#{inwardProfessionalBillController.lastSavedProfessionalFeeBill}"
                                 encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardProfessionalBillController.lastSavedProfessionalFeeBill)}"
                                 cancelled="false"/>
                         </h:panelGroup>
-                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Surgery Professional Fee Bill is FiveFivePaper', false)}">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Surgery Professional Fee Bill is FiveFivePaper', false)}">
                             <bi:surgery_professional_fee_5x5
                                 bill="#{inwardProfessionalBillController.lastSavedProfessionalFeeBill}"
                                 encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardProfessionalBillController.lastSavedProfessionalFeeBill)}"
                                 cancelled="false"/>
                         </h:panelGroup>
-                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Surgery Professional Fee Bill is PosPaper', false)}">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Surgery Professional Fee Bill is PosPaper', false)}">
                             <bi:surgery_professional_fee_pos
                                 bill="#{inwardProfessionalBillController.lastSavedProfessionalFeeBill}"
                                 encounterComponents="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardProfessionalBillController.lastSavedProfessionalFeeBill)}"
@@ -317,7 +324,7 @@
                 <!-- Print config dialog for settle preview -->
                 <p:dialog header="Print Settings" widgetVar="profFeeSettleConfigDialog" modal="true" responsive="true" style="width: 350px;">
                     <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeSettleConfigForm"/>
-                    <h:form id="profFeeSettleConfigForm">
+                    <h:panelGroup id="profFeeSettleConfigForm" layout="block">
                         <h:panelGrid columns="2" cellpadding="5">
                             <h:selectBooleanCheckbox id="chkA4Settle" value="#{inwardProfessionalBillController.profFeeA4}"/>
                             <h:outputLabel for="chkA4Settle" value="A4 Paper"/>
@@ -333,7 +340,7 @@
                             ajax="false"
                             action="#{inwardProfessionalBillController.saveProfFeeConfig()}"
                             onclick="PF('profFeeSettleConfigDialog').hide()"/>
-                    </h:form>
+                    </h:panelGroup>
                 </p:dialog>
 
             </h:form>

@@ -34,7 +34,7 @@
                                         icon="fas fa-ban"
                                         class="ui-button-danger"
                                         ajax="false"
-                                        action="#{inwardSearch.cancelBillService()}"
+                                        action="#{inwardSearch.cancelTheatreProfessionalFeeBill()}"
                                         onclick="return confirm('Are you sure you want to cancel this bill?');"/>
                                     <p:commandButton
                                         value="Back to List"
@@ -173,7 +173,7 @@
                 <!-- Print config dialog for cancel page -->
                 <p:dialog header="Print Settings" widgetVar="profFeeCancelConfigDialog" modal="true" responsive="true" style="width: 350px;">
                     <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeCancelConfigForm"/>
-                    <h:form id="profFeeCancelConfigForm">
+                    <h:panelGroup id="profFeeCancelConfigForm" layout="block">
                         <h:panelGrid columns="2" cellpadding="5">
                             <h:selectBooleanCheckbox id="chkA4Cancel" value="#{inwardProfessionalBillController.profFeeA4}"/>
                             <h:outputLabel for="chkA4Cancel" value="A4 Paper"/>
@@ -189,7 +189,7 @@
                             ajax="false"
                             action="#{inwardProfessionalBillController.saveProfFeeConfig()}"
                             onclick="PF('profFeeCancelConfigDialog').hide()"/>
-                    </h:form>
+                    </h:panelGroup>
                 </p:dialog>
 
             </h:form>
