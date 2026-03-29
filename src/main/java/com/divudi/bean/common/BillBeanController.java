@@ -2752,7 +2752,7 @@ public class BillBeanController implements Serializable {
 
     private double getTotalByBill(Bill b) {
         String sql = "Select sum(bf.netTotal) from Bill bf where "
-                + " bf.retired=false and bf.forwardReferenceBill=:bill";
+                + " bf.retired=false and bf.cancelled=false and bf.forwardReferenceBill=:bill";
         HashMap hm = new HashMap();
         hm.put("bill", b);
         return getBillFacade().findDoubleByJpql(sql, hm);
