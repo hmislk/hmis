@@ -136,7 +136,7 @@
                                                 <tr class="ui-widget-content" >
                                                     <td>Cash</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -146,7 +146,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal - financialTransactionController.bundle.denominatorValue}">
+                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -474,7 +474,11 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td></td>
-                                                        <td></td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{0 - financialTransactionController.bundle.floatOutTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
                                                     </tr>
                                                 </h:panelGroup>
 
@@ -488,7 +492,29 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td></td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.floatInTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+
+                                                <!-- Net To Handover Row (shown only when floats exist) -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0 or financialTransactionController.bundle.floatInTotal gt 0}">
+                                                    <tr class="ui-widget-content fw-bold" style="border-top: 2px solid #6c757d;">
+                                                        <td>Net To Handover</td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
                                                         <td></td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal - financialTransactionController.bundle.denominatorValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
                                                     </tr>
                                                 </h:panelGroup>
                                             </tbody>
