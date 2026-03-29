@@ -2838,6 +2838,18 @@ public class FinancialTransactionController implements Serializable {
             return null; // Early exit if no shift to end
         }
 
+        // Guard: outgoing pending floats — block until recipient accepts or sender cancels
+        if (hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have pending float transfers not yet accepted. Please cancel them or wait for the recipient to accept before closing your shift.");
+            return null;
+        }
+
+        // Guard: incoming pending floats — block until this user accepts or declines
+        if (hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have incoming float transfers awaiting your response. Please accept or decline them before closing your shift.");
+            return null;
+        }
+
         // Validate pending transactions before allowing shift end
         fillFundTransferBillsForMeToReceive();
 
@@ -3994,7 +4006,7 @@ public class FinancialTransactionController implements Serializable {
                 .append("WHERE p.retired=:pr ")
                 .append("AND b.retired=:br ")
                 .append("AND b.billTypeAtomic IN :btas  ")
-                .append("AND p.creater=:cr ")
+                .append("AND (p.creater=:cr OR p.floatRecipient=:cr) ")
                 .append("AND p.cancelled=:can ")
                 .append("AND p.id > :sid ");
         m.put("btas", btas);
@@ -4211,13 +4223,28 @@ public class FinancialTransactionController implements Serializable {
 
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        double floatOutAcc = 0.0;
+        double floatInAcc = 0.0;
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
-                // Fund transfer payments are managed entirely by the drawer system.
-                // Including them here causes their negative (float out) or positive (float in)
-                // values to distort the cash total on the shift end handover page.
+                // Fund transfer payments are kept separate from collection rows to avoid
+                // mixing float adjustments with department-based collections. Their net
+                // effect is tracked in floatOutAcc/floatInAcc and stored on the parent bundle.
                 if (isFundTransferPayment(p)) {
+                    if (p.getBill() != null) {
+                        BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
+                        if (bta == BillTypeAtomic.FUND_TRANSFER_BILL
+                                && p.getBill().getReferenceBill() != null
+                                && !p.getBill().isCancelled()) {
+                            // Accepted float out — deducted from this user's drawer when recipient accepted
+                            floatOutAcc += Math.abs(p.getPaidValue());
+                        } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                            // Float in received by this user
+                            floatInAcc += Math.abs(p.getPaidValue());
+                        }
+                        // Cancelled, declined, or pending — no drawer effect, skip
+                    }
                     continue;
                 }
                 // Retrieve the payment handover type
@@ -4290,6 +4317,8 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
+        bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
+        bundleToHoldDeptUserDayBundle.setFloatInTotal(floatInAcc);
         if (startBill != null) {
             bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         } else {
@@ -6226,6 +6255,7 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
             p.setCurrentHolder(sessionController.getLoggedUser());
+            p.setFloatRecipient(sessionController.getLoggedUser());
             p.setDepartment(null);
             p.setInstitution(null);
             p.setPaidValue(Math.abs(p.getPaidValue()));

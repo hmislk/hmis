@@ -116,10 +116,16 @@
 
                             <p:column headerText="Initiated By">
                                 <h:outputText value="#{bp.fromWebUser.webUserPerson.nameWithTitle}" />
+                                <h:outputText value="&nbsp;(" />
+                                <h:outputText value="#{bp.fromWebUser.name}" />
+                                <h:outputText value=")" />
                             </p:column>
 
                             <p:column headerText="Accepted By">
                                 <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}" />
+                                <h:outputText value="&nbsp;(" />
+                                <h:outputText value="#{bp.toWebUser.name}" />
+                                <h:outputText value=")" />
                             </p:column>
 
                             <p:column headerText="Amount" style="text-align: right;" width="10em">
