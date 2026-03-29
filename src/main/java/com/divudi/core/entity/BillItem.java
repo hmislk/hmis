@@ -182,6 +182,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double previousRecieveFreeQtyInUnit;
     @Transient
     private double issuedPhamaceuticalItemQty;
+    @ManyToOne
+    private Staff primaryStaff;
 
     public double getIssuedPhamaceuticalItemQty() {
         return issuedPhamaceuticalItemQty;
@@ -1229,6 +1231,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setConsideredForCosting(boolean consideredForCosting) {
         this.consideredForCosting = consideredForCosting;
+    }
+
+    public Staff getPrimaryStaff() {
+        return primaryStaff;
+    }
+
+    public void setPrimaryStaff(Staff primaryStaff) {
+        this.primaryStaff = primaryStaff;
     }
 
 }
