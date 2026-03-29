@@ -250,6 +250,7 @@ public class FinancialTransactionController implements Serializable {
 
     private Department department;
     private WebUser user;
+    private WebUser toUser;
     private Staff fromStaff;
     private Staff toStaff;
     private Department forDepartment;
@@ -2108,6 +2109,46 @@ public class FinancialTransactionController implements Serializable {
         return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
+    public String navigateToHandoverStatusReport() {
+        user = null;
+        toUser = null;
+        fromDate = null;
+        toDate = null;
+        return "/reports/cashier_reports/handover_status_report?faces-redirect=true";
+    }
+
+    public void fillHandoverStatusReport() {
+        currentBills = new ArrayDeque<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpqlBuilder = new StringBuilder("select s from Bill s "
+                + "where (s.retired=false or s.retired is null) "
+                + "and s.billTypeAtomic=:btype ");
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        Date fd = getFromDate();
+        Date td = getToDate();
+        if (fd != null && td != null) {
+            jpqlBuilder.append("and s.createdAt between :fd and :td ");
+            params.put("fd", fd);
+            params.put("td", td);
+        } else if (fd != null) {
+            jpqlBuilder.append("and s.createdAt >= :fd ");
+            params.put("fd", fd);
+        } else if (td != null) {
+            jpqlBuilder.append("and s.createdAt <= :td ");
+            params.put("td", td);
+        }
+        if (user != null) {
+            jpqlBuilder.append("and s.fromWebUser=:fromUser ");
+            params.put("fromUser", user);
+        }
+        if (toUser != null) {
+            jpqlBuilder.append("and s.toWebUser=:toUser ");
+            params.put("toUser", toUser);
+        }
+        jpqlBuilder.append("order by s.createdAt desc ");
+        currentBills = billFacade.findByJpql(jpqlBuilder.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     public String navigateToActiveShiftsReport() {
         fillAllActiveShifts();
         return "/reports/cashier_reports/active_shifts?faces-redirect=true";
@@ -2808,6 +2849,18 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             JsfUtil.addErrorMessage("No Shift to End");
             return null; // Early exit if no shift to end
+        }
+
+        // Guard: outgoing pending floats — block until recipient accepts or sender cancels
+        if (hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have pending float transfers not yet accepted. Please cancel them or wait for the recipient to accept before closing your shift.");
+            return null;
+        }
+
+        // Guard: incoming pending floats — block until this user accepts or declines
+        if (hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have incoming float transfers awaiting your response. Please accept or decline them before closing your shift.");
+            return null;
         }
 
         // Validate pending transactions before allowing shift end
@@ -3966,7 +4019,7 @@ public class FinancialTransactionController implements Serializable {
                 .append("WHERE p.retired=:pr ")
                 .append("AND b.retired=:br ")
                 .append("AND b.billTypeAtomic IN :btas  ")
-                .append("AND p.creater=:cr ")
+                .append("AND (p.creater=:cr OR p.floatRecipient=:cr) ")
                 .append("AND p.cancelled=:can ")
                 .append("AND p.id > :sid ");
         m.put("btas", btas);
@@ -4183,13 +4236,28 @@ public class FinancialTransactionController implements Serializable {
 
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        double floatOutAcc = 0.0;
+        double floatInAcc = 0.0;
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
-                // Fund transfer payments are managed entirely by the drawer system.
-                // Including them here causes their negative (float out) or positive (float in)
-                // values to distort the cash total on the shift end handover page.
+                // Fund transfer payments are kept separate from collection rows to avoid
+                // mixing float adjustments with department-based collections. Their net
+                // effect is tracked in floatOutAcc/floatInAcc and stored on the parent bundle.
                 if (isFundTransferPayment(p)) {
+                    if (p.getBill() != null) {
+                        BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
+                        if (bta == BillTypeAtomic.FUND_TRANSFER_BILL
+                                && p.getBill().getReferenceBill() != null
+                                && !p.getBill().isCancelled()) {
+                            // Accepted float out — deducted from this user's drawer when recipient accepted
+                            floatOutAcc += Math.abs(p.getPaidValue());
+                        } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                            // Float in received by this user
+                            floatInAcc += Math.abs(p.getPaidValue());
+                        }
+                        // Cancelled, declined, or pending — no drawer effect, skip
+                    }
                     continue;
                 }
                 // Retrieve the payment handover type
@@ -4262,6 +4330,8 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
+        bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
+        bundleToHoldDeptUserDayBundle.setFloatInTotal(floatInAcc);
         if (startBill != null) {
             bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         } else {
@@ -6198,6 +6268,7 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
             p.setCurrentHolder(sessionController.getLoggedUser());
+            p.setFloatRecipient(sessionController.getLoggedUser());
             p.setDepartment(null);
             p.setInstitution(null);
             p.setPaidValue(Math.abs(p.getPaidValue()));
@@ -6412,8 +6483,13 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotal());
+        // Use the CREATE bill's denomination-based total, not the payment sum.
+        // The CREATE bill (selectedBill) stores the physical cash the sender counted
+        // in denominations (e.g. 470 when 30 was sent as float). Recomputing from
+        // PaymentHandoverItem payment values gives the raw collection total (500),
+        // inflating the ACCEPT bill and the receiver's drawer by the float amount.
+        currentBill.setTotal(selectedBill.getNetTotal());
+        currentBill.setNetTotal(selectedBill.getNetTotal());
         billController.save(currentBill);
 
         List<Payment> payments = new ArrayList();
@@ -6482,7 +6558,20 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        updateDraverForHandoverAccept(payments, reciver, sender);
+        // Drawer update for receiver:
+        // - Cash: use the denomination total from the CREATE bill (physical amount handed over).
+        //   bundle.getCashHandoverValue() was set from denoBill.getNetTotal() during navigation,
+        //   so it reflects what the sender physically counted (e.g. 470, not 500 if 30 went as float).
+        // - Non-cash: use each payment's original paidValue (cheque/card are handed over at face value).
+        double cashHandoverDenominationTotal = bundle.getCashHandoverValue();
+        if (cashHandoverDenominationTotal > 0) {
+            drawerController.updateDrawerForIns(currentBill, PaymentMethod.Cash, cashHandoverDenominationTotal, reciver);
+        }
+        for (Payment p : payments) {
+            if (p.getPaymentMethod() != null && p.getPaymentMethod() != PaymentMethod.Cash) {
+                drawerController.updateDrawer(currentBill, p.getPaidValue(), p.getPaymentMethod(), reciver);
+            }
+        }
 
         billController.save(currentBill);
 
@@ -7922,6 +8011,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
+    }
+
+    public WebUser getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(WebUser toUser) {
+        this.toUser = toUser;
     }
 
     public Staff getFromStaff() {

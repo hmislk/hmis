@@ -247,19 +247,65 @@
                                             </p:outputLabel>
                                         </h:panelGroup>
 
-                                        <!-- Grand Total -->
-                                        <p:outputLabel value="Grand Total"
+                                        <!-- Grand Total (Collections) -->
+                                        <p:outputLabel value="Collections Total"
                                                        style="text-align: left; font-weight: bold;" />
                                         <h:panelGroup layout="block" class="text-end">
-                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + 
-                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue + 
-                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue + 
-                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + 
-                                                                    financialTransactionController.bundle.chequeValue + 
-                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + 
-                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + 
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue +
+                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue +
+                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue +
+                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue +
+                                                                    financialTransactionController.bundle.chequeValue +
+                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue +
+                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue +
                                                                     financialTransactionController.bundle.onlineSettlementValue+financialTransactionController.bundle.startBill.total}"
                                                            style="text-align: right; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Float Sent (accepted) — only shown if non-zero -->
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0}">
+                                            <i class="pi pi-arrow-up-right" style="margin-right:5px; color:#dc3545;" />
+                                            <p:outputLabel value="Float Sent (Accepted)" style="color:#dc3545;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.floatOutTotal gt 0}">
+                                            <p:outputLabel value="#{0 - financialTransactionController.bundle.floatOutTotal}"
+                                                           style="color:#dc3545; font-weight:bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Float Received — only shown if non-zero -->
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.floatInTotal gt 0}">
+                                            <i class="pi pi-arrow-down-left" style="margin-right:5px; color:#28a745;" />
+                                            <p:outputLabel value="Float Received" style="color:#28a745;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.floatInTotal gt 0}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.floatInTotal}"
+                                                           style="color:#28a745; font-weight:bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Net To Handover — shown whenever there are any floats -->
+                                        <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0 or financialTransactionController.bundle.floatInTotal gt 0}"
+                                                      style="border-top:2px solid #343a40; padding-top:4px;">
+                                            <i class="pi pi-wallet" style="margin-right:5px;" />
+                                            <p:outputLabel value="Net To Handover" style="font-weight:bold;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" class="text-end"
+                                                      rendered="#{financialTransactionController.bundle.floatOutTotal gt 0 or financialTransactionController.bundle.floatInTotal gt 0}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue +
+                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue +
+                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue +
+                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue +
+                                                                    financialTransactionController.bundle.chequeValue +
+                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue +
+                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue +
+                                                                    financialTransactionController.bundle.onlineSettlementValue + financialTransactionController.bundle.startBill.total +
+                                                                    financialTransactionController.bundle.floatNetTotal}"
+                                                           style="font-weight:bold; font-size:1.1em;">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </h:panelGroup>
