@@ -900,6 +900,7 @@ public class InwardSearch implements Serializable {
 
             getBillFacade().edit(cb);
             getBillFacade().edit((BilledBill) getBill());
+            getBillBean().updateBatchBillExcludingCancelled(getBill().getForwardReferenceBill());
             JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
@@ -955,6 +956,7 @@ public class InwardSearch implements Serializable {
 
             getBillFacade().edit(cb);
             getBillFacade().edit((BilledBill) getBill());
+            getBillBean().updateBatchBillExcludingCancelled(getBill().getForwardReferenceBill());
             JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;

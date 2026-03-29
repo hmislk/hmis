@@ -2750,7 +2750,38 @@ public class BillBeanController implements Serializable {
         getBillFacade().edit(b);
     }
 
+    /**
+     * Updates the batch bill total counting only non-cancelled child bills.
+     * Use this when cancellation of a child bill should reduce the parent total
+     * (e.g. surgery professional fee cancellation).
+     * Do NOT use this as a drop-in replacement for updateBatchBill() — other
+     * billing flows (inward service, pharmacy, timed items) may rely on
+     * cancelled bills still contributing to the batch total for reconciliation.
+     */
+    public void updateBatchBillExcludingCancelled(Bill b) {
+
+        if (b == null) {
+            return;
+        }
+
+        double value = getTotalByBillExcludingCancelled(b);
+        b.setTotal(value);
+
+        getBillFacade().edit(b);
+    }
+
+    // WARNING: this sum intentionally includes cancelled child bills.
+    // Some billing flows depend on that behaviour for reconciliation purposes.
+    // If you need to exclude cancelled bills, use getTotalByBillExcludingCancelled().
     private double getTotalByBill(Bill b) {
+        String sql = "Select sum(bf.netTotal) from Bill bf where "
+                + " bf.retired=false and bf.forwardReferenceBill=:bill";
+        HashMap hm = new HashMap();
+        hm.put("bill", b);
+        return getBillFacade().findDoubleByJpql(sql, hm);
+    }
+
+    private double getTotalByBillExcludingCancelled(Bill b) {
         String sql = "Select sum(bf.netTotal) from Bill bf where "
                 + " bf.retired=false and bf.cancelled=false and bf.forwardReferenceBill=:bill";
         HashMap hm = new HashMap();
