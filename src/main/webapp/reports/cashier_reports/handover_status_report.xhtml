@@ -10,7 +10,9 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel class="m-1 p-1 container-flex">
+                    <p:panel class="m-1 p-1 container-flex"
+                             rendered="#{webUserController.hasPrivilege('CashierHandoverStatusReport')}"
+                             >
                         <f:facet name="header">
                             <p:outputLabel value="Handover Status Report" />
                         </f:facet>
@@ -115,17 +117,21 @@
                             </p:column>
 
                             <p:column headerText="Initiated By">
-                                <h:outputText value="#{bp.fromWebUser.webUserPerson.nameWithTitle}" />
-                                <h:outputText value="&nbsp;(" />
-                                <h:outputText value="#{bp.fromWebUser.name}" />
-                                <h:outputText value=")" />
+                                <h:panelGroup rendered="#{bp.fromWebUser ne null}">
+                                    <h:outputText value="#{bp.fromWebUser.webUserPerson ne null ? bp.fromWebUser.webUserPerson.nameWithTitle : ''}" />
+                                    <h:outputText value="&nbsp;(" />
+                                    <h:outputText value="#{bp.fromWebUser.name}" />
+                                    <h:outputText value=")" />
+                                </h:panelGroup>
                             </p:column>
 
                             <p:column headerText="Accepted By">
-                                <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}" />
-                                <h:outputText value="&nbsp;(" />
-                                <h:outputText value="#{bp.toWebUser.name}" />
-                                <h:outputText value=")" />
+                                <h:panelGroup rendered="#{bp.toWebUser ne null}">
+                                    <h:outputText value="#{bp.toWebUser.webUserPerson ne null ? bp.toWebUser.webUserPerson.nameWithTitle : ''}" />
+                                    <h:outputText value="&nbsp;(" />
+                                    <h:outputText value="#{bp.toWebUser.name}" />
+                                    <h:outputText value=")" />
+                                </h:panelGroup>
                             </p:column>
 
                             <p:column headerText="Amount" style="text-align: right;" width="10em">
