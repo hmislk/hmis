@@ -6440,8 +6440,13 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotal());
+        // Use the CREATE bill's denomination-based total, not the payment sum.
+        // The CREATE bill (selectedBill) stores the physical cash the sender counted
+        // in denominations (e.g. 470 when 30 was sent as float). Recomputing from
+        // PaymentHandoverItem payment values gives the raw collection total (500),
+        // inflating the ACCEPT bill and the receiver's drawer by the float amount.
+        currentBill.setTotal(selectedBill.getNetTotal());
+        currentBill.setNetTotal(selectedBill.getNetTotal());
         billController.save(currentBill);
 
         List<Payment> payments = new ArrayList();
@@ -6510,7 +6515,20 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        updateDraverForHandoverAccept(payments, reciver, sender);
+        // Drawer update for receiver:
+        // - Cash: use the denomination total from the CREATE bill (physical amount handed over).
+        //   bundle.getCashHandoverValue() was set from denoBill.getNetTotal() during navigation,
+        //   so it reflects what the sender physically counted (e.g. 470, not 500 if 30 went as float).
+        // - Non-cash: use each payment's original paidValue (cheque/card are handed over at face value).
+        double cashHandoverDenominationTotal = bundle.getCashHandoverValue();
+        if (cashHandoverDenominationTotal > 0) {
+            drawerController.updateDrawerForIns(currentBill, PaymentMethod.Cash, cashHandoverDenominationTotal, reciver);
+        }
+        for (Payment p : payments) {
+            if (p.getPaymentMethod() != null && p.getPaymentMethod() != PaymentMethod.Cash) {
+                drawerController.updateDrawer(currentBill, p.getPaidValue(), p.getPaymentMethod(), reciver);
+            }
+        }
 
         billController.save(currentBill);
 
