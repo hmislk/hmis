@@ -3874,7 +3874,7 @@ public class BillBeanController implements Serializable {
             System.out.println(currentBillItem.getItem().getName() + " Using " + currentBillItem.getItem().getSessionNumberType().name());
             
             switch (currentBillItem.getItem().getSessionNumberType()) {
-                case ByBill:
+                case ByBill: // Done
                     System.out.println("Using ByBill");
                     serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingBill(sessionController.getDepartment(),currentBillItem );
                     break;
@@ -3887,16 +3887,16 @@ public class BillBeanController implements Serializable {
                     System.out.println("Using ByItem");
                     serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingItem(sessionController.getDepartment(), currentBillItem);
                     break;
-                case ByItemDepatrment:
+                case ByItemDepatrment: // Done
                     System.out.println("Using ByItemDepatrment");
                     serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingItemDeDepartment(sessionController.getDepartment(), currentBillItem);
                     break;
-                case ByDoctor:// Done
+                case ByDoctor: // Done
                 case ByDoctorSession:
                     System.out.println("Using ByDoctor or ByDoctorSession");
                     serialNumber = serialNumberGeneratorService.fetchLastSerialNumberForDayUsingDoctor(sessionController.getDepartment(), currentBillItem);
                     break;
-                case None:
+                case None: // Done
                     System.out.println("Using None");
                     break;
             }

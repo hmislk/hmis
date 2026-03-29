@@ -179,10 +179,10 @@ public class SerialNumberGeneratorService {
         calEnd.set(Calendar.MILLISECOND, 999);
         Date endOfDay = calEnd.getTime();
 
-        String jpql = "SELECT count(bi) FROM Bill bi "
+        String jpql = "SELECT count(bi) FROM BillItem bi "
                 + " where bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billTypeAtomic =:type"
-                + " and bi,bill.department=:dep "
+                + " and bi.bill.department=:dep "
                 + " and bi.retired =:ret"
                 + " and bi.item.sessionNumberType =:sType";
         HashMap hm = new HashMap();
