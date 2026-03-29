@@ -923,6 +923,7 @@ public class InwardProfessionalBillController implements Serializable {
     public String navigateToSurgeryProfessionalFeeCancel(Bill profFeeBill) {
         inwardSearch.setBill(profFeeBill);
         inwardSearch.setComment(null);
+        inwardSearch.setPrintPreview(false);
         return "/theater/surgery_professional_fees_cancel?faces-redirect=true";
     }
 
@@ -953,7 +954,7 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void cancelSurgeryProfessionalFeeBill(Bill bill) {
         inwardSearch.setBill(bill);
-        inwardSearch.cancelBillService();
+        inwardSearch.cancelTheatreProfessionalFeeBill();
         surgeryProfessionalFeeBills = null;
     }
 

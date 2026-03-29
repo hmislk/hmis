@@ -132,6 +132,13 @@
                                     <h:outputText value="Add Professional Fee" class="mx-4"/>
                                 </f:facet>
                                 <h:panelGrid columns="2" id="profPanel">
+                                    <h:outputLabel value="Role"/>
+                                    <p:selectOneMenu class="mx-4 my-1" style="width: 400px;"
+                                                     value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}">
+                                        <f:selectItem itemLabel="Please select Role"/>
+                                        <f:selectItems value="#{enumController.patientEncounterComponentTypes}"/>
+                                    </p:selectOneMenu>
+
                                     <h:outputText value="Speciality"/>
                                     <p:autoComplete forceSelection="true" id="cmbSpe"
                                                     value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}"

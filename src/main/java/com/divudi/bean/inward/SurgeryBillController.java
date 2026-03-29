@@ -622,6 +622,10 @@ public class SurgeryBillController implements Serializable {
             JsfUtil.addErrorMessage("No surgery selected.");
             return;
         }
+        if (surgeryBill.getPatientEncounter() != null && surgeryBill.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Payment finalized; cannot modify clinical details.");
+            return;
+        }
         if (getClinicalEncounterComponent().getStaff() == null) {
             JsfUtil.addErrorMessage("Select Staff.");
             return;
@@ -642,6 +646,10 @@ public class SurgeryBillController implements Serializable {
     }
 
     public void removeClinicalStaff(EncounterComponent ec) {
+        if (surgeryBill != null && surgeryBill.getPatientEncounter() != null && surgeryBill.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Payment finalized; cannot modify clinical details.");
+            return;
+        }
         ec.setRetired(true);
         ec.setRetiredAt(new Date());
         ec.setRetirer(getSessionController().getLoggedUser());
@@ -653,6 +661,10 @@ public class SurgeryBillController implements Serializable {
     public void saveSurgicalDetails() {
         if (surgeryBill == null || surgeryBill.getProcedure() == null) {
             JsfUtil.addErrorMessage("No surgery selected.");
+            return;
+        }
+        if (surgeryBill.getPatientEncounter() != null && surgeryBill.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Payment finalized; cannot modify clinical details.");
             return;
         }
         PatientEncounter proc = surgeryBill.getProcedure();
