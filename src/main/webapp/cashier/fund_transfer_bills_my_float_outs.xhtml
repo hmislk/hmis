@@ -63,6 +63,9 @@
 
                             <p:column headerText="To User">
                                 <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}" />
+                                <h:outputText value="&nbsp;(" />
+                                <h:outputText value="#{bp.toWebUser.name}" />
+                                <h:outputText value=")" />
                             </p:column>
 
                             <p:column headerText="Amount" style="text-align: right;">
