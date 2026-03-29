@@ -136,7 +136,7 @@
                                                 <tr class="ui-widget-content" >
                                                     <td>Cash</td>
                                                     <td class="text-end">
-                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue}">
+                                                        <h:outputText value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -146,7 +146,7 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
-                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.denominatorValue}">
+                                                        <h:outputText id="txtCashHandover" value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.floatNetTotal - financialTransactionController.bundle.denominatorValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -462,6 +462,33 @@
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                                <!-- Float Sent (Accepted) Row -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.floatOutTotal gt 0}">
+                                                    <tr class="ui-widget-content" style="color: #dc3545;">
+                                                        <td>Float Sent (Accepted)</td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{0 - financialTransactionController.bundle.floatOutTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                    </tr>
+                                                </h:panelGroup>
+
+                                                <!-- Float Received Row -->
+                                                <h:panelGroup rendered="#{financialTransactionController.bundle.floatInTotal gt 0}">
+                                                    <tr class="ui-widget-content" style="color: #198754;">
+                                                        <td>Float Received</td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{financialTransactionController.bundle.floatInTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
                                                     </tr>
                                                 </h:panelGroup>
                                             </tbody>
