@@ -891,6 +891,7 @@ public class InwardSearch implements Serializable {
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
+            cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
 
@@ -945,6 +946,7 @@ public class InwardSearch implements Serializable {
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
+            cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
 

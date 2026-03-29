@@ -18,7 +18,7 @@ Do NOT add new print pages using this pattern:
 </p:selectOneMenu>
 ```
 
-**All new print pages must use the config button pattern** described below — a gear/settings button that opens a `p:dialog` with `h:selectBooleanCheckbox` options, persisted per department via `configOptionController`.
+**All new department-specific print pages should use the config button pattern** described below — a gear/settings button that opens a `p:dialog` with `h:selectBooleanCheckbox` options, persisted via `configOptionController`. The persistence mechanism is shared across modules; the backing bean and action methods should live in the owning module's controller (not necessarily `PharmacyConfigController`, which is pharmacy-specific). `PharmacyConfigController` is referenced in the example steps below only as an illustration.
 
 ## Architecture
 

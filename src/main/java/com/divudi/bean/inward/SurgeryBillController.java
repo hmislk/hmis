@@ -655,6 +655,11 @@ public class SurgeryBillController implements Serializable {
         ec.setRetirer(getSessionController().getLoggedUser());
         getEncounterComponentFacade().edit(ec);
         getClinicalEncounterComponents().remove(ec);
+        int index = 0;
+        for (EncounterComponent remaining : getClinicalEncounterComponents()) {
+            remaining.setOrderNo(index++);
+            getEncounterComponentFacade().edit(remaining);
+        }
         JsfUtil.addSuccessMessage("Removed.");
     }
 
