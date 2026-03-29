@@ -5171,7 +5171,8 @@ public class FinancialTransactionController implements Serializable {
         }
 
         Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashValue()) > maximumAllowedCashDifferenceForHandover) {
+        double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
+        if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
