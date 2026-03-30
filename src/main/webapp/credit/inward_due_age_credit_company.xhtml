@@ -14,7 +14,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="INWARD DUE AGE" />
                         </f:facet>
-                        <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}"  />
+                        <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTableWithFilters()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
