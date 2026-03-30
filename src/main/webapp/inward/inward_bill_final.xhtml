@@ -269,7 +269,8 @@
                                 <h:outputLabel value="#{alloc.companyName}" />
                             </p:column>
                             <p:column headerText="Allocated Amount" style="width: 200px;">
-                                <p:inputText value="#{alloc.allocatedAmount}" style="width: 150px;">
+                                <p:inputText value="#{alloc.allocatedAmount}" style="width: 150px;"
+                                             title="Allocated amount for #{alloc.companyName}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:inputText>
                             </p:column>

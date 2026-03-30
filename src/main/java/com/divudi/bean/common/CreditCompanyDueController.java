@@ -561,10 +561,13 @@ public class CreditCompanyDueController implements Serializable {
 
         String jpql = "SELECT bill FROM Bill bill "
                 + "WHERE bill.retired <> :br "
-                + "AND bill.billTypeAtomic IN :bts";
+                + "AND (bill.cancelled = false OR bill.cancelled IS NULL) "
+                + "AND bill.billTypeAtomic IN :bts "
+                + "AND (ABS(bill.netTotal) - ABS(bill.paidAmount)) > :minBalance";
 
         parameters.put("br", true);
         parameters.put("bts", bts);
+        parameters.put("minBalance", 0.01);
 
         if (institutionOfDepartment != null) {
             jpql += " AND bill.institution = :ins";
@@ -1476,39 +1479,41 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditDue() {
-        Date startTime = new Date();
-
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, true);
+        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate());
         institutionEncounters = new ArrayList<>();
         finalTotal = 0.0;
         finalPaidTotal = 0.0;
         finalPaidTotalPatient = 0.0;
         finalTransPaidTotal = 0.0;
         finalTransPaidTotalPatient = 0.0;
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Credit, true);
+
+        for (Institution company : companies) {
+            if (company == null) {
+                continue;
+            }
+            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate());
+            if (bills.isEmpty()) {
+                continue;
+            }
 
             InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
-            for (PatientEncounter b : lst) {
-                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
-                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
-                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
-                newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getPaidAmount());
-                newIns.setTransPaidTotalPatient(newIns.getTransPaidTotalPatient() + b.getTransPaidByPatient());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
-                newIns.setTransPaidTotal(newIns.getTransPaidTotal() + b.getTransPaidByCompany());
+            newIns.setInstitution(company);
+            newIns.setBills(bills);
+
+            List<PatientEncounter> encounters = new ArrayList<>();
+            for (Bill bill : bills) {
+                newIns.setTotal(newIns.getTotal() + bill.getNetTotal());
+                newIns.setPaidTotal(newIns.getPaidTotal() + bill.getPaidAmount());
+                if (bill.getPatientEncounter() != null) {
+                    encounters.add(bill.getPatientEncounter());
+                }
             }
+            newIns.setPatientEncounters(encounters);
             finalTotal += newIns.getTotal();
             finalPaidTotal += newIns.getPaidTotal();
-            finalPaidTotalPatient += newIns.getPaidTotalPatient();
-            finalTransPaidTotal += newIns.getTransPaidTotal();
-            finalTransPaidTotalPatient += newIns.getTransPaidTotalPatient();
 
             institutionEncounters.add(newIns);
         }
-
     }
 
     //    public void createInwardCreditDueWithAdditionalFilters() {

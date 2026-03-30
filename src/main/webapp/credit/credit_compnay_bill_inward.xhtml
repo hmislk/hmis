@@ -78,36 +78,36 @@
                                         <p:autoComplete widgetVar="aIx" id="acIx"
                                                         forceSelection="true"
                                                         placeholder="Type BHT No, Company or Patient Name"
-                                                        value="#{cashRecieveBillController.currentBillItem.patientEncounter}"
-                                                        completeMethod="#{admissionController.completeBhtCredit}"
-                                                        var="ix" itemLabel="#{ix.bhtNo}"
+                                                        value="#{cashRecieveBillController.selectedBill}"
+                                                        completeMethod="#{billController.completeInwardCreditCompanyPaymentBill}"
+                                                        var="ix" itemLabel="#{ix.deptId}"
                                                         itemValue="#{ix}" class="w-100"
                                                         inputStyleClass="w-100"
                                                         required="true"
-                                                        requiredMessage="Please select a BHT">
+                                                        requiredMessage="Please select a credit bill">
+                                            <p:column headerText="Bill No">
+                                                <h:outputLabel value="#{ix.deptId}"/>
+                                            </p:column>
+                                            <p:column headerText="BHT No">
+                                                <h:outputLabel value="#{ix.patientEncounter.bhtNo}"/>
+                                            </p:column>
                                             <p:column headerText="Patient Name">
                                                 <h:outputLabel value="#{ix.patient.person.name}"/>
                                             </p:column>
-                                            <p:column headerText="Credit Company Name">
+                                            <p:column headerText="Credit Company">
                                                 <h:outputLabel value="#{ix.creditCompany.name}"/>
                                             </p:column>
-                                            <p:column headerText="BHT Number">
-                                                <h:outputLabel value="#{ix.bhtNo}">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Credit Amount" class="text-end">
-                                                <h:outputLabel value="#{ix.creditUsedAmount}">
+                                            <p:column headerText="Bill Amount" class="text-end">
+                                                <h:outputLabel value="#{ix.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Paid Amount" class="text-end">
-                                                <h:outputLabel value="#{ix.creditPaidAmount}">
+                                            <p:column headerText="Outstanding" class="text-end">
+                                                <h:outputLabel value="#{ix.netTotal - ix.paidAmount}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:ajax event="itemSelect" process="@this" update="valPaying valToPay dlgCreditCompanySelectorWrapper" listener="#{cashRecieveBillController.selectBhtListener()}"
-                                                    oncomplete="if (#{not empty cashRecieveBillController.bhtCreditCompanies}) { PF('wvDlgCreditCompanySelector').show(); }"/>
+                                            <f:ajax execute="@this" event="itemSelect" render="valPaying valToPay" listener="#{cashRecieveBillController.selectInwardCCBillBhtListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
@@ -223,6 +223,9 @@
                                              paginator="true" rows="5" paginatorPosition="bottom" paginatorAlwaysVisible="true"
                                              emptyMessage="No bills selected" style="margin-bottom:0">
 
+                                    <p:column headerText="Bill No">
+                                        <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                                    </p:column>
                                     <p:column >
                                         <f:facet name="header">
                                             <h:outputLabel value="BHT No"/>
@@ -233,7 +236,7 @@
                                         <p:outputLabel value="#{b.patientEncounter.patient.person.name}"/>
                                     </p:column>
                                     <p:column headerText="Credit Company">
-                                        <p:outputLabel value="#{b.patientEncounter.creditCompany.name}" />
+                                        <p:outputLabel value="#{b.referenceBill.creditCompany.name}" />
                                     </p:column>
                                     <p:column headerText="Net Total">
                                         <h:outputLabel value="#{b.netValue}">

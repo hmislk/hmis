@@ -550,6 +550,47 @@ public class CreditBean {
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * Returns unpaid InwardFinalBillCCPayment bills for a specific credit company in a date range.
+     * Outstanding balance is bill.netTotal - bill.paidAmount.
+     */
+    public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate) {
+        String sql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.creditCompany=:cc "
+                + " and b.billDate between :frm and :to "
+                + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val "
+                + " order by b.billDate";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("cc", creditCompany);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Returns distinct credit companies that have unpaid InwardFinalBillCCPayment bills
+     * within the given date range.
+     */
+    public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate) {
+        String sql = "Select distinct(b.creditCompany) From Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.billDate between :frm and :to "
+                + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
+        HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("frm", fromDate);
+        hm.put("to", toDate);
+        hm.put("val", 0.01);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     public List<Institution> getCreditInstitutionByPatientEncounter(Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan) {
         String sql;
         HashMap hm;

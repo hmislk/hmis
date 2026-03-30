@@ -71,6 +71,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1461,10 +1462,18 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void populateCreditCompanyAllocations() {
+        // Preserve cashier-entered amounts — only build the list when it is empty/null
+        if (creditCompanyAllocations != null && !creditCompanyAllocations.isEmpty()) {
+            return;
+        }
         creditCompanyAllocations = new ArrayList<>();
         double remaining = (grantTotal - discount) - paidByPatient - paidByCompany;
         List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(patientEncounter);
         if (eccs != null && !eccs.isEmpty()) {
+            // Sort by institution name for a stable, deterministic split order
+            eccs.sort(Comparator.comparing(
+                    ecc -> ecc.getInstitution() != null ? ecc.getInstitution().getName() : "",
+                    Comparator.nullsLast(Comparator.naturalOrder())));
             for (EncounterCreditCompany ecc : eccs) {
                 if (remaining <= 0) {
                     break;
@@ -1480,16 +1489,22 @@ public class BhtSummeryController implements Serializable {
 
     private boolean checkCreditAllocationTotal() {
         if (getPatientEncounter() == null
-                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit
-                || creditCompanyAllocations == null
-                || creditCompanyAllocations.isEmpty()) {
+                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit) {
             return false;
+        }
+        double expected = (grantTotal - discount) - paidByPatient - paidByCompany;
+        if (expected > 0 && (creditCompanyAllocations == null || creditCompanyAllocations.isEmpty())) {
+            JsfUtil.addErrorMessage("Please allocate the full credit due amount before settlement");
+            return true;
         }
         double totalAllocated = 0.0;
         for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (alloc.getAllocatedAmount() < 0) {
+                JsfUtil.addErrorMessage("Allocated amounts cannot be negative");
+                return true;
+            }
             totalAllocated += alloc.getAllocatedAmount();
         }
-        double expected = (grantTotal - discount) - paidByPatient - paidByCompany;
         if (Math.abs(totalAllocated - expected) > 0.01) {
             JsfUtil.addErrorMessage("Credit allocation total (" + String.format("%.2f", totalAllocated)
                     + ") does not match the net due amount (" + String.format("%.2f", expected) + ")");
@@ -2365,6 +2380,7 @@ public class BhtSummeryController implements Serializable {
         currentTime = null;
         toTime = null;
         patientRooms = null;
+        creditCompanyAllocations = null;
     }
 
     public void onInstitutionChange() {
