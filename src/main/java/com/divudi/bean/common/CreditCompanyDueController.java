@@ -1337,6 +1337,9 @@ public class CreditCompanyDueController implements Serializable {
                 case "OPD":
                     btas = billService.fetchBillTypeAtomicsForOnlyOpdBills();
                     break;
+                case "PHARMACY":
+                    btas = billService.fetchBillTypeAtomicsPharmacySale();
+                    break;
                 case "PACKAGE":
                     btas = billService.fetchBillTypeAtomicsForOnlyPackageBills();
                     break;

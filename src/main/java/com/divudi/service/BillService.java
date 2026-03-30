@@ -726,6 +726,18 @@ public class BillService {
         btas.add(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         return btas;
     }
+    
+     public List<BillTypeAtomic> fetchBillTypeAtomicsPharmacySale(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        
+        return btas;
+    }
 
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
