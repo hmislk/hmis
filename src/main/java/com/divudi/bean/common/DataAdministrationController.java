@@ -5003,7 +5003,7 @@ public class DataAdministrationController implements Serializable {
                                     ? pe.getFinalBill().getCreatedAt() : pe.getCreatedAt());
                     ccBill.setBillDate(billDate);
                     ccBill.setBillTime(billDate);
-                    ccBill.setCreatedAt(billDate);
+                    ccBill.setCreatedAt(new Date()); // audit timestamp — when the migration ran
                     ccBill.setCreater(sessionController.getLoggedUser());
 
                     ccBill.setPatientEncounter(pe);

@@ -877,7 +877,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " and c.retired=false "
                     + " and ((c.deptId) like :q or"
                     + " (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
+                    + " or (c.creditCompany.name) like :q "
+                    + " or (c.patientEncounter.bhtNo) like :q ) "
                     + " order by c.creditCompany.name";
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);

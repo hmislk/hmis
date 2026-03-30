@@ -495,7 +495,9 @@ public class CreditCompanyDueController implements Serializable {
         reportTimerController.trackReportExecution(() -> {
             Date startTime = new Date();
 
-            makeNull();
+            // Reset only output lists — preserve scope/filter fields (institution, dates, etc.)
+            creditCompanyAge = null;
+            filteredList = null;
 
             Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
             final List<PatientEncounter> allPatientEncounters = new ArrayList<>();
@@ -1197,7 +1199,9 @@ public class CreditCompanyDueController implements Serializable {
 
     private void setInwardValues(String1Value5 dataTable5Value, List<Bill> bills) {
         for (Bill b : bills) {
-            long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
+            // Use billDate (financial obligation date) not createdAt (DB insert timestamp)
+            Date ageFrom = b.getBillDate() != null ? b.getBillDate() : b.getCreatedAt();
+            long dayCount = CommonFunctions.getDayCountTillNow(ageFrom);
 
             double finalValue = b.getNetTotal() - b.getPaidAmount();
 
