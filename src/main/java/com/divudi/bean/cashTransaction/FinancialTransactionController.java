@@ -5552,6 +5552,33 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         bundle.setHandoverBill(currentBill);
 
+        // Mark float transfer payments for this user as handingOverStarted=true so they
+        // no longer reappear in the shift end page. All fund transfers are guaranteed accepted
+        // at this point (validated at the start of this method).
+        Bill shiftStartBillForFloats = bundle.getStartBill();
+        if (shiftStartBillForFloats != null && shiftStartBillForFloats.getId() != null) {
+            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = false "
+                    + "AND p.cashbookEntryStated = false "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND p.id > :sid";
+            floatParams.put("cu", sessionController.getLoggedUser());
+            floatParams.put("btas", floatTransferBtas);
+            floatParams.put("sid", shiftStartBillForFloats.getId());
+            List<Payment> floatPaymentsToMark = paymentFacade.findByJpql(floatJpql, floatParams);
+            for (Payment ftp : floatPaymentsToMark) {
+                ftp.setHandingOverStarted(true);
+                paymentController.save(ftp);
+            }
+        }
+
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
 
@@ -6787,6 +6814,34 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
 
         bundle.setHandoverBill(currentBill);
+
+        // Complete float transfer payments for the sender so they don't reappear in their
+        // shift end page after this handover is accepted. They were marked handingOverStarted=true
+        // during the CREATE phase.
+        WebUser handoverSender = selectedBill.getCreater();
+        if (handoverSender != null) {
+            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND p.cashbookEntryStated = false "
+                    + "AND b.billTypeAtomic IN :btas";
+            floatParams.put("cu", handoverSender);
+            floatParams.put("btas", floatTransferBtas);
+            List<Payment> floatPaymentsToComplete = paymentFacade.findByJpql(floatJpql, floatParams);
+            for (Payment ftp : floatPaymentsToComplete) {
+                ftp.setHandingOverStarted(false);
+                ftp.setHandingOverCompleted(true);
+                ftp.setCashbookEntryStated(true);
+                ftp.setCashbookEntryCompleted(true);
+                paymentController.save(ftp);
+            }
+        }
 
         selectedBill.setCompleted(true);
         selectedBill.setCompletedAt(new Date());
