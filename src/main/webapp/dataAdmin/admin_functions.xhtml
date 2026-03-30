@@ -466,6 +466,27 @@
                                     </tr>
 
                                     <tr>
+                                        <td><strong>Migrate Inward Credit Company Bills (Issue #19571)</strong></td>
+                                        <td>
+                                            Creates per-company INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY bills for
+                                            old inward admissions that were settled before per-company billing was introduced.
+                                            Skips any encounter that already has such a bill. Safe to run multiple times.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.migrateInwardCreditCompanyBills()}"
+                                                ajax="false"
+                                                value="Migrate Inward CC Bills"
+                                                styleClass="ui-button-success m-1"
+                                                icon="pi pi-database"
+                                                onclick="return confirm('This will create per-company credit bills for old inward admissions. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills (Legacy - Slow)</strong></td>
                                         <td>
                                             Corrects negative/positive signs for Bill totals, BillItem values, BillFinanceDetails and BillItemFinanceDetails, and Pharmaceutical Bill Item values according to the Bill Type. Uses absolute values and applies only the sign without changing magnitudes or other attributes. Applies to Pharmacy Issue/Direct Issue/Disposal Issue and corresponding Returns/Cancellations, and Receive/Receive Pre/Receive Cancelled.
