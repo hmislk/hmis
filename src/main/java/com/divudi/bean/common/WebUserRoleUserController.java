@@ -76,44 +76,48 @@ public class WebUserRoleUserController implements Serializable {
             JsfUtil.addErrorMessage("Select Department");
             return;
         }
-        String jpql = "select ru "
-                + " from WebUserRoleUser ru "
-                + " where ru.department=:dept "
-                + " and ru.webUserRole=:role"
-                + " and ru.webUser=:user "
-                + " order by ru.id desc ";
-        Map params = new HashMap();
-        params.put("dept", department);
-        params.put("role", webUserRole);
-        params.put("user", webUser);
-        WebUserRoleUser roleUser = getFacade().findFirstByJpql(jpql, params);
-        
-
-        if (roleUser == null) {
-            roleUser = new WebUserRoleUser();
-            roleUser.setDepartment(department);
-            roleUser.setWebUser(webUser);
-            roleUser.setWebUserRole(webUserRole);
-            
-            //Add Creater Details
-            roleUser.setCreater(sessionController.getLoggedUser());
-            roleUser.setCreatedAt(new Date());
-            //Add Last Editer Details
-            roleUser.setEditer(sessionController.getLoggedUser());
-            roleUser.setEditedAt(new Date());
-            getFacade().create(roleUser);
-        } else {
-            //Add Last Editer Details
-            roleUser.setEditer(sessionController.getLoggedUser());
-            roleUser.setEditedAt(new Date());
-            roleUser.setRetired(false);
-            getFacade().edit(roleUser);
-        }
+//        String jpql = "select ru "
+//                + " from WebUserRoleUser ru "
+//                + " where ru.department=:dept "
+//                + " and ru.webUserRole=:role"
+//                + " and ru.webUser=:user "
+//                + " order by ru.id desc ";
+//        Map params = new HashMap();
+//        params.put("dept", department);
+//        params.put("role", webUserRole);
+//        params.put("user", webUser);
+//        WebUserRoleUser roleUser = getFacade().findFirstByJpql(jpql, params);
+//        
+//
+//        if (roleUser == null) {
+//            roleUser = new WebUserRoleUser();
+//            roleUser.setDepartment(department);
+//            roleUser.setWebUser(webUser);
+//            roleUser.setWebUserRole(webUserRole);
+//            
+//            //Add Creater Details
+//            roleUser.setCreater(sessionController.getLoggedUser());
+//            roleUser.setCreatedAt(new Date());
+//            //Add Last Editer Details
+//            roleUser.setEditer(sessionController.getLoggedUser());
+//            roleUser.setEditedAt(new Date());
+//            getFacade().create(roleUser);
+//        } else {
+//            //Add Last Editer Details
+//            roleUser.setEditer(sessionController.getLoggedUser());
+//            roleUser.setEditedAt(new Date());
+//            roleUser.setRetired(false);
+//            getFacade().edit(roleUser);
+//        }
         
         updatePrivilegesToUserRole(webUserRole,webUser,department);
         
+        JsfUtil.addSuccessMessage("Added Successfully "+ webUserRole.getName() +" Role Privileges to " + department.getName() + "Department.");
+        
         clear();
-        loadWebUserRoles();
+        
+//loadWebUserRoles();
+        
     }
     
     public void clear(){
