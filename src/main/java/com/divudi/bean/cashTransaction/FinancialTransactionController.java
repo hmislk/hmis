@@ -2288,6 +2288,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("This request has already been fulfilled");
             return "";
         }
+        // Verify the request is addressed to the logged-in user
+        if (!sessionController.getLoggedUser().equals(requestBill.getToWebUser())) {
+            JsfUtil.addErrorMessage("You can only initiate transfers for requests addressed to you");
+            return "";
+        }
         // Enforce the same shift-start restriction as navigateToFundTransferBill()
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
