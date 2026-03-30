@@ -7,6 +7,7 @@ package com.divudi.core.data.dataStructure;
 
 import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
+import java.io.Serializable;
 
 /**
  * Transient (in-memory) allocation of the inward final bill net due across
@@ -14,7 +15,9 @@ import com.divudi.core.entity.Institution;
  *
  * @author Dr M H B Ariyaratne
  */
-public class CreditCompanyAllocation {
+public class CreditCompanyAllocation implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /** Source record; null for the single-company fallback row. */
     private EncounterCreditCompany encounterCreditCompany;
@@ -29,9 +32,8 @@ public class CreditCompanyAllocation {
      * Constructor for normal rows built from an {@link EncounterCreditCompany}.
      */
     public CreditCompanyAllocation(EncounterCreditCompany ecc, double allocatedAmount) {
+        this(ecc.getInstitution(), allocatedAmount);
         this.encounterCreditCompany = ecc;
-        this.creditCompany = ecc.getInstitution();
-        this.allocatedAmount = allocatedAmount;
     }
 
     /**
