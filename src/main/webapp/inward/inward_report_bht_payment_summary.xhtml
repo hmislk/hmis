@@ -43,9 +43,10 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf017;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Date Basis" class="mx-3"/>
+                                <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
+                                id="dateBasisMenu"
                                 styleClass="w-100 form-control"
                                 value="#{bhtPaymentSummaryReportController.dateBasis}">
                                 <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
@@ -54,9 +55,10 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf05a;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Admission Status" class="mx-3"/>
+                                <h:outputLabel value="Admission Status" for="admStatusMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
+                                id="admStatusMenu"
                                 styleClass="w-100 form-control"
                                 value="#{bhtPaymentSummaryReportController.admissionStatus}">
                                 <f:selectItems
@@ -70,9 +72,10 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Admission Type" class="mx-3"/>
+                                <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
+                                id="admTypeMenu"
                                 styleClass="w-100 form-control"
                                 value="#{bhtPaymentSummaryReportController.admissionType}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />

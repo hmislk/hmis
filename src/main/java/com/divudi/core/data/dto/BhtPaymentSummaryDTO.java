@@ -8,6 +8,8 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DTO for BHT Deposit and Credit Settlement Summary Report (Issue #19345).
@@ -18,6 +20,8 @@ import java.util.Set;
  * BillItems linked to this encounter.
  */
 public class BhtPaymentSummaryDTO implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(BhtPaymentSummaryDTO.class.getName());
 
     private Long encounterDatabaseId;
     private String bhtNo;
@@ -51,6 +55,8 @@ public class BhtPaymentSummaryDTO implements Serializable {
 
     public void addDeposit(PaymentMethod method, double amount) {
         if (method == null) {
+            LOG.log(Level.WARNING, "BHT {0}: deposit of {1} has null PaymentMethod — amount dropped from totals",
+                    new Object[]{bhtNo, amount});
             return;
         }
         depositsByMethod.merge(method, amount, Double::sum);
