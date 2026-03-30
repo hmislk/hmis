@@ -5,7 +5,9 @@ import com.divudi.core.entity.inward.AdmissionType;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * DTO for BHT Deposit and Credit Settlement Summary Report (Issue #19345).
@@ -32,6 +34,7 @@ public class BhtPaymentSummaryDTO implements Serializable {
 
     /** Slash-separated names of credit companies from the settlement bills. */
     private String creditCompanyNames;
+    private final Set<String> creditCompanyNamesSet = new HashSet<>();
 
     public BhtPaymentSummaryDTO() {
     }
@@ -56,10 +59,12 @@ public class BhtPaymentSummaryDTO implements Serializable {
     public void addCreditSettlement(double amount, String companyName) {
         creditSettlementTotal += amount;
         if (companyName != null && !companyName.isBlank()) {
-            if (creditCompanyNames == null || creditCompanyNames.isBlank()) {
-                creditCompanyNames = companyName;
-            } else if (!creditCompanyNames.contains(companyName)) {
-                creditCompanyNames = creditCompanyNames + " / " + companyName;
+            if (creditCompanyNamesSet.add(companyName)) {
+                if (creditCompanyNames == null || creditCompanyNames.isBlank()) {
+                    creditCompanyNames = companyName;
+                } else {
+                    creditCompanyNames = creditCompanyNames + " / " + companyName;
+                }
             }
         }
     }

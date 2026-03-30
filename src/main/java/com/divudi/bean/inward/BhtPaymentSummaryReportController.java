@@ -13,7 +13,6 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
-import com.divudi.bean.common.SessionController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -48,12 +46,6 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
-
-    // -------------------------------------------------------------------------
-    // Injected beans
-    // -------------------------------------------------------------------------
-    @Inject
-    private SessionController sessionController;
 
     // -------------------------------------------------------------------------
     // Filter fields
