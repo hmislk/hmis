@@ -14,13 +14,13 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
-@Stateless
+@Singleton 
 public class SerialNumberGeneratorService {
 
     @EJB
@@ -31,7 +31,7 @@ public class SerialNumberGeneratorService {
     // <editor-fold defaultstate="collapsed" desc="Lock Keys">
     // Bill
     private String getLockKey(Department department, SessionNumberType type) {
-        return department.getId() + type.toString();
+        return department.getId() + "-" + type.toString();
     }
 
     // Category
@@ -57,7 +57,7 @@ public class SerialNumberGeneratorService {
 
     //ByBill
     public String fetchLastSerialNumberForDayUsingBill(Department department, BillItem billItem) {
-        if (department == null || billItem == null || billItem.getItem().getSessionNumberType() == null) {
+        if (department == null || billItem == null || billItem.getItem() == null || billItem.getItem().getSessionNumberType() == null) {
             return "";
         }
 
@@ -218,7 +218,7 @@ public class SerialNumberGeneratorService {
         Date endOfDay = calEnd.getTime();
 
         String jpql = "SELECT count(bi) FROM BillItem bi "
-                + " where bi.bill.billDate between :fd and :td "
+                + " where bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.department=:dep "
                 + " and bi.bill.billTypeAtomic =:type"
                 + " and bi.item.category=:cat "
@@ -258,7 +258,7 @@ public class SerialNumberGeneratorService {
         Date endOfDay = calEnd.getTime();
 
         String jpql = "SELECT count(bi) FROM BillItem bi "
-                + " where bi.bill.billDate between :fd and :td "
+                + " where bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.department=:dep "
                 + " and bi.bill.billTypeAtomic =:type"
                 + " and bi.item=:item "
@@ -298,7 +298,7 @@ public class SerialNumberGeneratorService {
         Date endOfDay = calEnd.getTime();
 
         String jpql = "SELECT count(bi) FROM BillItem bi "
-                + " where bi.bill.billDate between :fd and :td "
+                + " where bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.department=:dep "
                 + " and bi.bill.billTypeAtomic =:type"
                 + " and bi.item.department=:itDep "
@@ -338,7 +338,7 @@ public class SerialNumberGeneratorService {
         Date endOfDay = calEnd.getTime();
 
         String jpql = "SELECT count(bi) FROM BillItem bi "
-                + " where bi.bill.billDate between :fd and :td "
+                + " where bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.department=:dep "
                 + " and bi.bill.billTypeAtomic =:type"
                 + " and bi.primaryStaff=:sff "

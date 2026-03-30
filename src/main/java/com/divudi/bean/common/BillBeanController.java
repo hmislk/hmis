@@ -3775,7 +3775,7 @@ public class BillBeanController implements Serializable {
 
         System.out.println(currentBillItem.getItem().getName() + " Allow to Generate Session Number = " + currentBillItem.getItem().isPrintSessionNumber() );
         
-        if (currentBillItem.getItem().isPrintSessionNumber()) {
+        if (currentBillItem.getItem().isPrintSessionNumber() && currentBillItem.getItem().getSessionNumberType() != null) {
             
             System.out.println(currentBillItem.getItem().getName() + " Using " + currentBillItem.getItem().getSessionNumberType().name());
             
@@ -3869,7 +3869,7 @@ public class BillBeanController implements Serializable {
         System.out.println("currentBillItem = " + currentBillItem);
         System.out.println("feeStaff = " + feeStaff);
 
-        if (currentBillItem.getItem().isPrintSessionNumber()) {
+        if (currentBillItem.getItem().isPrintSessionNumber() && currentBillItem.getItem().getSessionNumberType() != null) {
             
             System.out.println(currentBillItem.getItem().getName() + " Using " + currentBillItem.getItem().getSessionNumberType().name());
             
