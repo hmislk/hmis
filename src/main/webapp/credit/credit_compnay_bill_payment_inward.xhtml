@@ -43,106 +43,74 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p:panel>
-                                <f:facet name="header" >
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            <h:outputText styleClass="fa fa-money-bill-wave" />
-                                            <h:outputText value="Select Inward Credit Company Payment Bill" class="mx-4"></h:outputText>
-                                        </div>
-
-                                        <p:commandButton 
-                                            id="btnAddIx" 
-                                            value="Add" 
-                                            action="#{cashRecieveBillController.addToBill()}" 
-                                            ajax="false" 
-                                            icon="fa fa-plus"
-                                            class="ui-button-success gap-2"/>
+                                <f:facet name="header">
+                                    <div class="d-flex align-items-center">
+                                        <h:outputText styleClass="fa fa-money-bill-wave" />
+                                        <h:outputText value="Select Inward Credit Company Payment Bill" class="mx-4" />
                                     </div>
-
                                 </f:facet>
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Select Inward Credit Company Payment Bill" />      
+                                        <p:outputLabel value="Credit Company" />
                                     </div>
                                     <div class="col-md-8">
-                                        <p:autoComplete 
-                                            widgetVar="aIx" 
-                                            id="acIx" 
-                                            placeholder="Type here to get suggestions"
-                                            forceSelection="true" 
-                                            value="#{cashRecieveBillController.currentBillItem.referenceBill}" 
-                                            completeMethod="#{billController.completeInwardCreditCompanyPaymentBill}" 
-                                            var="ix" itemLabel="#{ix.patient.person.name}"
-                                            itemValue="#{ix}" class="w-100" inputStyleClass="w-100">
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="BHT No"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.patientEncounter.bhtNo}"/>
-                                            </p:column>                                  
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="Credit Company"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.creditCompany.name}"/>
+                                        <p:autoComplete
+                                            id="acCompany"
+                                            widgetVar="aCompany"
+                                            placeholder="Type company name"
+                                            forceSelection="true"
+                                            value="#{cashRecieveBillController.creditCompany}"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"
+                                            class="w-100" inputStyleClass="w-100">
+                                            <p:column headerText="Company Name">
+                                                <h:outputLabel value="#{cc.name}" />
                                             </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="Date"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.createdAt}">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="Due Amount"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.netTotal+ix.vat - ix.paidAmount}" style="color: red;">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="Paid Amount"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.paidAmount}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="Full Amount"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.netTotal+ix.vat}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render="val" listener="#{cashRecieveBillController.selectBillListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
 
-
-
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="From" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:calendar id="calFrom"
+                                                    value="#{cashRecieveBillController.inwardCCFromDate}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="w-100" inputStyleClass="w-100 form-control" />
+                                    </div>
+                                </div>
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Value" />      
+                                        <p:outputLabel value="To" />
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputText 
-                                            autocomplete="off" 
-                                            class="w-100" 
-                                            id="val" 
-                                            onfocus="this.select();"
-                                            value="#{cashRecieveBillController.currentBillItem.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
-
+                                        <p:calendar id="calTo"
+                                                    value="#{cashRecieveBillController.inwardCCToDate}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="w-100" inputStyleClass="w-100 form-control" />
                                     </div>
                                 </div>
+
+                                <div class="row my-2">
+                                    <div class="col-md-12 d-flex justify-content-end">
+                                        <p:commandButton
+                                            value="Load Bills"
+                                            icon="fas fa-search"
+                                            class="ui-button-info"
+                                            action="#{cashRecieveBillController.selectInstitutionListenerInwardCC()}"
+                                            process="acCompany calFrom calTo"
+                                            update="items tot growl"
+                                            ajax="true" />
+                                    </div>
+                                </div>
+
+
+
+
 
 
                             </p:panel>
