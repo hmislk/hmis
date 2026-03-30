@@ -307,9 +307,8 @@
                             style="width: 150px"
                             icon="fas fa-print"
                             ajax="false"
-                            value="Print"
-                            onclick="hidePaginatorBeforePrint()">
-                        <p:printer target="tblExport" oncomplete="restorePaginatorAfterPrint()"/>
+                            value="To Print"
+                            action="laboratory_workload_view?faces-redirect=true">
                     </p:commandButton>
 
                     <h:outputScript>
