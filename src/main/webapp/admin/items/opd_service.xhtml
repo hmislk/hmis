@@ -183,7 +183,7 @@
 
                                             </h:panelGrid>
                                             <hr/>
-                                            <h:panelGrid columns="2" columnClasses="w-50, w-50" >
+                                            <h:panelGrid columns="2" columnClasses="w-50, w-50" rendered="#{serviceController.current.id ne null}">
                                                 <h:outputText value="Item Id"/>
                                                 <h:outputText value="#{serviceController.current.id}"/>
                                                 <h:outputText value="Created Person"/>

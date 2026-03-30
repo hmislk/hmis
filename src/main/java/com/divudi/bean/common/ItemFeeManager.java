@@ -1119,6 +1119,10 @@ public class ItemFeeManager implements Serializable {
                 }
             }
         }
+        
+        if (itemFee.getFeeType() != FeeType.Staff) {
+            itemFee.setPrimaryFee(false);
+        }
 
         // Validation no longer rejects zero value fees for site specific
         // settings.
