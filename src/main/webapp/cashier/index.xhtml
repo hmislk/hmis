@@ -196,6 +196,30 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Request Float Transfer"
+                                        icon="fa fa-hand-holding-usd"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToFundTransferRequestBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Float Requests For Me"
+                                        icon="pi pi-inbox"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToFundTransferRequestsForMe()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info ui-button-outlined"
+                                        value="My Float Requests"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyFundTransferRequests()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-success"
                                         value="Transfer Bill Payment Method"
                                         icon="pi pi-refresh"
