@@ -336,7 +336,8 @@
                             value="Excel">
                         <p:dataExporter type="xlsx"
                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                        fileName="laboratary_workload.xlsx"/>
+                                        fileName="laboratary_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.xlsx"
+                                        postProcessor="#{reportsController.postProcessLaboratoryWorkloadReportExcel}"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -344,11 +345,22 @@
                             style="width: 150px"
                             icon="fas fa-file-pdf"
                             ajax="false"
-                            value="PDF">
+                            value="PDF"
+                            rendered="#{reportsController.reportType eq 'summary'}">
                         <p:dataExporter type="pdf"
-                                        target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                        fileName="laboratary_workload.pdf"/>
+                                        target="#{'tblExport2'}"
+                                        fileName="laboratary_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.pdf"
+                                        preProcessor="#{reportsController.preProcessLaboratoryWorkloadSummaryReportPDF}"/>
                     </p:commandButton>
+                    <p:commandButton
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-pdf"
+                            ajax="false"
+                            value="PDF"
+                            rendered="#{reportsController.reportType eq 'detail'}"
+                            action="#{reportsController.exportLaboratoryWorkloadDetailReportToPDF()}"/>
+                        
 
                     <h:panelGroup id="tblExport" class="w-100">
                         <!--table 1 / report type - details-->
@@ -364,10 +376,6 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="10,25,50">
 
-                            <f:facet name="header">
-                                <h:outputText value="Report Type - Detail"
-                                              style="font-weight: bold; text-align: left; display: block;"/>
-                            </f:facet>
 
                             <p:column headerText="Sample ID" width="8rem">
                                 <h:outputText
@@ -465,10 +473,6 @@
                                 rowIndexVar="b"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="10,25,50">
-                            <f:facet name="header">
-                                <h:outputText value="Report Type - Summary"
-                                              style="font-weight: bold; text-align: left; display: block;"/>
-                            </f:facet>
                             <p:column headerText="Sl. No." width="1rem">
                                 <h:outputText value="#{b+1}"/>
                             </p:column>
