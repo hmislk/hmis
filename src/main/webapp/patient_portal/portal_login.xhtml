@@ -1533,9 +1533,10 @@
                                                         value="#{patientPortalController.patient.person.dob}"
                                                         placeholder="DD/MM/YYYY"
                                                         pattern="dd/MM/yyyy"
-                                                        monthNavigator="true" 
+                                                        monthNavigator="true"
                                                         yearNavigator="true"
                                                         styleClass="portal-datepicker">
+                                                        <p:ajax event="dateSelect" process="newPatientDob" update="ageYears ageMonths ageDays"/>
                                                     </p:datePicker>
                                                 </div>
                                             </div>

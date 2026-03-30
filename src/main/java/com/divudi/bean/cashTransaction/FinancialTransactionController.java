@@ -8,6 +8,7 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.AuditEventController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -129,6 +130,8 @@ public class FinancialTransactionController implements Serializable {
     PageMetadataRegistry pageMetadataRegistry;
     @Inject
     AuditEventController auditEventController;
+    @Inject
+    private NotificationController notificationController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -250,6 +253,7 @@ public class FinancialTransactionController implements Serializable {
 
     private Department department;
     private WebUser user;
+    private WebUser toUser;
     private Staff fromStaff;
     private Staff toStaff;
     private Department forDepartment;
@@ -273,8 +277,21 @@ public class FinancialTransactionController implements Serializable {
     private Bill fundTransferBillToCancel;
     private Bill fundTransferCancellationBill;
     private String fundTransferCancellationReason;
+    private Bill fundTransferBillToDecline;
+    private String fundTransferDeclineReason;
     private Date myFloatOutsFromDate;
     private Date myFloatOutsToDate;
+    private List<Bill> myFundTransferBillsIn;
+    private Date myFloatInsFromDate;
+    private Date myFloatInsToDate;
+
+    // Float Transfer Request Properties
+    private List<Bill> myFundTransferRequestsOut;
+    private List<Bill> fundTransferRequestsForMe;
+    private Bill selectedFundTransferRequest;
+    private Date myFloatRequestsFromDate;
+    private Date myFloatRequestsToDate;
+    boolean floatRequestStarted = false;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -2103,6 +2120,46 @@ public class FinancialTransactionController implements Serializable {
         return "/reports/cashier_reports/handovers?faces-redirect=true";
     }
 
+    public String navigateToHandoverStatusReport() {
+        user = null;
+        toUser = null;
+        fromDate = null;
+        toDate = null;
+        return "/reports/cashier_reports/handover_status_report?faces-redirect=true";
+    }
+
+    public void fillHandoverStatusReport() {
+        currentBills = new ArrayDeque<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpqlBuilder = new StringBuilder("select s from Bill s "
+                + "where (s.retired=false or s.retired is null) "
+                + "and s.billTypeAtomic=:btype ");
+        params.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        Date fd = getFromDate();
+        Date td = getToDate();
+        if (fd != null && td != null) {
+            jpqlBuilder.append("and s.createdAt between :fd and :td ");
+            params.put("fd", fd);
+            params.put("td", td);
+        } else if (fd != null) {
+            jpqlBuilder.append("and s.createdAt >= :fd ");
+            params.put("fd", fd);
+        } else if (td != null) {
+            jpqlBuilder.append("and s.createdAt <= :td ");
+            params.put("td", td);
+        }
+        if (user != null) {
+            jpqlBuilder.append("and s.fromWebUser=:fromUser ");
+            params.put("fromUser", user);
+        }
+        if (toUser != null) {
+            jpqlBuilder.append("and s.toWebUser=:toUser ");
+            params.put("toUser", toUser);
+        }
+        jpqlBuilder.append("order by s.createdAt desc ");
+        currentBills = billFacade.findByJpql(jpqlBuilder.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     public String navigateToActiveShiftsReport() {
         fillAllActiveShifts();
         return "/reports/cashier_reports/active_shifts?faces-redirect=true";
@@ -2179,6 +2236,198 @@ public class FinancialTransactionController implements Serializable {
             floatTransferStarted = false;
             currentBillPayments = new ArrayList<>();
         }
+    }
+
+    private void prepareToAddNewFundTransferRequestBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.FundTransferRequestBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+
+    public void ensureFundTransferRequestBillInitialized() {
+        if (currentBill == null || currentBill.getBillType() != BillType.FundTransferRequestBill) {
+            prepareToAddNewFundTransferRequestBill();
+            floatRequestStarted = false;
+        }
+    }
+
+    public String navigateToFundTransferRequestBill() {
+        resetClassVariables();
+        prepareToAddNewFundTransferRequestBill();
+        floatRequestStarted = false;
+        return "/cashier/fund_transfer_request_bill?faces-redirect=true";
+    }
+
+    public String navigateToFundTransferRequestsForMe() {
+        fillFundTransferRequestsForMe();
+        return "/cashier/fund_transfer_request_bills_for_me?faces-redirect=true";
+    }
+
+    public String navigateToMyFundTransferRequests() {
+        myFloatRequestsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        myFloatRequestsToDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyFundTransferRequests();
+        return "/cashier/fund_transfer_my_requests?faces-redirect=true";
+    }
+
+    public String navigateToFundTransferBillFromRequest(Bill requestBill) {
+        if (requestBill == null) {
+            JsfUtil.addErrorMessage("Please select a request");
+            return "";
+        }
+        if (requestBill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            JsfUtil.addErrorMessage("Invalid request bill type");
+            return "";
+        }
+        if (requestBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This request has been cancelled");
+            return "";
+        }
+        if (requestBill.getForwardReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This request has already been fulfilled");
+            return "";
+        }
+        // Verify the request is addressed to the logged-in user
+        if (!sessionController.getLoggedUser().equals(requestBill.getToWebUser())) {
+            JsfUtil.addErrorMessage("You can only initiate transfers for requests addressed to you");
+            return "";
+        }
+        // Enforce the same shift-start restriction as navigateToFundTransferBill()
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
+            findNonClosedShiftStartFundBillIsAvailable();
+            if (getNonClosedShiftStartFundBill() == null) {
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                JsfUtil.addErrorMessage("Start Your Shift First!");
+                return "/cashier/index?faces-redirect=true";
+            }
+        }
+        selectedFundTransferRequest = requestBill;
+        resetClassVariablesWithoutSelectedBill();
+        prepareToAddNewFundTransferBill();
+        currentBill.setToWebUser(requestBill.getFromWebUser());
+        currentBill.setReferenceBill(requestBill);
+        currentBill.setComments(requestBill.getComments());
+        floatTransferStarted = false;
+        currentBillPayments = new ArrayList<>();
+        return "/cashier/fund_transfer_bill?faces-redirect=true";
+    }
+
+    public String settleFloatTransferRequest() {
+        if (floatRequestStarted) {
+            JsfUtil.addErrorMessage("Already started");
+            return "";
+        } else {
+            floatRequestStarted = true;
+        }
+        if (currentBill == null) {
+            floatRequestStarted = false;
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.FundTransferRequestBill) {
+            floatRequestStarted = false;
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getToWebUser() == null) {
+            floatRequestStarted = false;
+            JsfUtil.addErrorMessage("Select from whom to request float");
+            return "";
+        }
+        if (currentBill.getNetTotal() <= 0) {
+            floatRequestStarted = false;
+            JsfUtil.addErrorMessage("Requested amount must be greater than zero");
+            return "";
+        }
+        try {
+            String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_REQUEST);
+            currentBill.setFromWebUser(sessionController.getLoggedUser());
+            currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+            if (currentBill.getToWebUser().getStaff() != null) {
+                currentBill.setToStaff(currentBill.getToWebUser().getStaff());
+            }
+            currentBill.setDepartment(sessionController.getDepartment());
+            currentBill.setInstitution(sessionController.getInstitution());
+            currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+            currentBill.setBillDate(new Date());
+            currentBill.setBillTime(new Date());
+            currentBill.setCreatedAt(new Date());
+            currentBill.setCreater(sessionController.getLoggedUser());
+            currentBill.setDeptId(deptId);
+            currentBill.setInsId(deptId);
+            currentBill.setTotal(currentBill.getNetTotal());
+            currentBill.setBalance(currentBill.getNetTotal());
+            billController.save(currentBill);
+            notificationController.createNotification(currentBill);
+        } finally {
+            floatRequestStarted = false;
+        }
+        return "/cashier/fund_transfer_request_bill_print?faces-redirect=true";
+    }
+
+    public String cancelFloatTransferRequest(Bill requestBill) {
+        if (requestBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        // Reload from DB to prevent stale view-state race conditions
+        Bill freshBill = billFacade.find(requestBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Request not found");
+            return "";
+        }
+        if (freshBill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            JsfUtil.addErrorMessage("Invalid bill type");
+            return "";
+        }
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Already cancelled");
+            return "";
+        }
+        if (freshBill.getForwardReferenceBill() != null) {
+            JsfUtil.addErrorMessage("Cannot cancel a fulfilled request");
+            return "";
+        }
+        if (!freshBill.getFromWebUser().equals(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("Only the requester can cancel this request");
+            return "";
+        }
+        freshBill.setCancelled(true);
+        billController.save(freshBill);
+        fillMyFundTransferRequests();
+        return "/cashier/fund_transfer_my_requests?faces-redirect=true";
+    }
+
+    public void fillFundTransferRequestsForMe() {
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and (s.cancelled = false or s.cancelled is null) "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.forwardReferenceBill is null "
+                + "and s.toWebUser=:toUser "
+                + "order by s.createdAt";
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        params.put("toUser", sessionController.getLoggedUser());
+        fundTransferRequestsForMe = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void fillMyFundTransferRequests() {
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.fromWebUser=:fromUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        params.put("fromUser", sessionController.getLoggedUser());
+        params.put("fd", getMyFloatRequestsFromDate());
+        params.put("td", getMyFloatRequestsToDate());
+        myFundTransferRequestsOut = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     private void prepareToAddNewFundDepositBill() {
@@ -2740,6 +2989,13 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
+        // If this transfer was initiated from a float transfer request, mark the request as fulfilled
+        if (currentBill.getReferenceBill() != null
+                && currentBill.getReferenceBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            Bill requestBill = currentBill.getReferenceBill();
+            requestBill.setForwardReferenceBill(currentBill);
+            billController.save(requestBill);
+        }
         floatTransferStarted = false;
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
     }
@@ -2803,6 +3059,18 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill == null) {
             JsfUtil.addErrorMessage("No Shift to End");
             return null; // Early exit if no shift to end
+        }
+
+        // Guard: outgoing pending floats — block until recipient accepts or sender cancels
+        if (hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have pending float transfers not yet accepted. Please cancel them or wait for the recipient to accept before closing your shift.");
+            return null;
+        }
+
+        // Guard: incoming pending floats — block until this user accepts or declines
+        if (hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have incoming float transfers awaiting your response. Please accept or decline them before closing your shift.");
+            return null;
         }
 
         // Validate pending transactions before allowing shift end
@@ -3961,7 +4229,7 @@ public class FinancialTransactionController implements Serializable {
                 .append("WHERE p.retired=:pr ")
                 .append("AND b.retired=:br ")
                 .append("AND b.billTypeAtomic IN :btas  ")
-                .append("AND p.creater=:cr ")
+                .append("AND (p.creater=:cr OR p.floatRecipient=:cr) ")
                 .append("AND p.cancelled=:can ")
                 .append("AND p.id > :sid ");
         m.put("btas", btas);
@@ -4178,9 +4446,30 @@ public class FinancialTransactionController implements Serializable {
 
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        double floatOutAcc = 0.0;
+        double floatInAcc = 0.0;
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
+                // Fund transfer payments are kept separate from collection rows to avoid
+                // mixing float adjustments with department-based collections. Their net
+                // effect is tracked in floatOutAcc/floatInAcc and stored on the parent bundle.
+                if (isFundTransferPayment(p)) {
+                    if (p.getBill() != null) {
+                        BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
+                        if (bta == BillTypeAtomic.FUND_TRANSFER_BILL
+                                && p.getBill().getReferenceBill() != null
+                                && !p.getBill().isCancelled()) {
+                            // Accepted float out — deducted from this user's drawer when recipient accepted
+                            floatOutAcc += Math.abs(p.getPaidValue());
+                        } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
+                            // Float in received by this user
+                            floatInAcc += Math.abs(p.getPaidValue());
+                        }
+                        // Cancelled, declined, or pending — no drawer effect, skip
+                    }
+                    continue;
+                }
                 // Retrieve the payment handover type
                 PaymentHandover ph = p.getTransientPaymentHandover(); // Assuming a getter that returns the enum
 
@@ -4251,6 +4540,8 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
+        bundleToHoldDeptUserDayBundle.setFloatOutTotal(floatOutAcc);
+        bundleToHoldDeptUserDayBundle.setFloatInTotal(floatInAcc);
         if (startBill != null) {
             bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         } else {
@@ -4771,6 +5062,14 @@ public class FinancialTransactionController implements Serializable {
                     return null;
                 }
             }
+            // Also block if a handover has been created but not yet accepted by the recipient.
+            // This covers the case where all collections are already included in a pending handover
+            // (bundle.getTotal() == 0) but the recipient has not confirmed receipt yet.
+            boolean hasPendingHandover = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
+            if (hasPendingHandover) {
+                JsfUtil.addErrorMessage("Handover pending acceptance. Please wait for the recipient to accept your handover before ending your shift.");
+                return null;
+            }
         }
 
         //ToDo: more checks for others . Will have individual issues
@@ -5082,7 +5381,8 @@ public class FinancialTransactionController implements Serializable {
         }
 
         Double maximumAllowedCashDifferenceForHandover = configOptionApplicationController.getDoubleValueByKey("Maximum Allowed Cash Difference for Handover", 1.0);
-        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashValue()) > maximumAllowedCashDifferenceForHandover) {
+        double expectedCashHandover = bundle.getCashValue() + bundle.getFloatNetTotal();
+        if (Math.abs(bundle.getDenominatorValue() - expectedCashHandover) > maximumAllowedCashDifferenceForHandover) {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
@@ -5214,6 +5514,11 @@ public class FinancialTransactionController implements Serializable {
                     }
                     Payment p = row.getPayment();
                     if (p.getPaymentMethod() == null) {
+                        continue;
+                    }
+                    // Skip fund transfer payments - they have their own drawer lifecycle
+                    // and must not be reprocessed during handover creation
+                    if (isFundTransferPayment(p)) {
                         continue;
                     }
                     if (p.getPaymentMethod() != PaymentMethod.Cash && p.isSelectedForHandover() == false) {
@@ -5429,6 +5734,31 @@ public class FinancialTransactionController implements Serializable {
         myFloatOutsToDate = CommonFunctions.getEndOfDay(new Date());
         fillMyFundTransferBillsOut();
         return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
+    }
+
+    public void fillMyFundTransferBillsIn() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.toWebUser=:toUser "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("toUser", sessionController.getLoggedUser());
+        params.put("fd", getMyFloatInsFromDate());
+        params.put("td", getMyFloatInsToDate());
+        jpql.append("order by s.createdAt desc");
+        myFundTransferBillsIn = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public String navigateToMyFundTransferBillsIn() {
+        myFloatInsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        myFloatInsToDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyFundTransferBillsIn();
+        return "/cashier/fund_transfer_bills_my_float_ins?faces-redirect=true";
     }
 
     /**
@@ -5664,11 +5994,211 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
     }
 
+    public String navigateBackToMyFloatIns() {
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
+    }
+
+    /**
+     * Navigates to the fund transfer bill decline page.
+     * Only the intended recipient (toWebUser) may decline a pending transfer.
+     */
+    public String navigateToFundTransferBillDecline(Bill bill) {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_BILL) {
+            JsfUtil.addErrorMessage("Invalid bill type");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has already been cancelled");
+            return "";
+        }
+        if (bill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This float transfer has already been accepted and cannot be declined");
+            return "";
+        }
+        if (bill.getToWebUser() == null
+                || !bill.getToWebUser().equals(sessionController.getLoggedUser())) {
+            String beforeJson = String.format(
+                    "{\"billId\": %d, \"billDeptId\": \"%s\", \"recipientUserId\": %d, \"attemptingUserId\": %d}",
+                    bill.getId(),
+                    bill.getDeptId() != null ? bill.getDeptId() : "",
+                    bill.getToWebUser() != null ? bill.getToWebUser().getId() : 0,
+                    sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : 0
+            );
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Unauthorized Fund Transfer Decline Attempt - Navigation",
+                    beforeJson,
+                    bill.getId()
+            );
+            auditEventController.failAuditEvent(auditEvent,
+                    "Non-recipient user attempted to access fund transfer decline page");
+            JsfUtil.addErrorMessage("You can only decline float transfers sent to you");
+            return "";
+        }
+        fundTransferBillToDecline = bill;
+        fundTransferDeclineReason = null;
+        if (fundTransferBillToDecline.getPayments() == null || fundTransferBillToDecline.getPayments().isEmpty()) {
+            fundTransferBillToDecline.setPayments(findPaymentsForBill(fundTransferBillToDecline));
+        }
+        return "/cashier/fund_transfer_bill_decline?faces-redirect=true";
+    }
+
+    /**
+     * Executes the fund transfer bill decline by the recipient.
+     * Reverses the sender's drawer deduction by setting the cancellation
+     * payment's creater to the original sender (fromWebUser), ensuring
+     * DrawerService credits the correct drawer.
+     */
+    public String declineFundTransferBill() {
+        if (fundTransferBillToDecline == null) {
+            JsfUtil.addErrorMessage("No bill selected for decline");
+            return "";
+        }
+        Bill freshBill = billFacade.find(fundTransferBillToDecline.getId());
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has already been cancelled");
+            return "";
+        }
+        if (freshBill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This float transfer has been accepted and cannot be declined");
+            return "";
+        }
+        if (freshBill.getToWebUser() == null
+                || !freshBill.getToWebUser().equals(sessionController.getLoggedUser())) {
+            String beforeJson = String.format(
+                    "{\"billId\": %d, \"billDeptId\": \"%s\", \"recipientUserId\": %d, \"attemptingUserId\": %d}",
+                    freshBill.getId(),
+                    freshBill.getDeptId() != null ? freshBill.getDeptId() : "",
+                    freshBill.getToWebUser() != null ? freshBill.getToWebUser().getId() : 0,
+                    sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : 0
+            );
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Unauthorized Fund Transfer Decline Attempt - Execution",
+                    beforeJson,
+                    freshBill.getId()
+            );
+            auditEventController.failAuditEvent(auditEvent,
+                    "Non-recipient user attempted to execute fund transfer decline");
+            JsfUtil.addErrorMessage("You are not authorized to decline this float transfer");
+            return "";
+        }
+        if (fundTransferDeclineReason == null || fundTransferDeclineReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Decline reason is required");
+            return "";
+        }
+
+        CancelledBill declineBill = new CancelledBill();
+        declineBill.setBillType(BillType.FundTransferBill);
+        declineBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED);
+        declineBill.setBillClassType(BillClassType.CancelledBill);
+
+        declineBill.setDepartment(fundTransferBillToDecline.getDepartment());
+        declineBill.setInstitution(fundTransferBillToDecline.getInstitution());
+
+        declineBill.setFromStaff(fundTransferBillToDecline.getFromStaff());
+        declineBill.setFromWebUser(fundTransferBillToDecline.getFromWebUser());
+        declineBill.setToStaff(fundTransferBillToDecline.getToStaff());
+        declineBill.setToWebUser(fundTransferBillToDecline.getToWebUser());
+
+        declineBill.setCreater(sessionController.getLoggedUser());
+        declineBill.setCreatedAt(new Date());
+        declineBill.setBillDate(new Date());
+        declineBill.setBillTime(new Date());
+        declineBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        declineBill.setComments(fundTransferDeclineReason);
+
+        declineBill.setBilledBill(fundTransferBillToDecline);
+        declineBill.setBackwardReferenceBill(fundTransferBillToDecline);
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED
+        );
+        declineBill.setDeptId(deptId);
+        declineBill.setInsId(deptId);
+
+        billController.save(declineBill);
+
+        List<Payment> declinePayments = new ArrayList<>();
+        double totalValue = 0.0;
+
+        List<Payment> originalPayments = findPaymentsForBill(freshBill);
+
+        for (Payment originalPayment : originalPayments) {
+            // Re-enable original non-cash source payment for future handover/shift-end
+            if (originalPayment.getReferancePayment() != null
+                    && originalPayment.getPaymentMethod() != null
+                    && originalPayment.getPaymentMethod() != PaymentMethod.Cash) {
+                Payment sourcePayment = originalPayment.getReferancePayment();
+                sourcePayment.setHandingOverStarted(false);
+                sourcePayment.setHandingOverCompleted(false);
+                paymentController.save(sourcePayment);
+            }
+
+            Payment declinePayment = new Payment();
+            declinePayment.setBill(declineBill);
+            declinePayment.setPaymentMethod(originalPayment.getPaymentMethod());
+            declinePayment.setCreatedAt(new Date());
+            // Use sender (fromWebUser) as creater so DrawerService updates the sender's drawer
+            declinePayment.setCreater(freshBill.getFromWebUser());
+
+            declinePayment.setPaidValue(Math.abs(originalPayment.getPaidValue()));
+            totalValue += declinePayment.getPaidValue();
+
+            declinePayment.setBank(originalPayment.getBank());
+            declinePayment.setChequeRefNo(originalPayment.getChequeRefNo());
+            declinePayment.setChequeDate(originalPayment.getChequeDate());
+            declinePayment.setCreditCardRefNo(originalPayment.getCreditCardRefNo());
+            declinePayment.setInstitution(originalPayment.getInstitution());
+
+            paymentController.save(declinePayment);
+            declinePayments.add(declinePayment);
+
+            // Add back to sender's drawer (payment.getCreater() = sender)
+            drawerController.updateDrawerForIns(declinePayment);
+        }
+
+        declineBill.setTotal(totalValue);
+        declineBill.setNetTotal(totalValue);
+        declineBill.getPayments().addAll(declinePayments);
+        billController.save(declineBill);
+
+        fundTransferBillToDecline.setCancelled(true);
+        fundTransferBillToDecline.setCancelledBill(declineBill);
+        billController.save(fundTransferBillToDecline);
+
+        JsfUtil.addSuccessMessage("Float transfer declined successfully");
+        return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
+    }
+
     public boolean hasAtLeastOneFundTransferBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
             Staff toStaff) {
         return hasAtLeastOneToReceived(BillTypeAtomic.FUND_TRANSFER_BILL, fromUser, fromStaff, toUser, toStaff);
+    }
+
+    /**
+     * Returns true if the payment belongs to a fund transfer bill type.
+     * Such payments must be excluded from handover processing because their
+     * drawer impact is fully handled at the time of transfer creation, receipt,
+     * or cancellation.
+     */
+    private boolean isFundTransferPayment(Payment payment) {
+        if (payment == null || payment.getBill() == null) {
+            return false;
+        }
+        BillTypeAtomic bta = payment.getBill().getBillTypeAtomic();
+        return bta == BillTypeAtomic.FUND_TRANSFER_BILL
+                || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+                || bta == BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+                || bta == BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED
+                || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED;
     }
 
     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
@@ -5949,6 +6479,7 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
             p.setCurrentHolder(sessionController.getLoggedUser());
+            p.setFloatRecipient(sessionController.getLoggedUser());
             p.setDepartment(null);
             p.setInstitution(null);
             p.setPaidValue(Math.abs(p.getPaidValue()));
@@ -6163,8 +6694,13 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotal());
+        // Use the CREATE bill's denomination-based total, not the payment sum.
+        // The CREATE bill (selectedBill) stores the physical cash the sender counted
+        // in denominations (e.g. 470 when 30 was sent as float). Recomputing from
+        // PaymentHandoverItem payment values gives the raw collection total (500),
+        // inflating the ACCEPT bill and the receiver's drawer by the float amount.
+        currentBill.setTotal(selectedBill.getNetTotal());
+        currentBill.setNetTotal(selectedBill.getNetTotal());
         billController.save(currentBill);
 
         List<Payment> payments = new ArrayList();
@@ -6205,6 +6741,11 @@ public class FinancialTransactionController implements Serializable {
 //                    continue;
 //                }
                 Payment p = row.getPayment();
+                // Skip fund transfer payments - they have their own drawer lifecycle
+                // and must not be reprocessed during handover acceptance
+                if (isFundTransferPayment(p)) {
+                    continue;
+                }
                 p.setCashbook(bundleCb);
                 p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
@@ -6228,7 +6769,20 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        updateDraverForHandoverAccept(payments, reciver, sender);
+        // Drawer update for receiver:
+        // - Cash: use the denomination total from the CREATE bill (physical amount handed over).
+        //   bundle.getCashHandoverValue() was set from denoBill.getNetTotal() during navigation,
+        //   so it reflects what the sender physically counted (e.g. 470, not 500 if 30 went as float).
+        // - Non-cash: use each payment's original paidValue (cheque/card are handed over at face value).
+        double cashHandoverDenominationTotal = bundle.getCashHandoverValue();
+        if (cashHandoverDenominationTotal > 0) {
+            drawerController.updateDrawerForIns(currentBill, PaymentMethod.Cash, cashHandoverDenominationTotal, reciver);
+        }
+        for (Payment p : payments) {
+            if (p.getPaymentMethod() != null && p.getPaymentMethod() != PaymentMethod.Cash) {
+                drawerController.updateDrawer(currentBill, p.getPaidValue(), p.getPaymentMethod(), reciver);
+            }
+        }
 
         billController.save(currentBill);
 
@@ -6893,6 +7447,22 @@ public class FinancialTransactionController implements Serializable {
         this.fundTransferCancellationReason = fundTransferCancellationReason;
     }
 
+    public Bill getFundTransferBillToDecline() {
+        return fundTransferBillToDecline;
+    }
+
+    public void setFundTransferBillToDecline(Bill fundTransferBillToDecline) {
+        this.fundTransferBillToDecline = fundTransferBillToDecline;
+    }
+
+    public String getFundTransferDeclineReason() {
+        return fundTransferDeclineReason;
+    }
+
+    public void setFundTransferDeclineReason(String fundTransferDeclineReason) {
+        this.fundTransferDeclineReason = fundTransferDeclineReason;
+    }
+
     public Date getMyFloatOutsFromDate() {
         if (myFloatOutsFromDate == null) {
             myFloatOutsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getStartOfMonth());
@@ -6913,6 +7483,83 @@ public class FinancialTransactionController implements Serializable {
 
     public void setMyFloatOutsToDate(Date myFloatOutsToDate) {
         this.myFloatOutsToDate = myFloatOutsToDate;
+    }
+
+    public List<Bill> getMyFundTransferBillsIn() {
+        return myFundTransferBillsIn;
+    }
+
+    public void setMyFundTransferBillsIn(List<Bill> myFundTransferBillsIn) {
+        this.myFundTransferBillsIn = myFundTransferBillsIn;
+    }
+
+    public Date getMyFloatInsFromDate() {
+        if (myFloatInsFromDate == null) {
+            myFloatInsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getStartOfMonth());
+        }
+        return myFloatInsFromDate;
+    }
+
+    public void setMyFloatInsFromDate(Date myFloatInsFromDate) {
+        this.myFloatInsFromDate = myFloatInsFromDate;
+    }
+
+    public Date getMyFloatInsToDate() {
+        if (myFloatInsToDate == null) {
+            myFloatInsToDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return myFloatInsToDate;
+    }
+
+    public void setMyFloatInsToDate(Date myFloatInsToDate) {
+        this.myFloatInsToDate = myFloatInsToDate;
+    }
+
+    // Float Transfer Request Getters/Setters
+    public List<Bill> getMyFundTransferRequestsOut() {
+        return myFundTransferRequestsOut;
+    }
+
+    public void setMyFundTransferRequestsOut(List<Bill> myFundTransferRequestsOut) {
+        this.myFundTransferRequestsOut = myFundTransferRequestsOut;
+    }
+
+    public List<Bill> getFundTransferRequestsForMe() {
+        return fundTransferRequestsForMe;
+    }
+
+    public void setFundTransferRequestsForMe(List<Bill> fundTransferRequestsForMe) {
+        this.fundTransferRequestsForMe = fundTransferRequestsForMe;
+    }
+
+    public Bill getSelectedFundTransferRequest() {
+        return selectedFundTransferRequest;
+    }
+
+    public void setSelectedFundTransferRequest(Bill selectedFundTransferRequest) {
+        this.selectedFundTransferRequest = selectedFundTransferRequest;
+    }
+
+    public Date getMyFloatRequestsFromDate() {
+        if (myFloatRequestsFromDate == null) {
+            myFloatRequestsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getStartOfMonth());
+        }
+        return myFloatRequestsFromDate;
+    }
+
+    public void setMyFloatRequestsFromDate(Date myFloatRequestsFromDate) {
+        this.myFloatRequestsFromDate = myFloatRequestsFromDate;
+    }
+
+    public Date getMyFloatRequestsToDate() {
+        if (myFloatRequestsToDate == null) {
+            myFloatRequestsToDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return myFloatRequestsToDate;
+    }
+
+    public void setMyFloatRequestsToDate(Date myFloatRequestsToDate) {
+        this.myFloatRequestsToDate = myFloatRequestsToDate;
     }
 
     // </editor-fold>
@@ -7622,6 +8269,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
+    }
+
+    public WebUser getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(WebUser toUser) {
+        this.toUser = toUser;
     }
 
     public Staff getFromStaff() {

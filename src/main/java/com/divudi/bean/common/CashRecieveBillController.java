@@ -30,6 +30,8 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.PaymentService;
@@ -72,6 +74,8 @@ public class CashRecieveBillController implements Serializable {
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PaymentService paymentService;
@@ -105,6 +109,7 @@ public class CashRecieveBillController implements Serializable {
     private Institution creditCompany;
     private String comment;
     private String selectedBillType;
+    private List<EncounterCreditCompany> bhtCreditCompanies;
 
     public void makeNull() {
         printPreview = false;
@@ -114,6 +119,7 @@ public class CashRecieveBillController implements Serializable {
         selectedBillItems = null;
         paymentMethodData = null;
         creditCompany = null;
+        bhtCreditCompanies = null;
         recreateModel();
     }
 
@@ -384,13 +390,26 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private double getReferenceBhtBallance(BillItem billItem) {
-        double refBallance = 0;
+        if (billItem.getReferenceBill() != null) {
+            // New per-company bill approach: outstanding = netTotal - paidAmount
+            return Math.max(0, billItem.getReferenceBill().getNetTotal() - billItem.getReferenceBill().getPaidAmount());
+        }
+        // Legacy fallback using admission aggregates
         double used = Math.abs(billItem.getPatientEncounter().getCreditUsedAmount());
         double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getPatientEncounter(), BillType.CashRecieveBill));
+        return used - paidAmt;
+    }
 
-        refBallance = used - (paidAmt);
-
-        return refBallance;
+    public void selectInwardCCBillBhtListener() {
+        if (selectedBill == null) {
+            return;
+        }
+        getCurrentBillItem().setReferenceBill(selectedBill);
+        getCurrentBillItem().setPatientEncounter(selectedBill.getPatientEncounter());
+        double outstanding = selectedBill.getNetTotal() - selectedBill.getPaidAmount();
+        if (outstanding > 0.01) {
+            getCurrentBillItem().setNetValue(outstanding);
+        }
     }
 
     public void selectBillListener() {
@@ -403,12 +422,39 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void selectBhtListener() {
-        double dbl = getReferenceBhtBallance(getCurrentBillItem());
+        bhtCreditCompanies = null;
+        if (getCurrentBillItem().getPatientEncounter() != null) {
+            String jpql = "SELECT ecc FROM EncounterCreditCompany ecc "
+                    + "WHERE ecc.patientEncounter = :pe AND ecc.retired = false";
+            java.util.HashMap<String, Object> params = new java.util.HashMap<>();
+            params.put("pe", getCurrentBillItem().getPatientEncounter());
+            List<EncounterCreditCompany> companies = encounterCreditCompanyFacade.findByJpql(jpql, params);
+            if (companies != null && companies.size() == 1) {
+                getCurrentBillItem().getPatientEncounter().setCreditCompany(companies.get(0).getInstitution());
+            } else if (companies != null && companies.size() > 1) {
+                bhtCreditCompanies = companies;
+            }
+        }
 
+        double dbl = getReferenceBhtBallance(getCurrentBillItem());
         if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
         }
+    }
 
+    public void selectBhtCreditCompany(EncounterCreditCompany ecc) {
+        if (ecc != null && getCurrentBillItem() != null && getCurrentBillItem().getPatientEncounter() != null) {
+            getCurrentBillItem().getPatientEncounter().setCreditCompany(ecc.getInstitution());
+        }
+        bhtCreditCompanies = null;
+    }
+
+    public List<EncounterCreditCompany> getBhtCreditCompanies() {
+        return bhtCreditCompanies;
+    }
+
+    public void setBhtCreditCompanies(List<EncounterCreditCompany> bhtCreditCompanies) {
+        this.bhtCreditCompanies = bhtCreditCompanies;
     }
 
     public void remove(BillItem billItem) {
@@ -514,23 +560,27 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private boolean errorCheckForAddingBht() {
-        if (getCurrentBillItem().getPatientEncounter().getCreditCompany() == null) {
+        Institution currentCc = null;
+        if (getCurrentBillItem().getReferenceBill() != null) {
+            currentCc = getCurrentBillItem().getReferenceBill().getCreditCompany();
+        } else if (getCurrentBillItem().getPatientEncounter() != null) {
+            currentCc = getCurrentBillItem().getPatientEncounter().getCreditCompany();
+        }
+        if (currentCc == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
         }
 
-//        double dbl = getReferenceBhtBallance(getCurrentBillItem());
-//
-//        if (dbl < Math.abs(getCurrentBillItem().getNetValue())) {
-//            JsfUtil.addErrorMessage("U Cant Recieve Over Than Due");
-//            return true;
-//        }
         for (BillItem b : getBillItems()) {
-            if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
-                if (!Objects.equals(getCurrentBillItem().getPatientEncounter().getCreditCompany().getId(), b.getPatientEncounter().getCreditCompany().getId())) {
-                    JsfUtil.addErrorMessage("U can add only one type Credit companies at Once");
-                    return true;
-                }
+            Institution existingCc = null;
+            if (b.getReferenceBill() != null) {
+                existingCc = b.getReferenceBill().getCreditCompany();
+            } else if (b.getPatientEncounter() != null) {
+                existingCc = b.getPatientEncounter().getCreditCompany();
+            }
+            if (existingCc != null && !Objects.equals(currentCc.getId(), existingCc.getId())) {
+                JsfUtil.addErrorMessage("U can add only one type Credit companies at Once");
+                return true;
             }
         }
 
@@ -612,7 +662,10 @@ public class CashRecieveBillController implements Serializable {
             return;
         }
 
-        getCurrent().setFromInstitution(getCurrentBillItem().getPatientEncounter().getCreditCompany());
+        Institution ccInstitution = (getCurrentBillItem().getReferenceBill() != null)
+                ? getCurrentBillItem().getReferenceBill().getCreditCompany()
+                : getCurrentBillItem().getPatientEncounter().getCreditCompany();
+        getCurrent().setFromInstitution(ccInstitution);
         //     getCurrentBillItem().getBill().setNetTotal(getCurrentBillItem().getNetValue());
         //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
 
@@ -846,7 +899,14 @@ public class CashRecieveBillController implements Serializable {
             return true;
         }
 
-        if (!Objects.equals(getBillItems().get(0).getPatientEncounter().getCreditCompany().getId(), getCurrent().getFromInstitution().getId())) {
+        Bill refBillCheck = getBillItems().get(0).getReferenceBill();
+        Institution billCreditCompany = (refBillCheck != null) ? refBillCheck.getCreditCompany()
+                : (getBillItems().get(0).getPatientEncounter() != null ? getBillItems().get(0).getPatientEncounter().getCreditCompany() : null);
+        if (billCreditCompany == null) {
+            JsfUtil.addErrorMessage("Credit company not found on selected bill");
+            return true;
+        }
+        if (!Objects.equals(billCreditCompany.getId(), getCurrent().getFromInstitution().getId())) {
             JsfUtil.addErrorMessage("Select same credit company as BillItem ");
             return true;
         }
@@ -1666,10 +1726,10 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateReferenceBht(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
-
-        tmp.getReferenceBill().getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getReferenceBill().getPatientEncounter());
+        if (tmp.getReferenceBill() == null) {
+            return;
+        }
+        updateSettlingCreditBillSettledValues(tmp);
     }
 
 //    private void updateReferenceBill(BillItem tmp) {
@@ -1705,6 +1765,7 @@ public class CashRecieveBillController implements Serializable {
         billItems = null;
         selectedBillItems = null;
         creditCompany = null;
+        bhtCreditCompanies = null;
         comment = null;
         selectedBill = null;
         selectedBillType = null;
