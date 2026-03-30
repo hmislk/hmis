@@ -106,7 +106,8 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render="valPaying valToPay" listener="#{cashRecieveBillController.selectBhtListener()}"/>
+                                            <p:ajax event="itemSelect" process="@this" update="valPaying valToPay dlgCreditCompanySelectorWrapper" listener="#{cashRecieveBillController.selectBhtListener()}"
+                                                    oncomplete="if (#{not empty cashRecieveBillController.bhtCreditCompanies}) { PF('wvDlgCreditCompanySelector').show(); }"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
@@ -262,6 +263,34 @@
                     </p:commandButton>
                     <bi:insRecieve_custom billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
                 </p:panel>
+
+                <h:panelGroup id="dlgCreditCompanySelectorWrapper">
+                    <p:dialog id="dlgCreditCompanySelector" modal="true" widgetVar="wvDlgCreditCompanySelector"
+                              header="Select Credit Company" draggable="false" closable="false" resizable="false"
+                              style="width:500px;">
+                        <p:dataTable value="#{cashRecieveBillController.bhtCreditCompanies}" var="ecc" emptyMessage="No companies found">
+                            <p:column headerText="Company Name">
+                                <h:outputText value="#{ecc.institution.name}"/>
+                            </p:column>
+                            <p:column headerText="Credit Limit" styleClass="text-end">
+                                <h:outputText value="#{ecc.creditLimit}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Policy No">
+                                <h:outputText value="#{ecc.policyNo}"/>
+                            </p:column>
+                            <p:column>
+                                <p:commandButton value="Select" icon="fa fa-check" class="ui-button-success"
+                                                ajax="true"
+                                                action="#{cashRecieveBillController.selectBhtCreditCompany(ecc)}"
+                                                process="@this"
+                                                update="dlgCreditCompanySelectorWrapper valToPay valPaying"
+                                                oncomplete="PF('wvDlgCreditCompanySelector').hide();"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:dialog>
+                </h:panelGroup>
 
                 <p:dialog modal="true" widgetVar="statusDialog" header="Processing" draggable="false" closable="false" resizable="false">
                     <p:graphicImage name="/resources/images/loading.gif" />

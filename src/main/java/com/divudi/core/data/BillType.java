@@ -171,6 +171,7 @@ public enum BillType {
     RecordShiftEndCash,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    FundTransferRequestBill, // For requesting a float transfer from another cashier
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
     WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
     ShiftShortage,
