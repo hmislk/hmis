@@ -14,6 +14,12 @@
             <property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
             <!-- Log cache contention warnings for early detection -->
             <property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
+            <!-- DDL generation to tmp folder -->
+            <property name="eclipselink.ddl-generation" value="create-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
+            <property name="eclipselink.create-ddl-jdbc-file-name" value="createDDL_ddlGeneration.sql"/>
+            <property name="eclipselink.drop-ddl-jdbc-file-name" value="dropDDL_ddlGeneration.sql"/>
+            <property name="eclipselink.application-location" value="C:\Development\hmis\tmp\"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
