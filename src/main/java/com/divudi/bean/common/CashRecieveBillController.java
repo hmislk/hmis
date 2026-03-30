@@ -30,6 +30,8 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.PaymentService;
@@ -72,6 +74,8 @@ public class CashRecieveBillController implements Serializable {
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PaymentService paymentService;
@@ -105,6 +109,7 @@ public class CashRecieveBillController implements Serializable {
     private Institution creditCompany;
     private String comment;
     private String selectedBillType;
+    private List<EncounterCreditCompany> bhtCreditCompanies;
 
     public void makeNull() {
         printPreview = false;
@@ -114,6 +119,7 @@ public class CashRecieveBillController implements Serializable {
         selectedBillItems = null;
         paymentMethodData = null;
         creditCompany = null;
+        bhtCreditCompanies = null;
         recreateModel();
     }
 
@@ -403,12 +409,39 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void selectBhtListener() {
-        double dbl = getReferenceBhtBallance(getCurrentBillItem());
+        bhtCreditCompanies = null;
+        if (getCurrentBillItem().getPatientEncounter() != null) {
+            String jpql = "SELECT ecc FROM EncounterCreditCompany ecc "
+                    + "WHERE ecc.patientEncounter = :pe AND ecc.retired = false";
+            java.util.HashMap<String, Object> params = new java.util.HashMap<>();
+            params.put("pe", getCurrentBillItem().getPatientEncounter());
+            List<EncounterCreditCompany> companies = encounterCreditCompanyFacade.findByJpql(jpql, params);
+            if (companies != null && companies.size() == 1) {
+                getCurrentBillItem().getPatientEncounter().setCreditCompany(companies.get(0).getInstitution());
+            } else if (companies != null && companies.size() > 1) {
+                bhtCreditCompanies = companies;
+            }
+        }
 
+        double dbl = getReferenceBhtBallance(getCurrentBillItem());
         if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
         }
+    }
 
+    public void selectBhtCreditCompany(EncounterCreditCompany ecc) {
+        if (ecc != null && getCurrentBillItem() != null && getCurrentBillItem().getPatientEncounter() != null) {
+            getCurrentBillItem().getPatientEncounter().setCreditCompany(ecc.getInstitution());
+        }
+        bhtCreditCompanies = null;
+    }
+
+    public List<EncounterCreditCompany> getBhtCreditCompanies() {
+        return bhtCreditCompanies;
+    }
+
+    public void setBhtCreditCompanies(List<EncounterCreditCompany> bhtCreditCompanies) {
+        this.bhtCreditCompanies = bhtCreditCompanies;
     }
 
     public void remove(BillItem billItem) {
@@ -1667,9 +1700,8 @@ public class CashRecieveBillController implements Serializable {
 
     private void updateReferenceBht(BillItem tmp) {
         double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
-
-        tmp.getReferenceBill().getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getReferenceBill().getPatientEncounter());
+        tmp.getPatientEncounter().setCreditPaidAmount(0 - dbl);
+        getPatientEncounterFacade().edit(tmp.getPatientEncounter());
     }
 
 //    private void updateReferenceBill(BillItem tmp) {
@@ -1705,6 +1737,7 @@ public class CashRecieveBillController implements Serializable {
         billItems = null;
         selectedBillItems = null;
         creditCompany = null;
+        bhtCreditCompanies = null;
         comment = null;
         selectedBill = null;
         selectedBillType = null;
