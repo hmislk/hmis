@@ -195,8 +195,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
         List<BillItem> creditItems = fetchCreditSettlementItems(enc);
         for (BillItem bi : creditItems) {
             String companyName = "";
-            if (bi.getBill() != null && bi.getBill().getCreditCompany() != null) {
-                companyName = bi.getBill().getCreditCompany().getName();
+            if (bi.getReferenceBill() != null && bi.getReferenceBill().getCreditCompany() != null) {
+                companyName = bi.getReferenceBill().getCreditCompany().getName();
             }
             row.addCreditSettlement(Math.abs(bi.getNetValue()), companyName);
         }
