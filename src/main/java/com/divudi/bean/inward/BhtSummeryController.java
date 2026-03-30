@@ -59,6 +59,7 @@ import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
 import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
@@ -147,6 +148,7 @@ public class BhtSummeryController implements Serializable {
     List<PatientItem> patientItems;
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
+    private List<CreditCompanyAllocation> creditCompanyAllocations;
     //////////////////////////
     private double grantTotal = 0.0;
     private double discount;
@@ -1326,7 +1328,11 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
-            createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
+            for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+                if (alloc.getAllocatedAmount() > 0) {
+                    saveCCBillForAllocation(getPatientEncounter(), alloc);
+                }
+            }
         }
 
         getPatientEncounter().setFinalBill(getCurrent());
@@ -1452,6 +1458,52 @@ public class BhtSummeryController implements Serializable {
 
     public void saveCreditBillForCreditCompany(PatientEncounter pe, EncounterCreditCompany ecc, Double value) {
         saveCCBill(pe, ecc, value);
+    }
+
+    private void populateCreditCompanyAllocations() {
+        creditCompanyAllocations = new ArrayList<>();
+        double remaining = (grantTotal - discount) - paidByPatient - paidByCompany;
+        List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(patientEncounter);
+        if (eccs != null && !eccs.isEmpty()) {
+            for (EncounterCreditCompany ecc : eccs) {
+                if (remaining <= 0) {
+                    break;
+                }
+                double alloc = Math.min(remaining, ecc.getCreditLimit());
+                creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
+                remaining -= alloc;
+            }
+        } else if (patientEncounter.getCreditCompany() != null) {
+            creditCompanyAllocations.add(new CreditCompanyAllocation(patientEncounter.getCreditCompany(), remaining));
+        }
+    }
+
+    private boolean checkCreditAllocationTotal() {
+        if (getPatientEncounter() == null
+                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit
+                || creditCompanyAllocations == null
+                || creditCompanyAllocations.isEmpty()) {
+            return false;
+        }
+        double totalAllocated = 0.0;
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            totalAllocated += alloc.getAllocatedAmount();
+        }
+        double expected = (grantTotal - discount) - paidByPatient - paidByCompany;
+        if (Math.abs(totalAllocated - expected) > 0.01) {
+            JsfUtil.addErrorMessage("Credit allocation total (" + String.format("%.2f", totalAllocated)
+                    + ") does not match the net due amount (" + String.format("%.2f", expected) + ")");
+            return true;
+        }
+        return false;
+    }
+
+    private void saveCCBillForAllocation(PatientEncounter pe, CreditCompanyAllocation alloc) {
+        if (alloc.getEncounterCreditCompany() != null) {
+            saveCCBill(pe, alloc.getEncounterCreditCompany(), alloc.getAllocatedAmount());
+        } else {
+            saveCCBillByInstitution(pe, alloc.getCreditCompany(), alloc.getAllocatedAmount());
+        }
     }
 
     private boolean checkRoomIsDischarged() {
@@ -1588,6 +1640,10 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (checkCatTotal()) {
+            return true;
+        }
+
+        if (checkCreditAllocationTotal()) {
             return true;
         }
 
@@ -1885,6 +1941,38 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setPatientEncounter(patientEncounter);
         creditCompanyBill.setPatient(patientEncounter.getPatient());
 //        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+        creditCompanyBill.setCreatedAt(new Date());
+        creditCompanyBill.setCreater(getSessionController().getLoggedUser());
+        creditCompanyBill.setReferenceBill(getCurrent());
+
+        if (creditCompanyBill.getId() == null) {
+            getBillFacade().create(creditCompanyBill);
+        } else {
+            getBillFacade().edit(creditCompanyBill);
+        }
+    }
+
+    private void saveCCBillByInstitution(PatientEncounter pe, Institution company, Double value) {
+
+        Bill creditCompanyBill = new BilledBill();
+
+        creditCompanyBill.setGrantTotal(value);
+        creditCompanyBill.setTotal(value);
+        creditCompanyBill.setNetTotal(value);
+        creditCompanyBill.setInstitution(getSessionController().getInstitution());
+        creditCompanyBill.setCreditCompany(company);
+        creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
+
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+
+        creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
+        creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+        creditCompanyBill.setBillDate(new Date());
+        creditCompanyBill.setBillTime(new Date());
+        creditCompanyBill.setPatientEncounter(patientEncounter);
+        creditCompanyBill.setPatient(patientEncounter.getPatient());
         creditCompanyBill.setCreatedAt(new Date());
         creditCompanyBill.setCreater(getSessionController().getLoggedUser());
         creditCompanyBill.setReferenceBill(getCurrent());
@@ -2808,6 +2896,9 @@ public class BhtSummeryController implements Serializable {
 //        }
         changed = false;
 
+        if (getPatientEncounter() != null && getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+            populateCreditCompanyAllocations();
+        }
     }
 
     public void changeIsMade() {
@@ -2837,6 +2928,14 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void onEdit(RowEditEvent event) {
+    }
+
+    public List<CreditCompanyAllocation> getCreditCompanyAllocations() {
+        return creditCompanyAllocations;
+    }
+
+    public void setCreditCompanyAllocations(List<CreditCompanyAllocation> creditCompanyAllocations) {
+        this.creditCompanyAllocations = creditCompanyAllocations;
     }
 
     private List<Bill> additionalChargeBill;
