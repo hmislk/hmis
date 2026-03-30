@@ -53,8 +53,9 @@
                                 onfocus="this.select();"
                                 value="#{financialTransactionController.currentBill.netTotal}"/>
 
-                            <p:outputLabel value="Comments"/>
+                            <p:outputLabel value="Comments" for="txtComments"/>
                             <p:inputTextarea
+                                id="txtComments"
                                 class="mx-2 w-100"
                                 value="#{financialTransactionController.currentBill.comments}"/>
 

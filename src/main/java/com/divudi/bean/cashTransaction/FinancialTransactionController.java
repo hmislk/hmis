@@ -8,6 +8,7 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.AuditEventController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -129,6 +130,8 @@ public class FinancialTransactionController implements Serializable {
     PageMetadataRegistry pageMetadataRegistry;
     @Inject
     AuditEventController auditEventController;
+    @Inject
+    private NotificationController notificationController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -2285,6 +2288,15 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("This request has already been fulfilled");
             return "";
         }
+        // Enforce the same shift-start restriction as navigateToFundTransferBill()
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
+            findNonClosedShiftStartFundBillIsAvailable();
+            if (getNonClosedShiftStartFundBill() == null) {
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                JsfUtil.addErrorMessage("Start Your Shift First!");
+                return "/cashier/index?faces-redirect=true";
+            }
+        }
         selectedFundTransferRequest = requestBill;
         resetClassVariablesWithoutSelectedBill();
         prepareToAddNewFundTransferBill();
@@ -2323,25 +2335,29 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Requested amount must be greater than zero");
             return "";
         }
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_REQUEST);
-        currentBill.setFromWebUser(sessionController.getLoggedUser());
-        currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
-        if (currentBill.getToWebUser().getStaff() != null) {
-            currentBill.setToStaff(currentBill.getToWebUser().getStaff());
+        try {
+            String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_REQUEST);
+            currentBill.setFromWebUser(sessionController.getLoggedUser());
+            currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+            if (currentBill.getToWebUser().getStaff() != null) {
+                currentBill.setToStaff(currentBill.getToWebUser().getStaff());
+            }
+            currentBill.setDepartment(sessionController.getDepartment());
+            currentBill.setInstitution(sessionController.getInstitution());
+            currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+            currentBill.setBillDate(new Date());
+            currentBill.setBillTime(new Date());
+            currentBill.setCreatedAt(new Date());
+            currentBill.setCreater(sessionController.getLoggedUser());
+            currentBill.setDeptId(deptId);
+            currentBill.setInsId(deptId);
+            currentBill.setTotal(currentBill.getNetTotal());
+            currentBill.setBalance(currentBill.getNetTotal());
+            billController.save(currentBill);
+            notificationController.createNotification(currentBill);
+        } finally {
+            floatRequestStarted = false;
         }
-        currentBill.setDepartment(sessionController.getDepartment());
-        currentBill.setInstitution(sessionController.getInstitution());
-        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        currentBill.setBillDate(new Date());
-        currentBill.setBillTime(new Date());
-        currentBill.setCreatedAt(new Date());
-        currentBill.setCreater(sessionController.getLoggedUser());
-        currentBill.setDeptId(deptId);
-        currentBill.setInsId(deptId);
-        currentBill.setTotal(currentBill.getNetTotal());
-        currentBill.setBalance(currentBill.getNetTotal());
-        billController.save(currentBill);
-        notificationController.createNotification(currentBill);
         return "/cashier/fund_transfer_request_bill_print?faces-redirect=true";
     }
 
@@ -2350,24 +2366,30 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        if (requestBill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+        // Reload from DB to prevent stale view-state race conditions
+        Bill freshBill = billFacade.find(requestBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Request not found");
+            return "";
+        }
+        if (freshBill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_REQUEST) {
             JsfUtil.addErrorMessage("Invalid bill type");
             return "";
         }
-        if (requestBill.isCancelled()) {
+        if (freshBill.isCancelled()) {
             JsfUtil.addErrorMessage("Already cancelled");
             return "";
         }
-        if (requestBill.getForwardReferenceBill() != null) {
+        if (freshBill.getForwardReferenceBill() != null) {
             JsfUtil.addErrorMessage("Cannot cancel a fulfilled request");
             return "";
         }
-        if (!requestBill.getFromWebUser().equals(sessionController.getLoggedUser())) {
+        if (!freshBill.getFromWebUser().equals(sessionController.getLoggedUser())) {
             JsfUtil.addErrorMessage("Only the requester can cancel this request");
             return "";
         }
-        requestBill.setCancelled(true);
-        billController.save(requestBill);
+        freshBill.setCancelled(true);
+        billController.save(freshBill);
         fillMyFundTransferRequests();
         return "/cashier/fund_transfer_my_requests?faces-redirect=true";
     }
@@ -2398,8 +2420,8 @@ public class FinancialTransactionController implements Serializable {
         params.put("ret", false);
         params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
         params.put("fromUser", sessionController.getLoggedUser());
-        params.put("fd", myFloatRequestsFromDate);
-        params.put("td", myFloatRequestsToDate);
+        params.put("fd", getMyFloatRequestsFromDate());
+        params.put("td", getMyFloatRequestsToDate());
         myFundTransferRequestsOut = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 

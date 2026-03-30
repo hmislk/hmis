@@ -330,6 +330,8 @@ public enum BillType {
                 return "Financial Auditing Bill";
             case FundTransferReceivedBill:
                 return "Fund Transfer Received Bill";
+            case FundTransferRequestBill:
+                return "Fund Transfer Request Bill";
             case RecordShiftEndCash:
                 return "Shift End Cash Record";
             default:

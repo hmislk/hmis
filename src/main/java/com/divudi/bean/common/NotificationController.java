@@ -243,6 +243,10 @@ public class NotificationController implements Serializable {
             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
         }
 
+        if (bt == BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Float Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
         if (message == null || message == "" || message.isEmpty()) {
             message = "New Request from ";
         }
