@@ -7,6 +7,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -72,6 +73,13 @@ public class InwardReportController1 implements Serializable {
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private Institution institution;
+    private Institution site;
+    private Institution admittingInstitution;
+    private boolean outstandingOnly;
+    private List<Bill> bills;
+    private double debtorBillTotal;
+    private double debtorPaidTotal;
+    private double debtorOutstandingTotal;
     PatientEncounter patientEncounter;
     private List<OpdService> opdServices;
     List<String1Value2> timedServices;
@@ -2427,6 +2435,50 @@ public class InwardReportController1 implements Serializable {
         this.institution = institution;
     }
 
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getAdmittingInstitution() {
+        return admittingInstitution;
+    }
+
+    public void setAdmittingInstitution(Institution admittingInstitution) {
+        this.admittingInstitution = admittingInstitution;
+    }
+
+    public boolean isOutstandingOnly() {
+        return outstandingOnly;
+    }
+
+    public void setOutstandingOnly(boolean outstandingOnly) {
+        this.outstandingOnly = outstandingOnly;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public double getDebtorBillTotal() {
+        return debtorBillTotal;
+    }
+
+    public double getDebtorPaidTotal() {
+        return debtorPaidTotal;
+    }
+
+    public double getDebtorOutstandingTotal() {
+        return debtorOutstandingTotal;
+    }
+
     public List<OpdService> getOpdServices() {
         return opdServices;
     }
@@ -2814,6 +2866,143 @@ public class InwardReportController1 implements Serializable {
 
     public void setToDatePaid(Date toDatePaid) {
         this.toDatePaid = toDatePaid;
+    }
+
+    public void inwardCreditCompanyDebtors() {
+        HashMap hm = new HashMap();
+        String sql = "Select b from Bill b "
+                + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.billDate between :frm and :to ";
+
+        if (institution != null) {
+            sql += " and b.creditCompany=:cc ";
+            hm.put("cc", institution);
+        }
+        if (admittingInstitution != null) {
+            sql += " and b.patientEncounter.institution=:ins ";
+            hm.put("ins", admittingInstitution);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site=:site ";
+            hm.put("site", site);
+        }
+        if (department != null) {
+            sql += " and b.patientEncounter.department=:dept ";
+            hm.put("dept", department);
+        }
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType=:at ";
+            hm.put("at", admissionType);
+        }
+        if (outstandingOnly) {
+            sql += " and (abs(b.netTotal) - abs(b.paidAmount)) > :minVal ";
+            hm.put("minVal", 0.01);
+        }
+
+        sql += " order by b.creditCompany.name, b.billDate ";
+
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        bills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        debtorBillTotal = 0;
+        debtorPaidTotal = 0;
+        debtorOutstandingTotal = 0;
+        for (Bill b : bills) {
+            debtorBillTotal += b.getNetTotal();
+            debtorPaidTotal += b.getPaidAmount();
+            debtorOutstandingTotal += (b.getNetTotal() - b.getPaidAmount());
+        }
+    }
+
+    public void inwardCreditCompanyPayments() {
+        HashMap hm = new HashMap();
+        String sql = "Select b from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.bill.cancelled=false "
+                + " and b.bill.billTypeAtomic=:bta "
+                + " and b.bill.createdAt between :frm and :to ";
+
+        if (institution != null) {
+            sql += " and b.referenceBill.creditCompany=:cc ";
+            hm.put("cc", institution);
+        }
+        if (admittingInstitution != null) {
+            sql += " and b.patientEncounter.institution=:ins ";
+            hm.put("ins", admittingInstitution);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site=:site ";
+            hm.put("site", site);
+        }
+        if (department != null) {
+            sql += " and b.patientEncounter.department=:dept ";
+            hm.put("dept", department);
+        }
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType=:at ";
+            hm.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.bill.paymentMethod=:pm ";
+            hm.put("pm", paymentMethod);
+        }
+
+        sql += " order by b.referenceBill.creditCompany.name, b.bill.createdAt ";
+
+        hm.put("bta", BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        totalInwardCreditCompanyPayments();
+    }
+
+    public Double totalInwardCreditCompanyPayments() {
+        HashMap hm = new HashMap();
+        String sql = "Select sum(b.netValue) from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.bill.cancelled=false "
+                + " and b.bill.billTypeAtomic=:bta "
+                + " and b.bill.createdAt between :frm and :to ";
+
+        if (institution != null) {
+            sql += " and b.referenceBill.creditCompany=:cc ";
+            hm.put("cc", institution);
+        }
+        if (admittingInstitution != null) {
+            sql += " and b.patientEncounter.institution=:ins ";
+            hm.put("ins", admittingInstitution);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site=:site ";
+            hm.put("site", site);
+        }
+        if (department != null) {
+            sql += " and b.patientEncounter.department=:dept ";
+            hm.put("dept", department);
+        }
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType=:at ";
+            hm.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.bill.paymentMethod=:pm ";
+            hm.put("pm", paymentMethod);
+        }
+
+        hm.put("bta", BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        hm.put("frm", getFromDate());
+        hm.put("to", getToDate());
+
+        creditPaymentTotalValue = BillItemFacade.findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+        return creditPaymentTotalValue;
     }
 
     public class CategoryTime {
