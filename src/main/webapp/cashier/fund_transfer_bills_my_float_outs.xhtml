@@ -63,6 +63,9 @@
 
                             <p:column headerText="To User">
                                 <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}" />
+                                <h:outputText value="&nbsp;(" />
+                                <h:outputText value="#{bp.toWebUser.name}" />
+                                <h:outputText value=")" />
                             </p:column>
 
                             <p:column headerText="Amount" style="text-align: right;">
@@ -71,24 +74,22 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Accepted">
+                            <p:column headerText="Status">
                                 <h:panelGroup rendered="#{bp.referenceBill ne null}">
-                                    <span class="badge bg-success">Yes</span>
+                                    <span class="badge bg-success">Accepted</span>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bp.referenceBill eq null and not bp.cancelled}">
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{bp.referenceBill eq null and bp.cancelled}">
-                                    <span class="badge bg-secondary">N/A</span>
+                                <h:panelGroup rendered="#{bp.cancelled and bp.cancelledBill ne null and bp.cancelledBill.billTypeAtomic ne null and bp.cancelledBill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL_DECLINED'}">
+                                    <span class="badge bg-danger">Declined by Recipient</span>
+                                    <h:panelGroup rendered="#{not empty bp.cancelledBill.comments}">
+                                        <br />
+                                        <small class="text-muted"><i class="pi pi-info-circle me-1" /><h:outputText value="#{bp.cancelledBill.comments}" /></small>
+                                    </h:panelGroup>
                                 </h:panelGroup>
-                            </p:column>
-
-                            <p:column headerText="Cancelled">
-                                <h:panelGroup rendered="#{bp.cancelled}">
-                                    <span class="badge bg-danger">Yes</span>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{not bp.cancelled}">
-                                    <span class="badge bg-light text-dark">No</span>
+                                <h:panelGroup rendered="#{bp.cancelled and (bp.cancelledBill eq null or bp.cancelledBill.billTypeAtomic eq null or bp.cancelledBill.billTypeAtomic.name() ne 'FUND_TRANSFER_BILL_DECLINED')}">
+                                    <span class="badge bg-secondary">Cancelled</span>
                                 </h:panelGroup>
                             </p:column>
 

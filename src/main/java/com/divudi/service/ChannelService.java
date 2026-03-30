@@ -12,6 +12,8 @@ import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.IncomeBundle;
+import com.divudi.core.data.IncomeRow;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
@@ -28,6 +30,8 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsDTO;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
+import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.core.entity.ApiKey;
@@ -455,7 +459,7 @@ public class ChannelService {
 
         params.put("bta", billTypeAtomics);
         params.put("shiftStartBillId", shiftStartBillId);
-        
+
         params.put("createrId", createrId);
         params.put("Cash", PaymentMethod.Cash);
         params.put("Card", PaymentMethod.Card);
@@ -482,8 +486,8 @@ public class ChannelService {
         }
 
         Object[] billMetaData = fetchShiftEndBillDetails(shiftStartBillId);
-        
-        if(billMetaData == null){
+
+        if (billMetaData == null) {
             return null;
         }
 
@@ -495,12 +499,45 @@ public class ChannelService {
 
         List<ChannelServiceCategorywiseDetailsDTO> dtoList = fetchChannelCategorywiseDetailsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId);
         
+        List<PharmacyIncomeBillDTO> pharmacyIncomeDtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(shiftStartBillId, shiftEndBillId, creatorId);
+
+        IncomeBundle pharmacyBundle = new IncomeBundle(pharmacyIncomeDtos);
+
+        pharmacyBundle.fixDiscountsAndMarginsInRows();
+        for (IncomeRow r : pharmacyBundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
+        pharmacyBundle.generatePaymentDetailsForBills();
+        
+        List<OpdIncomeReportDTO> opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(shiftStartBillId, shiftEndBillId, creatorId);
+
+        IncomeBundle opdBundle = new IncomeBundle(opdIncomeReportDtos);
+        for (IncomeRow dto : opdBundle.getRows()) {
+            if (dto.getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+                Bill batchBill = billService.fetchBatchBillOfIndividualBill(dto.getBill());
+                dto.setBatchBill(batchBill);
+                dto.setPayments(billService.fetchBillPayments(dto.getBill(), dto.getBatchBill()));
+            }
+        }
+
+        opdBundle.generatePaymentDetailsForBillsAndBatchBills();
+
         ChannelServiceCategorywiseDetailsWrapperDTO wrapperDto = new ChannelServiceCategorywiseDetailsWrapperDTO();
+        wrapperDto.setOpdBundle(opdBundle);
+        wrapperDto.setPharmacyBundle(pharmacyBundle);
         wrapperDto.setDtoList(dtoList);
         wrapperDto.setBillingEndDate(shiftEndAt);
         wrapperDto.setCashierUserName(creatorName);
         wrapperDto.setBillingStartDate(shiftStartAt);
-        
+
         return wrapperDto;
 
     }

@@ -11,14 +11,14 @@
         <ui:composition template="/payments/credit_company_pay_index.xhtml">
             <ui:define name="admin">
                 <h:form id="dueForm">
-                    <p:panel>
+                    <p:panel >
                         <f:facet name="header">
                             <h:outputLabel value="OPD CREDIT DUE"/>
                         </f:facet>
-                        <h:panelGrid columns="2" class="my-2" >
+                        <p:panelGrid columns="4" class="my-2 w-100" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar
-                                class="w-100 mx-5"
+                                class="w-100"
                                 inputStyleClass="w-100"
                                 id="fromDate"
                                 value="#{creditCompanyDueController.fromDate}"
@@ -29,7 +29,7 @@
 
                             <h:outputLabel value="To Date"/>
                             <p:calendar
-                                class="w-100 mx-5"
+                                class="w-100"
                                 inputStyleClass="w-100"
                                 id="toDate"
                                 value="#{creditCompanyDueController.toDate}"
@@ -38,7 +38,7 @@
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
                             <h:outputLabel value="Bill Type"/>
-                            <p:selectOneMenu class="w-100 mx-5" value="#{creditCompanyDueController.billType}">
+                            <p:selectOneMenu class="w-100" value="#{creditCompanyDueController.billType}">
                                 <f:selectItem itemValue="ALL" itemLabel="All Bills (ALL)"/>
                                 <f:selectItem itemValue="OPD" itemLabel="OPD Bills (OPD)"/>
                                 <f:selectItem itemValue="PACKAGE" itemLabel="Package Bills (PACKAGE)"/>
@@ -48,7 +48,7 @@
                             <h:outputLabel value="Credit Company "/>
                             <p:autoComplete
                                 id="creditCompany"
-                                class="w-100 mx-5"
+                                class="w-100"
                                 value="#{creditCompanyDueController.creditCompany}"
                                 inputStyleClass="form-control"
                                 forceSelection="true"
@@ -60,7 +60,7 @@
                                 size="10"  >
                             </p:autoComplete>
 
-                        </h:panelGrid>
+                        </p:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton
                                 class="ui-button-warning"
@@ -74,8 +74,8 @@
                                 class="ui-button-info mx-2"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print" >
-                                <p:printer target="panIx" />
+                                value="To Print" 
+                                action="credit_company_opd_due_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton
@@ -85,6 +85,14 @@
                                 actionListener="#{creditCompanyDueController.downloadExcel}"
                                 value="Download Excel"
                                 ajax="false" >
+                            </p:commandButton>
+                            
+                             <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF"
+                                action="#{creditCompanyDueController.exportOpdCreditDueToPDF()}">
                             </p:commandButton>
 
                             <p:commandButton
