@@ -561,10 +561,13 @@ public class CreditCompanyDueController implements Serializable {
 
         String jpql = "SELECT bill FROM Bill bill "
                 + "WHERE bill.retired <> :br "
-                + "AND bill.billTypeAtomic IN :bts";
+                + "AND (bill.cancelled = false OR bill.cancelled IS NULL) "
+                + "AND bill.billTypeAtomic IN :bts "
+                + "AND (ABS(bill.netTotal) - ABS(bill.paidAmount)) > :minBalance";
 
         parameters.put("br", true);
         parameters.put("bts", bts);
+        parameters.put("minBalance", 0.01);
 
         if (institutionOfDepartment != null) {
             jpql += " AND bill.institution = :ins";
@@ -1497,10 +1500,15 @@ public class CreditCompanyDueController implements Serializable {
             newIns.setInstitution(company);
             newIns.setBills(bills);
 
+            List<PatientEncounter> encounters = new ArrayList<>();
             for (Bill bill : bills) {
                 newIns.setTotal(newIns.getTotal() + bill.getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + bill.getPaidAmount());
+                if (bill.getPatientEncounter() != null) {
+                    encounters.add(bill.getPatientEncounter());
+                }
             }
+            newIns.setPatientEncounters(encounters);
             finalTotal += newIns.getTotal();
             finalPaidTotal += newIns.getPaidTotal();
 

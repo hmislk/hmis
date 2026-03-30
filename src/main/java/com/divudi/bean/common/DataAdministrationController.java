@@ -4998,10 +4998,12 @@ public class DataAdministrationController implements Serializable {
                             pe.getFinalBill().getInstitution(), BillType.InwardFinalBillCCPayment,
                             BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
-                    Date billDate = pe.getDateOfDischarge() != null ? pe.getDateOfDischarge() : pe.getCreatedAt();
+                    Date billDate = pe.getDateOfDischarge() != null ? pe.getDateOfDischarge()
+                            : (pe.getFinalBill() != null && pe.getFinalBill().getCreatedAt() != null
+                                    ? pe.getFinalBill().getCreatedAt() : pe.getCreatedAt());
                     ccBill.setBillDate(billDate);
                     ccBill.setBillTime(billDate);
-                    ccBill.setCreatedAt(new Date());
+                    ccBill.setCreatedAt(billDate);
                     ccBill.setCreater(sessionController.getLoggedUser());
 
                     ccBill.setPatientEncounter(pe);

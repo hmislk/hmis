@@ -474,6 +474,7 @@
                                         </td>
                                         <td>
                                             <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 action="#{dataAdministrationController.migrateInwardCreditCompanyBills()}"
                                                 ajax="false"
                                                 value="Migrate Inward CC Bills"

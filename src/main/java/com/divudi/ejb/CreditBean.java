@@ -557,6 +557,7 @@ public class CreditBean {
     public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate) {
         String sql = "Select b From Bill b "
                 + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
                 + " and b.creditCompany=:cc "
                 + " and b.billDate between :frm and :to "
@@ -578,6 +579,7 @@ public class CreditBean {
     public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate) {
         String sql = "Select distinct(b.creditCompany) From Bill b "
                 + " where b.retired=false "
+                + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
                 + " and b.billDate between :frm and :to "
                 + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
