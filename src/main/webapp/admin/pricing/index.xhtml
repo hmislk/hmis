@@ -313,7 +313,7 @@
                                                 ajax="false" 
                                                 rendered="#{webUserController.hasPrivilege('MembershipSchemes')}">
                                             </p:commandButton> 
-                                            
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{membershipSchemeController.navigateToMembershipScheme()}" 
@@ -336,7 +336,7 @@
                                                 value="Pharmacy Discounts"
                                                 action="/admin/pricing/membership/payment_scheme_discount_pharmacy_by_category?faces-redirect=true">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountPharmacyByCategory()}" 
@@ -344,7 +344,7 @@
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
                                                 ajax="false" >
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdByDepartment()}" 
@@ -352,7 +352,7 @@
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
                                                 ajax="false">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountforCreditCompany()}" 
@@ -384,7 +384,7 @@
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}"  
                                                 ajax="false" >
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountChannel()}"   
@@ -417,9 +417,12 @@
                                         rendered="false"
                                         title="Manage Membership Schemes">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100"
-                                                             ajax="false" value="Membership Schemes Discounts"
-                                                             action="/admin/pricing/membership/membership_scheme_discount_inward"/>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Membership Schemes Discounts"
+                                                action="/admin/pricing/membership/membership_scheme_discount_inward">
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 class="w-100" action="#{navigationController.navigateToMembershipPaymentMethodAllowed()}" actionListener="#{membershipSchemeController.fillItems}" value="Allowed Payment Methods" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
