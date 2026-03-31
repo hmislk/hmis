@@ -2419,6 +2419,141 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
+    
+        // Filters for sample_carrier_report
+    public Map<String, Object> getFiltersForCollectionCenterStatementReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", sdf.format(getFromDate()));
+        filters.put("To Date", sdf.format(getToDate()));
+        filters.put("Institution/branch", institution != null ? institution.getName() : "All");
+        filters.put("Collection Center", collectingCentre != null ? collectingCentre.getName() : "All");
+        filters.put("Invoice No.", invoiceNumber != null ? invoiceNumber : "All");
+        return filters;
+    }
+    
+     public void exportCollectionCenterStatementReportToPDF() {
+//        if (agentHistories == null  || agentHistories.isEmpty()) {
+//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+//            return;
+//        }
+        
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Statement_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Statement.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Statement", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+        
+
+            int columnCount = 17;
+            Map<String, Object> filters = getFiltersForCollectionCenterStatementReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+            
+            headers = new String[]{"Bill No.", "Ref Bill No.", "Date & Time", "Bill Type", "History Type","CC Code","CC Name","Leaf No.","Hospital Fee", "Staff Fee", "CC Fee","Received from CC","Paid To CC","Adjustment to CC balance","CC Balance Before Transaction","Transaction Amount","CC Balance After Transation"};
+            columnWidths = new float[]{2f, 2f, 2f, 1f, 1f, 1f, 2f, 1f,1f,1f,1f,1f,1f,1f,1f,1f,1f};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            // list of the sanple carrier reports
+            List<AgentHistory> rows = agentHistories;
+            for (AgentHistory row : rows) {
+                table.addCell(textCell(row.getBill().getDeptId(),bodyFontSmall));
+                table.addCell(textCell(row.getBill().getCancelledBill()!= null ? row.getBill().getCancelledBill().getDeptId() : "-",bodyFontSmall));
+                table.addCell(textCell(row.getCreatedAt() != null ? sdf.format(row.getCreatedAt() ) : "-",bodyFontSmall));
+                table.addCell(textCell(row.getBill().getBillTypeAtomic().getLabel(),bodyFontSmall));
+                table.addCell(textCell(row.getHistoryType().name(),bodyFontSmall));
+                String CCCodeString =!"RepaymentToCollectingCentre".equals(row.getHistoryType()) ? row.getBill().getFromInstitution().getCode() : row.getAgency().getCode();
+                table.addCell(textCell(CCCodeString,bodyFontSmall));
+                String CCNameString =!"RepaymentToCollectingCentre".equals(row.getHistoryType()) ? row.getBill().getFromInstitution().getName() : row.getAgency().getName() ;
+                
+                table.addCell(textCell(CCNameString,bodyFontSmall));
+                table.addCell(textCell(row.getBill().getReferenceNumber() != null ? row.getBill().getReferenceNumber(): "-",bodyFontSmall));
+                table.addCell(numCell(row.getCompanyTransactionValue(),bodyFontSmall));
+                table.addCell(numCell(row.getStaffTrasnactionValue(),bodyFontSmall));
+                table.addCell(numCell(row.getAgentTransactionValue(),bodyFontSmall));
+                table.addCell(numCell(row.getPaidAmountByAgency(),bodyFontSmall));
+                table.addCell(numCell(row.getPaidAmountToAgency(),bodyFontSmall));
+                table.addCell(numCell(row.getAdjustmentToAgencyBalance(),bodyFontSmall));
+                table.addCell(numCell(row.getBalanceBeforeTransaction(),bodyFontSmall));
+                table.addCell(numCell(row.getTransactionValue(),bodyFontSmall));
+                table.addCell(numCell(row.getBalanceAfterTransaction(),bodyFontSmall));
+             
+            }
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+        } 
+    }
+
+    // PostProcessor for bill_wise_item_movement_report excel export
+    public void postProcessCollectionCenterStatementReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Collection Center Statement");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForCollectionCenterStatementReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Collection Center Statement", filters);
+        }
+    }
 
     private List<AgentHistory> detectBalanceContinuationErrors(List<AgentHistory> histories) {
         List<AgentHistory> errors = new ArrayList<>();
