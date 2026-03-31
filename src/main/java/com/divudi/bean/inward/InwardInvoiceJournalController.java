@@ -210,14 +210,14 @@ public class InwardInvoiceJournalController implements Serializable {
 
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
 
-        String jpql = "select bi.patientEncounter.id, bi.inwardChargeType, sum(bi.netValue)"
+        String jpql = "select bi.bill.patientEncounter.id, bi.inwardChargeType, sum(bi.netValue)"
                 + " from BillItem bi"
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
                 + " and bi.bill.cancelled = false"
-                + " and bi.patientEncounter in :encs"
+                + " and bi.bill.patientEncounter in :encs"
                 + " and bi.inwardChargeType is not null"
-                + " group by bi.patientEncounter.id, bi.inwardChargeType";
+                + " group by bi.bill.patientEncounter.id, bi.inwardChargeType";
 
         Map<String, Object> params = new HashMap<>();
         params.put("encs", encounters);
@@ -273,14 +273,14 @@ public class InwardInvoiceJournalController implements Serializable {
     private Map<Long, double[]> fetchCreditSettlementByEncounter(List<PatientEncounter> encounters) {
         Map<Long, double[]> result = new HashMap<>();
 
-        String jpql = "select bi.patientEncounter.id, sum(bi.netValue)"
+        String jpql = "select bi.bill.patientEncounter.id, sum(bi.netValue)"
                 + " from BillItem bi"
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
                 + " and bi.bill.cancelled = false"
                 + " and bi.bill.billTypeAtomic = :bta"
-                + " and bi.patientEncounter in :encs"
-                + " group by bi.patientEncounter.id";
+                + " and bi.bill.patientEncounter in :encs"
+                + " group by bi.bill.patientEncounter.id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bta",  BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
