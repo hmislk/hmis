@@ -31,6 +31,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.facade.PaymentSchemeDiscountFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +144,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         System.out.println("Null = " + (list == null));
         System.out.println("Empty = " + list.isEmpty());
         
-        if(list != null || !list.isEmpty()){
+        if(!list.isEmpty()){
             JsfUtil.addErrorMessage("Discount for this Payment Scheme and Credit Company already exists.");
             return;
         }
@@ -184,7 +185,8 @@ public class OpdMemberShipDiscountController implements Serializable {
         
         System.out.println("ps = " + ps);
         System.out.println("creditCompany = " + creditCompany);
-        List<PriceMatrix> existing = getFacade().findByJpqlWithoutCache(jpql, params);
+        List<PriceMatrix> existing = new ArrayList<>();
+        existing = getFacade().findByJpqlWithoutCache(jpql, params);
         System.out.println("existing = " + existing);
         return existing;
     }
