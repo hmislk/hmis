@@ -807,6 +807,10 @@ public class PatientPortalController implements Serializable {
         this.patientEnteredOtp = patientEnteredOtp;
     }
 
+    public int getOtpLength() {
+        return configOptionApplicationController.getLongValueByKey("Patient Portal - OTP Length", 6L).intValue();
+    }
+
     public boolean isOtpVerify() {
         return otpVerify;
     }
