@@ -69,7 +69,7 @@ For complete reference, read [developer_docs/jsf/ajax-update-guidelines.md](../.
 
 ## Navigation Pattern: Never Use f:viewAction on @SessionScoped Beans
 
-**🚨 All controllers in this project are `@SessionScoped`. Never use `f:viewAction` or `f:event type="preRenderView"` to initialize state.**
+**🚨 Most controllers in this project are `@SessionScoped`. Never use `f:viewAction` or `f:event type="preRenderView"` to initialize state on `@SessionScoped` beans.**
 
 `f:viewAction` fires on every GET — including browser refresh and back-button — silently resetting in-progress state. All initialization belongs in the navigation method that redirects to the page.
 

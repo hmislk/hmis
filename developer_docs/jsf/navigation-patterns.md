@@ -4,7 +4,7 @@
 
 **🚨 Never use `f:viewAction` or `f:event type="preRenderView"` to initialize state on `@SessionScoped` beans.**
 
-All controllers in this project are `@SessionScoped`. Navigation is always performed via explicit Java methods that return `"/<page>?faces-redirect=true"`. That navigation method is the correct and only place to set up state for the destination page.
+Most controllers in this project are `@SessionScoped`. Navigation is always performed via explicit Java methods that return `"/<page>?faces-redirect=true"`. That navigation method is the correct and only place to set up state for the destination page.
 
 ### Why `f:viewAction` is harmful on `@SessionScoped` beans
 

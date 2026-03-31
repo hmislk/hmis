@@ -50,10 +50,16 @@
                         </h:panelGroup>
 
                         <p:panelGrid columns="2" class="w-100" >
-                            <p:outputLabel value="Transfer To" for="acStaff"></p:outputLabel>
+                            <p:outputLabel value="Transfer To"
+                                rendered="#{financialTransactionController.selectedFundTransferRequest eq null}"
+                                for="acStaff"/>
+                            <p:outputLabel value="Transfer To"
+                                rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
+                                for="txtTransferTo"/>
                             <h:panelGroup>
                                 <!-- Read-only when pre-filled from a request -->
                                 <h:outputText
+                                    id="txtTransferTo"
                                     rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
                                     value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}"
                                     class="mx-2"/>

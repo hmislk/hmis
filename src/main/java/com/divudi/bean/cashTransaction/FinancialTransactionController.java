@@ -2992,8 +2992,18 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         // If this transfer was initiated from a float transfer request, mark the request as fulfilled
         if (selectedFundTransferRequest != null) {
-            selectedFundTransferRequest.setForwardReferenceBill(currentBill);
-            billController.save(selectedFundTransferRequest);
+            Bill freshRequest = billFacade.find(selectedFundTransferRequest.getId());
+            if (freshRequest == null
+                    || freshRequest.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_REQUEST
+                    || freshRequest.isCancelled()
+                    || freshRequest.getForwardReferenceBill() != null
+                    || !sessionController.getLoggedUser().equals(freshRequest.getToWebUser())) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Float transfer request is no longer valid");
+                return "";
+            }
+            freshRequest.setForwardReferenceBill(currentBill);
+            billController.save(freshRequest);
         }
         floatTransferStarted = false;
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
