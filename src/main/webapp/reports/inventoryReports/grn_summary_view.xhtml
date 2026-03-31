@@ -254,12 +254,23 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? row.toInstitution.name : row.fromInstitution.name}" style="margin-left 1mm;"/>
+                                                        <h:outputText value="#{row.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? row.toInstitution.name : row.fromInstitution.name}" style="margin-left: 1mm;"/>
                                                           </td>
                                                     <td style="width: 10mm; text-align: right;">
-                                                        <h:outputText value="#{row.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
-                                                       row.billTypeAtomic eq 'PHARMACY_GRN_RETURN'?
-                                                       -1 * row.referenceBill.netTotal: row.referenceBill.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or row.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
+                                                                      value="#{-1 * row.referenceBill.netTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED' or row.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"
+                                                                      value="#{-1 * row.netTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"
+                                                                      value="#{row.netTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_GRN'}"
+                                                                      value="#{row.referenceBill.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>

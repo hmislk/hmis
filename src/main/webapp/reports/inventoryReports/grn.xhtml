@@ -377,14 +377,7 @@
                             </p:column>
                             <p:column headerText="Supplier" width="5em">
                                 <h:outputText
-<<<<<<< 18690-need-to-improve-grn-report-print-pdf-excel
                                         value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
-                                <f:facet name="footer">
-                                    <h:outputText value="Total" style="font-weight: bold;"/>
-                                </f:facet>
-=======
-                                        value="#{bill.fromInstitution ne null ? bill.fromInstitution.name : bill.toInstitution.name}"/>
->>>>>>> development
                             </p:column>
                             <p:column headerText="PO Sub Total" width="5em">
                                 <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
@@ -424,31 +417,6 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                             <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total" colspan="6"
-                                              style="text-align: center; font-weight: bold;">
-                                        <h:outputText value="Total" style="font-weight: bold;"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
-                                                  style="font-weight: bold;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                            <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
-                                                  style="font-weight: bold;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                                       
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
                         </p:dataTable>
 
                         <p:dataTable
@@ -734,38 +702,13 @@
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
                                     <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
                                                   style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                                 </p:column>
                             </p:subTable>
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column footerText="Total" colspan="21"
-                                              style="text-align: center; font-weight: bold;">
-                                        <h:outputText value="Total" style="font-weight: bold;"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
-                                                  style="font-weight: bold;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                            <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
-                                                  style="font-weight: bold;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                                       
-                                    </p:column>
-                                </p:row>
-                            </p:columnGroup>
                         </p:dataTable>
                     </h:panelGroup>
                 </p:panel>

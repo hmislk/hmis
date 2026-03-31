@@ -2,9 +2,10 @@
  * Open Hospital Management Information System
  *
  * Dr M H B Ariyaratne
- * Acting Consultant (Health Informatics)
+ * Consultant (Health Informatics)
  * (94) 71 5812399
- * (94) 71 5812399
+ * buddhika.ari@gmail.com
+ *
  */
 package com.divudi.bean.pharmacy;
 
@@ -42,6 +43,7 @@ import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 //import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
@@ -9822,7 +9824,7 @@ public class PharmacyController implements Serializable {
     response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-    SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+    SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
     try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
@@ -9911,7 +9913,7 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(5).setCellValue("-");
             emptyRow.createCell(6).setCellValue("-");
             emptyRow.createCell(7).setCellValue("-");
-            emptyRow.createCell(8).setCellValue(sdf.format(bill.getReferenceBill().getCreatedAt()));
+            emptyRow.createCell(8).setCellValue(bill.getCreatedAt() != null ? sdf.format(bill.getCreatedAt()) : "-");
             emptyRow.createCell(9).setCellValue("-");
             emptyRow.createCell(10).setCellValue("-");
             emptyRow.createCell(11).setCellValue("-");
@@ -10016,24 +10018,25 @@ public class PharmacyController implements Serializable {
     }
     
     public String fromDateFormatted(){
-        return new SimpleDateFormat("dd_MM_yyyy").format(fromDate);
+        String format = sessionController.getApplicationPreference().getLongDateFormat();
+        return new SimpleDateFormat(format).format(fromDate).replaceAll("[: /]", "_");
     }
-    
+
     public String toDateFormatted(){
-        return new SimpleDateFormat("dd_MM_yyyy").format(toDate);
+        String format = sessionController.getApplicationPreference().getLongDateFormat();
+        return new SimpleDateFormat(format).format(toDate).replaceAll("[: /]", "_");
     }
     
     public String GRNHeader(){
-        return "Date From: " + fromDateFormatted() +
-               " To: " + toDateFormatted() +
-               "   |   Site: " + (site == null ? "All institutions" : site.getName()) +
-               "   |   Department: " + (dept == null ? "All departments" : dept.getName()) +
-               "   |   Store: " + (toDepartment == null ? "All stores" : toDepartment.getName()) +
-               "   |   Item: " + (selectedAmpDto == null ? "All Items" : selectedAmpDto.getName()) +
-               "   |   Category: " + (category == null ? "All category" : category.getName()) +
-               "   |   Dosage Form: " + (dosageForm == null ? "All dosage forms" : dosageForm.getName()) +
-               "   |   Department Type: " + (selectedDepartmentTypes == null ? "All department types" : selectedDepartmentTypes.toString()) +
-               "   |   Report Type: " + (reportType == null ? "" : reportType);
+        Map<String, Object> filters = getFiltersForGRNDetailReport();
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            if (sb.length() > 0) {
+                sb.append("   |   ");
+            }
+            sb.append(entry.getKey()).append(": ").append(entry.getValue());
+        }
+        return sb.toString();
     }
 
         private PdfPCell textCell(String text, com.itextpdf.text.Font font) {
@@ -10070,7 +10073,7 @@ public class PharmacyController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         // ✅ smaller fonts (like your pharmacy report)
         com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
@@ -10127,8 +10130,8 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell("-", bodyFont));
 
                 table.addCell(textCell(
-                        bill.getReferenceBill() != null && bill.getReferenceBill().getCreatedAt() != null
-                                ? sdf.format(bill.getReferenceBill().getCreatedAt())
+                        bill.getCreatedAt() != null
+                                ? sdf.format(bill.getCreatedAt())
                                 : "-",
                         bodyFont
                 ));
@@ -10282,7 +10285,7 @@ public class PharmacyController implements Serializable {
         String fileName = "GRN_Summary_report_" 
                 + fromDateFormatted() + "_to_" + toDateFormatted() + ".pdf";
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         com.itextpdf.text.Font bodyFontSmall =
                 com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 7);
 
@@ -10334,7 +10337,7 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell(f.getReferenceBill().getDeptId(), bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceNumber() == null ? f.getReferenceBill().getInvoiceNumber() : f.getInvoiceNumber() , bodyFontSmall));
                 table.addCell(textCell(
-                        f.getReferenceBill().getCreatedAt() != null ? sdf.format(f.getReferenceBill().getCreatedAt()) : "-",
+                        f.getCreatedAt() != null ? sdf.format(f.getCreatedAt()) : "-",
                         bodyFontSmall));
                 table.addCell(textCell(f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN ? f.getToInstitution().getName() : f.getFromInstitution().getName(), bodyFontSmall));
                 table.addCell(numCell(f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_CANCELLED ? -1*f.getReferenceBill().getNetTotal() : f.getReferenceBill().getNetTotal() , bodyFontSmall));
@@ -12012,7 +12015,7 @@ public class PharmacyController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
