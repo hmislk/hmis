@@ -104,7 +104,8 @@
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins"
                                                itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
+                                <p:ajax process="cmbIns" update="cmbDept siteMenu"
+                                        listener="#{inwardInvoiceJournalController.onInstitutionChange}" />
                             </p:selectOneMenu>
 
                             <p:spacer />
@@ -121,7 +122,8 @@
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site"
                                                itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
+                                <p:ajax process="siteMenu" update="cmbDept"
+                                        listener="#{inwardInvoiceJournalController.onSiteChange}" />
                             </p:selectOneMenu>
 
                             <p:spacer />

@@ -37,6 +37,7 @@
 
 ### When Working on JSF/AJAX
 - [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules
+- [Navigation Patterns](developer_docs/jsf/navigation-patterns.md) - viewAction anti-pattern, initialization in navigation methods
 - [DataTable Selection Guide](developer_docs/jsf/primefaces-datatable-selection.md) - Selection patterns
 
 ### When Working with DTOs

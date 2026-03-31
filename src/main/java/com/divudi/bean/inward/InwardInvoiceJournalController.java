@@ -146,8 +146,12 @@ public class InwardInvoiceJournalController implements Serializable {
         StringBuilder jpql = new StringBuilder(
                 "select distinct c from PatientEncounter c where c.retired = false");
 
+        // When filtering not-yet-discharged patients, discharge date is null —
+        // always use admission date as the date basis for that status.
+        boolean forceAdmissionDate = admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+
         if (fromDate != null && toDate != null) {
-            if ("admissionDate".equals(dateBasis)) {
+            if ("admissionDate".equals(dateBasis) || forceAdmissionDate) {
                 jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
             } else {
                 jpql.append(" and c.dateOfDischarge between :fromDate and :toDate");
@@ -336,6 +340,15 @@ public class InwardInvoiceJournalController implements Serializable {
     // -------------------------------------------------------------------------
     // UI helpers
     // -------------------------------------------------------------------------
+
+    public void onInstitutionChange() {
+        site       = null;
+        department = null;
+    }
+
+    public void onSiteChange() {
+        department = null;
+    }
 
     public boolean isChargeTypeActive(InwardChargeType type) {
         return activeChargeTypes.contains(type);
