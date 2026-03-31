@@ -2,7 +2,7 @@
 <persistence version="2.2" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
     <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>${JDBC_DATASOURCE}</jta-data-source>
+        <jta-data-source>jdbc/coop</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
@@ -14,10 +14,13 @@
             <property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
             <!-- Log cache contention warnings for early detection -->
             <property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
+            <!-- Increase sequence pre-allocation to reduce SEQUENCE table lock contention (issue #19626) -->
+            <!-- Default is 50 for AUTO; setting explicitly to 50 ensures consistent behaviour across deployments -->
+            <property name="eclipselink.sequence.default-sequence-preallocation-size" value="50"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-        <jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>
+        <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
