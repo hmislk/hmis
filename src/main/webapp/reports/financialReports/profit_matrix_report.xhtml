@@ -59,13 +59,12 @@
                                                   value="#{reportController.admissionTypes}"
                                                   styleClass="w-100"
                                                   label="Select Type"
-                                                  updateLabel="true">
-                                <!--                                <f:selectItem itemLabel="Normal" itemValue="1" />
-                                                                <f:selectItem itemLabel="Dialysis" itemValue="2" />
-                                                                <f:selectItem itemLabel="ETU" itemValue="3" />
-                                                                <f:selectItem itemLabel="Day Care" itemValue="4" />-->
-                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" ></f:selectItems>
-
+                                                  updateLabel="true"
+                                                  converter="admissionTypeConverter">
+                                <f:selectItems value="#{admissionTypeController.items}" 
+                                               var="myItem" 
+                                               itemLabel="#{myItem.name}" 
+                                               itemValue="#{myItem}" />
                             </p:selectCheckboxMenu>
 
                             <p:spacer width="20"></p:spacer>
