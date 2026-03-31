@@ -1092,6 +1092,19 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void onEdit(PriceMatrix tmp) {
+        if (tmp.getPaymentScheme() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Scheme");
+            return;
+        }
+        if (tmp.getCreditCompany() == null) {
+            JsfUtil.addErrorMessage("Please select a CreditCompany.");
+            return;
+        }
+
+        if (tmp.getDiscountPercent() > 100.0 || tmp.getDiscountPercent() < 0.0) {
+            JsfUtil.addErrorMessage("Margin is Invalid.");
+            return;
+        }
         getFacade().edit(tmp);
         JsfUtil.addSuccessMessage("Update Successfully");
         clearInstanceVars();
