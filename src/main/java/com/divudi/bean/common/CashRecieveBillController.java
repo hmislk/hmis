@@ -37,6 +37,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,8 @@ public class CashRecieveBillController implements Serializable {
     Institution site;
     
     private Institution creditCompany;
+    private Date inwardCCFromDate = startOfCurrentMonth();
+    private Date inwardCCToDate = new Date();
     private String comment;
     private String selectedBillType;
     private List<EncounterCreditCompany> bhtCreditCompanies;
@@ -257,6 +260,26 @@ public class CashRecieveBillController implements Serializable {
         }
         if (billItems != null) {
             selectedBillItems.addAll(billItems);
+        }
+        calTotal();
+    }
+
+    public void selectInstitutionListenerInwardCC() {
+        Institution ins = creditCompany;
+        makeNull();
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        getCurrent().setCreditCompany(ins);
+        List<Bill> list = getCreditBean().getUnpaidInwardCCBills(ins, inwardCCFromDate, inwardCCToDate);
+        for (Bill b : list) {
+            getCurrentBillItem().setReferenceBill(b);
+            selectBillListener();
+            if (getCurrentBillItem().getNetValue() == 0.0) {
+                continue;
+            }
+            addToBill();
         }
         calTotal();
     }
@@ -1261,7 +1284,7 @@ public class CashRecieveBillController implements Serializable {
         }
         paymentService.createPayment(current, getPaymentMethodData());
         JsfUtil.addSuccessMessage("Bill Saved");
-        printPreview = true;
+        recreateModel();
     }
 
     public void settleBillViaVoucher() {
@@ -1426,7 +1449,7 @@ public class CashRecieveBillController implements Serializable {
         getSessionController().setLoggedUser(wb);
         //   savePayments();
         JsfUtil.addSuccessMessage("Bill Saved");
-        printPreview = true;
+        recreateModel();
 
     }
 
@@ -1757,6 +1780,16 @@ public class CashRecieveBillController implements Serializable {
 //        getBillFacade().edit(tmp.getReferenceBill());
 //
 //    }
+    private static Date startOfCurrentMonth() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
     public void recreateModel() {
         current = null;
         printPreview = false;
@@ -1959,8 +1992,24 @@ public class CashRecieveBillController implements Serializable {
         this.creditCompany = creditCompany;
     }
 
+    public Date getInwardCCFromDate() {
+        return inwardCCFromDate;
+    }
 
-    
+    public void setInwardCCFromDate(Date inwardCCFromDate) {
+        this.inwardCCFromDate = inwardCCFromDate;
+    }
+
+    public Date getInwardCCToDate() {
+        return inwardCCToDate;
+    }
+
+    public void setInwardCCToDate(Date inwardCCToDate) {
+        this.inwardCCToDate = inwardCCToDate;
+    }
+
+
+
     
     public BillController getBillController() {
         return billController;

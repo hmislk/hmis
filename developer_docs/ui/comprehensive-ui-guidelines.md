@@ -203,6 +203,41 @@ Rules:
 
 ---
 
+---
+
+## `p:autoComplete` — Rules for Entity Values
+
+### No `converter` attribute
+Do NOT add a `converter` attribute to `p:autoComplete` when the value is a JPA entity. The framework registers `@FacesConverter(forClass = ...)` converters for all entities automatically; adding an explicit converter causes duplicate-conversion errors. Only add a `converter` when the value type has no `forClass` converter (e.g., a raw `Long` ID).
+
+### No `dropdown` attribute
+Do NOT use `dropdown="true"` on `p:autoComplete`. It renders a dropdown toggle button next to the input field which is not part of the project's UI style and causes layout issues in the filter grid.
+
+```xml
+<!-- CORRECT -->
+<p:autoComplete
+    id="cmbCc"
+    styleClass="w-100"
+    inputStyleClass="w-100 form-control"
+    value="#{myController.institution}"
+    completeMethod="#{institutionController.completeCreditCompany}"
+    var="cc"
+    itemLabel="#{cc.name}"
+    itemValue="#{cc}"
+    forceSelection="true" />
+
+<!-- WRONG — both issues shown -->
+<p:autoComplete
+    converter="deal"
+    dropdown="true"
+    value="#{myController.institution}"
+    ... />
+```
+
+This applies to all entity-backed autocompletes: `Institution`, `Department`, `Item`, `Patient`, etc.
+
+---
+
 ## Related Guides
 - `icon-management.md` – canonical icon library, terminology, and accessibility notes.
 - `page-break-implementation-guide.md` – printing guidance for token/bill flows.
