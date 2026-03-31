@@ -1991,6 +1991,34 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
+
+        // Reset float transfer payments that were marked handingOverStarted=true during CREATE.
+        // selectedBill.getReferenceBill() is the shift start bill — use its ID as the lower
+        // bound to scope float payments to this shift only.
+        Bill shiftStartBill = selectedBill.getReferenceBill();
+        if (shiftStartBill != null && shiftStartBill.getId() != null) {
+            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND p.cashbookEntryStated = false "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND p.id > :sid";
+            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("btas", floatTransferBtas);
+            floatParams.put("sid", shiftStartBill.getId());
+            List<Payment> floatPaymentsToReset = paymentFacade.findByJpql(floatJpql, floatParams);
+            for (Payment ftp : floatPaymentsToReset) {
+                ftp.setHandingOverStarted(false);
+                paymentController.save(ftp);
+            }
+        }
+
         return navigateToReceiveHandoverBillsForMe();
     }
 
@@ -2042,6 +2070,34 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
+
+        // Reset float transfer payments that were marked handingOverStarted=true during CREATE.
+        // selectedBill.getReferenceBill() is the shift start bill — use its ID as the lower
+        // bound to scope float payments to this shift only.
+        Bill shiftStartBill = selectedBill.getReferenceBill();
+        if (shiftStartBill != null && shiftStartBill.getId() != null) {
+            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+            Map<String, Object> floatParams = new HashMap<>();
+            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
+                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
+                    + "AND p.retired = false "
+                    + "AND p.cancelled = false "
+                    + "AND p.handingOverStarted = true "
+                    + "AND p.cashbookEntryStated = false "
+                    + "AND b.billTypeAtomic IN :btas "
+                    + "AND p.id > :sid";
+            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("btas", floatTransferBtas);
+            floatParams.put("sid", shiftStartBill.getId());
+            List<Payment> floatPaymentsToReset = paymentFacade.findByJpql(floatJpql, floatParams);
+            for (Payment ftp : floatPaymentsToReset) {
+                ftp.setHandingOverStarted(false);
+                paymentController.save(ftp);
+            }
+        }
+
         return navigateToMyHandovers();
     }
 
