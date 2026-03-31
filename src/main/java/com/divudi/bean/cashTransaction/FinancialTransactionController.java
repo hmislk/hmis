@@ -288,6 +288,7 @@ public class FinancialTransactionController implements Serializable {
     // Float Transfer Request Properties
     private List<Bill> myFundTransferRequestsOut;
     private List<Bill> fundTransferRequestsForMe;
+    private int fundTransferRequestsForMeCount;
     private Bill selectedFundTransferRequest;
     private Date myFloatRequestsFromDate;
     private Date myFloatRequestsToDate;
@@ -2411,6 +2412,7 @@ public class FinancialTransactionController implements Serializable {
         params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
         params.put("toUser", sessionController.getLoggedUser());
         fundTransferRequestsForMe = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        fundTransferRequestsForMeCount = fundTransferRequestsForMe != null ? fundTransferRequestsForMe.size() : 0;
     }
 
     public void fillMyFundTransferRequests() {
@@ -7539,6 +7541,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferRequestsForMe(List<Bill> fundTransferRequestsForMe) {
         this.fundTransferRequestsForMe = fundTransferRequestsForMe;
+    }
+
+    public int getFundTransferRequestsForMeCount() {
+        return fundTransferRequestsForMeCount;
+    }
+
+    public void setFundTransferRequestsForMeCount(int fundTransferRequestsForMeCount) {
+        this.fundTransferRequestsForMeCount = fundTransferRequestsForMeCount;
     }
 
     public Bill getSelectedFundTransferRequest() {
