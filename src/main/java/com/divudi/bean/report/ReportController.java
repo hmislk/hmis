@@ -2429,7 +2429,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         filters.put("To Date", sdf.format(getToDate()));
         filters.put("Institution/branch", institution != null ? institution.getName() : "All");
         filters.put("Collection Center", collectingCentre != null ? collectingCentre.getName() : "All");
-        filters.put("Invoice No.", invoiceNumber != null ? invoiceNumber : "All");
+        filters.put("Invoice No.", invoiceNumber != null && !invoiceNumber.trim().isEmpty() ? invoiceNumber : "All");
         return filters;
     }
     
