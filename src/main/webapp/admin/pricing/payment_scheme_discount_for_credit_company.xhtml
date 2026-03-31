@@ -95,7 +95,7 @@
                                             ajax="false" 
                                             value="Fill" 
                                             icon="fa fa-refresh"
-                                            action="#{opdMemberShipDiscountController.fillCompanyPaymentSchemes()}" >
+                                            action="#{opdMemberShipDiscountController.fillCompanyPaymentSchemes(opdMemberShipDiscountController.paymentScheme, opdMemberShipDiscountController.company)}" >
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -171,7 +171,7 @@
                                             value="Delete" 
                                             class="ui-button-danger"
                                             icon="fa fa-trash"
-                                            action="#{opdMemberShipDiscountController.deleteDepartmentPaymentScheme()}">
+                                            action="#{opdMemberShipDiscountController.deleteCreditCompanyPaymentScheme()}">
                                             <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                         </p:commandButton>
                                     </div>

@@ -137,9 +137,13 @@ public class OpdMemberShipDiscountController implements Serializable {
             return;
         }
          
-        List<PriceMatrix> list =  findPaymentSchemesFromSelectedCreditCompany();
+        List<PriceMatrix> list =  findPaymentSchemesFromSelectedCreditCompany(paymentScheme, selectedCreditCompany);
         
-        if(list == null || list.isEmpty()){
+        System.out.println("list = " + list);
+        System.out.println("Null = " + (list == null));
+        System.out.println("Empty = " + list.isEmpty());
+        
+        if(list != null || !list.isEmpty()){
             JsfUtil.addErrorMessage("Discount for this Payment Scheme and Credit Company already exists.");
             return;
         }
@@ -158,7 +162,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         JsfUtil.addSuccessMessage("Saved Successfully");
 
         // Reload PriceMatrix
-        fillCompanyPaymentSchemes();
+        fillCompanyPaymentSchemes(paymentScheme,selectedCreditCompany);
 
         // Clear Values
         selectedCreditCompany = null;
@@ -167,21 +171,26 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     }
 
-    public List<PriceMatrix> findPaymentSchemesFromSelectedCreditCompany() {
+    public List<PriceMatrix> findPaymentSchemesFromSelectedCreditCompany(PaymentScheme ps, Institution creditCompany) {
+        System.out.println("Run findPaymentSchemesFromSelectedCreditCompany");
         String jpql = "select a from PaymentSchemeDiscount a "
                 + " where a.retired=false "
                 + " and a.paymentScheme=:pm "
                 + " and a.creditCompany=:cc "
                 + " and a.category is null";
         Map<String, Object> params = new HashMap<>();
-        params.put("pm", paymentScheme);
-        params.put("cc", selectedCreditCompany);
+        params.put("pm", ps);
+        params.put("cc", creditCompany);
+        
+        System.out.println("ps = " + ps);
+        System.out.println("creditCompany = " + creditCompany);
         List<PriceMatrix> existing = getFacade().findByJpqlWithoutCache(jpql, params);
+        System.out.println("existing = " + existing);
         return existing;
     }
 
-    public void fillCompanyPaymentSchemes() {
-        if (paymentScheme == null) {
+    public void fillCompanyPaymentSchemes(PaymentScheme ps, Institution creditCompany) {
+        if (ps == null) {
             JsfUtil.addErrorMessage("Please select a Payment Scheme");
             return;
         }
@@ -194,13 +203,13 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.category is null "
                 + " and a.creditCompany is not null ";
 
-        if (company != null) {
+        if (creditCompany != null) {
             sql += " and a.creditCompany =:cmb";
-            hm.put("cmb", company);
+            hm.put("cmb", creditCompany);
         }
         sql += " order by a.paymentScheme.name, a.creditCompany.name";
 
-        hm.put("pm", paymentScheme);
+        hm.put("pm", ps);
         items = getFacade().findByJpql(sql, hm);
     }
 
@@ -791,7 +800,23 @@ public class OpdMemberShipDiscountController implements Serializable {
         deleteDepartment();
         createItemsDepartmentsPaymentScheme();
     }
+    
+    public void deleteCreditCompanyPaymentScheme(){
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+        //    recreateModel();
 
+        current = null;
+        fillCompanyPaymentSchemes(paymentScheme, null);
+    }
+    
     public void deleteSitePaymentScheme() {
         deleteSite();
         createItemsSitesPaymentScheme();
@@ -1126,15 +1151,17 @@ public class OpdMemberShipDiscountController implements Serializable {
             return;
         }
         
-        List<PriceMatrix> list =  findPaymentSchemesFromSelectedCreditCompany();
+        List<PriceMatrix> list =  findPaymentSchemesFromSelectedCreditCompany(tmp.getPaymentScheme(), tmp.getCreditCompany());
         
-        if(list == null || list.isEmpty()){
+        if(list != null || !list.isEmpty()){
             JsfUtil.addErrorMessage("Discount for this Payment Scheme and Credit Company already exists.");
             return;
         }
         getFacade().edit(tmp);
         JsfUtil.addSuccessMessage("Update Successfully");
         clearInstanceVars();
+        
+        fillCompanyPaymentSchemes(tmp.getPaymentScheme(),null);
 
     }
 
