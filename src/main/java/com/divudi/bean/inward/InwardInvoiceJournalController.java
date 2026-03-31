@@ -166,6 +166,11 @@ public class InwardInvoiceJournalController implements Serializable {
                     jpql.append(" and c.discharged = :dis");
                     params.put("dis", false);
                     break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append(" and c.discharged = :dis and c.paymentFinalized = :pf");
+                    params.put("dis", true);
+                    params.put("pf",  false);
+                    break;
                 case DISCHARGED_AND_FINAL_BILL_COMPLETED:
                     jpql.append(" and c.discharged = :dis and c.paymentFinalized = :pf");
                     params.put("dis", true);
@@ -259,7 +264,7 @@ public class InwardInvoiceJournalController implements Serializable {
         if (rows != null) {
             for (Object[] r : rows) {
                 Long   encId = (Long) r[0];
-                double total = Math.abs(((Number) r[1]).doubleValue());
+                double total = ((Number) r[1]).doubleValue();
                 result.put(encId, total);
             }
         }
