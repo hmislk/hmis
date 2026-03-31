@@ -10048,7 +10048,20 @@ public class PharmacyController implements Serializable {
     }
 
     private PdfPCell numCell(Object val, com.itextpdf.text.Font font) {
-        String s = (val == null) ? "-" : String.valueOf(val);
+        String s;
+        if (val == null) {
+            s = "-";
+        } else if (val instanceof Double) {
+            s = new java.text.DecimalFormat("#,##0.00").format((Double) val);
+        } else if (val instanceof Float) {
+            s = new java.text.DecimalFormat("#,##0.00").format((Float) val);
+        } else if (val instanceof Long) {
+            s = new java.text.DecimalFormat("#,##0").format((Long) val);
+        } else if (val instanceof Integer) {
+            s = String.valueOf(val);
+        } else {
+            s = String.valueOf(val);
+        }
         PdfPCell cell = new PdfPCell(new Phrase(s, font));
         cell.setPadding(2f);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -10163,8 +10176,8 @@ public class PharmacyController implements Serializable {
                     poSubTotal = refNet;
                 }
 
-                table.addCell(numCell(String.format("%.2f", poSubTotal), bodyFont));
-                table.addCell(numCell(String.format("%.2f", bill.getNetTotal()), bodyFont));
+                table.addCell(numCell(poSubTotal, bodyFont));
+                table.addCell(numCell(bill.getNetTotal(), bodyFont));
 
                 // item-level rows
                 for (BillItem billItem : bill.getBillItems()) {
@@ -10233,11 +10246,11 @@ public class PharmacyController implements Serializable {
                             bodyFont
                     ));
 
-                    table.addCell(numCell(String.format("%.2f", billItem.getDiscount()), bodyFont));
-                    table.addCell(numCell(String.format("%.2f", billItem.getNetValue()), bodyFont));
+                    table.addCell(numCell(billItem.getDiscount(), bodyFont));
+                    table.addCell(numCell(billItem.getNetValue(), bodyFont));
 
                     table.addCell(numCell(
-                            billItem.getBill() != null ? String.format("%.2f", billItem.getBill().getNetTotal()) : "-",
+                            billItem.getBill() != null ? billItem.getBill().getNetTotal() : null,
                             bodyFont
                     ));
 
@@ -10253,12 +10266,13 @@ public class PharmacyController implements Serializable {
             footerTable.setWidthPercentage(100);
             footerTable.setWidths(new float[]{1f, 1f});
 
+            java.text.DecimalFormat amtFmt = new java.text.DecimalFormat("#,##0.00");
             footerTable.addCell(new PdfPCell(new Phrase(
-                    "Total PO Amount: " + String.format("%.2f", calculateTotalPOAmount()),
+                    "Total PO Amount: " + amtFmt.format(calculateTotalPOAmount()),
                     footerFont
             )));
             footerTable.addCell(new PdfPCell(new Phrase(
-                    "Total GRN Amount: " + String.format("%.2f", calculateTotalGrnAmount()),
+                    "Total GRN Amount: " + amtFmt.format(calculateTotalGrnAmount()),
                     footerFont
             )));
 

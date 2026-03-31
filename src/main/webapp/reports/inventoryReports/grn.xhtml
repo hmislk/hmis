@@ -379,7 +379,7 @@
                                 <h:outputText
                                         value="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? bill.toInstitution.name : bill.fromInstitution.name}"/>
                             </p:column>
-                            <p:column headerText="PO Sub Total" width="5em">
+                            <p:column headerText="PO Sub Total" width="5em" styleClass="text-end">
                                 <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
                                                        bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
                                               value="#{-1 * bill.referenceBill.netTotal}">
@@ -406,7 +406,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="GRN Sub Total" width="6em">
+                            <p:column headerText="GRN Sub Total" width="6em" styleClass="text-end">
                                 <h:outputText value="#{bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -445,18 +445,18 @@
                                     <p:column headerText="Code" width="5rem"/>
                                     <p:column headerText="Item" width="5rem"/>
                                     <p:column headerText="Receiving Time" width="10rem"/>
-                                    <p:column headerText="Qty" width="5rem"/>
+                                    <p:column headerText="Qty" width="5rem" styleClass="text-end"/>
                                     <p:column headerText="UOM" width="5rem"/>
-                                    <p:column headerText="Rate" width="5rem"/>
+                                    <p:column headerText="Rate" width="5rem" styleClass="text-end"/>
                                     <p:column headerText="Batch" width="5rem"/>
                                     <p:column headerText="Expiry Date" width="10rem"/>
                                     <p:column headerText="Supplier" width="5rem"/>
-                                    <p:column headerText="MRP" width="5rem"/>
-                                    <p:column headerText="Discount" width="5rem"/>
-                                    <p:column headerText="Amount" width="5rem"/>
-                                    <p:column headerText="Total Amount" width="5rem"/>
-                                    <p:column headerText="PO Sub Total" width="5rem"/>
-                                    <p:column headerText="GRN Sub Total" width="5rem"/>
+                                    <p:column headerText="MRP" width="5rem" styleClass="text-end"/>
+                                    <p:column headerText="Discount" width="5rem" styleClass="text-end"/>
+                                    <p:column headerText="Amount" width="5rem" styleClass="text-end"/>
+                                    <p:column headerText="Total Amount" width="5rem" styleClass="text-end"/>
+                                    <p:column headerText="PO Sub Total" width="5rem" styleClass="text-end"/>
+                                    <p:column headerText="GRN Sub Total" width="5rem" styleClass="text-end"/>
                                 </p:row>
                             </p:columnGroup>
 
@@ -577,7 +577,7 @@
                                                 <h:outputText value="-" style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
-                                        <p:column>
+                                        <p:column styleClass="text-end">
                                             <f:facet name="header">
                                                 <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
                                                               value="#{-1 * bill.referenceBill.netTotal}"
@@ -601,7 +601,7 @@
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
-                                        <p:column>
+                                        <p:column styleClass="text-end">
                                             <f:facet name="header">
                                                 <h:outputText value="#{bill.netTotal}" style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -645,14 +645,14 @@
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="#{billItem.qty}"/>
                                 </p:column>
                                 <p:column width="10em">
                                     <h:outputText
                                             value="#{billItem.item.measurementUnit.name eq null ? '-' : billItem.item.measurementUnit.name}"/>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="#{billItem.pharmaceuticalBillItem.purchaseRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -670,27 +670,27 @@
                                 <p:column width="10em">
                                     <h:outputText value="-"/>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="#{billItem.pharmaceuticalBillItem.retailRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="#{billItem.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="#{billItem.netValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="#{billItem.bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="-"/>
                                     <f:facet name="footer">
                                     <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
@@ -699,7 +699,7 @@
                                     </h:outputText>
                                 </f:facet>
                                 </p:column>
-                                <p:column width="10em">
+                                <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="-"/>
                                     <f:facet name="footer">
                                     <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
