@@ -2384,6 +2384,153 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_REPORTS_PRINT, sessionController.getLoggedUser());
     }
+    
+     // Filters for collection_center_report_print
+    public Map<String, Object> getFiltersForCollectionCenterReportPrint() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", sdf.format(getFromDate()));
+        filters.put("To Date", sdf.format(getToDate()));
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("CC Route",route != null ? route.getName() : "All");
+        filters.put("CC Name",collectingCentre != null ? collectingCentre.getName() : "All");
+        filters.put("Category",category != null ? category.getName() : "All");
+        filters.put("Investigation",investigation != null ? investigation.getName() : "All");
+        filters.put("Result status",patientInvestigationStatus != null ? patientInvestigationStatus.getLabel() : "All");
+        filters.put("Patient MRN",phn != null ? phn: "All");
+        filters.put("Invoice No.",invoiceNumber != null && !invoiceNumber.trim().isEmpty() ? invoiceNumber : "All");
+        filters.put("Referring Doctor",doctor != null ? doctor.getPerson().getNameWithTitle() : "All");
+        return filters;
+    }
+    
+    public void exportCollectionCenterReportPrintToPDF() {
+//        if (patientInvestigations == null || patientInvestigations.isEmpty()) {
+//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+//            return;
+//        }
+        
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Reports_print_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Collection_Center_Reports_print.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Reports Print", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+            
+
+            int columnCount = 13;
+            Map<String, Object> filters = getFiltersForCollectionCenterReportPrint();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+            
+            headers = new String[]{"S. No", "CC Code", "Leaf No.", "MRN", "Patient","Invoice No.","Order Date","CC Route", "Referred By", "Service Name","Status","Print","Last Print Time"};
+            columnWidths = new float[]{0.5f, 1f, 1f, 1f, 2f, 2f, 2f, 1f,2f,2f,1f,1f,1f};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            // list of the sanple carrier reports
+            List<PatientInvestigation> rows = patientInvestigations;
+            int indexNumber = 1;
+            for (PatientInvestigation row : rows) {
+                
+                table.addCell(textCell(String.valueOf(indexNumber),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getFromInstitution().getCode(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getReferenceNumber(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getReferenceNumber(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getReferenceNumber(),bodyFontSmall));
+                
+//                table.addCell(textCell(row.getPatientInvestigation().getCreatedAt() != null ? sdf.format(row.getPatientInvestigation().getCreatedAt() ) : "-",bodyFontSmall));
+//                table.addCell(textCell(row.getPatientInvestigation().getSampleSentAt() != null ? sdf.format(row.getPatientInvestigation().getSampleSentAt()  ) : "-",bodyFontSmall));
+//                table.addCell(textCell(row.getPatientInvestigation().getReceivedAt() != null ? sdf.format(row.getPatientInvestigation().getReceivedAt() ) : "-",bodyFontSmall));
+//                table.addCell(textCell(row.getPatientInvestigation().getSampleTransportedToLabByStaff().getPerson().getName(), bodyFontSmall));
+//                table.addCell(textCell(String.valueOf(row.getDuration()), bodyFontSmall));
+//                
+//                table.addCell(textCell(row.getPatientInvestigation().getInvestigation().getName(),bodyFontSmall));
+//                table.addCell(textCell(row.getPatientInvestigation().getPatient().getPerson().getName(),bodyFontSmall));
+//                table.addCell(textCell(patientInvestigationController.getPatientSamplesByInvestigationAsString(row.getPatientInvestigation()),bodyFontSmall));
+//                table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc(),bodyFontSmall));
+//                if (!isVisitOP){
+//                   table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getBhtNo(),bodyFontSmall)); 
+//                   String invoiceNumber = row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill() != null ? row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill().getDeptId() : "_";
+//                   table.addCell(textCell( invoiceNumber,bodyFontSmall)); 
+//                } else {
+//                    table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getDeptId(),bodyFontSmall));
+//                }    
+//            }
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+        } 
+    }
+    
+    // PostProcessor for bill_wise_item_movement_report excel export
+    public void postProcessCollectionCenterReportPrintExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Sample Carrier Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForCollectionCenterReportPrint();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Sample Carrier Report", filters);
+        }
+    }
 
     public void processCollectingCentreStatementReportNew() {
         reportTimerController.trackReportExecution(() -> {
