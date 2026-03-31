@@ -3,7 +3,10 @@ name: jsf-ajax
 description: >
   JSF AJAX update rules for the HMIS project. Use when working on AJAX updates,
   p:commandButton update attributes, PrimeFaces AJAX callbacks, partial page rendering,
-  or debugging AJAX update failures. Critical rules to prevent silent AJAX failures.
+  or debugging AJAX update failures. Also covers JSF navigation patterns: why
+  f:viewAction must not be used on @SessionScoped beans, and how initialization
+  belongs in navigation methods. Critical rules to prevent silent AJAX failures
+  and refresh/back-button state corruption.
 user-invocable: true
 ---
 
@@ -61,3 +64,40 @@ The growl component is in `template.xhtml` outside forms. Use absolute ID with c
 5. Check component hierarchy - nested components affect id resolution
 
 For complete reference, read [developer_docs/jsf/ajax-update-guidelines.md](../../developer_docs/jsf/ajax-update-guidelines.md).
+
+---
+
+## Navigation Pattern: Never Use f:viewAction on @SessionScoped Beans
+
+**🚨 All controllers in this project are `@SessionScoped`. Never use `f:viewAction` or `f:event type="preRenderView"` to initialize state.**
+
+`f:viewAction` fires on every GET — including browser refresh and back-button — silently resetting in-progress state. All initialization belongs in the navigation method that redirects to the page.
+
+### Correct pattern
+
+```java
+// Navigation method — initialize here
+public String navigateToFundTransferBill() {
+    resetClassVariables();
+    prepareToAddNewFundTransferBill();
+    currentBillPayments = new ArrayList<>();
+    return "/cashier/fund_transfer_bill?faces-redirect=true";
+}
+```
+
+```xhtml
+<!-- XHTML — no f:metadata needed -->
+<ui:define name="subcontent">
+    <h:form>...</h:form>
+</ui:define>
+```
+
+### The two legitimate uses of f:viewAction
+
+1. **URL parameter ingestion** — page is reached via external URL with `f:viewParam` query params (lab result links, mobile API, patient portal). No navigation method exists; the URL is the entry point. **Signal: `f:metadata` contains `f:viewParam` elements.**
+
+2. **`@ViewScoped` beans** — bean is created fresh on each page load, so there is no prior navigation method. (Rare in this project — most controllers are `@SessionScoped`.)
+
+If you see `f:viewAction` without any `f:viewParam`, it is almost certainly wrong.
+
+For complete reference, read [developer_docs/jsf/navigation-patterns.md](../../developer_docs/jsf/navigation-patterns.md).
