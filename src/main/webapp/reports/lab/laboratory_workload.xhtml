@@ -335,7 +335,7 @@
                             value="Excel">
                         <p:dataExporter type="xlsx"
                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                        fileName="laboratary_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.xlsx"
+                                        fileName="laboratory_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.xlsx"
                                         postProcessor="#{reportsController.postProcessLaboratoryWorkloadReportExcel}"/>
                     </p:commandButton>
 
@@ -348,7 +348,7 @@
                             rendered="#{reportsController.reportType eq 'summary'}">
                         <p:dataExporter type="pdf"
                                         target="#{'tblExport2'}"
-                                        fileName="laboratary_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.pdf"
+                                        fileName="laborataory_workload_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}.pdf"
                                         preProcessor="#{reportsController.preProcessLaboratoryWorkloadSummaryReportPDF}"/>
                     </p:commandButton>
                     <p:commandButton
