@@ -163,7 +163,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         JsfUtil.addSuccessMessage("Saved Successfully");
 
         // Reload PriceMatrix
-        fillCompanyPaymentSchemes(paymentScheme,selectedCreditCompany);
+        fillCompanyPaymentSchemes(paymentScheme,null);
 
         // Clear Values
         selectedCreditCompany = null;
