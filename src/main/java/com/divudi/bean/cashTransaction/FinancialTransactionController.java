@@ -2358,11 +2358,10 @@ public class FinancialTransactionController implements Serializable {
                 return "/cashier/index?faces-redirect=true";
             }
         }
-        selectedFundTransferRequest = requestBill;
         resetClassVariablesWithoutSelectedBill();
+        selectedFundTransferRequest = requestBill;
         prepareToAddNewFundTransferBill();
         currentBill.setToWebUser(requestBill.getFromWebUser());
-        currentBill.setReferenceBill(requestBill);
         currentBill.setComments(requestBill.getComments());
         floatTransferStarted = false;
         currentBillPayments = new ArrayList<>();
@@ -2529,6 +2528,7 @@ public class FinancialTransactionController implements Serializable {
         paymentsFromShiftSratToNow = null;
         fundTransferAvailablePayments = null;
         department = null;
+        selectedFundTransferRequest = null;
         searchController.setBills(null);
     }
 
@@ -2555,6 +2555,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
         fundTransferAvailablePayments = null;
+        selectedFundTransferRequest = null;
     }
 
     public List<Payment> findPaymentsForBill(Bill b) {
@@ -3046,11 +3047,19 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
         // If this transfer was initiated from a float transfer request, mark the request as fulfilled
-        if (currentBill.getReferenceBill() != null
-                && currentBill.getReferenceBill().getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_REQUEST) {
-            Bill requestBill = currentBill.getReferenceBill();
-            requestBill.setForwardReferenceBill(currentBill);
-            billController.save(requestBill);
+        if (selectedFundTransferRequest != null) {
+            Bill freshRequest = billFacade.find(selectedFundTransferRequest.getId());
+            if (freshRequest == null
+                    || freshRequest.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_REQUEST
+                    || freshRequest.isCancelled()
+                    || freshRequest.getForwardReferenceBill() != null
+                    || !sessionController.getLoggedUser().equals(freshRequest.getToWebUser())) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Float transfer request is no longer valid");
+                return "";
+            }
+            freshRequest.setForwardReferenceBill(currentBill);
+            billController.save(freshRequest);
         }
         floatTransferStarted = false;
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
