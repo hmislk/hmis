@@ -46,7 +46,10 @@ public enum TriggerType {
     INWARD_PATIENT_DISCHARGED_EMAIL("Inward Patient Discharaged - Email", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
     OPD_BILL_CANCELLATION("Bill Cancellation - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_SMS("Bill Cancellation - SMS", NotificationMedium.SMS, TriggerTypeParent.OPD_BILL_CANCELLATION),
-    OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION);
+    OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION),
+    FLOAT_TRANSFER_REQUEST("Float Transfer Request - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.FLOAT_TRANSFER_REQUEST),
+    FLOAT_TRANSFER_REQUEST_SMS("Float Transfer Request - SMS", NotificationMedium.SMS, TriggerTypeParent.FLOAT_TRANSFER_REQUEST),
+    FLOAT_TRANSFER_REQUEST_EMAIL("Float Transfer Request - Email", NotificationMedium.EMAIL, TriggerTypeParent.FLOAT_TRANSFER_REQUEST);
 
     private final String label;
     private final NotificationMedium medium;

@@ -110,6 +110,9 @@ public class NotificationController implements Serializable {
             case PHARMACY_ORDER_APPROVAL:
                 createPharmacyPurcheseOrderApprovelNotifications(bill);
                 break;
+            case FUND_TRANSFER_REQUEST:
+                createFloatTransferRequestNotifications(bill);
+                break;
             default:
                 throw new AssertionError();
         }
@@ -147,6 +150,20 @@ public class NotificationController implements Serializable {
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createFloatTransferRequestNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.FLOAT_TRANSFER_REQUEST)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setBill(bill);
@@ -224,6 +241,10 @@ public class NotificationController implements Serializable {
 
         if (bt == BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION) {
             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
+        if (bt == BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Float Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
         }
 
         if (message == null || message == "" || message.isEmpty()) {

@@ -34,18 +34,43 @@
                             </h:panelGroup>
                         </f:facet>
 
+                        <!-- Request info panel: shown when this transfer was initiated from a request -->
+                        <h:panelGroup rendered="#{financialTransactionController.currentBill.referenceBill ne null}" layout="block">
+                            <p:panel styleClass="mb-2" style="background-color: #f0f8ff; border-left: 4px solid #007bff;">
+                                <f:facet name="header">
+                                    <i class="fa fa-info-circle me-2"/>
+                                    <h:outputText value="Fulfilling Float Request"/>
+                                </f:facet>
+                                <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-start fw-medium, text-start">
+                                    <h:outputText value="Requested By"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.fromWebUser.webUserPerson.nameWithTitle}"/>
+                                    <h:outputText value="Requested Amount"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:panelGrid>
+                            </p:panel>
+                        </h:panelGroup>
+
                         <p:panelGrid columns="2" class="w-100" >
                             <p:outputLabel value="Transfer To" for="acStaff"></p:outputLabel>
-                            <p:autoComplete
-                                completeMethod="#{webUserController.completeUser}"
-                                class="mx-2 w-100"
-                                id="acStaff"
-                                value="#{financialTransactionController.currentBill.toWebUser}"
-                                var="s"
-                                scrollHeight="450"
-                                inputStyleClass="w-100"
-                                itemLabel="#{s.webUserPerson.nameWithTitle}"
-                                itemValue="#{s}" >
+                            <h:panelGroup>
+                                <!-- Read-only when pre-filled from a request -->
+                                <h:outputText
+                                    rendered="#{financialTransactionController.currentBill.referenceBill ne null}"
+                                    value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}"
+                                    class="mx-2"/>
+                                <p:autoComplete
+                                    rendered="#{financialTransactionController.currentBill.referenceBill eq null}"
+                                    completeMethod="#{webUserController.completeUser}"
+                                    class="mx-2 w-100"
+                                    id="acStaff"
+                                    value="#{financialTransactionController.currentBill.toWebUser}"
+                                    var="s"
+                                    scrollHeight="450"
+                                    inputStyleClass="w-100"
+                                    itemLabel="#{s.webUserPerson.nameWithTitle}"
+                                    itemValue="#{s}" >
                                 <p:column headerText="Username">
                                     <h:outputText value="#{s.name}" />
                                 </p:column>
@@ -56,6 +81,7 @@
                                     <h:outputText value="#{s.code}" />
                                 </p:column>
                             </p:autoComplete>
+                            </h:panelGroup>
 
                             <p:outputLabel value="Comments" ></p:outputLabel>
                             <p:inputTextarea
