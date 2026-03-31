@@ -435,16 +435,16 @@ public class PatientPortalController implements Serializable {
         }
         return smsBody;
     }
-    
+
     public String smsBody(Patient pt) {
         String smsBody = "";
         String linkSendingTemplate = configOptionApplicationController.getLongTextValueByKey("Patient Portal - Custom SMS Body Massage for Send Link");
         String baseURL = CommonFunctions.getBaseUrl() + "faces/patient_portal/portal_login.xhtml";
-        
+
         if (!linkSendingTemplate.equalsIgnoreCase("")) {
             smsBody = replaceOTPSMSBody(linkSendingTemplate, pt, baseURL);
         } else {
-            smsBody = "Hi "+ pt.getPerson().getNameWithTitle() +",\nUse the following link for Loging your Patient portal.\n Link : " + baseURL;
+            smsBody = "Hi " + pt.getPerson().getNameWithTitle() + ",\nUse the following link for Loging your Patient portal.\n Link : " + baseURL;
         }
         return smsBody;
     }
@@ -486,7 +486,7 @@ public class PatientPortalController implements Serializable {
         output = processedTemplate.replace("{otp}", otp);
         return output;
     }
-    
+
     public String replaceOTPSMSBody(String template, Patient pt, String baseUrl) {
         String output;
         String processedTemplate = template.replace("\\n", "\n");
@@ -808,7 +808,11 @@ public class PatientPortalController implements Serializable {
     }
 
     public int getOtpLength() {
-        return configOptionApplicationController.getLongValueByKey("Patient Portal - OTP Length", 6L).intValue();
+        Long configured = configOptionApplicationController.getLongValueByKey("Patient Portal - OTP Length", 6L);
+        if (configured == null || configured < 1L || configured > 12L) {
+            return 6;
+        }
+        return configured.intValue();
     }
 
     public boolean isOtpVerify() {
