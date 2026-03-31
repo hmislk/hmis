@@ -2400,17 +2400,17 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         filters.put("Category",category != null ? category.getName() : "All");
         filters.put("Investigation",investigation != null ? investigation.getName() : "All");
         filters.put("Result status",patientInvestigationStatus != null ? patientInvestigationStatus.getLabel() : "All");
-        filters.put("Patient MRN",phn != null ? phn: "All");
+        filters.put("Patient MRN",phn != null && !phn.trim().isEmpty() ? phn: "All");
         filters.put("Invoice No.",invoiceNumber != null && !invoiceNumber.trim().isEmpty() ? invoiceNumber : "All");
         filters.put("Referring Doctor",doctor != null ? doctor.getPerson().getNameWithTitle() : "All");
         return filters;
     }
     
     public void exportCollectionCenterReportPrintToPDF() {
-//        if (patientInvestigations == null || patientInvestigations.isEmpty()) {
-//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-//            return;
-//        }
+        if (patientInvestigations == null || patientInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
         
         com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
         FacesContext context = FacesContext.getCurrentInstance();
@@ -2475,33 +2475,24 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 table.addCell(textCell(String.valueOf(indexNumber),bodyFontSmall));
                 table.addCell(textCell(row.getBillItem().getBill().getFromInstitution().getCode(),bodyFontSmall));
                 table.addCell(textCell(row.getBillItem().getBill().getReferenceNumber(),bodyFontSmall));
-                table.addCell(textCell(row.getBillItem().getBill().getReferenceNumber(),bodyFontSmall));
-                table.addCell(textCell(row.getBillItem().getBill().getReferenceNumber(),bodyFontSmall));
-                
-//                table.addCell(textCell(row.getPatientInvestigation().getCreatedAt() != null ? sdf.format(row.getPatientInvestigation().getCreatedAt() ) : "-",bodyFontSmall));
-//                table.addCell(textCell(row.getPatientInvestigation().getSampleSentAt() != null ? sdf.format(row.getPatientInvestigation().getSampleSentAt()  ) : "-",bodyFontSmall));
-//                table.addCell(textCell(row.getPatientInvestigation().getReceivedAt() != null ? sdf.format(row.getPatientInvestigation().getReceivedAt() ) : "-",bodyFontSmall));
-//                table.addCell(textCell(row.getPatientInvestigation().getSampleTransportedToLabByStaff().getPerson().getName(), bodyFontSmall));
-//                table.addCell(textCell(String.valueOf(row.getDuration()), bodyFontSmall));
-//                
-//                table.addCell(textCell(row.getPatientInvestigation().getInvestigation().getName(),bodyFontSmall));
-//                table.addCell(textCell(row.getPatientInvestigation().getPatient().getPerson().getName(),bodyFontSmall));
-//                table.addCell(textCell(patientInvestigationController.getPatientSamplesByInvestigationAsString(row.getPatientInvestigation()),bodyFontSmall));
-//                table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc(),bodyFontSmall));
-//                if (!isVisitOP){
-//                   table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getBhtNo(),bodyFontSmall)); 
-//                   String invoiceNumber = row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill() != null ? row.getPatientInvestigation().getBillItem().getBill().getPatientEncounter().getFinalBill().getDeptId() : "_";
-//                   table.addCell(textCell( invoiceNumber,bodyFontSmall)); 
-//                } else {
-//                    table.addCell(textCell(row.getPatientInvestigation().getBillItem().getBill().getDeptId(),bodyFontSmall));
-//                }    
-//            }
+                table.addCell(textCell(row.getBillItem().getBill().getPatient().getPhn(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getPatient().getPerson().getNameWithTitle(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getDeptId(),bodyFontSmall));
+                table.addCell(textCell(row.getInvestigation().getCreatedAt() != null ? sdf.format(row.getInvestigation().getCreatedAt() ) : "-",bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getFromInstitution().getRoute()!= null ? row.getBillItem().getBill().getFromInstitution().getRoute().getName() : "-",bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getReferredInstituteOrDoctor()!=null ? row.getBillItem().getBill().getReferredInstituteOrDoctor().getName() : "-",bodyFontSmall));
+                table.addCell(textCell(row.getInvestigation()!= null ? row.getInvestigation().getName() : "-",bodyFontSmall));
+                table.addCell(textCell(row.getStatus()!= null ? row.getStatus().getLabel() : "-",bodyFontSmall));
+                table.addCell(textCell(row.getPrintingUser()!= null ? row.getPrintingUser().getName() : "-",bodyFontSmall));
+                table.addCell(textCell(row.getPrintingAt() != null ? sdf.format(row.getPrintingAt()) : "-",bodyFontSmall));
+                indexNumber+=1;
+            }
             document.add(table);
             document.close();
             context.responseComplete();
 
         } catch (Exception e) {
-            Logger.getLogger(ReportsController.class
+            Logger.getLogger(ReportController.class
                     .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
         } 
     }
@@ -2509,11 +2500,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     // PostProcessor for bill_wise_item_movement_report excel export
     public void postProcessCollectionCenterReportPrintExcel(Object document) {
         if (document == null) {
-            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
             return;
         }
         if (!(document instanceof XSSFWorkbook)) {
-            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
             return;
         }
         XSSFWorkbook workbook = (XSSFWorkbook) document;
@@ -2522,13 +2513,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             return;
         }
 
-        workbook.setSheetName(0, "Sample Carrier Report");
+        workbook.setSheetName(0, "Collection Center Reports Print");
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForCollectionCenterReportPrint();
 
         if (filters != null && !filters.isEmpty()) {
-            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Sample Carrier Report", filters);
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Collection Center Report Print", filters);
         }
     }
 
