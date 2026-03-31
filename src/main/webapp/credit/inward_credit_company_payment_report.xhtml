@@ -268,7 +268,7 @@
                             </p:column>
 
                             <p:column headerText="Bank">
-                                <h:outputText value="#{bi.bill.bank.name}" />
+                                <h:outputText value="#{bi.bill.bank.name}" rendered="#{bi.bill.bank != null}" />
                             </p:column>
 
                             <p:column headerText="Paid Amount" style="text-align:right; white-space:nowrap; font-weight:bold;">

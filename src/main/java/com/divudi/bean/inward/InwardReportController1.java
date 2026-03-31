@@ -1506,6 +1506,20 @@ public class InwardReportController1 implements Serializable {
         inwardNetValue = 0;
     }
 
+    public void resetCreditCompanyReports() {
+        institution = null;
+        site = null;
+        admittingInstitution = null;
+        department = null;
+        outstandingOnly = false;
+        bills = null;
+        billItems = null;
+        debtorBillTotal = 0;
+        debtorPaidTotal = 0;
+        debtorOutstandingTotal = 0;
+        creditPaymentTotalValue = 0;
+    }
+
     public void process() {
         Date startTime = new Date();
 
