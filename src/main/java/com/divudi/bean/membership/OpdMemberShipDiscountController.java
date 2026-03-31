@@ -73,7 +73,7 @@ public class OpdMemberShipDiscountController implements Serializable {
     double toPrice;
     double margin;
     private Category roomLocation;
-    
+
     private Institution selectedCreditCompany;
     private Institution company;
 
@@ -111,7 +111,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         site = null;
         selectedCreditCompany = null;
         company = null;
-        
+
     }
 
     public void saveSelectedDepartmentPaymentScheme() {
@@ -134,6 +134,13 @@ public class OpdMemberShipDiscountController implements Serializable {
 
         if (margin > 100.0 || margin < 0.0) {
             JsfUtil.addErrorMessage("Margin is Invalid.");
+            return;
+        }
+         
+        List<PriceMatrix> list =  findPaymentSchemesFromSelectedCreditCompany();
+        
+        if(list == null || list.isEmpty()){
+            JsfUtil.addErrorMessage("Discount for this Payment Scheme and Credit Company already exists.");
             return;
         }
 
@@ -160,6 +167,19 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     }
 
+    public List<PriceMatrix> findPaymentSchemesFromSelectedCreditCompany() {
+        String jpql = "select a from PaymentSchemeDiscount a "
+                + " where a.retired=false "
+                + " and a.paymentScheme=:pm "
+                + " and a.creditCompany=:cc "
+                + " and a.category is null";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pm", paymentScheme);
+        params.put("cc", selectedCreditCompany);
+        List<PriceMatrix> existing = getFacade().findByJpqlWithoutCache(jpql, params);
+        return existing;
+    }
+
     public void fillCompanyPaymentSchemes() {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Please select a Payment Scheme");
@@ -173,13 +193,13 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.paymentScheme=:pm "
                 + " and a.category is null "
                 + " and a.creditCompany is not null ";
-                
+
         if (company != null) {
             sql += " and a.creditCompany =:cmb";
             hm.put("cmb", company);
         }
         sql += " order by a.paymentScheme.name, a.creditCompany.name";
-        
+
         hm.put("pm", paymentScheme);
         items = getFacade().findByJpql(sql, hm);
     }
@@ -1103,6 +1123,13 @@ public class OpdMemberShipDiscountController implements Serializable {
 
         if (tmp.getDiscountPercent() > 100.0 || tmp.getDiscountPercent() < 0.0) {
             JsfUtil.addErrorMessage("Margin is Invalid.");
+            return;
+        }
+        
+        List<PriceMatrix> list =  findPaymentSchemesFromSelectedCreditCompany();
+        
+        if(list == null || list.isEmpty()){
+            JsfUtil.addErrorMessage("Discount for this Payment Scheme and Credit Company already exists.");
             return;
         }
         getFacade().edit(tmp);
