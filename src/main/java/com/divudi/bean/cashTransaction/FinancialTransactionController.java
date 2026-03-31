@@ -304,6 +304,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
+        fillFundTransferRequestsForMe();
         return "/cashier/index?faces-redirect=true";
     }
 

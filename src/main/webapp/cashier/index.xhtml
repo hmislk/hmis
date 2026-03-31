@@ -17,6 +17,12 @@
                         70%  { box-shadow: 0 0 0 8px rgba(255, 152, 0, 0); }
                         100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
                     }
+                    @media (prefers-reduced-motion: reduce) {
+                        .btn-pending {
+                            animation: none;
+                            outline: 3px solid rgba(255, 152, 0, 0.9);
+                        }
+                    }
                 </h:outputStylesheet>
 
                 <div class="row">
@@ -66,7 +72,6 @@
                                         class="my-1 w-100 ui-button-info"
                                         value="My Shifts"
                                         icon="pi pi-map-marker"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Completed Shift Handover is enabled')}"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToMyShifts}">
                                     </p:commandButton>
@@ -287,7 +292,7 @@
                                 <p:tab title="Income &amp; Expense">
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-success"
-                                        value="Add Supplimantary Income"
+                                        value="Add Supplementary Income"
                                         icon="pi pi-directions"
                                         ajax="false"
                                         action="#{financialTransactionController.navigateToNewIncomeBill()}">
