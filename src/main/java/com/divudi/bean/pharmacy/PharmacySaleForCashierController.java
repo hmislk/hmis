@@ -5362,7 +5362,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     itemFacade.count(); // Simple count query to warm up
                     successCount++;
                 } catch (Exception e) {
-                    // Warm-up failure is non-critical
+                    logger.log(Level.FINE, "JPA warm-up failed for itemFacade.count()", e);
                 }
 
                 // Warm up ItemBatch facade - MOST IMPORTANT
@@ -5400,7 +5400,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     stockFacade.count(); // Simple count query
                     successCount++;
                 } catch (Exception e) {
-                    // Warm-up failure is non-critical
+                    logger.log(Level.FINE, "JPA warm-up failed for stockFacade.count()", e);
                 }
 
                 // Mark warm-up as completed
