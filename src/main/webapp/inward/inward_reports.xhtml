@@ -148,10 +148,16 @@
                                                          action="discharge_book_no_changes_due_with_letter?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"
                                                          ajax="false"/>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             value="BHT Deposit and Credit Settlement Summary"
                                             action="inward_report_bht_payment_summary?faces-redirect=true"
                                             actionListener="#{bhtPaymentSummaryReportController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
+                                            value="Inpatient Invoice Journal"
+                                            action="inward_report_invoice_journal?faces-redirect=true"
+                                            actionListener="#{inwardInvoiceJournalController.makeNull()}"
                                             class="ui-button-success"
                                             ajax="false" />
                                     </div>
