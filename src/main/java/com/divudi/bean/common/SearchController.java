@@ -6068,7 +6068,7 @@ public class SearchController implements Serializable {
         sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
                 + "b.id, "
                 + "b.deptId, "
-                + "b.createdAt, "
+                + "b.checkeAt, "
                 + "b.netTotal, "
                 + "b.paymentMethod, "
                 + "b.cancelled, "
@@ -6081,14 +6081,14 @@ public class SearchController implements Serializable {
                 + "FROM BilledBill b WHERE "
                 + "b.referenceBill is null "
                 + "and b.toInstitution.institutionType=:insTp "
-                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.checkeAt between :fromDate and :toDate "
                 + "and b.retired=false "
                 + "and b.billType=:bTp "
                 + "and b.checkedBy is not null "
                 + "and b.department=:dept";
 
         sql += createKeySqlSearchForPoCancelDto(tmp);
-        sql += " order by b.createdAt desc ";
+        sql += " order by b.checkeAt desc ";
 
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
@@ -6150,7 +6150,7 @@ public class SearchController implements Serializable {
         sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
                 + "b.id, "
                 + "b.deptId, "
-                + "b.createdAt, "
+                + "b.checkeAt, "
                 + "b.netTotal, "
                 + "b.paymentMethod, "
                 + "b.cancelled, "
@@ -6171,12 +6171,12 @@ public class SearchController implements Serializable {
                 + "b.referenceBill.creater is not null "
                 + "and b.referenceBill.cancelled=false "
                 + "and b.toInstitution.institutionType=:insTp "
-                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.checkeAt between :fromDate and :toDate "
                 + "and b.retired=false "
                 + "and b.billType=:bTp ";
 
         sql += createKeySqlDto(tmp);
-        sql += " order by b.createdAt desc ";
+        sql += " order by b.checkeAt desc ";
 
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
