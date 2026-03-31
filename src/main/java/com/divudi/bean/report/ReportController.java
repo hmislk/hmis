@@ -2434,10 +2434,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
     
      public void exportCollectionCenterStatementReportToPDF() {
-//        if (agentHistories == null  || agentHistories.isEmpty()) {
-//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-//            return;
-//        }
+        if (agentHistories == null  || agentHistories.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
         
         com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
         FacesContext context = FacesContext.getCurrentInstance();
