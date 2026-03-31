@@ -131,6 +131,12 @@
                                             class="ui-button-success"
                                             ajax="false" />
                                         <p:commandButton
+                                            value="Inpatient Invoice Journal"
+                                            action="inward_report_invoice_journal?faces-redirect=true"
+                                            actionListener="#{inwardInvoiceJournalController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
                                             value="Inpatient Credit Company Payment Report"
                                             action="/credit/inward_credit_company_payment_report?faces-redirect=true"
                                             actionListener="#{inwardReportController1.resetCreditCompanyReports()}"
