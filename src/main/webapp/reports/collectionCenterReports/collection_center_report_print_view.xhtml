@@ -192,7 +192,7 @@
                                         </div>
                                         <div class="d-flex gap-2">
                                             <h:outputText value="Referring Doctor" style="font-weight:600;"/>
-                                            <h:outputText value="#{empty reportController.doctor ? 'All doctors' : reportController.person.nameWithTitle}"/>
+                                            <h:outputText value="#{empty reportController.doctor ? 'All doctors' : reportController.doctor.person.nameWithTitle}"/>
                                         </div>
 
                                     </div>
