@@ -443,7 +443,7 @@ public class ChannelService {
                 + " END), "
                 + " SUM(CASE"
                 + "        WHEN b.cancelled = true THEN 0 "
-                + "        WHEN b.cancelled = false AND b.refunded = false THEN b.staffFee "
+                + "        WHEN b.cancelled = false THEN b.staffFee "
                 + "        ELSE 0"
                 + " END))"
                 + " FROM Bill b "
