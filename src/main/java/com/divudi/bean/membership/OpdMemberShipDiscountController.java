@@ -73,6 +73,9 @@ public class OpdMemberShipDiscountController implements Serializable {
     double toPrice;
     double margin;
     private Category roomLocation;
+    
+    private Institution selectedCreditCompany;
+    private Institution company;
 
     public Item getItem() {
         return item;
@@ -106,6 +109,9 @@ public class OpdMemberShipDiscountController implements Serializable {
         membershipScheme = null;
         paymentMethod = null;
         site = null;
+        selectedCreditCompany = null;
+        company = null;
+        
     }
 
     public void saveSelectedDepartmentPaymentScheme() {
@@ -114,6 +120,68 @@ public class OpdMemberShipDiscountController implements Serializable {
         createItemsDepartmentsPaymentScheme();
         clearInstanceVars();
 
+    }
+
+    public void saveSelectedCompanyPaymentScheme() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Scheme");
+            return;
+        }
+        if (selectedCreditCompany == null) {
+            JsfUtil.addErrorMessage("Please select a CreditCompany.");
+            return;
+        }
+
+        if (margin > 100.0 || margin < 0.0) {
+            JsfUtil.addErrorMessage("Margin is Invalid.");
+            return;
+        }
+
+        // Create new PriceMatrix
+        PriceMatrix a = new PaymentSchemeDiscount();
+        a.setPaymentScheme(paymentScheme);
+        a.setCreditCompany(selectedCreditCompany);
+        a.setDiscountPercent(margin);
+        a.setPaymentMethod(PaymentMethod.Credit);
+        a.setCreatedAt(new Date());
+        a.setCreater(sessionController.getLoggedUser());
+        getFacade().create(a);
+
+        System.out.println("New PriceMatrix Saved Successfully (" + a.getId() + ")");
+        JsfUtil.addSuccessMessage("Saved Successfully");
+
+        // Reload PriceMatrix
+        fillCompanyPaymentSchemes();
+
+        // Clear Values
+        selectedCreditCompany = null;
+        margin = 0.0;
+        company = null;
+
+    }
+
+    public void fillCompanyPaymentSchemes() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Scheme");
+            return;
+        }
+
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select a from PaymentSchemeDiscount a "
+                + " where a.retired=false"
+                + " and a.paymentScheme=:pm "
+                + " and a.category is null "
+                + " and a.creditCompany is not null ";
+                
+        if (company != null) {
+            sql += " and a.creditCompany =:cmb";
+            hm.put("cmb", company);
+        }
+        sql += " order by a.paymentScheme.name, a.creditCompany.name";
+        
+        hm.put("pm", paymentScheme);
+        items = getFacade().findByJpql(sql, hm);
     }
 
     public void saveSelectedSitePaymentScheme() {
@@ -447,22 +515,22 @@ public class OpdMemberShipDiscountController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Payment Scheme");
             return;
         }
-        if(paymentMethod == null){
+        if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
         }
-            for (Category c : pharmaceuticalItemCategoryController.getItems()) {
-                PaymentSchemeDiscount p = fetchPaymentSchemeDiscount(null,
-                        c,
-                        null,
-                        paymentScheme,
-                        paymentMethod,
-                        null,
-                        null);
-                p.setDiscountPercent(margin);
-                System.out.println("p = " + p);
-                paymentSchemeDiscountFacade.edit(p);
-            }
+        for (Category c : pharmaceuticalItemCategoryController.getItems()) {
+            PaymentSchemeDiscount p = fetchPaymentSchemeDiscount(null,
+                    c,
+                    null,
+                    paymentScheme,
+                    paymentMethod,
+                    null,
+                    null);
+            p.setDiscountPercent(margin);
+            System.out.println("p = " + p);
+            paymentSchemeDiscountFacade.edit(p);
+        }
     }
 
     public void savePharmacyCategoryPaymentMethod() {
@@ -1024,6 +1092,19 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void onEdit(PriceMatrix tmp) {
+        if (tmp.getPaymentScheme() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Scheme");
+            return;
+        }
+        if (tmp.getCreditCompany() == null) {
+            JsfUtil.addErrorMessage("Please select a CreditCompany.");
+            return;
+        }
+
+        if (tmp.getDiscountPercent() > 100.0 || tmp.getDiscountPercent() < 0.0) {
+            JsfUtil.addErrorMessage("Margin is Invalid.");
+            return;
+        }
         getFacade().edit(tmp);
         JsfUtil.addSuccessMessage("Update Successfully");
         clearInstanceVars();
@@ -1053,6 +1134,22 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public Institution getSelectedCreditCompany() {
+        return selectedCreditCompany;
+    }
+
+    public void setSelectedCreditCompany(Institution selectedCreditCompany) {
+        this.selectedCreditCompany = selectedCreditCompany;
+    }
+
+    public Institution getCompany() {
+        return company;
+    }
+
+    public void setCompany(Institution company) {
+        this.company = company;
     }
 
 }
