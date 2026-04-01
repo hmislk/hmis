@@ -2166,6 +2166,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.current = current;
     }
 
+    /**
+     * Navigate to the inpatient profile page for the given admission ID.
+     * Used by the Admission Report page (Issue #19640) where only the ID is available in the DTO.
+     */
+    public String navigateToAdmissionProfileById(Long admissionId) {
+        if (admissionId == null) {
+            return "";
+        }
+        Admission admission = getFacade().find(admissionId);
+        if (admission == null) {
+            return "";
+        }
+        current = admission;
+        return navigateToAdmissionProfilePage();
+    }
+
     private AdmissionFacade getFacade() {
         return ejbFacade;
     }
