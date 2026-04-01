@@ -82,6 +82,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -1863,6 +1864,38 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getFacade().edit(current);
         current = new Admission();
         patientRoom = new PatientRoom();
+    }
+
+    /**
+     * Checks whether the current patient already has an active (undischarged) admission.
+     *
+     * @return true if an active admission exists for the patient
+     */
+    private boolean isPatientAlreadyAdmitted() {
+        if (getCurrent().getPatient() == null) {
+            return false;
+        }
+        String jpql = "SELECT COUNT(a) FROM Admission a "
+                + "WHERE a.patient = :patient "
+                + "AND a.retired = false "
+                + "AND a.discharged = false";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("patient", getCurrent().getPatient());
+        long count = getFacade().findLongByJpql(jpql, params);
+        return count > 0;
+    }
+
+    /**
+     * Called by the "Admit" button (AJAX).
+     * If the patient already has an active (undischarged) admission, shows a warning dialog.
+     * Otherwise proceeds with the normal save.
+     */
+    public void checkBeforeAdmit() {
+        if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
+            PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
+        } else {
+            saveSelected();
+        }
     }
 
     public void saveSelected() {
