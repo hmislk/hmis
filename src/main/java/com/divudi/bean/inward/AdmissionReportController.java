@@ -75,10 +75,13 @@ public class AdmissionReportController implements Serializable {
                 + "ad.creditCompany,"
                 + "ad.referringConsultant,"
                 + "ad.opdDoctor,"
+                + "rfc.name,"
                 + "ad.discharged,"
                 + "ad.paymentFinalized,"
                 + "ad.admissionType"
                 + ") from Admission ad"
+                + " left join ad.currentPatientRoom pr"
+                + " left join pr.roomFacilityCharge rfc"
                 + " where ad.retired = false");
 
         // --- date basis ---
@@ -129,6 +132,15 @@ public class AdmissionReportController implements Serializable {
         for (Object o : results) {
             admissions.add((AdmissionReportDTO) o);
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // UI helpers
+    // -------------------------------------------------------------------------
+
+    /** Called when Institution or Site selection changes to prevent stale department. */
+    public void clearDepartment() {
+        department = null;
     }
 
     // -------------------------------------------------------------------------

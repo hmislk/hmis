@@ -38,6 +38,7 @@ public class AdmissionReportDTO implements Serializable {
 
     // -------------------------------------------------------------------------
     // Constructor used by JPQL SELECT NEW
+    // paymentFinalized is Boolean (boxed) to survive NULL database values safely.
     // -------------------------------------------------------------------------
 
     public AdmissionReportDTO(
@@ -53,8 +54,9 @@ public class AdmissionReportDTO implements Serializable {
             Institution creditCompany,
             Staff referringConsultant,
             Staff opdDoctor,
+            String roomName,
             Boolean discharged,
-            boolean paymentFinalized,
+            Boolean paymentFinalized,
             AdmissionType admissionType) {
 
         this.admissionId = admissionId;
@@ -71,8 +73,9 @@ public class AdmissionReportDTO implements Serializable {
                 ? referringConsultant.getPerson().getNameWithTitle() : "";
         this.medicalOfficerName = opdDoctor != null && opdDoctor.getPerson() != null
                 ? opdDoctor.getPerson().getNameWithTitle() : "";
+        this.roomName = roomName != null ? roomName : "";
         this.discharged = Boolean.TRUE.equals(discharged);
-        this.paymentFinalized = paymentFinalized;
+        this.paymentFinalized = Boolean.TRUE.equals(paymentFinalized);
         this.admissionType = admissionType;
     }
 

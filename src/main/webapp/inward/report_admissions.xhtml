@@ -106,7 +106,7 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
+                                <p:ajax process="cmbIns" update="cmbDept" listener="#{admissionReportController.clearDepartment()}" />
                             </p:selectOneMenu>
 
                             <p:spacer />
@@ -123,7 +123,7 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
+                                <p:ajax process="siteMenu" update="cmbDept" listener="#{admissionReportController.clearDepartment()}" />
                             </p:selectOneMenu>
 
                             <p:spacer />
