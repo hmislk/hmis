@@ -2973,6 +2973,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("pe.patientEncounterType, ")
                 .append("rdPer.name, ")
                 .append("pe.grantTotal, ")
+                .append("rfc.roomCategory, ") // safe only when JOIN is used below
                 .append("pe.netTotal")
                 .append(") ")
                 .append("FROM PatientEncounter pe ")
@@ -2982,7 +2983,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("LEFT JOIN pe.referringDoctor rd ")
                 .append("LEFT JOIN rd.person rdPer ");
 
+        // KEY FIX: use INNER JOIN when filtering, LEFT JOIN when not
         if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("JOIN pe.currentPatientRoom room ")
+                    .append("JOIN room.roomFacilityCharge rfc ");
+        } else {
             jpql.append("LEFT JOIN pe.currentPatientRoom room ")
                     .append("LEFT JOIN room.roomFacilityCharge rfc ");
         }
@@ -3000,48 +3005,42 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             jpql.append("AND pe.institution = :inst ");
             params.put("inst", institution);
         }
-
         if (site != null) {
             jpql.append("AND pe.department.site = :site ");
             params.put("site", site);
         }
-
         if (department != null) {
             jpql.append("AND pe.department = :dept ");
             params.put("dept", department);
         }
-
         if (roomCategories != null && !roomCategories.isEmpty()) {
-            jpql.append("AND rfc.roomCategory IN :roomCats ");
-            params.put("roomCats", roomCategories);
+            jpql.append("AND rfc.roomCategory.id IN :roomCatIds ");
+            List<Long> roomCatIds = roomCategories.stream()
+                    .map(rc -> rc.getId())
+                    .collect(java.util.stream.Collectors.toList());
+            params.put("roomCatIds", roomCatIds);
         }
-
         if (admissionTypes != null && !admissionTypes.isEmpty()) {
             jpql.append("AND pe.admissionType IN :admTypes ");
             params.put("admTypes", admissionTypes);
         }
-
         if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
             jpql.append("AND fb.deptId = :inv ");
             params.put("inv", invoiceNumber.trim());
         }
-
-        if (patientEncounterDtoForBhtNo != null ) {
+        if (patientEncounterDtoForBhtNo != null) {
             jpql.append("AND pe.bhtNo = :bht ");
             params.put("bht", patientEncounterDtoForBhtNo.getBhtNo());
         }
-
         if (patientEncounterDto != null) {
             jpql.append("AND per.name = :pn ");
             params.put("pn", patientEncounterDto.getPatientName());
         }
+
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
         profitMatrixSummaryRows = (List<ProfitMatrixRowDTO>) peFacade.findLightsByJpql(
-                jpql.toString(),
-                params,
-                TemporalType.TIMESTAMP
-        );
+                jpql.toString(), params, TemporalType.TIMESTAMP);
 
         totalNetTotal = 0.0;
         if (profitMatrixSummaryRows != null) {
@@ -3079,8 +3078,18 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("LEFT JOIN rd.person rdPer ")
                 .append("LEFT JOIN bi.item i ")
                 .append("LEFT JOIN i.department iDept ")
-                .append("LEFT JOIN i.itemFeesAuto itemFee ")
-                .append("WHERE bi.retired = :ret ")
+                .append("LEFT JOIN i.itemFeesAuto itemFee ");
+
+        // KEY FIX: same conditional JOIN pattern
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("JOIN pe.currentPatientRoom room ")
+                    .append("JOIN room.roomFacilityCharge rfc ");
+        } else {
+            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE bi.retired = :ret ")
                 .append("AND b.retired = :bret ")
                 .append("AND b.cancelled = :can ")
                 .append("AND pe.retired = :peret ")
@@ -3099,35 +3108,35 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             jpql.append("AND pe.institution = :inst ");
             params.put("inst", institution);
         }
-
         if (site != null) {
             jpql.append("AND pe.department.site = :site ");
             params.put("site", site);
         }
-
         if (department != null) {
             jpql.append("AND pe.department = :dept ");
             params.put("dept", department);
         }
-
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("AND rfc.roomCategory.id IN :roomCatIds ");
+            List<Long> roomCatIds = roomCategories.stream()
+                    .map(rc -> rc.getId())
+                    .collect(java.util.stream.Collectors.toList());
+            params.put("roomCatIds", roomCatIds);
+        }
         if (admissionTypes != null && !admissionTypes.isEmpty()) {
             jpql.append("AND pe.admissionType IN :admTypes ");
             params.put("admTypes", admissionTypes);
         }
-
         if (invoiceNumber != null && !invoiceNumber.trim().isEmpty()) {
             jpql.append("AND b.deptId = :inv ");
             params.put("inv", invoiceNumber.trim());
         }
-
-        if (patientEncounterDtoForBhtNo != null ) {
+        if (patientEncounterDtoForBhtNo != null) {
             jpql.append("AND pe.bhtNo = :bht ");
             params.put("bht", patientEncounterDtoForBhtNo.getBhtNo());
         }
-
         if (patientEncounterDto != null) {
             String searchTerm = null;
-
             if (patientEncounterDto.getPatientName() != null
                     && !patientEncounterDto.getPatientName().trim().isEmpty()) {
                 searchTerm = patientEncounterDto.getPatientName().trim().toLowerCase();
@@ -3135,7 +3144,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     && !patientEncounterDto.getPhn().trim().isEmpty()) {
                 searchTerm = patientEncounterDto.getPhn().trim().toLowerCase();
             }
-
             if (searchTerm != null) {
                 jpql.append("AND (LOWER(per.name) LIKE :pn ")
                         .append("OR LOWER(pat.phn) LIKE :pn) ");
@@ -3146,10 +3154,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("ORDER BY pe.dateOfAdmission, b.deptId, i.name ");
 
         profitMatrixDetailRows = (List<ProfitMatrixRowDTO>) billItemFacade.findLightsByJpql(
-                jpql.toString(),
-                params,
-                TemporalType.TIMESTAMP
-        );
+                jpql.toString(), params, TemporalType.TIMESTAMP);
 
         totalNetTotal = 0.0;
         if (profitMatrixDetailRows != null) {

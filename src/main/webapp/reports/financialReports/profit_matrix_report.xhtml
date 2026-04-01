@@ -75,17 +75,16 @@
                             </h:panelGroup>
                             <p:selectCheckboxMenu id="rCat"
                                                   value="#{reportController.roomCategories}"
+                                                  converter="#{roomCategoryConverter}"
                                                   styleClass="w-100"
                                                   label="Select Category"
                                                   updateLabel="true">
-                                <!--                                <f:selectItem itemLabel="Suprior A" itemValue="1" />
-                                                                <f:selectItem itemLabel="Suprior B" itemValue="2" />
-                                                                <f:selectItem itemLabel="Premium Rage" itemValue="3" />
-                                                                <f:selectItem itemLabel="Bay Window" itemValue="4" />
-                                                                <f:selectItem itemLabel="Kings Court" itemValue="4" />-->
-                                <f:selectItems value="#{roomCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                <f:selectItems
+                                    value="#{roomCategoryController.items}"
+                                    var="cat"
+                                    itemLabel="#{cat.name}"
+                                    itemValue="#{cat}" />
                             </p:selectCheckboxMenu>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
@@ -280,6 +279,10 @@
                                     <p:column width="8em">
                                         <f:facet name="header"><h:outputText value="Visit Type"/></f:facet>
                                         <h:outputText value="#{row.visitType}"/>
+                                    </p:column>
+                                    <p:column width="8em">
+                                        <f:facet name="header"><h:outputText value="room category"/></f:facet>
+                                        <h:outputText value="#{row.roomCategory.name}"/>
                                     </p:column>
 
                                     <p:column width="8em">
