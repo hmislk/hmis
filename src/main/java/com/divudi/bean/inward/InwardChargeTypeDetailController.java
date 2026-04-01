@@ -219,7 +219,7 @@ public class InwardChargeTypeDetailController implements Serializable {
         for (BillItem bi : raw) {
             InwardChargeTypeDetailRowDto row = new InwardChargeTypeDetailRowDto();
 
-            PatientEncounter enc = bi.getPatientEncounter();
+            PatientEncounter enc = bi.getBill() != null ? bi.getBill().getPatientEncounter() : null;
             if (enc != null) {
                 row.setBhtNo(enc.getBhtNo());
                 row.setPatientName(enc.getPatient() != null && enc.getPatient().getPerson() != null
@@ -228,14 +228,22 @@ public class InwardChargeTypeDetailController implements Serializable {
                 row.setDateOfDischarge(enc.getDateOfDischarge());
             }
 
-            row.setItemName(bi.getItem() != null ? bi.getItem().getName() : "");
+            if (bi.getItem() != null) {
+                row.setItemName(bi.getItem().getName());
+            } else if (bi.getInwardChargeType() != null) {
+                row.setItemName(getChargeTypeLabel(bi.getInwardChargeType()));
+            }
             row.setGrossValue(bi.getGrossValue());
             row.setDiscount(bi.getDiscount());
             row.setNetValue(bi.getNetValue());
 
             // fromTime/toTime left null for regular bill items
-            // sortTime = billTime for ordering within the BHT
-            row.setSortTime(bi.getBillTime());
+            // sortTime = billItem.billTime, falling back to bill.billTime
+            Date sortTime = bi.getBillTime();
+            if (sortTime == null && bi.getBill() != null) {
+                sortTime = bi.getBill().getBillTime();
+            }
+            row.setSortTime(sortTime);
 
             rows.add(row);
         }
