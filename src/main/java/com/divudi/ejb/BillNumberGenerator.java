@@ -139,6 +139,17 @@ public class BillNumberGenerator {
         return institution.getId() + "-" + "null" + "-" + "null";
     }
 
+    private static final int MAX_SERIAL_DIGITS = 12;
+
+    private String formatSerialNumber(Long serialNumber) {
+        Integer digits = configOptionApplicationController.getIntegerValueByKey("Bill Number Serial Digit Count", 6);
+        if (digits == null || digits < 1) {
+            digits = 6;
+        }
+        digits = Math.min(digits, MAX_SERIAL_DIGITS);
+        return String.format("%0" + digits + "d", serialNumber);
+    }
+
     private String getBillNumberDelimiter() {
         String delimiter = configOptionApplicationController.getShortTextValueByKey("Bill Number Delimiter", "/");
         if (delimiter == null) {
@@ -2160,7 +2171,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2220,7 +2231,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2263,7 +2274,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2305,7 +2316,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2345,7 +2356,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2382,7 +2393,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2496,7 +2507,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2536,7 +2547,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2626,7 +2637,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         String finalResult = result.toString();
         return finalResult;
@@ -2677,7 +2688,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         String finalResult = result.toString();
         return finalResult;
@@ -2728,7 +2739,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         String finalResult = result.toString();
         return finalResult;
@@ -2816,7 +2827,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2877,7 +2888,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2936,7 +2947,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2978,7 +2989,7 @@ public class BillNumberGenerator {
 
             // Append formatted 6-digit bill number
             result.append(getBillNumberDelimiter());
-            result.append(String.format("%06d", dd));
+            result.append(formatSerialNumber(dd));
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
             // Ensure bill number is always six digits
@@ -3005,7 +3016,7 @@ public class BillNumberGenerator {
 
             // Append formatted 6-digit bill number
             result.append(getBillNumberDelimiter());
-            result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+            result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
             // Return the formatted bill number
             return result.toString();
@@ -3392,7 +3403,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
@@ -3434,7 +3445,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
@@ -3475,7 +3486,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
@@ -3516,7 +3527,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
