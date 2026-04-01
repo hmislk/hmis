@@ -2320,6 +2320,25 @@ public class PharmacyController implements Serializable {
                 JsfUtil.addErrorMessage(e, " Something Went Worng!");
             }
 
+            // For detailReport, eagerly fetch billItems and their associations to avoid
+            // LazyInitializationException when the JSF view iterates row.billItems
+            if ("detailReport".equals(reportType) && bills != null && !bills.isEmpty()) {
+                List<Long> ids = bills.stream().map(Bill::getId).collect(Collectors.toList());
+                String fetchJpql = "SELECT DISTINCT b FROM Bill b"
+                        + " LEFT JOIN FETCH b.billItems bi"
+                        + " LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi"
+                        + " LEFT JOIN FETCH pbi.itemBatch"
+                        + " WHERE b.id IN :ids"
+                        + " ORDER BY b.id DESC";
+                Map<String, Object> fetchParams = new HashMap<>();
+                fetchParams.put("ids", ids);
+                try {
+                    bills = getBillFacade().findByJpql(fetchJpql, fetchParams);
+                } catch (Exception e) {
+                    Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error eagerly fetching bill items for detail report", e);
+                }
+            }
+
             // Use simplified calculation for detailReport and summeryReport, standard for others
             if ("detailReport".equals(reportType) || "summeryReport".equals(reportType)) {
                 calculateTotalsForDetailReport(bills);
