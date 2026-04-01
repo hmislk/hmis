@@ -25,6 +25,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Predicate;
+import org.eclipse.persistence.descriptors.ClassDescriptor;
+import org.eclipse.persistence.jpa.JpaHelper;
 
 /**
  *
@@ -158,6 +160,22 @@ public abstract class AbstractFacade<T> {
     public void flushAndClear() {
         getEntityManager().flush();
         getEntityManager().clear();
+    }
+
+    /**
+     * Returns the actual database table name for this entity as known to
+     * EclipseLink. This correctly reflects the case used by the database
+     * (e.g. "PatientEncounter" vs "patientencounter") regardless of the
+     * MySQL lower_case_table_names setting, avoiding hard-coded table name
+     * issues in native SQL queries.
+     *
+     * Closes #19648
+     */
+    public String getTableName() {
+        ClassDescriptor descriptor = JpaHelper
+                .getServerSession(getEntityManager().getEntityManagerFactory())
+                .getDescriptor(entityClass);
+        return descriptor.getTableName();
     }
 
     public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {
