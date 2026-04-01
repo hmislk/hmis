@@ -191,7 +191,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private PaymentMethod paymentMethod;
     private boolean admittingProcessStarted;
-    private boolean activeAdmissionConfirmationPending = false;
     private Reservation latestfoundReservation;
 
     private Reservation currentReservation;
@@ -1883,10 +1882,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      */
     public void checkBeforeAdmit() {
         if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
-            activeAdmissionConfirmationPending = true;
             PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
         } else {
-            activeAdmissionConfirmationPending = false;
             saveSelected();
         }
     }
@@ -2677,14 +2674,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAdmittingProcessStarted(boolean admittingProcessStarted) {
         this.admittingProcessStarted = admittingProcessStarted;
-    }
-
-    public boolean isActiveAdmissionConfirmationPending() {
-        return activeAdmissionConfirmationPending;
-    }
-
-    public void setActiveAdmissionConfirmationPending(boolean activeAdmissionConfirmationPending) {
-        this.activeAdmissionConfirmationPending = activeAdmissionConfirmationPending;
     }
 
     public AdmissionType getAdmissionTypeForSearch() {
