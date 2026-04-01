@@ -4,8 +4,11 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.AdmissionReportDTO;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,10 +22,11 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
- * Controller for the enhanced Admission Report page (Issue #19640).
+ * Controller for the enhanced Admission Report (Issue #19640) and
+ * Admission by Consultant Report (Issue #19642).
  *
- * Replaces the entity-based query in MdInwardReportController.fillAdmissions()
- * with a DTO-based JPQL SELECT NEW approach so that all columns are populated
+ * Replaces the entity-based query in MdInwardReportController with a
+ * DTO-based JPQL SELECT NEW approach so that all columns are populated
  * in one query and there are no lazy-load round-trips during rendering.
  */
 @Named
@@ -32,8 +36,11 @@ public class AdmissionReportController implements Serializable {
     @EJB
     private AdmissionFacade admissionFacade;
 
+    @EJB
+    private StaffFacade staffFacade;
+
     // -------------------------------------------------------------------------
-    // Filter fields
+    // Filter fields — shared by both report pages
     // -------------------------------------------------------------------------
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
@@ -49,16 +56,29 @@ public class AdmissionReportController implements Serializable {
     private Institution site;
     private Department department;
 
+    // --- Admission-by-Consultant specific filters ---
+    private Speciality speciality;
+    private Staff consultant;
+
     // -------------------------------------------------------------------------
     // Report output
     // -------------------------------------------------------------------------
     private List<AdmissionReportDTO> admissions;
+    private List<AdmissionReportDTO> admissionsByConsultant;
 
     // -------------------------------------------------------------------------
-    // Main generate method
+    // Main generate methods
     // -------------------------------------------------------------------------
 
     public void fillAdmissions() {
+        admissions = executeAdmissionQuery(null, null);
+    }
+
+    public void fillAdmissionsByConsultant() {
+        admissionsByConsultant = executeAdmissionQuery(speciality, consultant);
+    }
+
+    private List<AdmissionReportDTO> executeAdmissionQuery(Speciality filterSpeciality, Staff filterConsultant) {
         Map<String, Object> params = new HashMap<>();
 
         StringBuilder jpql = new StringBuilder(
@@ -125,13 +145,52 @@ public class AdmissionReportController implements Serializable {
             params.put("dept", department);
         }
 
+        // --- speciality (consultant report only) ---
+        if (filterSpeciality != null) {
+            jpql.append(" and ad.referringConsultant.speciality = :sp");
+            params.put("sp", filterSpeciality);
+        }
+
+        // --- consultant/staff (consultant report only) ---
+        if (filterConsultant != null) {
+            jpql.append(" and ad.referringConsultant = :cs");
+            params.put("cs", filterConsultant);
+        }
+
         jpql.append(" order by ad.createdAt asc");
 
         List<Object> results = admissionFacade.findObjectByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        admissions = new ArrayList<>();
+        List<AdmissionReportDTO> list = new ArrayList<>();
         for (Object o : results) {
-            admissions.add((AdmissionReportDTO) o);
+            list.add((AdmissionReportDTO) o);
         }
+        return list;
+    }
+
+    // -------------------------------------------------------------------------
+    // AutoComplete for consultant filter
+    // -------------------------------------------------------------------------
+
+    public List<Staff> completeConsultant(String query) {
+        Map<String, Object> params = new HashMap<>();
+        String jpql;
+
+        if (speciality != null) {
+            jpql = "select p from Staff p"
+                    + " where p.retired = false"
+                    + " and (upper(p.person.name) like :q or p.code like :q)"
+                    + " and p.speciality = :sp"
+                    + " order by p.person.name";
+            params.put("sp", speciality);
+        } else {
+            jpql = "select p from Staff p"
+                    + " where p.retired = false"
+                    + " and p.speciality is not null"
+                    + " and (upper(p.person.name) like :q or p.code like :q)"
+                    + " order by p.person.name";
+        }
+        params.put("q", "%" + query.toUpperCase() + "%");
+        return staffFacade.findByJpql(jpql, params, 20);
     }
 
     // -------------------------------------------------------------------------
@@ -141,6 +200,11 @@ public class AdmissionReportController implements Serializable {
     /** Called when Institution or Site selection changes to prevent stale department. */
     public void clearDepartment() {
         department = null;
+    }
+
+    /** Called when Speciality changes to clear the consultant so the list refreshes. */
+    public void clearConsultant() {
+        consultant = null;
     }
 
     // -------------------------------------------------------------------------
@@ -156,7 +220,10 @@ public class AdmissionReportController implements Serializable {
         institution = null;
         site = null;
         department = null;
+        speciality = null;
+        consultant = null;
         admissions = null;
+        admissionsByConsultant = null;
     }
 
     // -------------------------------------------------------------------------
@@ -201,5 +268,13 @@ public class AdmissionReportController implements Serializable {
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
 
+    public Speciality getSpeciality() { return speciality; }
+    public void setSpeciality(Speciality speciality) { this.speciality = speciality; }
+
+    public Staff getConsultant() { return consultant; }
+    public void setConsultant(Staff consultant) { this.consultant = consultant; }
+
     public List<AdmissionReportDTO> getAdmissions() { return admissions; }
+
+    public List<AdmissionReportDTO> getAdmissionsByConsultant() { return admissionsByConsultant; }
 }

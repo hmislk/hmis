@@ -323,7 +323,7 @@ public class MdInwardReportController implements Serializable {
 //        }
 //    }
 
-    // TODO: delete fillAdmissionsByConsultants() — superseded (Issue #19640)
+    // TODO: delete fillAdmissionsByConsultants() — superseded by AdmissionReportController (Issue #19642)
 //    public void fillAdmissionsByConsultants() {
 //        try {
 //            String sql;
