@@ -124,12 +124,21 @@
                             </h:panelGroup>
                             <p:autoComplete 
                                 id="acBht"
-                                value="#{reportController.bhtNo}"
+                                value="#{reportController.patientEncounterDtoForBhtNo}"
+                                converter="#{patientEncounterDtoConverter}"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 placeholder="BHT Number"
-                                completeMethod="#{admissionController.completePatientEncounter}"
-                                >
+                                completeMethod="#{admissionController.completePatientPaymentFinalizedWithPhn}"
+                                var="bht"
+                                itemLabel="#{bht.bhtNo}"
+                                itemValue="#{bht}">
+                                <p:column headerText="MRN">
+                                    <h:outputText value="#{bht.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value="#{bht.patientName}"/>
+                                </p:column>
                             </p:autoComplete>
 
                             <p:spacer width="20"></p:spacer>

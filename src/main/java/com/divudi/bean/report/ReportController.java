@@ -309,6 +309,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private String bhtNo;
     private String patientName;
     private PatientEncounterDto patientEncounterDto;
+    private PatientEncounterDto patientEncounterDtoForBhtNo;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -3025,9 +3026,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             params.put("inv", invoiceNumber.trim());
         }
 
-        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
-            jpql.append("AND pe.bhtNo LIKE :bht ");
-            params.put("bht", "%" + bhtNo.trim() + "%");
+        if (patientEncounterDtoForBhtNo != null ) {
+            jpql.append("AND pe.bhtNo = :bht ");
+            params.put("bht", patientEncounterDtoForBhtNo.getBhtNo());
         }
 
         if (patientEncounterDto != null) {
@@ -3119,9 +3120,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             params.put("inv", invoiceNumber.trim());
         }
 
-        if (bhtNo != null && !bhtNo.trim().isEmpty()) {
-            jpql.append("AND pe.bhtNo LIKE :bht ");
-            params.put("bht", "%" + bhtNo.trim() + "%");
+        if (patientEncounterDtoForBhtNo != null ) {
+            jpql.append("AND pe.bhtNo = :bht ");
+            params.put("bht", patientEncounterDtoForBhtNo.getBhtNo());
         }
 
         if (patientEncounterDto != null) {
@@ -3559,6 +3560,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public void setPatientEncounterDto(PatientEncounterDto patientEncounterDto) {
         this.patientEncounterDto = patientEncounterDto;
+    }
+
+    public PatientEncounterDto getPatientEncounterDtoForBhtNo() {
+        return patientEncounterDtoForBhtNo;
+    }
+
+    public void setPatientEncounterDtoForBhtNo(PatientEncounterDto patientEncounterDtoForBhtNo) {
+        this.patientEncounterDtoForBhtNo = patientEncounterDtoForBhtNo;
     }
 
     private static class ExcelStyleBundle {
