@@ -140,7 +140,8 @@
                                     </div>
                                 </div>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false)}">
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false)
+                                           or (cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals(''))}">
                                 <div class="col-6 W-100 ">
                                     <div class="col-6 d-flex justify-content-between">
                                         <div class="col-5 w-100 d-flex justify-content-between">
