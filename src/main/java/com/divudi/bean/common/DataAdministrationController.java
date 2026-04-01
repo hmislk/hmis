@@ -4885,10 +4885,11 @@ public class DataAdministrationController implements Serializable {
 
     public void dischargeOldDuplicateEncounters() {
         try {
-            String sql = "UPDATE patientencounter pe "
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " pe "
                     + "JOIN ( "
                     + "  SELECT MAX(id) AS keep_id, currentPatientRoom_id "
-                    + "  FROM patientencounter "
+                    + "  FROM " + t + " "
                     + "  WHERE discharged = 0 AND paymentFinalized = 0 AND currentPatientRoom_id IS NOT NULL "
                     + "  GROUP BY currentPatientRoom_id "
                     + ") latest ON pe.currentPatientRoom_id = latest.currentPatientRoom_id "
@@ -4911,7 +4912,8 @@ public class DataAdministrationController implements Serializable {
             return;
         }
         try {
-            String sql = "UPDATE patientencounter "
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " "
                     + "SET discharged = 1 "
                     + "WHERE discharged = 0 AND paymentFinalized = 0 "
                     + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
