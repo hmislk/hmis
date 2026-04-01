@@ -201,11 +201,11 @@ public class InwardChargeTypeDetailController implements Serializable {
                 + " and bi.bill.retired = false"
                 + " and bi.bill.cancelled = false"
                 + " and bi.bill.billType = :btp"
-                + " and bi.item.inwardChargeType = :ct"
+                + " and bi.inwardChargeType = :ct"
                 + " and bi.bill.patientEncounter in :encs";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("btp",  BillType.InwardBill);
+        params.put("btp",  BillType.InwardFinalBill);
         params.put("ct",   selectedChargeType);
         params.put("encs", encounters);
 
@@ -252,7 +252,7 @@ public class InwardChargeTypeDetailController implements Serializable {
 
         String jpql = "select pi from PatientItem pi"
                 + " where pi.retired = false"
-                + " and type(pi.item) = com.divudi.core.entity.inward.TimedItem"
+                + " and type(pi.item) = TimedItem"
                 + " and pi.item.inwardChargeType = :ct"
                 + " and pi.patientEncounter in :encs";
 
