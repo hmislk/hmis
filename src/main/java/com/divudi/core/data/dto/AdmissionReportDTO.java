@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * DTO for the Admission Report (Issue #19640).
+ * DTO for the Admission Report (Issue #19640) and Admission by Consultant Report (Issue #19642).
  * One row per Admission (PatientEncounter subclass).
  *
  * Populated by a JPQL query in AdmissionReportController — avoids
