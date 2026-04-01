@@ -12,7 +12,6 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,8 +43,6 @@ public class InwardChargeTypeDetailController implements Serializable {
     // -------------------------------------------------------------------------
     // EJBs / CDI
     // -------------------------------------------------------------------------
-    @EJB
-    private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -98,19 +95,26 @@ public class InwardChargeTypeDetailController implements Serializable {
             return;
         }
 
-        List<PatientEncounter> encounters = fetchEncounters();
-        if (encounters == null || encounters.isEmpty()) {
-            reportRows = new ArrayList<>();
+        // Reject impossible filter: discharge date range requires discharged patients
+        if ("dischargeDate".equals(dateBasis)
+                && admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED) {
+            errorMessage = "Cannot filter by discharge date for patients not yet discharged.";
+            return;
+        }
+
+        // Reject inverted date range
+        if (fromDate != null && toDate != null && fromDate.after(toDate)) {
+            errorMessage = "From date must not be after To date.";
             return;
         }
 
         List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
 
-        // --- BillItems from InwardBill bills ---
-        rows.addAll(fetchBillItemRows(encounters));
+        // --- BillItems from InwardFinalBill bills ---
+        rows.addAll(fetchBillItemRows());
 
         // --- PatientItems (TimedItems) ---
-        rows.addAll(fetchTimedItemRows(encounters));
+        rows.addAll(fetchTimedItemRows());
 
         // --- Sort: BHT No (natural string sort), then sortTime ascending ---
         rows.sort(Comparator
@@ -133,16 +137,20 @@ public class InwardChargeTypeDetailController implements Serializable {
     // Query helpers
     // -------------------------------------------------------------------------
 
-    private List<PatientEncounter> fetchEncounters() {
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder(
-                "select distinct c from PatientEncounter c where c.retired = false");
+    /**
+     * Appends PatientEncounter filter conditions onto a JPQL query that already
+     * joins to an encounter alias {@code enc}. All parameters are added to
+     * {@code params}.
+     */
+    private void appendEncounterFilters(StringBuilder jpql, Map<String, Object> params,
+            String encAlias) {
+        jpql.append(" and ").append(encAlias).append(".retired = false");
 
         if (fromDate != null && toDate != null) {
             if ("admissionDate".equals(dateBasis)) {
-                jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
+                jpql.append(" and ").append(encAlias).append(".dateOfAdmission between :fromDate and :toDate");
             } else {
-                jpql.append(" and c.dateOfDischarge between :fromDate and :toDate");
+                jpql.append(" and ").append(encAlias).append(".dateOfDischarge between :fromDate and :toDate");
             }
             params.put("fromDate", fromDate);
             params.put("toDate",   toDate);
@@ -151,11 +159,12 @@ public class InwardChargeTypeDetailController implements Serializable {
         if (admissionStatus != null && admissionStatus != AdmissionStatus.ANY_STATUS) {
             switch (admissionStatus) {
                 case ADMITTED_BUT_NOT_DISCHARGED:
-                    jpql.append(" and c.discharged = :dis");
+                    jpql.append(" and ").append(encAlias).append(".discharged = :dis");
                     params.put("dis", false);
                     break;
                 case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    jpql.append(" and c.discharged = :dis and c.paymentFinalized = :pf");
+                    jpql.append(" and ").append(encAlias).append(".discharged = :dis");
+                    jpql.append(" and ").append(encAlias).append(".paymentFinalized = :pf");
                     params.put("dis", true);
                     params.put("pf",  true);
                     break;
@@ -165,51 +174,46 @@ public class InwardChargeTypeDetailController implements Serializable {
         }
 
         if (admissionType != null) {
-            jpql.append(" and c.admissionType = :admType");
+            jpql.append(" and ").append(encAlias).append(".admissionType = :admType");
             params.put("admType", admissionType);
         }
 
         if (institution != null) {
-            jpql.append(" and c.institution = :ins");
+            jpql.append(" and ").append(encAlias).append(".institution = :ins");
             params.put("ins", institution);
         }
 
         if (site != null) {
-            jpql.append(" and c.department.site = :site");
+            jpql.append(" and ").append(encAlias).append(".department.site = :site");
             params.put("site", site);
         }
 
         if (department != null) {
-            jpql.append(" and c.department = :dept");
+            jpql.append(" and ").append(encAlias).append(".department = :dept");
             params.put("dept", department);
         }
-
-        jpql.append(" order by c.bhtNo");
-        return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     /**
-     * Bulk query: fetch all BillItems with the selected inwardChargeType
-     * from InwardBill bills for the given encounters.
-     * Uses bi.item.inwardChargeType (the Item's classification).
+     * Fetches BillItems for InwardFinalBill bills whose PatientEncounter matches
+     * the current filter criteria, without materialising the encounter list first.
      */
-    private List<InwardChargeTypeDetailRowDto> fetchBillItemRows(
-            List<PatientEncounter> encounters) {
+    private List<InwardChargeTypeDetailRowDto> fetchBillItemRows() {
 
-        String jpql = "select bi from BillItem bi"
+        StringBuilder jpql = new StringBuilder(
+                "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
-                + " and bi.bill.retired = false"
-                + " and bi.bill.cancelled = false"
-                + " and bi.bill.billType = :btp"
-                + " and bi.inwardChargeType = :ct"
-                + " and bi.bill.patientEncounter in :encs";
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billType = :btp"
+                + " and bi.inwardChargeType = :ct");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("btp",  BillType.InwardFinalBill);
-        params.put("ct",   selectedChargeType);
-        params.put("encs", encounters);
+        params.put("btp", BillType.InwardFinalBill);
+        params.put("ct",  selectedChargeType);
+        appendEncounterFilters(jpql, params, "enc");
 
-        List<BillItem> raw = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> raw = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
         if (raw == null) {
@@ -251,24 +255,22 @@ public class InwardChargeTypeDetailController implements Serializable {
     }
 
     /**
-     * Bulk query: fetch all PatientItems (TimedItems) with the selected
-     * inwardChargeType for the given encounters.
-     * Uses pi.item.inwardChargeType (the Item's classification).
+     * Fetches PatientItems (TimedItems) whose PatientEncounter matches the
+     * current filter criteria, without materialising the encounter list first.
      */
-    private List<InwardChargeTypeDetailRowDto> fetchTimedItemRows(
-            List<PatientEncounter> encounters) {
+    private List<InwardChargeTypeDetailRowDto> fetchTimedItemRows() {
 
-        String jpql = "select pi from PatientItem pi"
+        StringBuilder jpql = new StringBuilder(
+                "select pi from PatientItem pi join pi.patientEncounter enc"
                 + " where pi.retired = false"
                 + " and type(pi.item) = TimedItem"
-                + " and pi.item.inwardChargeType = :ct"
-                + " and pi.patientEncounter in :encs";
+                + " and pi.item.inwardChargeType = :ct");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("ct",   selectedChargeType);
-        params.put("encs", encounters);
+        params.put("ct", selectedChargeType);
+        appendEncounterFilters(jpql, params, "enc");
 
-        List<PatientItem> raw = patientItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<PatientItem> raw = patientItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
         if (raw == null) {
