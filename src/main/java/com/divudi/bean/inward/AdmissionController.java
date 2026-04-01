@@ -497,6 +497,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 current.setClaimable(false);
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
+            if (current.getPaymentMethod() == PaymentMethod.Credit) {
+                current.setClaimable(true);
+            }
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient", false)) {
             if (current.getPatient() == null) {
                 return;
@@ -1343,6 +1348,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)) {
             return false;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
+            return true;
+        }
         String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
                 "Inward Admission - Claimable Required For", "Credit");
         if ("None".equalsIgnoreCase(claimableRequiredFor)) {
@@ -1492,13 +1500,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
+            boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
             boolean claimableAllowed = isClaimableAllowed();
-            if (!claimableAllowed && getCurrent().isClaimable()) {
+            if (!autoMarkCredit && !claimableAllowed && getCurrent().isClaimable()) {
                 getCurrent().setClaimable(false);
                 JsfUtil.addErrorMessage("Claimable is not applicable for the selected payment method");
                 return true;
             }
-            if (claimableAllowed && !getCurrent().isClaimable()) {
+            if (!autoMarkCredit && claimableAllowed && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark the admission as Claimable");
                 return true;
             }
