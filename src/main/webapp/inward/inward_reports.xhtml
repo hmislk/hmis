@@ -51,6 +51,11 @@
                                     <div class="d-grid gap-2">
                                         <p:commandButton value="Newly Added Report" action="inward_report_bht_bil?faces-redirect=true"   ajax="false" />
                                         <p:commandButton value="BHT Inward Charge Category Report" action="inward_report_bht_inward_charge_category?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="Inward Charge Type Detail"
+                                                         action="inward_report_inward_charge_type_detail?faces-redirect=true"
+                                                         actionListener="#{inwardChargeTypeDetailController.makeNull()}"
+                                                         class="ui-button-success"
+                                                         ajax="false" />
                                         <p:commandButton value="BHT Income By Categories Individual BHT " action="inward_report_bht_income_by_caregories_bht?faces-redirect=true"   ajax="false" />
                                         <p:commandButton value="BHT Income By Categories All BHT " action="inward_report_bht_income_by_caregories?faces-redirect=true"   ajax="false" />
                                         <p:commandButton value="BHT Vice Income by Catgories" action="inward_report_bht_vice_income_by_caregories?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
