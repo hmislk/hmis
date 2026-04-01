@@ -128,7 +128,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 placeholder="BHT Number"
-                                completeMethod="#{admissionController.completePatient}"
+                                completeMethod="#{admissionController.completePatientEncounter}"
                                 >
                             </p:autoComplete>
 
@@ -138,15 +138,24 @@
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Patient Name/MRN" for="acName" class="m-3"/>
                             </h:panelGroup>
-                            <p:autoComplete 
-                                id="acName"
-                                value="#{reportController.patientName}"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                placeholder="Patient Name/MRN"
-                                completeMethod="#{admissionController.completePatient}"
-                                >
+                            <p:autoComplete id="acName"
+                                            value="#{reportController.patientEncounterDto}"
+                                            converter="#{patientEncounterDtoConverter}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="Patient Name/MRN"
+                                            completeMethod="#{admissionController.completePatientPaymentFinalizedWithPhn}"
+                                            var="pe"
+                                            itemLabel="#{pe.patientName}"
+                                            itemValue="#{pe}">
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value="#{pe.patientName}"/>
+                                </p:column>
+                                <p:column headerText="MRN">
+                                    <h:outputText value="#{pe.phn}"/>
+                                </p:column>
                             </p:autoComplete>
+
 
 
                         </h:panelGrid>

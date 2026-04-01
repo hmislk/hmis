@@ -44,6 +44,7 @@ import com.divudi.service.BillService;
 import com.itextpdf.text.BaseColor;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.ExpiryItemListDto;
+import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
 import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
 import com.divudi.core.data.dto.PharmacySaleItemDTO;
@@ -307,6 +308,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private List<RoomCategory> roomCategories;
     private String bhtNo;
     private String patientName;
+    private PatientEncounterDto patientEncounterDto;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -3028,12 +3030,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             params.put("bht", "%" + bhtNo.trim() + "%");
         }
 
-        if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql.append("AND (LOWER(per.name) LIKE :pn ")
-                    .append("OR LOWER(pat.phn) LIKE :pn) ");
-            params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
+        if (patientEncounterDto != null) {
+            jpql.append("AND per.name = :pn ");
+            params.put("pn", patientEncounterDto.getPatientName());
         }
-
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
         profitMatrixSummaryRows = (List<ProfitMatrixRowDTO>) peFacade.findLightsByJpql(
@@ -3124,10 +3124,22 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             params.put("bht", "%" + bhtNo.trim() + "%");
         }
 
-        if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql.append("AND (LOWER(per.name) LIKE :pn ")
-                    .append("OR LOWER(pat.phn) LIKE :pn) ");
-            params.put("pn", "%" + patientName.trim().toLowerCase() + "%");
+        if (patientEncounterDto != null) {
+            String searchTerm = null;
+
+            if (patientEncounterDto.getPatientName() != null
+                    && !patientEncounterDto.getPatientName().trim().isEmpty()) {
+                searchTerm = patientEncounterDto.getPatientName().trim().toLowerCase();
+            } else if (patientEncounterDto.getPhn() != null
+                    && !patientEncounterDto.getPhn().trim().isEmpty()) {
+                searchTerm = patientEncounterDto.getPhn().trim().toLowerCase();
+            }
+
+            if (searchTerm != null) {
+                jpql.append("AND (LOWER(per.name) LIKE :pn ")
+                        .append("OR LOWER(pat.phn) LIKE :pn) ");
+                params.put("pn", "%" + searchTerm + "%");
+            }
         }
 
         jpql.append("ORDER BY pe.dateOfAdmission, b.deptId, i.name ");
@@ -3539,6 +3551,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public void setProfitMatrixDetailRows(List<ProfitMatrixRowDTO> profitMatrixDetailRows) {
         this.profitMatrixDetailRows = profitMatrixDetailRows;
+    }
+
+    public PatientEncounterDto getPatientEncounterDto() {
+        return patientEncounterDto;
+    }
+
+    public void setPatientEncounterDto(PatientEncounterDto patientEncounterDto) {
+        this.patientEncounterDto = patientEncounterDto;
     }
 
     private static class ExcelStyleBundle {
