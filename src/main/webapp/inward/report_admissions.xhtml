@@ -4,239 +4,326 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      >
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
         <ui:composition template="/inward/inward_reports.xhtml">
 
             <ui:define name="subcontent">
-                <h:form>
-                    <p:panel header="Admission Report" >
-                        <div class="row w-100">
-                            <div class="col-6">
-                                <h:panelGrid columns="5">
-                                    <p:outputLabel value="From" />
-                                    <p:calendar 
-                                        id="fdate"
-                                        class="mx-4 w-100"
-                                        inputStyleClass="w-100"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        value="#{mdInwardReportController.fromDate}">
-                                    </p:calendar>
-                                    <p:spacer width="200" ></p:spacer>
-                                    
-                                    <p:outputLabel value="To" />
-                                    <p:calendar  
-                                        id="tdate" 
-                                        class="mx-4 w-100"
-                                        inputStyleClass="w-100"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        value="#{mdInwardReportController.toDate}">
-                                    </p:calendar>
-                                    
-                                    <h:outputLabel value="Admission Type " ></h:outputLabel>
-                                    <p:selectOneMenu 
-                                        class="mx-4 w-100 mt-2" 
-                                        id="lstAdmissionType"
-                                        value="#{mdInwardReportController.admissionType}" >
-                                        <f:selectItem itemLabel="All Admission Types"/>
-                                        <f:selectItems  
-                                            value="#{admissionTypeController.items}" 
-                                            var="myItem" 
-                                            itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.name}">
-                                        </f:selectItems>
-                                    </p:selectOneMenu>
-                                    <p:spacer width="200" ></p:spacer>
+                <h:form id="frm">
 
-                                    <h:outputLabel value="BHT Type  " ></h:outputLabel>
-                                    <p:selectOneMenu 
-                                        class="mx-4 w-100 mt-2"  
-                                        id="cmbBhtType"
-                                        value="#{mdInwardReportController.paymentMethod}"  >
-                                        <f:selectItem itemLabel="All BHT Types" />                           
-                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                    </p:selectOneMenu>
+                    <p:panel header="Admission Report" class="m-1">
 
-                                </h:panelGrid>
-                            </div>
-                        </div>
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
 
+                            <!-- From date -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{admissionReportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                        <div class="d-flex gap-2 my-3">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Process" 
-                                icon="fas fa-cogs" 
-                                class="ui-button-warning mx-1" 
-                                action="#{mdInwardReportController.fillAdmissions}" >
-                            </p:commandButton>
-                            
-                            <p:commandButton 
-                                value="Print" 
-                                icon="fas fa-print" 
-                                class="ui-button-info mx-1" 
-                                ajax="false">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
+                            <p:spacer width="50" />
 
-                            <p:commandButton 
-                                ajax="false"
-                                value="Excel" 
-                                icon="fas fa-file-excel" 
-                                class="ui-button-success mx-1"  >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="admission_report" />
-                            </p:commandButton>
-                            
-                        </div>
-                        
-                        <h:panelGroup id="gpBillPreview">
+                            <!-- To date -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{admissionReportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                            <p:dataTable 
-                                id="tbl" 
-                                value="#{mdInwardReportController.admissions}" 
-                                var="ad" >
+                            <p:spacer width="50" />
 
-                                <p:column headerText="BHT No" filterBy="#{ad.bhtNo}" filterMatchMode="contains" sortBy="#{ad.bhtNo}">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="BHT No" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.bhtNo}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <!-- Date basis -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf017;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="dateBasisMenu"
+                                styleClass="w-100 form-control"
+                                value="#{admissionReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
 
-                                <p:column headerText="Room No">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Room No" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.currentPatientRoom.roomFacilityCharge.name}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <!-- Admission type -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="admTypeMenu"
+                                styleClass="w-100 form-control"
+                                value="#{admissionReportController.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems
+                                    value="#{admissionTypeController.items}"
+                                    var="at"
+                                    itemValue="#{at}"
+                                    itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
 
-                                <p:column headerText="Patient Name">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Patient Name" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.patient.person.nameWithTitle}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <p:spacer width="50" />
 
-                                <p:column headerText="Telephone No">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Telephone No" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.patient.person.smsNumber}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <!-- Payment method -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Payment Method" for="pmMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="pmMenu"
+                                styleClass="w-100 form-control"
+                                value="#{admissionReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
 
-                                <p:column headerText="Patient Address">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Patient Address" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.patient.person.address ne null or not empty ad.patient.person.address ? ad.patient.person.address : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
 
-                                <p:column headerText="Date of Admission">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Date of Admission" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.dateOfAdmission}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
-                                    </p:outputLabel>
-                                </p:column>
+                            <!-- Institution -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{admissionReportController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
 
-                                <p:column headerText="Discharged Date">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Discharged Date" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.dateOfDischarge}" rendered="#{ad.dateOfDischarge ne null}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
-                                    </p:outputLabel>
-                                    <p:outputLabel value="N/A" rendered="#{ad.dateOfDischarge eq null}" />
-                                </p:column>
+                            <p:spacer />
 
-                                <p:column headerText="Type">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Type" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.paymentMethod}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <!-- Site -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{admissionReportController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
 
-                                <p:column headerText="Credit Company">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Credit Company" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.creditCompany ne null ? ad.creditCompany.name : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <p:spacer />
 
-                                <p:column headerText="Consultant Name">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Consultant Name" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.referringConsultant ne null ? ad.referringConsultant.person.nameWithTitle : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                            <!-- Department — four rendered variants matching institution+site selection -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
 
-                                <p:column headerText="Medical Officers Name">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Medical Officers Name" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.opdDoctor ne null ? ad.opdDoctor.person.nameWithTitle : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                                <p:selectOneMenu
+                                    rendered="#{admissionReportController.institution eq null and admissionReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{admissionReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
 
-                                <p:column headerText="Referring Doctor" rendered="false">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Referring Doctor" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.referringDoctor ne null ? ad.referringDoctor.person.nameWithTitle : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                                <p:selectOneMenu
+                                    rendered="#{admissionReportController.institution eq null and admissionReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{admissionReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionReportController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
 
-                                <p:column headerText="Referring Staff" rendered="false">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Referring Staff" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.referringStaff ne null ? ad.referringStaff.person.nameWithTitle : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                                <p:selectOneMenu
+                                    rendered="#{admissionReportController.institution ne null and admissionReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{admissionReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(admissionReportController.institution)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
 
-                                <p:column headerText="Admission Through" rendered="false">
-                                    <f:facet name="header">
-                                        <p:outputLabel value="Admission Through" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ad.referringMethod ne null ? ad.referringMethod : 'N/A'}" >
-                                    </p:outputLabel>
-                                </p:column>
+                                <p:selectOneMenu
+                                    rendered="#{admissionReportController.institution ne null and admissionReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{admissionReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionReportController.institution, admissionReportController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
 
-                                <p:column headerText="Status">
-                                    <div>
-                                        <div class="d-flex">
-                                            <p:badge value="Discharged" styleClass="ui-badge-success w-100" rendered="#{ad.discharged}" />
-                                        <p:badge value="Not Discharged" styleClass="ui-badge-danger w-100" rendered="#{!ad.discharged}" />
-                                        </div>
-                                        
-                                        <div class="d-flex mt-2 w-100">
-                                            <p:badge value="Payment Finalized" styleClass="ui-badge-info w-100" rendered="#{ad.paymentFinalized}" />
-                                        <p:badge value="Not Finalized" styleClass="ui-badge-warning w-100" rendered="#{!ad.paymentFinalized}" />
-                                        </div>
-                                    </div>
-                                        
-                                </p:column>
+                            </h:panelGroup>
 
-                            </p:dataTable>
+                        </h:panelGrid>
 
-                        </h:panelGroup>
+                        <p:commandButton
+                            value="Generate"
+                            icon="fas fa-cogs"
+                            action="#{admissionReportController.fillAdmissions()}"
+                            ajax="false"
+                            class="ui-button-success m-1" />
+
                     </p:panel>
+
+                    <!-- Results panel — only shown once data is available -->
+                    <p:panel id="pnlResults" rendered="#{admissionReportController.admissions != null}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="Results" />
+                                <div>
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fas fa-print"
+                                        class="ui-button-info me-1"
+                                        ajax="false">
+                                        <p:printer target="tblAdmissions" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Excel"
+                                        icon="fas fa-file-excel"
+                                        class="ui-button-success me-1"
+                                        ajax="false">
+                                        <p:dataExporter type="xlsx" target="tblAdmissions" fileName="admission_report" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="PDF"
+                                        icon="fas fa-file-pdf"
+                                        class="ui-button-danger"
+                                        ajax="false">
+                                        <p:dataExporter type="pdf" target="tblAdmissions" fileName="admission_report" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:dataTable
+                            id="tblAdmissions"
+                            value="#{admissionReportController.admissions}"
+                            var="ad"
+                            emptyMessage="No records found"
+                            paginator="true"
+                            rows="20"
+                            paginatorAlwaysVisible="false"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                            styleClass="w-100">
+
+                            <!-- BHT No — screen: link to inpatient profile; export: plain text via exportValue -->
+                            <p:column headerText="BHT No" style="white-space:nowrap;" exportValue="#{ad.bhtNo}">
+                                <p:commandButton
+                                    value="#{ad.bhtNo}"
+                                    icon="fas fa-bed"
+                                    styleClass="ui-button-link p-0"
+                                    ajax="false"
+                                    action="#{admissionController.navigateToAdmissionProfileById(ad.admissionId)}"
+                                    title="Open Inpatient Dashboard" />
+                            </p:column>
+
+                            <p:column headerText="Patient Name">
+                                <h:outputText value="#{ad.patientName}" />
+                            </p:column>
+
+                            <p:column headerText="Telephone No">
+                                <h:outputText value="#{ad.phone}" />
+                            </p:column>
+
+                            <p:column headerText="Patient Address">
+                                <h:outputText value="#{not empty ad.address ? ad.address : 'N/A'}" />
+                            </p:column>
+
+                            <p:column headerText="Date of Admission" style="white-space:nowrap;">
+                                <h:outputText value="#{ad.dateOfAdmission}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Discharged Date" style="white-space:nowrap;">
+                                <h:outputText value="#{ad.dateOfDischarge}" rendered="#{ad.dateOfDischarge ne null}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                                <h:outputText value="N/A" rendered="#{ad.dateOfDischarge eq null}" />
+                            </p:column>
+
+                            <p:column headerText="Admission Type">
+                                <h:outputText value="#{ad.admissionType != null ? ad.admissionType.name : ''}" />
+                            </p:column>
+
+                            <p:column headerText="BHT Type">
+                                <h:outputText value="#{ad.paymentMethod}" />
+                            </p:column>
+
+                            <p:column headerText="Credit Company">
+                                <h:outputText value="#{not empty ad.creditCompanyName ? ad.creditCompanyName : 'N/A'}" />
+                            </p:column>
+
+                            <p:column headerText="Consultant">
+                                <h:outputText value="#{not empty ad.consultantName ? ad.consultantName : 'N/A'}" />
+                            </p:column>
+
+                            <p:column headerText="Medical Officer">
+                                <h:outputText value="#{not empty ad.medicalOfficerName ? ad.medicalOfficerName : 'N/A'}" />
+                            </p:column>
+
+                            <!--
+                                Status column: badges on screen; plain text exported to Excel/PDF.
+                                p:dataExporter exports only the text content of outputText elements,
+                                so both outputText nodes (plain text) are always exported correctly
+                                while the badges are rendered on screen via h:panelGroup.
+                            -->
+                            <p:column headerText="Discharge Status" exportValue="#{ad.dischargeStatusText}">
+                                <h:panelGroup>
+                                    <p:badge value="Discharged"     styleClass="ui-badge-success w-100" rendered="#{ad.discharged}" />
+                                    <p:badge value="Not Discharged" styleClass="ui-badge-danger  w-100" rendered="#{!ad.discharged}" />
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Payment Status" exportValue="#{ad.paymentStatusText}">
+                                <h:panelGroup>
+                                    <p:badge value="Finalized"     styleClass="ui-badge-info    w-100" rendered="#{ad.paymentFinalized}" />
+                                    <p:badge value="Not Finalized" styleClass="ui-badge-warning w-100" rendered="#{!ad.paymentFinalized}" />
+                                </h:panelGroup>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
                 </h:form>
             </ui:define>
-
 
         </ui:composition>
 
