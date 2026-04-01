@@ -215,6 +215,7 @@ public class ConfigOptionApplicationController implements Serializable {
         // Future development: Apply these patterns to additional bill types as needed
 
         getShortTextValueByKey("Bill Number Delimiter", "/");
+        getIntegerValueByKey("Bill Number Serial Digit Count", 6);
 
         // Generic bill numbering strategies (for backward compatibility)
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
