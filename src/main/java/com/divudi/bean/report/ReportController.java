@@ -2973,7 +2973,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("pe.patientEncounterType, ")
                 .append("rdPer.name, ")
                 .append("pe.grantTotal, ")
-                .append("rfc.roomCategory, ") // safe only when JOIN is used below
+                .append("rfc.roomCategory, ")
                 .append("pe.netTotal")
                 .append(") ")
                 .append("FROM PatientEncounter pe ")
@@ -2981,16 +2981,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("LEFT JOIN pe.patient pat ")
                 .append("LEFT JOIN pat.person per ")
                 .append("LEFT JOIN pe.referringDoctor rd ")
-                .append("LEFT JOIN rd.person rdPer ");
-
-        // KEY FIX: use INNER JOIN when filtering, LEFT JOIN when not
-        if (roomCategories != null && !roomCategories.isEmpty()) {
-            jpql.append("JOIN pe.currentPatientRoom room ")
-                    .append("JOIN room.roomFacilityCharge rfc ");
-        } else {
-            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
-                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
-        }
+                .append("LEFT JOIN rd.person rdPer ")
+                .append("LEFT JOIN pe.currentPatientRoom room ")
+                .append("LEFT JOIN room.roomFacilityCharge rfc ");
 
         jpql.append("WHERE pe.retired = :ret ")
                 .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
@@ -3078,16 +3071,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("LEFT JOIN rd.person rdPer ")
                 .append("LEFT JOIN bi.item i ")
                 .append("LEFT JOIN i.department iDept ")
-                .append("LEFT JOIN i.itemFeesAuto itemFee ");
-
-        // KEY FIX: same conditional JOIN pattern
-        if (roomCategories != null && !roomCategories.isEmpty()) {
-            jpql.append("JOIN pe.currentPatientRoom room ")
-                    .append("JOIN room.roomFacilityCharge rfc ");
-        } else {
-            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
-                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
-        }
+                .append("LEFT JOIN i.itemFeesAuto itemFee ")
+                .append("LEFT JOIN pe.currentPatientRoom room ")
+                .append("LEFT JOIN room.roomFacilityCharge rfc ");
 
         jpql.append("WHERE bi.retired = :ret ")
                 .append("AND b.retired = :bret ")
