@@ -139,11 +139,14 @@ public class BillNumberGenerator {
         return institution.getId() + "-" + "null" + "-" + "null";
     }
 
+    private static final int MAX_SERIAL_DIGITS = 12;
+
     private String formatSerialNumber(Long serialNumber) {
         Integer digits = configOptionApplicationController.getIntegerValueByKey("Bill Number Serial Digit Count", 6);
         if (digits == null || digits < 1) {
             digits = 6;
         }
+        digits = Math.min(digits, MAX_SERIAL_DIGITS);
         return String.format("%0" + digits + "d", serialNumber);
     }
 
