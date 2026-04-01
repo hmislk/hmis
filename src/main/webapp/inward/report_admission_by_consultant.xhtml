@@ -91,6 +91,8 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
 
                             <!-- Speciality -->
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -147,9 +149,8 @@
                                 <p:ajax process="cmbIns" update="cmbDept" listener="#{admissionReportController.clearDepartment()}" />
                             </p:selectOneMenu>
 
-                            <p:spacer />
-
                             <!-- Site -->
+                            <p:spacer ></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>

@@ -93,6 +93,30 @@ Example:
 - Heavy operations (report generation, exports) should use `ajax="false"` to allow file downloads.
 - Include descriptive `title` attributes on interactive elements.
 
+### Report Filter Grid Layout (`h:panelGrid columns="8"`)
+
+Report filter panels use an 8-column `h:panelGrid` with the pattern: `label(1) | input(2) | spacer(3) | label(4) | input(5) | spacer(6) | label(7) | input(8)`.
+
+**Rules:**
+
+1. **Every row must add up to exactly 8 cells.** `h:panelGrid` flows cells left-to-right with no concept of rows — miscounting by even one cell shifts every subsequent row. Count carefully.
+
+2. **Use `p:spacer` for filler cells**, not `h:panelGroup`. Empty `h:panelGroup` elements render as block elements that can affect column widths unpredictably.
+
+3. **When a row has fewer than 3 filter pairs, fill the unused tail with spacers.** For example, a row with only 2 filter pairs (5 cells: label+input+spacer+label+input) needs 3 trailing spacers to complete the row of 8.
+
+4. **Group filters logically by row** — do not try to force unrelated filters into the same row just to fill columns. Natural groupings for admission-type reports:
+   - Row 1: date range filters (From / To / Date Basis)
+   - Row 2: admission classification filters (Admission Type / Payment Method) + 3 trailing spacers
+   - Row 3: clinical filters (Speciality / Consultant) + 3 trailing spacers
+   - Row 4: location filters (Institution / Site / Department)
+
+   Logical grouping is more maintainable and readable than trying to pack every row to 8 cells with unrelated fields.
+
+5. **Do not mix `p:spacer` counts to "push" a field rightward** as an alignment trick — this is fragile. If a field should appear in a specific column, count the cells from the start of the row.
+
+Reference implementation: `src/main/webapp/inward/report_admission_by_consultant.xhtml`
+
 ---
 
 ## Buttons and Workflow Actions

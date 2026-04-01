@@ -85,7 +85,7 @@ public class AdmissionReportController implements Serializable {
                 "select new com.divudi.core.data.dto.AdmissionReportDTO("
                 + "ad.id,"
                 + "ad.bhtNo,"
-                + "ad.patient.person.nameWithTitle,"
+                + "ad.patient.person.name,"
                 + "ad.patient.person.mobile,"
                 + "ad.patient.person.address,"
                 + "ad.dateOfAdmission,"
