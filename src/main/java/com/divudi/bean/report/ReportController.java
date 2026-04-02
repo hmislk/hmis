@@ -2964,24 +2964,23 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private void createProfitMatrixSummaryReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
-
         jpql.append("SELECT new com.divudi.core.data.dto.ProfitMatrixRowDTO(")
                 .append("fb.deptId, ")
                 .append("pe.bhtNo, ")
                 .append("pat.phn, ")
                 .append("per.name, ")
                 .append("pe.patientEncounterType, ")
-                .append("rdPer.name, ")
+                .append("rdPer.name, ") // referringConsultant's person name
                 .append("pe.grantTotal, ")
                 .append("rfc.roomCategory, ")
                 .append("pe.netTotal")
                 .append(") ")
-                .append("FROM PatientEncounter pe ")
+                .append("FROM Admission pe ") // Use Admission, not PatientEncounter
                 .append("LEFT JOIN pe.finalBill fb ")
                 .append("LEFT JOIN pe.patient pat ")
                 .append("LEFT JOIN pat.person per ")
-                .append("LEFT JOIN pe.referringDoctor rd ")
-                .append("LEFT JOIN rd.person rdPer ")
+                .append("LEFT JOIN pe.referringConsultant rd ") // was pe.referringDoctor
+                .append("LEFT JOIN rd.person rdPer ") // Staff.person is valid
                 .append("LEFT JOIN pe.currentPatientRoom room ")
                 .append("LEFT JOIN room.roomFacilityCharge rfc ");
 
@@ -3029,7 +3028,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             jpql.append("AND per.name = :pn ");
             params.put("pn", patientEncounterDto.getPatientName());
         }
-
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
         profitMatrixSummaryRows = (List<ProfitMatrixRowDTO>) peFacade.findLightsByJpql(
@@ -3067,7 +3065,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("JOIN b.patientEncounter pe ")
                 .append("LEFT JOIN pe.patient pat ")
                 .append("LEFT JOIN pat.person per ")
-                .append("LEFT JOIN pe.referringDoctor rd ")
+                .append("LEFT JOIN pe.referringConsultant rd ")
                 .append("LEFT JOIN rd.person rdPer ")
                 .append("LEFT JOIN bi.item i ")
                 .append("LEFT JOIN i.department iDept ")
