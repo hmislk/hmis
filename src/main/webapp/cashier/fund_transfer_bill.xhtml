@@ -12,9 +12,6 @@
         <ui:composition template="./index.xhtml">
 
             <ui:define name="subcontent">
-                <f:metadata>
-                    <f:viewAction action="#{financialTransactionController.ensureFundTransferBillInitialized()}" />
-                </f:metadata>
                 <h:form>
 
 
@@ -35,7 +32,7 @@
                         </f:facet>
 
                         <!-- Request info panel: shown when this transfer was initiated from a request -->
-                        <h:panelGroup rendered="#{financialTransactionController.currentBill.referenceBill ne null}" layout="block">
+                        <h:panelGroup rendered="#{financialTransactionController.selectedFundTransferRequest ne null}" layout="block">
                             <p:panel styleClass="mb-2" style="background-color: #f0f8ff; border-left: 4px solid #007bff;">
                                 <f:facet name="header">
                                     <i class="fa fa-info-circle me-2"/>
@@ -43,9 +40,9 @@
                                 </f:facet>
                                 <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-start fw-medium, text-start">
                                     <h:outputText value="Requested By"/>
-                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.fromWebUser.webUserPerson.nameWithTitle}"/>
+                                    <h:outputText value="#{financialTransactionController.selectedFundTransferRequest.fromWebUser.webUserPerson.nameWithTitle}"/>
                                     <h:outputText value="Requested Amount"/>
-                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.netTotal}">
+                                    <h:outputText value="#{financialTransactionController.selectedFundTransferRequest.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:panelGrid>
@@ -53,15 +50,21 @@
                         </h:panelGroup>
 
                         <p:panelGrid columns="2" class="w-100" >
-                            <p:outputLabel value="Transfer To" for="acStaff"></p:outputLabel>
+                            <p:outputLabel value="Transfer To"
+                                rendered="#{financialTransactionController.selectedFundTransferRequest eq null}"
+                                for="acStaff"/>
+                            <p:outputLabel value="Transfer To"
+                                rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
+                                for="txtTransferTo"/>
                             <h:panelGroup>
                                 <!-- Read-only when pre-filled from a request -->
                                 <h:outputText
-                                    rendered="#{financialTransactionController.currentBill.referenceBill ne null}"
+                                    id="txtTransferTo"
+                                    rendered="#{financialTransactionController.selectedFundTransferRequest ne null}"
                                     value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}"
                                     class="mx-2"/>
                                 <p:autoComplete
-                                    rendered="#{financialTransactionController.currentBill.referenceBill eq null}"
+                                    rendered="#{financialTransactionController.selectedFundTransferRequest eq null}"
                                     completeMethod="#{webUserController.completeUser}"
                                     class="mx-2 w-100"
                                     id="acStaff"

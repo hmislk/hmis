@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -215,6 +216,7 @@ public class ConfigOptionApplicationController implements Serializable {
         // Future development: Apply these patterns to additional bill types as needed
 
         getShortTextValueByKey("Bill Number Delimiter", "/");
+        getIntegerValueByKey("Bill Number Serial Digit Count", 6);
 
         // Generic bill numbering strategies (for backward compatibility)
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
@@ -1336,6 +1338,20 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, defaultValue);
         }
         return option.getOptionValue();
+    }
+
+    public String getInwardChargeTypeLabel(InwardChargeType type) {
+        String key = "Inward Charge Type Label - " + type.name();
+        String custom = getShortTextValueByKey(key, "");
+        if (custom == null || custom.trim().isEmpty()) {
+            return type.getLabel();
+        }
+        return custom;
+    }
+
+    public void saveInwardChargeTypeLabel(InwardChargeType type, String customLabel) {
+        String key = "Inward Charge Type Label - " + type.name();
+        saveShortTextOption(key, customLabel == null ? "" : customLabel.trim());
     }
 
     public String getColorValueByKey(String key) {

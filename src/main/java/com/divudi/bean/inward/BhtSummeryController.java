@@ -2933,6 +2933,10 @@ public class BhtSummeryController implements Serializable {
         this.showOrginalBill = showOrginalBill;
     }
 
+    public String getChargeTypeLabel(com.divudi.core.data.inward.InwardChargeType type) {
+        return configOptionApplicationController.getInwardChargeTypeLabel(type);
+    }
+
     public List<ChargeItemTotal> getChargeItemTotals() {
         if (chargeItemTotals == null) {
             if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
