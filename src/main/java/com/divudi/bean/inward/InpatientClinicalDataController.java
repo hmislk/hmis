@@ -163,6 +163,9 @@ public class InpatientClinicalDataController implements Serializable {
     private List<PatientEncounter> clinicalAssessments;
     private boolean viewOnly;
 
+    // Clinical discharge
+    private PatientEncounter clinicalDischargeRecord;
+
     @Inject
     private FavouriteController favouriteController;
 
@@ -2226,6 +2229,90 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(admission.getPatient());
         fillCurrentEncounterLists(admission);
         return "/inward/inward_assessment_discharge_medicines?faces-redirect=true";
+    }
+
+    public String navigateToClinicalDischargeFromAdmission(PatientEncounter admission) {
+        this.parentAdmission = admission;
+        clinicalDischargeRecord = findOrCreateClinicalDischargeRecord(admission);
+        this.current = clinicalDischargeRecord;
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(clinicalDischargeRecord);
+        return "/inward/inward_clinical_discharge?faces-redirect=true";
+    }
+
+    private PatientEncounter findOrCreateClinicalDischargeRecord(PatientEncounter admission) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("parent", admission);
+        m.put("type", PatientEncounterType.ClinicalDischarge);
+        m.put("ret", false);
+        String sql = "select e from PatientEncounter e "
+                + "where e.parentEncounter=:parent "
+                + "and e.patientEncounterType=:type "
+                + "and e.retired=:ret "
+                + "order by e.id desc";
+        List<PatientEncounter> existing = ejbFacade.findByJpql(sql, m, 1);
+        if (existing != null && !existing.isEmpty()) {
+            return existing.get(0);
+        }
+        PatientEncounter record = new PatientEncounter();
+        record.setParentEncounter(admission);
+        record.setPatient(admission.getPatient());
+        record.setPatientEncounterType(PatientEncounterType.ClinicalDischarge);
+        record.setEncounterDateTime(new Date());
+        record.setInstitution(sessionController.getInstitution());
+        record.setDepartment(sessionController.getDepartment());
+        return record;
+    }
+
+    public void saveClinicalDischarge() {
+        if (clinicalDischargeRecord == null) {
+            JsfUtil.addErrorMessage("No clinical discharge record found.");
+            return;
+        }
+        clinicalDischargeRecord.setDepartment(sessionController.getDepartment());
+        if (clinicalDischargeRecord.getId() != null) {
+            getFacade().edit(clinicalDischargeRecord);
+            JsfUtil.addSuccessMessage("Clinical discharge details saved.");
+        } else {
+            clinicalDischargeRecord.setCreatedAt(new Date());
+            clinicalDischargeRecord.setCreater(sessionController.getLoggedUser());
+            getFacade().create(clinicalDischargeRecord);
+            JsfUtil.addSuccessMessage("Clinical discharge record created.");
+        }
+        fillCurrentEncounterLists(clinicalDischargeRecord);
+    }
+
+    public void confirmClinicalDischarge() {
+        if (clinicalDischargeRecord == null) {
+            JsfUtil.addErrorMessage("No clinical discharge record found.");
+            return;
+        }
+        saveClinicalDischarge();
+        parentAdmission.setClinicallyDischarged(Boolean.TRUE);
+        parentAdmission.setClinicalDischargeDateTime(new Date());
+        parentAdmission.setClinicalDischargedBy(sessionController.getLoggedUser());
+        getFacade().edit(parentAdmission);
+        JsfUtil.addSuccessMessage("Clinical discharge confirmed.");
+    }
+
+    public void cancelClinicalDischarge() {
+        if (parentAdmission == null) {
+            JsfUtil.addErrorMessage("No admission found.");
+            return;
+        }
+        parentAdmission.setClinicallyDischarged(Boolean.FALSE);
+        parentAdmission.setClinicalDischargeDateTime(null);
+        parentAdmission.setClinicalDischargedBy(null);
+        getFacade().edit(parentAdmission);
+        JsfUtil.addSuccessMessage("Clinical discharge cancelled.");
+    }
+
+    public PatientEncounter getClinicalDischargeRecord() {
+        return clinicalDischargeRecord;
+    }
+
+    public void setClinicalDischargeRecord(PatientEncounter clinicalDischargeRecord) {
+        this.clinicalDischargeRecord = clinicalDischargeRecord;
     }
 
     public PatientEncounter getParentAdmission() {
