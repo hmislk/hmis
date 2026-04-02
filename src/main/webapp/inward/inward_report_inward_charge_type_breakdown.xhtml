@@ -298,7 +298,11 @@
                                                 </h:outputText>
                                             </td>
                                         </ui:repeat>
-                                        <td></td>
+                                        <td style="text-align:right; font-weight:bold; white-space:nowrap;">
+                                            <h:outputText value="#{inwardChargeTypeBreakdownController.grandTotal}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
                                     </tr>
                                 </tfoot>
                             </table>

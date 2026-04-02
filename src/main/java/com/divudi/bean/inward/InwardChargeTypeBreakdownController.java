@@ -83,6 +83,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     private List<String> columnLabels;
     private List<BhtBreakdownRow> rows;
     private List<Double> columnTotals;   // List<Double>, NOT double[] — EL cannot iterate primitive arrays
+    private double grandTotal;
     private String errorMessage;
 
     // -------------------------------------------------------------------------
@@ -128,6 +129,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         columnLabels = null;
         rows         = null;
         columnTotals = null;
+        grandTotal   = 0.0;
 
         if (selectedChargeType == null) {
             errorMessage = "Please select an Inward Charge Type before generating the report.";
@@ -199,6 +201,12 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                     jpql.append(" and ").append(encAlias).append(".paymentFinalized = :pf");
                     params.put("dis", true);
                     params.put("pf", true);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append(" and ").append(encAlias).append(".discharged = :dis");
+                    jpql.append(" and ").append(encAlias).append(".paymentFinalized = :pf");
+                    params.put("dis", true);
+                    params.put("pf", false);
                     break;
                 default:
                     break;
@@ -279,8 +287,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
             row.setRowTotal(total);
         }
 
-        // 5. Calculate column totals
+        // 5. Calculate column totals and grand total
         columnTotals = new ArrayList<>();
+        grandTotal = 0.0;
         for (String key : columnKeys) {
             double colSum = 0;
             for (BhtBreakdownRow row : rows) {
@@ -290,6 +299,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 }
             }
             columnTotals.add(colSum);
+            grandTotal += colSum;
         }
     }
 
@@ -456,6 +466,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         }
 
         columnTotals = new ArrayList<>();
+        grandTotal = 0.0;
         for (String key : columnKeys) {
             double colSum = 0;
             for (BhtBreakdownRow row : rows) {
@@ -465,6 +476,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 }
             }
             columnTotals.add(colSum);
+            grandTotal += colSum;
         }
     }
 
@@ -539,6 +551,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         }
 
         columnTotals = new ArrayList<>();
+        grandTotal = 0.0;
         for (String key : columnKeys) {
             double colSum = 0;
             for (BhtBreakdownRow row : rows) {
@@ -548,6 +561,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 }
             }
             columnTotals.add(colSum);
+            grandTotal += colSum;
         }
     }
 
@@ -606,6 +620,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 colSum += val;
             }
         }
+        grandTotal = colSum;
         columnTotals = Arrays.asList(colSum);
     }
 
@@ -637,6 +652,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         List<InwardChargeType> results = new ArrayList<>();
         for (InwardChargeType ct : InwardChargeType.values()) {
             String label = configOptionApplicationController.getInwardChargeTypeLabel(ct);
+            if (label == null) {
+                label = "";
+            }
             if (label.toLowerCase().contains(lower) || ct.name().toLowerCase().contains(lower)) {
                 results.add(ct);
             }
@@ -669,6 +687,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         columnLabels      = null;
         rows              = null;
         columnTotals      = null;
+        grandTotal        = 0.0;
         errorMessage      = null;
     }
 
@@ -717,5 +736,6 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     public List<String> getColumnLabels() { return columnLabels; }
     public List<BhtBreakdownRow> getRows() { return rows; }
     public List<Double> getColumnTotals() { return columnTotals; }
+    public double getGrandTotal() { return grandTotal; }
     public String getErrorMessage() { return errorMessage; }
 }
