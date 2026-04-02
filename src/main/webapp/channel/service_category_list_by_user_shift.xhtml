@@ -70,7 +70,7 @@
                                 value="#{channelReportController.webUser}" >
                             </p:autoComplete>
 
-                            
+
 
                         </h:panelGrid>
 
@@ -103,9 +103,9 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-                            
-                             <p:column headerText="End Time"  width="15%" >
-                                 <h:outputText value="#{ssb.referenceBill ne null ? ssb.referenceBill.createdAt : 'Not Yet'}" >
+
+                            <p:column headerText="End Time"  width="15%" >
+                                <h:outputText value="#{ssb.referenceBill ne null ? ssb.referenceBill.createdAt : 'Not Yet'}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
@@ -165,8 +165,11 @@
                                     <h:outputLabel value="#{channelReportController.categorywiseDetailsWrapperDTO.cashierUserName}"></h:outputLabel>
                                 </div>
                             </div>
-                            
+
                             <hr></hr>
+
+                            <p:outputLabel value="Channel Income for the Shift" style="display:block; text-align:center; font-weight:bold; font-size:22px;
+                                           border-bottom:2px solid black; padding-bottom:5px; width:fit-content; margin:20px auto;"></p:outputLabel>
 
                             <p:dataTable  value="#{channelReportController.categorywiseDetailsWrapperDTO.dtoList}" var="wrapper" >
 
@@ -218,6 +221,533 @@
 
                                 </p:column>
 
+                            </p:dataTable>
+
+                            <hr></hr>
+                            
+                            <p:outputLabel value="OPD Income for the Shift" style="display:block; text-align:center; font-weight:bold; font-size:22px;
+                                           border-bottom:2px solid black; padding-bottom:5px; width:fit-content; margin:20px auto;"></p:outputLabel>
+
+
+                            <p:dataTable
+                                id="tblOpd"
+                                style="padding: 0px!important; margin: 0px!important;" 
+
+                                value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.rows}" var="row"
+                                paginator="true" 
+                                rows="#{opdReportController.rowsPerPageForScreen}" 
+                                rowsPerPageTemplate="#{opdReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
+                                paginatorPosition="bottom">
+                                <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <f:facet name="footer" >
+                                        <h:outputText value="Total Amounts" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" width="8em">
+                                    <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
+                                </p:column>
+                                <p:column headerText="Date"   width="10em" >
+                                    <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Total"  width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Cash"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.cashValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.cashValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Card"   width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.cardValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.cardValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Cheque" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.chequeValue gt 0}"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.chequeValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.chequeValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Slip" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.slipValue gt 0}"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.slipValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.slipValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Online" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.onlineSettlementValue gt 0}"  width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.onlineSettlementValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.onlineSettlementValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Inpatient Credit" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.inpatientCreditValue gt 0}"  width="10em" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.inpatientCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.inpatientCreditValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Outpatient Credit" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.opdCreditValue gt 0}"  width="10em"  class="text-end light-grey-background" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.opdCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.opdCreditValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Staff Credit"  rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.staffValue gt 0}"  width="10em"  class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.staffValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.staffValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Agent Credit" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.agentValue gt 0}"  width="10em"  class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.agentValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.agentValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Total"    width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.grossTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.grossTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Discount"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.discount}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.discount}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Service Charge" rendered="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.serviceCharge gt 0}" width="10em"   class="text-end"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.serviceCharge}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.serviceCharge}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Actual Total"    width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.opdBundle.summaryRow.netTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+
+                                </p:column>
+                                <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
+                                    <p:commandLink 
+                                        value="View" 
+                                        style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
+                                        class="mx-1"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                        ajax="false">
+                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                    </p:commandLink>
+                                    <p:commandLink 
+                                        value="Admin" 
+                                        style="font-size: #{opdReportController.fontSizeForScreen}!important;" 
+                                        class="mx-1"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                        ajax="false" 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+
+                            <hr></hr>
+                            
+                            <p:outputLabel value="Pharmacy Income for the Shift" style="display:block; text-align:center; font-weight:bold; font-size:22px;
+                                           border-bottom:2px solid black; padding-bottom:5px; width:fit-content; margin:20px auto;"></p:outputLabel>
+
+                            <p:dataTable
+                                id="tblPharmacy"
+                                style="padding: 0px!important; margin: 0px!important;"
+
+                                value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.rows}" var="row"
+                                paginator="true"
+                                rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
+                                rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
+                                paginatorPosition="bottom">
+                                <!-- use for the add title for the excel-->
+                                <p:column headerText="Bill No" width="16em"
+                                          style="padding: 0px!important; margin: 0px!important;">
+                                    <h:outputText value="#{row.bill.deptId}"
+                                                  style="padding: 0px!important; margin: 0px!important;"/>
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total Amounts"
+                                                      style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Patient" width="10em" style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportPatientVisible}">
+                                    <h:outputText value="#{row.bill.patient.person.nameWithTitle}"
+                                                  style="padding: 0px!important; margin: 0px!important;"/>
+                                </p:column>
+
+                                <p:column headerText="Date" width="10em"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportDateVisible}">
+                                    <h:outputText value="#{row.bill.createdAt}"
+                                                  style="padding: 0px!important; margin: 0px!important;">
+                                        <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Total" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportNetTotalVisible}">
+                                    <h:outputText value="#{row.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.netTotal}"
+                                                      style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Cash" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportCashVisible}">
+                                    <h:outputText value="#{row.cashValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.cashValue}"
+                                                      style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Card" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportCardVisible and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.cardValue gt 0}">
+                                    <h:outputText value="#{row.cardValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.cardValue}"
+                                                      style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Cheque" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportChequeVisible and 
+                                                      channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.chequeValue gt 0}">
+                                    <h:outputText value="#{row.chequeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.chequeValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Slip" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportSlipVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.slipValue gt 0}">
+                                    <h:outputText value="#{row.slipValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.slipValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Staff Welfare" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportStaffWelfareVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.staffWelfareValue gt 0}">
+                                    <h:outputText value="#{row.staffWelfareValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.staffWelfareValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="eWallet" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportEWalletVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.eWalletValue gt 0}">
+                                    <h:outputText value="#{row.eWalletValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.eWalletValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Voucher" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportVoucherVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.voucherValue gt 0}">
+                                    <h:outputText value="#{row.voucherValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.voucherValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="IOU" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportIouVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.iouValue gt 0}">
+                                    <h:outputText value="#{row.iouValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.iouValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Patient Deposit" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportPatientDepositVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.patientDepositValue gt 0}">
+                                    <h:outputText value="#{row.patientDepositValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.patientDepositValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Inpatient Credit" width="10em" class="text-end light-grey-background"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportInpatientCreditVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.inpatientCreditValue gt 0}">
+                                    <h:outputText value="#{row.inpatientCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.inpatientCreditValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Outpatient Credit" width="10em" class="text-end light-grey-background"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportOutpatientCreditVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.opdCreditValue gt 0}">
+                                    <h:outputText value="#{row.opdCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.opdCreditValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Staff Credit" width="10em" class="text-end light-grey-background"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportStaffCreditVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.staffValue gt 0}">
+                                    <h:outputText value="#{row.staffValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.staffValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Agent Credit" width="10em" class="text-end light-grey-background"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportAgentCreditVisible 
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.agentValue gt 0}">
+                                    <h:outputText value="#{row.agentValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.agentValue}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Total" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportTotalVisible}">
+                                    <h:outputText value="#{row.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.grossTotal}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Discount" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportDiscountVisible}">
+                                    <h:outputText value="#{commonFunctionsProxy.reverseSign(row.discount)}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{commonFunctionsProxy.reverseSign(channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.discount)}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Service Charge" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportServiceChargeVisible
+                                                      and channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.serviceCharge gt 0}">
+                                    <h:outputText value="#{row.serviceCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText
+                                            value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.serviceCharge}"
+                                            style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Actual Total" width="10em" class="text-end"
+                                          style="padding: 0px!important; margin: 0px!important;"
+                                          rendered="#{userSettingsController.pharmacyIncomeReportActualTotalVisible}">
+                                    <h:outputText value="#{row.actualTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.actualTotal}"
+                                                      style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Cost" width="10em" class="text-end"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cost Value in Pharmacy Reports', true)}"
+                                          style="padding: 0px!important; margin: 0px!important;">
+                                    <h:outputText value="#{row.bill.billFinanceDetails.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{channelReportController.categorywiseDetailsWrapperDTO.pharmacyBundle.summaryRow.totalCostValue}"
+                                                      style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
+                                    <p:commandLink
+                                        value="View"
+                                        style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
+                                        class="mx-1"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(row.bill.id)}"
+                                        ajax="false">
+                                    </p:commandLink>
+                                </p:column>
                             </p:dataTable>
                         </h:panelGroup>
 

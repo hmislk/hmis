@@ -7,8 +7,11 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -4882,10 +4885,11 @@ public class DataAdministrationController implements Serializable {
 
     public void dischargeOldDuplicateEncounters() {
         try {
-            String sql = "UPDATE patientencounter pe "
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " pe "
                     + "JOIN ( "
                     + "  SELECT MAX(id) AS keep_id, currentPatientRoom_id "
-                    + "  FROM patientencounter "
+                    + "  FROM " + t + " "
                     + "  WHERE discharged = 0 AND paymentFinalized = 0 AND currentPatientRoom_id IS NOT NULL "
                     + "  GROUP BY currentPatientRoom_id "
                     + ") latest ON pe.currentPatientRoom_id = latest.currentPatientRoom_id "
@@ -4908,7 +4912,8 @@ public class DataAdministrationController implements Serializable {
             return;
         }
         try {
-            String sql = "UPDATE patientencounter "
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " "
                     + "SET discharged = 1 "
                     + "WHERE discharged = 0 AND paymentFinalized = 0 "
                     + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
@@ -4925,6 +4930,111 @@ public class DataAdministrationController implements Serializable {
 
     public void setStaleEncounterDays(int staleEncounterDays) {
         this.staleEncounterDays = staleEncounterDays;
+    }
+
+    /**
+     * One-time migration: creates INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY
+     * bills for old admissions that were settled before per-company billing was
+     * introduced. Skips any encounter that already has such a bill.
+     * Closes #19571
+     */
+    public void migrateInwardCreditCompanyBills() {
+        executionFeedback = "";
+        StringBuilder result = new StringBuilder();
+        int created = 0;
+        int skipped = 0;
+
+        try {
+            // Find finalized credit admissions that have no per-company bill yet
+            String jpql = "Select pe From PatientEncounter pe "
+                    + " where pe.retired = false "
+                    + " and pe.paymentFinalized = true "
+                    + " and pe.paymentMethod = :pm "
+                    + " and pe.creditCompany is not null "
+                    + " and pe.finalBill is not null "
+                    + " and pe.id not in ("
+                    + "   Select b.patientEncounter.id From Bill b "
+                    + "   where b.retired = false "
+                    + "   and b.billTypeAtomic = :bta "
+                    + " )";
+            Map<String, Object> params = new HashMap<>();
+            params.put("pm", PaymentMethod.Credit);
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+            List<PatientEncounter> encounters = patientEncounterFacade.findByJpql(jpql, params);
+            result.append("Found ").append(encounters.size()).append(" encounter(s) to migrate.\n\n");
+
+            for (PatientEncounter pe : encounters) {
+                try {
+                    if (pe.getCreditCompany() == null || pe.getFinalBill() == null) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double netTotal = Math.abs(pe.getCreditUsedAmount());
+                    if (netTotal < 0.01 && pe.getFinalBill().getNetTotal() != 0) {
+                        netTotal = Math.abs(pe.getFinalBill().getNetTotal());
+                    }
+                    if (netTotal < 0.01) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double paidAmount = Math.abs(pe.getCreditPaidAmount());
+
+                    Bill ccBill = new BilledBill();
+                    ccBill.setGrantTotal(netTotal);
+                    ccBill.setTotal(netTotal);
+                    ccBill.setNetTotal(netTotal);
+                    ccBill.setPaidAmount(paidAmount);
+                    ccBill.setInstitution(pe.getFinalBill().getInstitution());
+                    ccBill.setCreditCompany(pe.getCreditCompany());
+                    ccBill.setPaymentMethod(PaymentMethod.Credit);
+                    ccBill.setBillType(BillType.InwardFinalBillCCPayment);
+                    ccBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+                    ccBill.setDeptId(billNumberGenerator.departmentBillNumberGenerator(
+                            pe.getFinalBill().getDepartment(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+                    ccBill.setInsId(billNumberGenerator.institutionBillNumberGenerator(
+                            pe.getFinalBill().getInstitution(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+
+                    Date billDate = pe.getDateOfDischarge() != null ? pe.getDateOfDischarge()
+                            : (pe.getFinalBill() != null && pe.getFinalBill().getCreatedAt() != null
+                                    ? pe.getFinalBill().getCreatedAt() : pe.getCreatedAt());
+                    ccBill.setBillDate(billDate);
+                    ccBill.setBillTime(billDate);
+                    ccBill.setCreatedAt(new Date()); // audit timestamp — when the migration ran
+                    ccBill.setCreater(sessionController.getLoggedUser());
+
+                    ccBill.setPatientEncounter(pe);
+                    ccBill.setPatient(pe.getPatient());
+                    ccBill.setReferenceBill(pe.getFinalBill());
+
+                    billFacade.create(ccBill);
+                    created++;
+
+                    if (created % 50 == 0) {
+                        result.append("Created ").append(created).append(" bills so far...\n");
+                    }
+                } catch (Exception ex) {
+                    result.append("Error for encounter ID ").append(pe.getId())
+                            .append(": ").append(ex.getMessage()).append("\n");
+                    skipped++;
+                }
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Bills created: ").append(created).append("\n");
+            result.append("Skipped: ").append(skipped).append("\n");
+            executionFeedback = result.toString();
+            JsfUtil.addSuccessMessage("Migration complete. Created: " + created + ", Skipped: " + skipped);
+
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage(executionFeedback);
+        }
     }
 
 }

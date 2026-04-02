@@ -18,8 +18,8 @@
                                 <p:ajax process="@this"></p:ajax>
                                 <p:tab title="Admission Reports" closable="false">
                                     <div class="d-grid gap-2"> 
-                                        <p:commandButton  ajax="false" value="Admission Report" action="report_admissions?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"/>
-                                        <p:commandButton ajax="false" value="Admission Report by Consultant" action="report_admission_by_consultant?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"/>
+                                        <p:commandButton  ajax="false" value="Admission Report" action="report_admissions?faces-redirect=true" actionListener="#{admissionReportController.makeNull()}"/>
+                                        <p:commandButton ajax="false" value="Admission Report by Consultant" action="report_admission_by_consultant?faces-redirect=true" actionListener="#{admissionReportController.makeNull()}"/>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Service Reports" closable="false">
@@ -51,6 +51,11 @@
                                     <div class="d-grid gap-2">
                                         <p:commandButton value="Newly Added Report" action="inward_report_bht_bil?faces-redirect=true"   ajax="false" />
                                         <p:commandButton value="BHT Inward Charge Category Report" action="inward_report_bht_inward_charge_category?faces-redirect=true"   ajax="false" />
+                                        <p:commandButton value="Inward Charge Type Detail"
+                                                         action="inward_report_inward_charge_type_detail?faces-redirect=true"
+                                                         actionListener="#{inwardChargeTypeDetailController.makeNull()}"
+                                                         class="ui-button-success"
+                                                         ajax="false" />
                                         <p:commandButton value="BHT Income By Categories Individual BHT " action="inward_report_bht_income_by_caregories_bht?faces-redirect=true"   ajax="false" />
                                         <p:commandButton value="BHT Income By Categories All BHT " action="inward_report_bht_income_by_caregories?faces-redirect=true"   ajax="false" />
                                         <p:commandButton value="BHT Vice Income by Catgories" action="inward_report_bht_vice_income_by_caregories?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
@@ -100,6 +105,48 @@
                                         <p:commandButton value="Deposite of Undischarged Patient" action="bht_deposit_by_created_date_not_discharge" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="All Payment By Created Date Date" action="bht_deposit_by_created_date_all" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                         <p:commandButton value="Deposit of Admitted Patient" action="bht_deposit_of_admitted_patient" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Payment By Created Date " action="bht_deposit_by_created_date_discharged_all?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="All Payment of Discharged Patient"
+                                                         action="all_payment_by_created_date_discharged_only?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"
+                                                         ajax="false" />
+                                        <p:commandButton value="Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="All Deposite of Not Discharged Patient"
+                                                         action="bht_deposit_of_not_discharged_patient?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="All Deposite of Not Discharged Patient by BHT"
+                                                         action="bht_deposit_of_not_discharged_patient_by_bht?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Discharged List and Due Report"
+                                                         action="discharge_book_no_changes_due?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"
+                                                         ajax="false" />
+                                        <p:commandButton value="Discharged List and Due Report with Letter"
+                                                         action="discharge_book_no_changes_due_with_letter?faces-redirect=true"
+                                                         actionListener="#{mdInwardReportController.makeNull()}"
+                                                         ajax="false"/>
+                                        <p:commandButton
+                                            value="BHT Deposit and Credit Settlement Summary"
+                                            action="inward_report_bht_payment_summary?faces-redirect=true"
+                                            actionListener="#{bhtPaymentSummaryReportController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
+                                            value="Inpatient Invoice Journal"
+                                            action="inward_report_invoice_journal?faces-redirect=true"
+                                            actionListener="#{inwardInvoiceJournalController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
+                                            value="Inpatient Credit Company Payment Report"
+                                            action="/credit/inward_credit_company_payment_report?faces-redirect=true"
+                                            actionListener="#{inwardReportController1.resetCreditCompanyReports()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
                                     </div>
                                 </p:tab>
 
@@ -108,9 +155,9 @@
                                         <p:commandButton value="BHT Issue By Bill Item"
                                                          action="report_bht_issue_by_bill_item?faces-redirect=true"
                                                          actionListener="#{mdInwardReportController.makeNull()}"
-                                                         ajax="false"/> 
+                                                         ajax="false"/>
 
-                                        <p:commandButton value="BHT Issue By Item" 
+                                        <p:commandButton value="BHT Issue By Item"
                                                          ajax="false"
                                                          action="pharmacy_report_bht_issue_by_item?faces-redirect=true"/>
                                     </div>
@@ -122,35 +169,6 @@
                                     </div>
                                 </p:tab>
 
-                                <p:tab title="Inpatient Payments">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton value="Payment By Created Date " action="bht_deposit_by_created_date_discharged_all?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="All Payment of Discharged Patient"
-                                                         action="all_payment_by_created_date_discharged_only?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}" 
-                                                         ajax="false" />
-                                        <p:commandButton value="Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="All Deposite of Not Discharged Patient" 
-                                                         action="bht_deposit_of_not_discharged_patient?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="All Deposite of Not Discharged Patient by BHT" 
-                                                         action="bht_deposit_of_not_discharged_patient_by_bht?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="Discharged List and Due Report"
-                                                         action="discharge_book_no_changes_due?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}" 
-                                                         ajax="false" />
-                                        <p:commandButton value="Discharged List and Due Report with Letter"
-                                                         action="discharge_book_no_changes_due_with_letter?faces-redirect=true"
-                                                         actionListener="#{mdInwardReportController.makeNull()}" 
-                                                         ajax="false"/>
-                                    </div>
-                                </p:tab>
-
                                 <p:tab title="Inpatient Dues" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton action="/credit/inward_due_search?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Search" ajax="false" class="w-100"  />
@@ -158,6 +176,12 @@
                                         <p:commandButton  action="/credit/inward_due_age?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" class="w-100" />
                                         <p:commandButton  action="/credit/inward_due_age_credit_company_detail?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age Detail" ajax="false" class="w-100" />
                                         <p:commandButton  action="/credit/inward_due_age_credit_company?faces-redirect=true" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age(Credit Company)" ajax="false" class="w-100" />
+                                        <p:commandButton
+                                            action="/credit/inward_credit_company_debtor_report?faces-redirect=true"
+                                            actionListener="#{inwardReportController1.resetCreditCompanyReports()}"
+                                            value="Credit Company Debtor Report"
+                                            ajax="false"
+                                            class="w-100 ui-button-success" />
                                     </div>
                                 </p:tab>
 

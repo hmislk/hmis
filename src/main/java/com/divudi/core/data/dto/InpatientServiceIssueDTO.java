@@ -38,7 +38,9 @@ public class InpatientServiceIssueDTO implements Serializable {
         return billTypeAtomic == BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION;
+                || billTypeAtomic == BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION;
     }
 
     public Boolean getCancellation() {

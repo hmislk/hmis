@@ -854,6 +854,118 @@ public class InwardSearch implements Serializable {
 
     }
 
+    public void cancelInwardProfessionalFeeBill() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (getBill().getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            if (getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+                return;
+            }
+            if (getBill().isRefunded()) {
+                JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter() == null) {
+                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (checkPaid()) {
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+                return;
+            }
+
+            CancelledBill cb = createCancelBill();
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
+            if (cb.getId() == null) {
+                getBillFacade().create(cb);
+            }
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+
+            getBill().setPaymentMethod(null);
+            cb.setPaymentMethod(null);
+
+            getBillFacade().edit(cb);
+            getBillFacade().edit((BilledBill) getBill());
+            getBillBean().updateBatchBillExcludingCancelled(getBill().getForwardReferenceBill());
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    public void cancelTheatreProfessionalFeeBill() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (getBill().getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+
+            if (getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+                return;
+            }
+            if (getBill().isRefunded()) {
+                JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter() == null) {
+                JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                return;
+            }
+
+            if (checkPaid()) {
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+                return;
+            }
+
+            CancelledBill cb = createCancelBill();
+            cb.setBillTypeAtomic(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION);
+            if (cb.getId() == null) {
+                getBillFacade().create(cb);
+            }
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+
+            getBill().setPaymentMethod(null);
+            cb.setPaymentMethod(null);
+
+            getBillFacade().edit(cb);
+            getBillFacade().edit((BilledBill) getBill());
+            getBillBean().updateBatchBillExcludingCancelled(getBill().getForwardReferenceBill());
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
     @Inject
     private InwardBeanController inwardBean;
     @EJB
@@ -1491,9 +1603,6 @@ public class InwardSearch implements Serializable {
             }
 
             cancelBillComponents(can, b);
-            if (getBill().getSurgeryBillType() != null) {
-                retireEncounterComponents();
-            }
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);

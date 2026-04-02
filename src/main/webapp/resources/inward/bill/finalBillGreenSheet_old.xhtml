@@ -42,6 +42,9 @@
                     </div>
 
                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('')}">
+                        <h:outputLabel value="NIC: #{cc.attrs.bill.patientEncounter.patient.person.nic}" styleClass="ptnamePrinting" />
+                    </h:panelGroup>
                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" styleClass="bhtNoGSPrinting" />
 
                     <table class="itemsGSPrinting"  >

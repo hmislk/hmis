@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -51,7 +52,8 @@ public class WebUserRoleUser implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
 
-
+    @Transient
+    private Boolean needUpdateUserRole;
 
 
     public Long getId() {
@@ -173,5 +175,20 @@ public class WebUserRoleUser implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Boolean getNeedUpdateUserRole() {
+        if (webUserRole == null || webUserRole.getLastUpdateAt() == null) {
+            return false;
+        }
+        if (editedAt == null) {
+            return true;
+        }
+        needUpdateUserRole =  webUserRole.getLastUpdateAt().after(editedAt);
+        return needUpdateUserRole;
+    }
+
+    public void setNeedUpdateUserRole(Boolean needUpdateUserRole) {
+        this.needUpdateUserRole = needUpdateUserRole;
     }
 }
