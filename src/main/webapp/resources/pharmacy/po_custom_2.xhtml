@@ -109,8 +109,6 @@
             </div>
 
 
-            <p:spacer height="10"/>
-
             <div >
                 <table class="w-100" style="border-collapse: collapse; border: 1px solid black;">
                     <thead>
@@ -177,28 +175,32 @@
 
             </div>
 
-            <div class="preparedBy" style="padding-left: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
-                <h:outputLabel style="margin-right: 30%;" value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
-                <h:outputLabel value="Created Date/Time:"/>
-                <p:outputLabel value="#{sessionController.currentDate}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </p:outputLabel>
-
-
+            <div class="row mt-1">
+                <div class="col-5">
+                    <h:outputLabel value="Prepared By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Prepared At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.checkeAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
             </div>
 
-            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel value="Authorized By : #{cc.attrs.bill.referenceBill.checkedBy.webUserPerson.nameWithTitle}"/>
-
-            </div>
-
-            <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel style="margin-right: 30%;" value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
-                <h:outputLabel value="Approved Date/Time:"/>
-                <p:outputLabel value="#{cc.attrs.bill.approveAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </p:outputLabel>
-
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Approved By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Approved At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.approveAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
             </div>
 
             <div>
@@ -218,11 +220,16 @@
 
                 </p>
             </div>
-            <div style="width: 90%; margin-top: 4px; margin-left: 5%" >
-                <div class="d-flex justify-content-center align-items-center" style="font-size: 11pt">
-                    <h:outputLabel value="Printed At&nbsp;:&nbsp;"/>
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Printed By : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;" >
+                    <h:outputLabel style="text-align: right" value="Printed At : &nbsp;"/>
                     <h:outputLabel value="#{sessionController.currentDate}" >
-                        <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                     </h:outputLabel>
                 </div>
             </div>

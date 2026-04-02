@@ -1620,6 +1620,10 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        if (!getPatientEncounter().isClinicallyDischarged()) {
+            JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
+        }
+
         getPatientEncounter().setDateOfDischarge(date);
         getDischargeController().setCurrent((Admission) getPatientEncounter());
         getDischargeController().discharge();
