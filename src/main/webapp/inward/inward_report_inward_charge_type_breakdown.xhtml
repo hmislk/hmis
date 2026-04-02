@@ -226,12 +226,12 @@
                                                  icon="fas fa-print"
                                                  class="ui-button-info"
                                                  ajax="false">
-                                    <p:printer target="divBreakdownTable" />
+                                    <p:printer target="pnlBreakdownTable" />
                                 </p:commandButton>
                             </div>
                         </f:facet>
 
-                        <div id="divBreakdownTable" class="table-responsive">
+                        <h:panelGroup id="pnlBreakdownTable" layout="block" styleClass="table-responsive">
                             <table class="table table-bordered table-sm table-hover">
                                 <thead>
                                     <tr>
@@ -302,7 +302,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div>
+                        </h:panelGroup>
 
                     </p:panel>
 
