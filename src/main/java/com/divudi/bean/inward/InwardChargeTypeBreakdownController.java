@@ -303,11 +303,14 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
-                + " and b.billType in (:btps)"
+                + " and b.billType in :btps"
                 + " and bi.inwardChargeType = :ct");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("btps", Arrays.asList(BillType.InwardBill, BillType.InwardOutSideBill));
+        List<BillType> btps = new ArrayList<>();
+        btps.add(BillType.InwardBill);
+        btps.add(BillType.InwardOutSideBill);
+        params.put("btps", btps);
         params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");
 
@@ -323,23 +326,22 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     private void buildFromPharmacyBillItems() {
-        List<BillTypeAtomic> btas = Arrays.asList(
-                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
-                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
-        );
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
 
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
-                + " and b.billTypeAtomic in (:btas)"
+                + " and b.billTypeAtomic in :btas"
                 + " and bi.inwardChargeType = :ct");
 
         Map<String, Object> params = new HashMap<>();
