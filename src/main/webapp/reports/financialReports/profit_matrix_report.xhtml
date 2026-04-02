@@ -227,11 +227,16 @@
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 value="PDF"
-                                rendered="#{reportController.reportType eq 'detail'}">
-                                <p:dataExporter
-                                    type="pdf"
-                                    target="detailWise"
-                                    fileName="profit_matrix_detail" />
+                                rendered="#{reportController.reportType eq 'detail'}"
+                                action="#{reportController.downloadDetailPdf()}">
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                rendered="#{reportController.reportType eq 'summery'}"
+                                action="#{reportController.downloadSummaryPdf()}">
                             </p:commandButton>
                         </div>
 

@@ -3149,6 +3149,275 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             }
         }
     }
+
+    public void downloadSummaryPdf() {
+        if (profitMatrixSummaryRows == null || profitMatrixSummaryRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            String fileName = "Profit_Matrix_Summary_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            document = new Document(PageSize.A3.rotate(), 20, 20, 30, 20);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // ── Fonts ────────────────────────────────────────────────────────────
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 7);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
+            com.lowagie.text.Font grandFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+
+            // ── Colors ───────────────────────────────────────────────────────────
+            java.awt.Color headerBg = new java.awt.Color(33, 37, 41);   // dark header
+            java.awt.Color headerFg = java.awt.Color.WHITE;
+            java.awt.Color altRowBg = new java.awt.Color(245, 245, 245);
+            java.awt.Color grandTotalBg = new java.awt.Color(52, 58, 64);
+
+            // ── Fonts with white color for header ────────────────────────────────
+            com.lowagie.text.Font headerFontWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, headerFg);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // ── Title ─────────────────────────────────────────────────────────────
+            Paragraph title = new Paragraph("Profit Matrix Summary Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(6);
+            document.add(title);
+
+            // ── Info table ────────────────────────────────────────────────────────
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(50);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1f, 2f});
+            infoTable.setSpacingAfter(10);
+            addInfoRow(infoTable, "Institution:", institution != null ? institution.getName() : "All", boldFont, normalFont);
+            addInfoRow(infoTable, "From Date:", fromDate != null ? sdf.format(fromDate) : "-", boldFont, normalFont);
+            addInfoRow(infoTable, "To Date:", toDate != null ? sdf.format(toDate) : "-", boldFont, normalFont);
+            addInfoRow(infoTable, "Generated:", sdf.format(new Date()), boldFont, normalFont);
+            document.add(infoTable);
+
+            // ── Main table ────────────────────────────────────────────────────────
+            String[] headers = {
+                "#", "Invoice No", "Admission No", "MRN", "Patient Name",
+                "Visit Type", "Referring Doctor", "Invoice Amount", "Profit Margin", "Final Amount"
+            };
+            float[] colWidths = {3f, 9f, 9f, 8f, 16f, 9f, 16f, 10f, 10f, 10f};
+
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            table.setWidths(colWidths);
+            table.setSpacingBefore(4);
+            table.setHeaderRows(1);
+
+            // Header row
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFontWhite));
+                cell.setBackgroundColor(headerBg);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setPadding(5);
+                table.addCell(cell);
+            }
+
+            // Data rows
+            double totalInvoice = 0, totalProfit = 0, totalFinal = 0;
+            int idx = 1;
+            for (ProfitMatrixRowDTO row : profitMatrixSummaryRows) {
+                boolean alt = idx % 2 == 0;
+                java.awt.Color bg = alt ? altRowBg : null;
+
+                addPdfTextCell(table, String.valueOf(idx++), normalFont, bg, Element.ALIGN_CENTER);
+                addPdfTextCell(table, nullSafe(row.getInvoiceNo()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getAdmissionNo()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getMrn()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getPatientName()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getVisitType()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getReferringDoctorName()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfNumberCell(table, row.getInvoiceAmount(), normalFont, bg);
+                addPdfNumberCell(table, row.getProfitMargin(), normalFont, bg);
+                addPdfNumberCell(table, row.getFinalAmount(), normalFont, bg);
+
+                totalInvoice += row.getInvoiceAmount() != null ? row.getInvoiceAmount() : 0.0;
+                totalProfit += row.getProfitMargin() != null ? row.getProfitMargin() : 0.0;
+                totalFinal += row.getFinalAmount() != null ? row.getFinalAmount() : 0.0;
+            }
+
+            // Grand total row
+            com.lowagie.text.Font grandFontWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, headerFg);
+
+            PdfPCell grandLabel = new PdfPCell(new Phrase("Grand Total:", grandFontWhite));
+            grandLabel.setColspan(7);
+            grandLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            grandLabel.setBackgroundColor(grandTotalBg);
+            grandLabel.setPadding(5);
+            grandLabel.setBorderWidthTop(2);
+            table.addCell(grandLabel);
+
+            addPdfNumberCellBordered(table, totalInvoice, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalProfit, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalFinal, grandFontWhite, grandTotalBg);
+
+            document.add(table);
+            document.close();
+            facesContext.responseComplete();
+
+        } catch (DocumentException | IOException e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+        }
+    }
+
+    public void downloadDetailPdf() {
+        if (profitMatrixDetailRows == null || profitMatrixDetailRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            String fileName = "Profit_Matrix_Detail_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            document = new Document(PageSize.A2.rotate(), 20, 20, 30, 20);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // ── Fonts ─────────────────────────────────────────────────────────────
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 7);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
+
+            // ── Colors ────────────────────────────────────────────────────────────
+            java.awt.Color headerBg = new java.awt.Color(33, 37, 41);
+            java.awt.Color headerFg = java.awt.Color.WHITE;
+            java.awt.Color altRowBg = new java.awt.Color(245, 245, 245);
+            java.awt.Color grandTotalBg = new java.awt.Color(52, 58, 64);
+
+            com.lowagie.text.Font headerFontWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, headerFg);
+            com.lowagie.text.Font grandFontWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, headerFg);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // ── Title ─────────────────────────────────────────────────────────────
+            Paragraph title = new Paragraph("Profit Matrix Detail Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(6);
+            document.add(title);
+
+            // ── Info table ────────────────────────────────────────────────────────
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(50);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1f, 2f});
+            infoTable.setSpacingAfter(10);
+            addInfoRow(infoTable, "Institution:", institution != null ? institution.getName() : "All", boldFont, normalFont);
+            addInfoRow(infoTable, "From Date:", fromDate != null ? sdf.format(fromDate) : "-", boldFont, normalFont);
+            addInfoRow(infoTable, "To Date:", toDate != null ? sdf.format(toDate) : "-", boldFont, normalFont);
+            addInfoRow(infoTable, "Generated:", sdf.format(new Date()), boldFont, normalFont);
+            document.add(infoTable);
+
+            // ── Main table ────────────────────────────────────────────────────────
+            String[] headers = {
+                "#", "Invoice No", "Admission No", "MRN", "Patient Name", "Visit Type",
+                "Referring Doctor", "Service Name", "Service Dept",
+                "Invoice Amt", "Service Val", "Profit Margin", "Matrix %", "Final Amt"
+            };
+            float[] colWidths = {3f, 7f, 7f, 7f, 12f, 7f, 12f, 12f, 10f, 8f, 8f, 8f, 7f, 8f};
+
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            table.setWidths(colWidths);
+            table.setSpacingBefore(4);
+            table.setHeaderRows(1);
+
+            // Header row
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFontWhite));
+                cell.setBackgroundColor(headerBg);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setPadding(5);
+                table.addCell(cell);
+            }
+
+            // Data rows
+            double totalInvoice = 0, totalServiceVal = 0, totalProfit = 0,
+                    totalMatrix = 0, totalFinal = 0;
+            int idx = 1;
+
+            for (ProfitMatrixRowDTO row : profitMatrixDetailRows) {
+                boolean alt = idx % 2 == 0;
+                java.awt.Color bg = alt ? altRowBg : null;
+
+                addPdfTextCell(table, String.valueOf(idx++), normalFont, bg, Element.ALIGN_CENTER);
+                addPdfTextCell(table, nullSafe(row.getInvoiceNo()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getAdmissionNo()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getMrn()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getPatientName()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getVisitType()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getReferringDoctorName()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getServiceName()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getServiceDepartment()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfNumberCell(table, row.getInvoiceAmount(), normalFont, bg);
+                addPdfNumberCell(table, row.getServiceValue(), normalFont, bg);
+                addPdfNumberCell(table, row.getProfitMargin(), normalFont, bg);
+                addPdfNumberCell(table, row.getMatrixPercentage(), normalFont, bg);
+                addPdfNumberCell(table, row.getFinalAmount(), normalFont, bg);
+
+                totalInvoice += row.getInvoiceAmount() != null ? row.getInvoiceAmount() : 0.0;
+                totalServiceVal += row.getServiceValue() != null ? row.getServiceValue() : 0.0;
+                totalProfit += row.getProfitMargin() != null ? row.getProfitMargin() : 0.0;
+                totalMatrix += row.getMatrixPercentage() != null ? row.getMatrixPercentage() : 0.0;
+                totalFinal += row.getFinalAmount() != null ? row.getFinalAmount() : 0.0;
+            }
+
+            // Grand total row
+            PdfPCell grandLabel = new PdfPCell(new Phrase("Grand Total:", grandFontWhite));
+            grandLabel.setColspan(9);
+            grandLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            grandLabel.setBackgroundColor(grandTotalBg);
+            grandLabel.setPadding(5);
+            grandLabel.setBorderWidthTop(2);
+            table.addCell(grandLabel);
+
+            addPdfNumberCellBordered(table, totalInvoice, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalServiceVal, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalProfit, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalMatrix, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalFinal, grandFontWhite, grandTotalBg);
+
+            document.add(table);
+            document.close();
+            facesContext.responseComplete();
+
+        } catch (DocumentException | IOException e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+        }
+    }
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {
