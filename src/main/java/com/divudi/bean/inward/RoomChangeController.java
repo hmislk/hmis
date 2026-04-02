@@ -20,6 +20,7 @@ import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -68,6 +69,8 @@ public class RoomChangeController implements Serializable {
 
     @EJB
     private AdmissionFacade ejbFacade;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -336,7 +339,7 @@ public class RoomChangeController implements Serializable {
             com.divudi.core.entity.PatientEncounter encounter = pR.getPatientEncounter();
             encounter.setRoomDischargeDateTime(pR.getDischargedAt());
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
-            ejbFacade.edit(encounter);
+            patientEncounterFacade.edit(encounter);
         }
     }
 
