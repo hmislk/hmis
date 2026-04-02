@@ -4,6 +4,15 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.ChannelReportTemplateController.AgentHistoryWithDate;
+import com.divudi.bean.channel.ChannelReportTemplateController.BookingCountSummryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelBillTotals;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModel;
+import com.divudi.bean.channel.ChannelReportTemplateController.ChannelReportColumnModelBundle;
+import com.divudi.bean.channel.ChannelReportTemplateController.DepartmentBill;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRow;
+import com.divudi.bean.channel.ChannelReportTemplateController.DoctorPaymentSummeryRowSub;
+import com.divudi.bean.channel.ChannelReportTemplateController.FeetypeFee;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.InstitutionController;
@@ -29,6 +38,7 @@ import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
+import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
@@ -63,6 +73,7 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.SessionInstanceFacade;
@@ -165,6 +176,8 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
+
+    List<ChannelAbsentPatientsDTO> absentPatientsDTO;
 
     /////
     @EJB
@@ -3375,6 +3388,7 @@ public class ChannelReportController implements Serializable {
     public void createAbsentPatientTable() {
         channelBills = new ArrayList<>();
         channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));
+        processPatientAbsentReport();
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -3399,6 +3413,118 @@ public class ChannelReportController implements Serializable {
         doctorFeeTotal = getStaffFeeTotal(b);
 
         return b;
+    }
+
+    // Patient Absent Report 
+    // Consider temporary bookings can not be makred absent
+    public void processPatientAbsentReport() {
+        System.out.println("process started....");
+        HashMap params = new HashMap();
+
+        String sql = " Select new com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO( "
+                + " b.id, "
+                + " coalesce(b.deptId, ''), "
+                + " b.billTypeAtomic, "
+                + " coalesce(bs.serviceSession.name, ''), "
+                + " bs.serialNo, "
+                + " coalesce(case when b.billTypeAtomic = :onlineCompletedPayment then ob.patientName "
+                + " when b.billTypeAtomic = :onlineCancellation then orbb.patientName "
+                + " else p.person.name end, ''), "
+                + " coalesce(b.creater.name, ''), "
+                + " b.paymentMethod, "
+                + " coalesce(b.staff.person.name, ''), "
+                + " coalesce(b.staffFee, 0.0), "
+                + " coalesce(b.hospitalFee, 0.0), "
+                + " coalesce(b.netTotal, 0.0), "
+                + " b.cancelled, "
+                + " b.refunded, "
+                + " coalesce(cb.deptId, ''), "
+                + " coalesce(rfb.deptId, ''), "
+                + " rb.id, "
+                + " pb.id "
+                + " ) "
+                + " from Bill b"
+                + " left join b.singleBillSession bs "
+                + " left join b.patient p "
+                + " left join b.cancelledBill cb "
+                + " left join b.refundedBill rfb "
+                + " left join b.referenceBill rb "
+                + " left join b.paidBill pb"
+                + " left join b.billedBill bb "
+                + " left join bb.referenceBill rbb "
+                + " left join rbb.onlineBooking orbb "
+                + " left join rb.onlineBooking ob"
+                + " where b.retired=false "
+                + " and bs.retired=false "
+                + " and bs.absent=true "
+                + " and b.createdAt between :fd and :td";
+
+        params.put("onlineCompletedPayment", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        params.put("onlineCancellation", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (staff != null) {
+            sql += " and b.staff=:st ";
+            params.put("st", staff);
+        }
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            sql += " and b.paymentMethod in :pm";
+            params.put("pm", paymentMethods);
+        }
+
+        sql += " order by b.createdAt desc ";
+
+        List<ChannelAbsentPatientsDTO> fetchedBills = (List<ChannelAbsentPatientsDTO>) billFacade.findLightsByJpqlWithoutCache(sql, params, TemporalType.TIMESTAMP);
+        System.out.println("data fetched " + fetchedBills.size());
+        Map<Long, ChannelAbsentPatientsDTO> absentPatients = new LinkedHashMap<>();
+        for (ChannelAbsentPatientsDTO dto : fetchedBills) { 
+            System.out.println(
+                dto.getDeptId() + " | " +
+                dto.getBillTypeAtomic() + " | " +
+                dto.getServiceSessionName() + " | " +
+                dto.getBillSessionSerialNo() + " | " +
+                dto.getPatientName() + " | " +
+                dto.getPaymentMethod() + " | " +
+                dto.getDoctorName() + " | " +
+                dto.getStaffFee() + " | " +
+                dto.getHospitalFee() + " | " +
+                dto.getNetTotal() + " | " +
+                dto.getCancelledDeptId() + " | " +
+                dto.getRefundedDeptId()
+            );
+            if (dto.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (dto.getPaidId() != null && absentPatients.containsKey(dto.getPaidId())) {
+                    continue;
+                } else {
+                    absentPatients.put(dto.getId(), dto);
+                }
+            } else {
+                if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                    continue;
+                } else {
+                    absentPatients.put(dto.getId(), dto);
+                }
+            }
+        }
+        System.out.println("data mapped");
+
+        for (ChannelAbsentPatientsDTO dto : absentPatients.values()) {
+            System.out.println(
+                dto.getDeptId() + " | " +
+                dto.getBillTypeAtomic() + " | " +
+                dto.getServiceSessionName() + " | " +
+                dto.getBillSessionSerialNo() + " | " +
+                dto.getPatientName() + " | " +
+                dto.getPaymentMethod() + " | " +
+                dto.getDoctorName() + " | " +
+                dto.getStaffFee() + " | " +
+                dto.getHospitalFee() + " | " +
+                dto.getNetTotal() + " | " +
+                dto.getCancelledDeptId() + " | " +
+                dto.getRefundedDeptId()
+            );
+        }
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
@@ -5403,6 +5529,14 @@ public class ChannelReportController implements Serializable {
         params.put("Category", getCategoryListAsString());
 
         return params;
+    }
+
+    public List<ChannelAbsentPatientsDTO> getAbsentPatientsDTO() {
+        return absentPatientsDTO;
+    }
+
+    public void setAbsentPatientsDTO(List<ChannelAbsentPatientsDTO> absentPatientsDTO) {
+        this.absentPatientsDTO = absentPatientsDTO;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
