@@ -333,9 +333,13 @@
                             <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
                                        varStatus="status">
                                 <p:dataTable id="tblSummary" value="#{map.value.entrySet()}" var="entry"
-                                             rowIndexVar="n" rowKey="#{entry.key}" rows="10"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
+                                             rowIndexVar="n" rowKey="#{entry.key}" 
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="10"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                     <f:facet name="header">
                                         <h:outputLabel value="Department" rendered="#{status.first}"/>
@@ -829,9 +833,12 @@
                                              var="entry"
                                              rowIndexVar="n"
                                              rowKey="#{entry.key}"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
                                              rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
                                     <p:columnGroup type="header">
                                         <p:row style="background: #e5e9ec" rendered="#{status.first}">
                                             <p:column headerText="Department Unit"
