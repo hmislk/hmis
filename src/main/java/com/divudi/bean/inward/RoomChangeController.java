@@ -330,6 +330,14 @@ public class RoomChangeController implements Serializable {
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
         notificationController.createNotification(pR, "Discharge");
+
+        // Sync room discharge to the parent encounter when this is the last (current) room
+        if (pR.getNextRoom() == null && pR.getPatientEncounter() != null) {
+            com.divudi.core.entity.PatientEncounter encounter = pR.getPatientEncounter();
+            encounter.setRoomDischargeDateTime(pR.getDischargedAt());
+            encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
+            ejbFacade.edit(encounter);
+        }
     }
 
     public void dischargeCancel(PatientRoom pR) {
