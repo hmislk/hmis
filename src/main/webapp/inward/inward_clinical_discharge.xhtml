@@ -96,8 +96,9 @@
                                                     placeholder="Select discharge condition" />
                                             </div>
                                             <div class="col-md-6">
-                                                <p:outputLabel value="Discharge Date/Time:" styleClass="font-weight-bold" />
+                                                <p:outputLabel for="txtDischargeDateTime" value="Discharge Date/Time:" styleClass="font-weight-bold" />
                                                 <p:inputText
+                                                    id="txtDischargeDateTime"
                                                     value="#{inpatientClinicalDataController.clinicalDischargeRecord.encounterDateTime}"
                                                     disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}"
                                                     style="width:200px;">
@@ -182,7 +183,7 @@
                                     <div class="container-fluid">
                                         <div class="row my-2">
                                             <div class="col-12">
-                                                <p:outputLabel value="Discharge Summary / Clinical Notes:" styleClass="font-weight-bold" />
+                                                <p:outputLabel for="txtDischargeSummary" value="Discharge Summary / Clinical Notes:" styleClass="font-weight-bold" />
                                                 <p:inputTextarea
                                                     id="txtDischargeSummary"
                                                     value="#{inpatientClinicalDataController.clinicalDischargeRecord.comments}"

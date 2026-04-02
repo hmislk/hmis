@@ -427,6 +427,7 @@
                                     ajax="false"
                                     action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
                                     icon="fa fa-sign-out-alt"
+                                    title="Navigate to Clinical Discharge"
                                     rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
                                     styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                 </p:commandButton>

@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
-        <h:form>
+        <h:form rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}">
             <p:growl/>
             <p:focus id="selectFocus" context="gpSelect"/>
             <p:focus id="detailFocus" context="gpDetail"/>
@@ -57,7 +57,7 @@
                         <div class="col-md-7">
                             <h:panelGroup id="gpDetail">
                                 <div class="form-group row">
-                                    <label for="txtName" class="col-sm-2 col-form-label">Name</label>
+                                    <p:outputLabel for="txtName" value="Name" styleClass="col-sm-2 col-form-label"/>
                                     <div class="col-sm-10">
                                         <p:inputText autocomplete="off" id="txtName"
                                                      value="#{dischargeConditionController.current.name}"
@@ -65,7 +65,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="txtCode" class="col-sm-2 col-form-label">Code</label>
+                                    <p:outputLabel for="txtCode" value="Code" styleClass="col-sm-2 col-form-label"/>
                                     <div class="col-sm-10">
                                         <p:inputText autocomplete="off" id="txtCode"
                                                      value="#{dischargeConditionController.current.code}"
@@ -73,7 +73,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="txtDes" class="col-sm-2 col-form-label">Description</label>
+                                    <p:outputLabel for="txtDes" value="Description" styleClass="col-sm-2 col-form-label"/>
                                     <div class="col-sm-10">
                                         <p:inputTextarea id="txtDes"
                                                          value="#{dischargeConditionController.current.descreption}"

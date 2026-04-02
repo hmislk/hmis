@@ -65,12 +65,12 @@ public class DischargeConditionController implements Serializable {
         current.setSymanticType(SymanticType.Discharge_Condition);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         getItems();
@@ -103,6 +103,9 @@ public class DischargeConditionController implements Serializable {
     }
 
     public List<ClinicalEntity> completeDischargeConditions(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
         List<ClinicalEntity> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Discharge_Condition);
@@ -117,8 +120,8 @@ public class DischargeConditionController implements Serializable {
 
     public void downloadAsExcel() {
         getItems();
-        try {
-            Workbook workbook = new XSSFWorkbook();
+        FacesContext context = FacesContext.getCurrentInstance();
+        try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Discharge Conditions");
 
             Row headerRow = sheet.createRow(0);
@@ -129,23 +132,22 @@ public class DischargeConditionController implements Serializable {
 
             int rowNum = 1;
             for (ClinicalEntity item : items) {
-                Row row = sheet.createRow(rowNum++);
+                Row row = sheet.createRow(rowNum);
                 row.createCell(0).setCellValue(rowNum);
                 row.createCell(1).setCellValue(item.getName());
                 row.createCell(2).setCellValue(item.getCode());
                 row.createCell(3).setCellValue(item.getDescreption());
+                rowNum++;
             }
 
-            FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=\"discharge_conditions.xlsx\"");
 
             workbook.write(response.getOutputStream());
-            workbook.close();
             context.responseComplete();
         } catch (Exception e) {
-            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
         }
     }
 
@@ -200,9 +202,13 @@ public class DischargeConditionController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            DischargeConditionController controller = (DischargeConditionController) facesContext.getApplication()
-                    .getELResolver().getValue(facesContext.getELContext(), null, "dischargeConditionController");
-            return controller.getEjbFacade().find(Long.valueOf(value));
+            try {
+                DischargeConditionController controller = (DischargeConditionController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "dischargeConditionController");
+                return controller.getEjbFacade().find(Long.valueOf(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         @Override
