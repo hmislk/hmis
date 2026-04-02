@@ -2970,17 +2970,17 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("pat.phn, ")
                 .append("per.name, ")
                 .append("pe.patientEncounterType, ")
-                .append("rdPer.name, ") // referringConsultant's person name
+                .append("rdPer.name, ")
                 .append("pe.grantTotal, ")
                 .append("rfc.roomCategory, ")
                 .append("pe.netTotal")
                 .append(") ")
-                .append("FROM Admission pe ") // Use Admission, not PatientEncounter
+                .append("FROM Admission pe ")
                 .append("LEFT JOIN pe.finalBill fb ")
                 .append("LEFT JOIN pe.patient pat ")
                 .append("LEFT JOIN pat.person per ")
-                .append("LEFT JOIN pe.referringConsultant rd ") // was pe.referringDoctor
-                .append("LEFT JOIN rd.person rdPer ") // Staff.person is valid
+                .append("LEFT JOIN pe.referringConsultant rd ")
+                .append("LEFT JOIN rd.person rdPer ")
                 .append("LEFT JOIN pe.currentPatientRoom room ")
                 .append("LEFT JOIN room.roomFacilityCharge rfc ");
 
