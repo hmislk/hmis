@@ -718,6 +718,137 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             bundle = combineBundles(billedBundle, crBundle);
         }, CollectionCenterReport.CC_WISE_SUMMARY_REPORT, sessionController.getLoggedUser());
     }
+    
+    // Filters for collection_center_report_print
+    public Map<String, Object> getFiltersForCollectionCenterWiseSummaryReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From date", sdf.format(getFromDate()));
+        filters.put("To date", sdf.format(getToDate()));
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("CC Route",route != null ? route.getName(): "All");
+        filters.put("CC Name",collectingCentre != null ? collectingCentre.getName() : "All");
+        return filters;
+    }
+    
+    // PostProcessor for bill_wise_item_movement_report excel export
+    public void postProcessCollectionCenterWiseSummaryReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Collection Center Wise Summary Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForCollectionCenterWiseSummaryReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Collection Center Wise Summary Report", filters);
+        }
+    }
+
+        public void preProcessCollectionCenterWiseSummaryReportPDF(Object document) {
+        try {
+            com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+            pdf.setMargins(36f, 36f, 20f, 36f);
+
+            // ── BaseColor definitions ─────────────────────────────────────
+            java.awt.Color black      = new java.awt.Color(0,   0,   0);
+            java.awt.Color lightGray  = new java.awt.Color(245, 245, 245);
+            java.awt.Color borderGray = new java.awt.Color(180, 180, 180);
+
+            // ── Font definitions ──────────────────────────────────────────
+            com.lowagie.text.Font hospitalFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 16f, com.lowagie.text.Font.BOLD,   black);
+            com.lowagie.text.Font reportFont   = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 13f, com.lowagie.text.Font.BOLD,   black);
+            com.lowagie.text.Font dateFont     = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 10f, com.lowagie.text.Font.NORMAL, black);
+            com.lowagie.text.Font labelFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.BOLD,   black);
+            com.lowagie.text.Font valueFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.NORMAL, black);
+
+            // ── Institution name ─────────────────────────────────────────────
+            String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+            com.lowagie.text.Paragraph hospitalName = new com.lowagie.text.Paragraph(institutionName, hospitalFont);
+            hospitalName.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+            hospitalName.setSpacingAfter(2f);
+            pdf.add(hospitalName);
+
+            // ── Report title ──────────────────────────────────────────────
+            com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("Laboratory Workload Summary Report", reportFont);
+            reportTitle.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+            reportTitle.setSpacingAfter(2f);
+            pdf.add(reportTitle);
+
+            // ── Generated date ────────────────────────────────────────────
+            SimpleDateFormat sdf = new SimpleDateFormat(
+                    sessionController.getApplicationPreference().getLongDateTimeFormat());
+            com.lowagie.text.Paragraph dateLine = new com.lowagie.text.Paragraph("Date: " + sdf.format(new Date()), dateFont);
+            dateLine.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+            dateLine.setSpacingAfter(10f);
+            pdf.add(dateLine);
+
+            // ── Filter summary table ──────────────────────────────────────
+            Map<String, Object> filters = getFiltersForCollectionCenterWiseSummaryReport();
+
+            com.lowagie.text.pdf.PdfPTable filterTable = new com.lowagie.text.pdf.PdfPTable(8);
+            filterTable.setWidthPercentage(100f);
+            filterTable.setWidths(new float[]{12f, 20f, 12f, 20f, 12f, 20f, 12f, 20f});
+            filterTable.setSpacingAfter(10f);
+
+            List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
+            int totalEntries = entries.size();
+            int cols = 4;
+
+            for (Map.Entry<String, Object> entry : entries) {
+
+                // Label cell
+                com.lowagie.text.pdf.PdfPCell labelCell = new com.lowagie.text.pdf.PdfPCell(
+                        new com.lowagie.text.Phrase(entry.getKey(), labelFont));
+                labelCell.setBorderColor(borderGray);
+                labelCell.setBorderWidth(0.5f);
+                labelCell.setPadding(4f);
+                labelCell.setBackgroundColor(lightGray);
+                filterTable.addCell(labelCell);
+
+                // Value cell
+                String val = entry.getValue() != null ? entry.getValue().toString() : "";
+                com.lowagie.text.pdf.PdfPCell valueCell = new com.lowagie.text.pdf.PdfPCell(
+                        new com.lowagie.text.Phrase(val, valueFont));
+                valueCell.setBorderColor(borderGray);
+                valueCell.setBorderWidth(0.5f);
+                valueCell.setPadding(4f);
+                filterTable.addCell(valueCell);
+            }
+
+            // ── Pad last row with empty cells if needed ───────────────────
+            int remainder = totalEntries % cols;
+            if (remainder != 0) {
+                int emptyCells = (cols - remainder) * 2;
+                for (int i = 0; i < emptyCells; i++) {
+                    com.lowagie.text.pdf.PdfPCell empty = new com.lowagie.text.pdf.PdfPCell(
+                            new com.lowagie.text.Phrase(""));
+                    empty.setBorderColor(borderGray);
+                    empty.setBorderWidth(0.5f);
+                    empty.setPadding(4f);
+                    filterTable.addCell(empty);
+                }
+            }
+
+            pdf.add(filterTable);
+
+        } catch (com.lowagie.text.DocumentException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void ccSummaryReportByBill() {
         reportTimerController.trackReportExecution(() -> {
@@ -1627,6 +1758,134 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             bundle.setReportTemplateRows(results);
         }, CollectionCenterReport.COLLECTION_CENTER_BALANCE_REPORT, sessionController.getLoggedUser());
     }
+    
+    // Filters for collection_center_report_print
+    public Map<String, Object> getFiltersForCollectionCenterBalanceReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("Date", sdf.format(getFromDate()));
+        filters.put("Collection Center Name",collectingCentre != null ? collectingCentre.getName() : "All");
+        return filters;
+    }
+    
+    // PostProcessor for bill_wise_item_movement_report excel export
+    public void postProcessCollectionCenterBalanceReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Collection Center Balance Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForCollectionCenterBalanceReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Collection Center Balance Report", filters);
+        }
+    }
+    
+    public void preProcessCollectionCenterBalanceReportPDF(Object document) {
+    try {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        pdf.setMargins(36f, 36f, 20f, 36f);
+
+        // ── BaseColor definitions ─────────────────────────────────────
+        java.awt.Color black      = new java.awt.Color(0,   0,   0);
+        java.awt.Color lightGray  = new java.awt.Color(245, 245, 245);
+        java.awt.Color borderGray = new java.awt.Color(180, 180, 180);
+
+        // ── Font definitions ──────────────────────────────────────────
+        com.lowagie.text.Font hospitalFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 16f, com.lowagie.text.Font.BOLD,   black);
+        com.lowagie.text.Font reportFont   = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 13f, com.lowagie.text.Font.BOLD,   black);
+        com.lowagie.text.Font dateFont     = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 10f, com.lowagie.text.Font.NORMAL, black);
+        com.lowagie.text.Font labelFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.BOLD,   black);
+        com.lowagie.text.Font valueFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.NORMAL, black);
+
+        // ── Institution name ─────────────────────────────────────────────
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+        com.lowagie.text.Paragraph hospitalName = new com.lowagie.text.Paragraph(institutionName, hospitalFont);
+        hospitalName.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+        hospitalName.setSpacingAfter(2f);
+        pdf.add(hospitalName);
+
+        // ── Report title ──────────────────────────────────────────────
+        com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("Collection Center Balance Report", reportFont);
+        reportTitle.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+        reportTitle.setSpacingAfter(2f);
+        pdf.add(reportTitle);
+
+        // ── Generated date ────────────────────────────────────────────
+        SimpleDateFormat sdf = new SimpleDateFormat(
+                sessionController.getApplicationPreference().getLongDateTimeFormat());
+        com.lowagie.text.Paragraph dateLine = new com.lowagie.text.Paragraph("Date: " + sdf.format(new Date()), dateFont);
+        dateLine.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+        dateLine.setSpacingAfter(10f);
+        pdf.add(dateLine);
+
+        // ── Filter summary table ──────────────────────────────────────
+        Map<String, Object> filters = getFiltersForCollectionCenterBalanceReport();
+
+        com.lowagie.text.pdf.PdfPTable filterTable = new com.lowagie.text.pdf.PdfPTable(8);
+        filterTable.setWidthPercentage(100f);
+        filterTable.setWidths(new float[]{12f, 20f, 12f, 20f, 12f, 20f, 12f, 20f});
+        filterTable.setSpacingAfter(10f);
+
+        List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
+        int totalEntries = entries.size();
+        int cols = 4;
+
+        for (Map.Entry<String, Object> entry : entries) {
+
+            // Label cell
+            com.lowagie.text.pdf.PdfPCell labelCell = new com.lowagie.text.pdf.PdfPCell(
+                    new com.lowagie.text.Phrase(entry.getKey(), labelFont));
+            labelCell.setBorderColor(borderGray);
+            labelCell.setBorderWidth(0.5f);
+            labelCell.setPadding(4f);
+            labelCell.setBackgroundColor(lightGray);
+            filterTable.addCell(labelCell);
+
+            // Value cell
+            String val = entry.getValue() != null ? entry.getValue().toString() : "";
+            com.lowagie.text.pdf.PdfPCell valueCell = new com.lowagie.text.pdf.PdfPCell(
+                    new com.lowagie.text.Phrase(val, valueFont));
+            valueCell.setBorderColor(borderGray);
+            valueCell.setBorderWidth(0.5f);
+            valueCell.setPadding(4f);
+            filterTable.addCell(valueCell);
+        }
+
+        // ── Pad last row with empty cells if needed ───────────────────
+        int remainder = totalEntries % cols;
+        if (remainder != 0) {
+            int emptyCells = (cols - remainder) * 2;
+            for (int i = 0; i < emptyCells; i++) {
+                com.lowagie.text.pdf.PdfPCell empty = new com.lowagie.text.pdf.PdfPCell(
+                        new com.lowagie.text.Phrase(""));
+                empty.setBorderColor(borderGray);
+                empty.setBorderWidth(0.5f);
+                empty.setPadding(4f);
+                filterTable.addCell(empty);
+            }
+        }
+
+        pdf.add(filterTable);
+
+    } catch (com.lowagie.text.DocumentException e) {
+        e.printStackTrace();
+    }
+}
 
     public void processCurrentCollectionCenterBalance() {
         bundle = new ReportTemplateRowBundle();

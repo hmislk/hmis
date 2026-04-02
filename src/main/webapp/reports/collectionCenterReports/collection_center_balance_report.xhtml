@@ -87,14 +87,22 @@
                                                      style="width: 150px"
                                                      icon="fas fa-file-excel"
                                                      ajax="false" value="Excel">
-                                        <p:dataExporter type="xlsx" fileName="Collecting Center Balance Report" target="agentHistoriesTable"  />
+                                        <p:dataExporter 
+                                            type="xlsx" 
+                                            fileName="collection_center_balance_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}" 
+                                            target="agentHistoriesTable"
+                                            postProcessor="#{reportController.postProcessCollectionCenterBalanceReportExcel}"/>
                                     </p:commandButton>
 
                                 </div>
                                 <div  class="col-md-2">
                                     <p:commandButton class="mx-2 ui-button-danger" style="width: 150px" value="PDF" icon="pi pi-file-pdf" ajax="false">
                                         <p:dataExporter
-                                            type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
+                                            type="pdf" 
+                                            target="agentHistoriesTable" 
+                                            fileName="Collection_center_balance_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
+                                            preProcessor="#{reportController.preProcessCollectionCenterBalanceReportPDF}"
+                                            />
                                     </p:commandButton>
 
 
