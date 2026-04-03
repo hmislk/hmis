@@ -265,7 +265,7 @@ public class PatientReportController implements Serializable {
 
         Boolean updateDynamicLabel = false;
 
-        if (currentPatientReport.getPatientReportItemValues() != null || !currentPatientReport.getPatientReportItemValues().isEmpty()) {
+        if (currentPatientReport.getPatientReportItemValues() != null && !currentPatientReport.getPatientReportItemValues().isEmpty()) {
 
             for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
                 if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.DynamicLabel) {
