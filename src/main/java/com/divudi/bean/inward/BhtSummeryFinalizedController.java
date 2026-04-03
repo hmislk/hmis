@@ -14,6 +14,8 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.ItemFee;
@@ -104,6 +106,10 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     boolean activeBackButton = false;
     PaymentMethod paymentMethod;
+    private Institution institution;
+    private Institution site;
+    private Department department;
+    private String dateBasis = "createdAt";
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
@@ -1413,6 +1419,42 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
+    public void clearDepartment() {
+        department = null;
     }
 
 }
