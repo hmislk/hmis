@@ -93,8 +93,8 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="surgeryTable" fileName="Surgery_Count_Doctor_Wise.xlsx"/>
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{inwardReportController.downloadSurgeryCountDoctorWiseExcel()}">
+
                             </p:commandButton>
 
                             <p:commandButton
