@@ -484,9 +484,40 @@ public class BhtSummeryFinalizedController implements Serializable {
 
         sql = "select c from Admission c where "
                 + " c.retired=false "
-                + " and c.paymentFinalized=true "
-                + " and c.dateOfDischarge between :fd and :td "
-                + " order by c.bhtNo ";
+                + " and c.paymentFinalized=true ";
+
+        if ("admissionDate".equals(dateBasis)) {
+            sql += " and c.dateOfDischarge between :fd and :td ";
+        } else {
+            sql += " and c.createdAt between :fd and :td ";
+        }
+
+        if (admissionType != null) {
+            sql += " and c.admissionType=:at ";
+            m.put("at", admissionType);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and c.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
+        }
+
+        if (institution != null) {
+            sql += " and c.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            sql += " and c.department.site=:site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and c.department=:dept ";
+            m.put("dept", department);
+        }
+
+        sql += " order by c.bhtNo ";
 
         m.put("fd", fromDate);
         m.put("td", toDate);

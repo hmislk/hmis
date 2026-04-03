@@ -22,7 +22,7 @@
                             <h:outputLabel value="To Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
-                            <h:outputLabel value="Date Basis"/>
+                            <h:outputLabel for="dateBasisMenu" value="Date Basis"/>
                             <p:selectOneMenu class="w-100 mx-4" id="dateBasisMenu" value="#{bhtSummeryFinalizedController.dateBasis}">
                                 <f:selectItem itemValue="createdAt"     itemLabel="Created Date (default)" />
                                 <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
@@ -32,29 +32,29 @@
                                 <f:selectItem itemLabel="Please select Charge"/>
                                 <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Admission Type"/>
+                            <h:outputLabel for="admTypeMenu" value="Admission Type"/>
                             <p:selectOneMenu class="w-100 mx-4" id="admTypeMenu" value="#{bhtSummeryFinalizedController.admissionType}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="Payment Method"/>
+                            <h:outputLabel for="pmMenu" value="Payment Method"/>
                             <p:selectOneMenu class="w-100 mx-4" id="pmMenu" value="#{bhtSummeryFinalizedController.paymentMethod}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="Institution"/>
+                            <h:outputLabel for="cmbIns" value="Institution"/>
                             <p:selectOneMenu class="w-100 mx-4" id="cmbIns" value="#{bhtSummeryFinalizedController.institution}" filter="true">
                                 <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="cmbIns" update="cmbDept" listener="#{bhtSummeryFinalizedController.clearDepartment()}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="Site"/>
+                            <h:outputLabel for="siteMenu" value="Site"/>
                             <p:selectOneMenu class="w-100 mx-4" id="siteMenu" value="#{bhtSummeryFinalizedController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="siteMenu" update="cmbDept" listener="#{bhtSummeryFinalizedController.clearDepartment()}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="Department"/>
+                            <h:outputLabel for="cmbDept" value="Department"/>
                             <h:panelGroup id="cmbDept">
                                 <p:selectOneMenu
                                     rendered="#{bhtSummeryFinalizedController.institution eq null and bhtSummeryFinalizedController.site eq null}"
