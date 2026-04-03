@@ -98,8 +98,7 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                                <p:dataExporter type="pdf" target="surgeryTable" fileName="Surgery_Count_Doctor_Wise.pdf"/>
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF" action="#{inwardReportController.downloadSurgeryCountDoctorWisePdf}">
                             </p:commandButton>
                         </div>
 
