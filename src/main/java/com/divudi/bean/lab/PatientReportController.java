@@ -243,6 +243,47 @@ public class PatientReportController implements Serializable {
         return uploadFacade.findFirstByJpql(jpql, params);
     }
 
+    public void reloadPatientDetailsInReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return;
+        }
+
+        Patient pt = patientFacade.findWithoutCache(currentPatientReport.getPatientInvestigation().getPatient().getId());
+
+        currentPatientReport.setPatientName(pt.getPerson().getNameWithTitle());
+        currentPatientReport.setPatientAge(pt.getAgeOnBilledDate(currentPatientReport.getPatientInvestigation().getBillItem().getBill().getCreatedAt()));
+        currentPatientReport.setPatientGender(pt.getPerson().getSex().getLabel());
+        getFacade().edit(currentPatientReport);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addParientDetailsEditHistory(currentPtIx, currentPatientReport);
+        }
+
+        System.out.println("Successfully Update Patient Name, Age, Gender.");
+        
+        Boolean updateDynamicLabel = false;
+
+        if (currentPatientReport.getPatientReportItemValues() != null && !currentPatientReport.getPatientReportItemValues().isEmpty()) {
+
+            for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+                if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.DynamicLabel) {
+                    priv.setStrValue(prBean.getPatientDynamicLabel(priv.getInvestigationItem(), pt));
+                    updateDynamicLabel = true;
+                }
+            }
+
+            if (updateDynamicLabel) {
+                savePatientReportItemValues();
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    labTestHistoryController.addReCalculateDynamicLabelHistory(currentPtIx, currentPatientReport);
+                }
+                System.out.println("Successfully Update DynamicLabel in Report");
+            }
+        }
+        
+    }
+
     public String navigateToPrintPatientReport(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");
@@ -2372,7 +2413,7 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Patient investigation not found");
             return;
         }
-        
+
         Date printingTime = new Date();
 
         currentPtIx.setPrinted(true);
@@ -2381,19 +2422,19 @@ public class PatientReportController implements Serializable {
         currentPtIx.setPrintingDepartment(sessionController.getDepartment());
         currentPtIx.setPrinted(true);
         getPiFacade().edit(currentPtIx);
-        
+
         currentPatientReport.setPrinted(Boolean.TRUE);
         currentPatientReport.setPrintingAt(printingTime);
         currentPatientReport.setPrintingDepartment(sessionController.getDepartment());
         currentPatientReport.setPrintingInstitution(sessionController.getInstitution());
         currentPatientReport.setPrintingUser(sessionController.getLoggedUser());
-        
+
         getFacade().edit(currentPatientReport);
 
         laboratoryManagementController.addReportPrintHistory(currentPatientReport.getId());
-        
+
     }
-    
+
     public void reportExport() {
         laboratoryManagementController.addReportExportHistory(currentPatientReport.getId());
     }
@@ -2892,31 +2933,31 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
             return "";
         }
-        
+
         PatientInvestigation pi = piFacade.findWithoutCache(patientInvestigationId);
 
         if (pi == null) {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
-        
+
         Patient pt = patientFacade.findWithoutCache(pi.getBillItem().getBill().getPatient().getId());
-        
-        if(pt == null){
+
+        if (pt == null) {
             JsfUtil.addErrorMessage("Patient is Invalid");
             return "";
         }
 
-        if(pt.getPerson().getDob() == null){
+        if (pt.getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Patient Age is Invalid or Missing");
             return "";
         }
-        
-        if(pt.getPerson().getSex() == null){
+
+        if (pt.getPerson().getSex() == null) {
             JsfUtil.addErrorMessage("Patient Gender is Invalid or Missing");
             return "";
         }
-        
+
         laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }
