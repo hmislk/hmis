@@ -4116,13 +4116,28 @@ public class ReportsController implements Serializable {
             bundle = generateCollectionCenterBookWiseBills(opdBts);
         }, CollectionCenterReport.COLLECTION_CENTER_BOOK_WISE_DETAIL_REPORT, sessionController.getLoggedUser());
     }
+    
+    // Filters for test_wise_count_report
+    public Map<String, Object> getFiltersForCollectionCenterBookWiseDetailReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("Without Date Range", withoutDateRange ? "Yes": "No");
+        filters.put("Collection Center", collectingCentre != null ? collectingCentre.getName() : "All");
+        filters.put("Book Number", cashBookNumber != null ? cashBookNumber : "All");
+        filters.put("With Deleted Books",withDeletedBooks ? "Yes": "No");
+        return filters;
+    }
 
     public void exportCollectionCenterBookWiseDetailToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report_" + dates + ".pdf");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4);
@@ -4132,18 +4147,17 @@ public class ReportsController implements Serializable {
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
             com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
             com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
-
-            Paragraph title = new Paragraph("Collection Center Book Wise Detail", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(10f);
-            document.add(title);
-
+            
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+            
+            document.add(new com.itextpdf.text.Paragraph("Test Wise Count Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + dateFormat.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
 
-            if (getCollectingCentre() != null) {
-                Paragraph centerName = new Paragraph("Collection Center: " + getCollectingCentre().getName(), cellFont);
-                centerName.setSpacingAfter(10f);
-                document.add(centerName);
+            Map<String, Object> filters = getFiltersForCollectionCenterBookWiseDetailReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(dateFormat, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
             }
 
             PdfPTable table = new PdfPTable(7);
@@ -4214,13 +4228,21 @@ public class ReportsController implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Collection_center_book_wise_detail_report_" + dates + ".xlsx");
 
+        Map<String, Object> filters = getFiltersForCollectionCenterBookWiseDetailReport();
+        
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
-            XSSFSheet sheet = workbook.createSheet("Collection Center Report");
+            XSSFSheet sheet = workbook.createSheet("Collection Center Book Wise Detail Report");
             int rowIndex = 0;
 
+             if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Collection Center Book Wise Detail Report", filters);
+            }
+            
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
             XSSFCellStyle amountStyle = workbook.createCellStyle();
@@ -8251,13 +8273,21 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report_" + dates + ".xlsx");
+        
+        Map<String, Object> filters = getFiltersForRouteAnalysisReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
             XSSFSheet sheet = workbook.createSheet("Monthly Report");
             int rowIndex = 0;
+            
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Route Analysis Monthly Report", filters);
+            }
 
             Row headerRow = sheet.createRow(rowIndex++);
             headerRow.createCell(0).setCellValue("S. No");
@@ -8401,25 +8431,49 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
             e.printStackTrace();
         }
     }
+    
+       // Filters for test_wise_count_report
+    public Map<String, Object> getFiltersForRouteAnalysisReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+        filters.put("Report Type",reportType);
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Route", route != null ? route.getName() : "All");
+        filters.put("Collection Center",collectingCentre != null ? collectingCentre.getName() : "All" );
+        return filters;
+    }
 
     public void exportRouteAnalysisDetailReportToPdf() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Collecting_Center_Monthly_Report_" + dates + ".pdf");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
 
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph title = new Paragraph("Collecting Center Monthly Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
-            document.add(title);
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Monthly Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
 
+            Map<String, Object> filters = getFiltersForRouteAnalysisReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+            
             document.add(new Paragraph("Sample Count Over Months", titleFont));
             Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months",
                     getSampleCountChartData(), "Month", "Sample Count"));
@@ -8493,19 +8547,28 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report_" + dates + ".pdf");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
             PdfWriter.getInstance(document, out);
             document.open();
-
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+            
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph title = new Paragraph("Route Wise Monthly Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20);
-            document.add(title);
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Monthly Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForRouteAnalysisReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
 
             document.add(new Paragraph("Sample Count Over Months", titleFont));
             Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months", getSampleCountChartData(), "Month", "Sample Count"));
@@ -8595,16 +8658,20 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Route_Wise_Monthly_Report_" + dates + ".xlsx");
+        
+        Map<String, Object> filters = getFiltersForRouteAnalysisReport();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Route Wise Monthly Report");
             int rowIndex = 0;
 
-            Row titleRow = sheet.createRow(rowIndex++);
-            Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("Route Wise Monthly Report");
+            if (filters != null && !filters.isEmpty()) {
+                rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, rowIndex, "Route Wise Monthly Report", filters);
+            }
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2 + getYearMonths().size() * 2 - 1));
 
             Row headerRow = sheet.createRow(rowIndex++);
