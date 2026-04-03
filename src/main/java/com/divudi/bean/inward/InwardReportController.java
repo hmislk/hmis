@@ -2048,7 +2048,7 @@ public class InwardReportController implements Serializable {
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 //                + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";

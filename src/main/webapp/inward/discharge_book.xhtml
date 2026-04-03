@@ -87,7 +87,7 @@
                                             completeMethod="#{creditCompanyController.completeCredit}" 
                                             var="ix" itemLabel="#{ix.name}" 
                                             itemValue="#{ix}" size="30" >  
-                                <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
+                                <p:ajax event="itemSelect" process="@this" update="dischBookCmbDept" listener="#{inwardReportController.clearDepartment()}" />
                             </p:autoComplete>
                             <h:outputLabel value="Referring Doctor" style="min-width: 100px;"  />
                             <p:autoComplete id="acRefDoc" 

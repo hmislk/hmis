@@ -417,6 +417,11 @@ public class MdInwardReportController implements Serializable {
             temMap.put("dept", dept);
         }
 
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:paymentMethod ";
+            temMap.put("paymentMethod", paymentMethod);
+        }
+
         sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
@@ -457,6 +462,11 @@ public class MdInwardReportController implements Serializable {
             temMap.put("dept", dept);
         }
 
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:paymentMethod ";
+            temMap.put("paymentMethod", paymentMethod);
+        }
+
         sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
@@ -473,15 +483,19 @@ public class MdInwardReportController implements Serializable {
 
         String sql;
         Map temMap = new HashMap();
-        String dateField3 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.bill.createdAt";
-        Institution effectiveInstitution = (institution != null) ? institution : getSessionController().getInstitution();
+        String dateField3 = "b.bill.createdAt";
         sql = "select b from BillItem b where "
                 + " b.bill.billType = :billType "
-                + " and b.bill.institution=:ins "
-                + " and " + dateField3 + " between :fromDate and :toDate "
+                + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false  ";
 
+        if (institution != null) {
+            sql += " and b.bill.institution=:ins ";
+            temMap.put("ins", institution);
+        }
+
         if (reportKeyWord.getString().equals("0")) {
+            dateField3 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.bill.createdAt";
             if (admissionType != null) {
                 sql += " and b.patientEncounter.admissionType =:ad ";
                 temMap.put("ad", admissionType);
@@ -512,7 +526,6 @@ public class MdInwardReportController implements Serializable {
         sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.CashRecieveBill);
-        temMap.put("ins", effectiveInstitution);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
