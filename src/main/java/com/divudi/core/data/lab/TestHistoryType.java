@@ -40,6 +40,8 @@ public enum TestHistoryType {
     REMOVED_UPLOADED_REPORT,
     REPORT_CALCULATED,
     REPORT_APPROVED,
+    PATIENT_DETAILS_CHANGE,
+    RECALCULATE_DYNAMICLABEL,
     REPORT_APPROVED_CANCEL,
     REPORT_VIEWED,
     REPORT_PRINTED,
@@ -122,6 +124,10 @@ public enum TestHistoryType {
                 return "Flags Generate";
             case REPORT_APPROVED:
                 return "Report Approved";
+            case PATIENT_DETAILS_CHANGE:
+                return "Change the Patient Details in Patient Report";
+            case RECALCULATE_DYNAMICLABEL:
+                return "Re-Calculate Dynamiclabel";
             case REPORT_APPROVED_CANCEL:
                 return "Report Approval Canceled";
             case REPORT_REMOVE:

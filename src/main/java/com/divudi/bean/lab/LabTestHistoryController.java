@@ -174,6 +174,13 @@ public class LabTestHistoryController implements Serializable {
     public void addReportRemoveHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, String reason) {
         addNewHistory(TestHistoryType.REPORT_REMOVE, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, reason);
     }
+    
+    public void addParientDetailsEditHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        addNewHistory(TestHistoryType.PATIENT_DETAILS_CHANGE, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+    }
+    public void addReCalculateDynamicLabelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        addNewHistory(TestHistoryType.RECALCULATE_DYNAMICLABEL, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent">
@@ -455,6 +462,8 @@ public class LabTestHistoryController implements Serializable {
         types.add(TestHistoryType.REPORT_EXPORT_AS_PDF);
         types.add(TestHistoryType.REPORT_ISSUE_STAFF);
         types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
+        types.add(TestHistoryType.RECALCULATE_DYNAMICLABEL);
+        types.add(TestHistoryType.PATIENT_DETAILS_CHANGE);
         
         return getReportLabTestHistorys(report,types);
     }
