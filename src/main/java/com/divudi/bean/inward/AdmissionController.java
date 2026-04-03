@@ -789,9 +789,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         List<PatientEncounterDto> suggestions;
         String sql;
         HashMap h = new HashMap();
-        if (query == null) {
+        if (query == null || query.trim().isEmpty()) {
             suggestions = new ArrayList<>();
         } else {
+            String normalizedQuery = query.trim().toLowerCase();
             sql = "select new com.divudi.core.data.dto.PatientEncounterDto(c.id, c.patient.person.name, c.bhtNo, c.patient.phn) "
                     + " from PatientEncounter c "
                     + " where c.retired=false "
@@ -801,7 +802,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " or (lower(c.patient.person.name)) like :q "
                     + " or (lower(c.patient.phn)) like :q) "
                     + " order by c.bhtNo";
-            h.put("q", "%" + query.toLowerCase() + "%");
+            h.put("q", "%" + normalizedQuery + "%");
             suggestions = (List<PatientEncounterDto>) patientEncounterFacade.findLightsByJpql(sql, h, TemporalType.TIMESTAMP, 20);
         }
         return suggestions;
@@ -1890,7 +1891,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Checks whether the current patient already has an active (undischarged) admission.
+     * Checks whether the current patient already has an active (undischarged)
+     * admission.
      *
      * @return true if an active admission exists for the patient
      */
@@ -1909,9 +1911,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Called by the "Admit" button (AJAX).
-     * If the patient already has an active (undischarged) admission, shows a warning dialog.
-     * Otherwise proceeds with the normal save.
+     * Called by the "Admit" button (AJAX). If the patient already has an active
+     * (undischarged) admission, shows a warning dialog. Otherwise proceeds with
+     * the normal save.
      */
     public void checkBeforeAdmit() {
         if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
@@ -2233,8 +2235,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Navigate to the inpatient profile page for the given admission ID.
-     * Used by the Admission Report page (Issue #19640) where only the ID is available in the DTO.
+     * Navigate to the inpatient profile page for the given admission ID. Used
+     * by the Admission Report page (Issue #19640) where only the ID is
+     * available in the DTO.
      */
     public String navigateToAdmissionProfileById(Long admissionId) {
         if (admissionId == null) {

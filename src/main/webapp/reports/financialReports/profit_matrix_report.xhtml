@@ -129,6 +129,7 @@
                                 inputStyleClass="w-100 form-control"
                                 placeholder="BHT Number"
                                 completeMethod="#{admissionController.completePatientPaymentFinalizedWithPhn}"
+                                forceSelection="true"
                                 var="bht"
                                 itemLabel="#{bht.bhtNo}"
                                 itemValue="#{bht}">
@@ -153,6 +154,7 @@
                                             inputStyleClass="w-100 form-control"
                                             placeholder="Patient Name/MRN"
                                             completeMethod="#{admissionController.completePatientPaymentFinalizedWithPhn}"
+                                            forceSelection="true"
                                             var="pe"
                                             itemLabel="#{pe.patientName}"
                                             itemValue="#{pe}">
