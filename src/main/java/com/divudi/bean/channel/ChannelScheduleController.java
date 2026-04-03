@@ -1203,6 +1203,11 @@ public class ChannelScheduleController implements Serializable {
 
     public void fillSessionInstance() {
         sessionInstances = fetchCreatedSessionsInstances(current);
+    }
+
+    // session_instance_managment load sessionInstances and fees for service session
+    public void handleSessionSelectionSessionManagement() {
+        fillSessionInstance();
         fillFees();
     }
 

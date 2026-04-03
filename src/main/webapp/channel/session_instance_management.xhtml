@@ -82,8 +82,7 @@
                                                         style="width: 100% !important;"
                                                         inputStyleClass="w-100">
                                                         <f:selectItems  value="#{channelScheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                                        <f:ajax render="gpDetail lstSelectSi" execute="lstSelect"  event="click" listener="#{channelScheduleController.fillSessionInstance}" >
-                                                        </f:ajax>
+                                                        <f:ajax render="gpDetail lstSelectSi" execute="lstSelect"  event="click" listener="#{channelScheduleController.handleSessionSelectionSessionManagement}" ></f:ajax>
                                                     </p:selectOneListbox>
                                                 </div>
                                             </h:panelGroup>
