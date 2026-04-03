@@ -179,11 +179,11 @@ public class LabTestHistoryController implements Serializable {
     }
     
     public void addParientDetailsEditHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        labTestHistoryService.addApprovalHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+        labTestHistoryService.addParientDetailsEditHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     
     public void addReCalculateDynamicLabelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        labTestHistoryService.addApprovalHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+        labTestHistoryService.addReCalculateDynamicLabelHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
     // </editor-fold>
 
