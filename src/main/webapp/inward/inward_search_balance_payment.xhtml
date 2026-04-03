@@ -30,10 +30,68 @@
                                     <p:outputLabel value="Admission Type"/>
                                     <p:selectOneMenu value="#{mdInwardReportController.admissionType}">
                                         <f:selectItem itemLabel="All Admission Type"/>
-                                        <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                        <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem"
                                                         itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                     </p:selectOneMenu>
-                                    
+
+                                    <p:outputLabel value="Date Basis" for="ibpDateBasis"/>
+                                    <p:selectOneMenu id="ibpDateBasis" value="#{mdInwardReportController.dateBasis}">
+                                        <f:selectItem itemValue="createdAt"     itemLabel="Created Date (default)" />
+                                        <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Payment Method" for="ibpPmMenu"/>
+                                    <p:selectOneMenu id="ibpPmMenu" value="#{mdInwardReportController.paymentMethod}">
+                                        <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Institution" for="ibpCmbIns"/>
+                                    <p:selectOneMenu id="ibpCmbIns" value="#{mdInwardReportController.institution}" filter="true">
+                                        <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="ibpCmbIns" update="ibpCmbDept" listener="#{mdInwardReportController.clearDepartment()}" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Site" for="ibpSiteMenu"/>
+                                    <p:selectOneMenu id="ibpSiteMenu" value="#{mdInwardReportController.site}" filter="true">
+                                        <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                        <p:ajax process="ibpSiteMenu" update="ibpCmbDept" listener="#{mdInwardReportController.clearDepartment()}" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Department" for="ibpCmbDept"/>
+                                    <h:panelGroup id="ibpCmbDept">
+                                        <p:selectOneMenu
+                                            rendered="#{mdInwardReportController.institution eq null and mdInwardReportController.site eq null}"
+                                            value="#{mdInwardReportController.dept}" filterMatchMode="contains" filter="true">
+                                            <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu
+                                            rendered="#{mdInwardReportController.institution eq null and mdInwardReportController.site ne null}"
+                                            value="#{mdInwardReportController.dept}" filterMatchMode="contains" filter="true">
+                                            <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(mdInwardReportController.site)}"
+                                                var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu
+                                            rendered="#{mdInwardReportController.institution ne null and mdInwardReportController.site eq null}"
+                                            value="#{mdInwardReportController.dept}" filterMatchMode="contains" filter="true">
+                                            <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(mdInwardReportController.institution)}"
+                                                var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu
+                                            rendered="#{mdInwardReportController.institution ne null and mdInwardReportController.site ne null}"
+                                            value="#{mdInwardReportController.dept}" filterMatchMode="contains" filter="true">
+                                            <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(mdInwardReportController.institution, mdInwardReportController.site)}"
+                                                var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+
                                 </h:panelGrid>
                                 <h:panelGrid columns="3">
                                     <p:commandButton ajax="false" action="#{mdInwardReportController.createInwardBalancePaymentBills()}" value="Search"  />

@@ -32,12 +32,56 @@
 
                             <h:outputLabel value="BHT Type" ></h:outputLabel>
                             <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController.paymentMethod}"  >
-                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItem itemLabel="All BHT Types" />
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
 
+                            <h:outputLabel value="Date Basis" for="dischBookDateBasis"/>
+                            <p:selectOneMenu id="dischBookDateBasis" value="#{inwardReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
 
-                            <h:outputLabel value="Company Name" style="min-width: 100px;"  />  
+                            <h:outputLabel value="Site" for="dischBookSiteMenu"/>
+                            <p:selectOneMenu id="dischBookSiteMenu" value="#{inwardReportController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="dischBookSiteMenu" update="dischBookCmbDept" listener="#{inwardReportController.clearDepartment()}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Department" for="dischBookCmbDept"/>
+                            <h:panelGroup id="dischBookCmbDept">
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
+                                    value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
+                                    value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
+                                    value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
+                                    value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Company Name" style="min-width: 100px;"  />
                             <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
                                             value="#{inwardReportController.institution}"  
                                             completeMethod="#{creditCompanyController.completeCredit}" 
