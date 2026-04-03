@@ -177,6 +177,14 @@ public class LabTestHistoryController implements Serializable {
     public void addReportRemoveHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, String reason) {
         labTestHistoryService.addReportRemoveHistory(patientInvestigation, patientReport, reason, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
+    
+    public void addParientDetailsEditHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        labTestHistoryService.addApprovalHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
+    
+    public void addReCalculateDynamicLabelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        labTestHistoryService.addApprovalHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent">
@@ -452,6 +460,8 @@ public class LabTestHistoryController implements Serializable {
         types.add(TestHistoryType.REPORT_EXPORT_AS_PDF);
         types.add(TestHistoryType.REPORT_ISSUE_STAFF);
         types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
+        types.add(TestHistoryType.RECALCULATE_DYNAMICLABEL);
+        types.add(TestHistoryType.PATIENT_DETAILS_CHANGE);
 
         return getReportLabTestHistorys(report, types);
     }
