@@ -25,9 +25,9 @@
                     </p:calendar>
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
-                    <p:commandButton id="btnRefresh" value="Process" ajax="false" 
+                    <p:commandButton id="btnRefresh" value="Process" ajax="false"
                                      class="ui-button-info m-1" icon="fas fa-cogs"
-                                     action="#{serviceSummery.opdPharmacyStaffWelfarePayments}"/>
+                                     action="#{serviceSummery.opdPharmacyStaffWelfarePaymentsDto}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
                     <p:commandButton
@@ -43,10 +43,10 @@
                     </p:commandButton>
                 </h:panelGrid>
                 <p:panel id="panelPrint"  styleClass="summeryBorder">
-                    <p:dataTable 
-                        id="opd" 
+                    <p:dataTable
+                        id="opd"
                         rowIndexVar="i"
-                        value="#{serviceSummery.payments}" 
+                        value="#{serviceSummery.staffWelfarePayments}"
                         var="p">
 
                         <f:facet name="header">
@@ -68,39 +68,39 @@
 
                         <p:column headerText="Bill No">
                             <f:facet name="header"><p:outputLabel value="Bill No"/></f:facet>
-                            <p:outputLabel value="#{p.bill.deptId}" />
+                            <p:outputLabel value="#{p.billDeptId}" />
                         </p:column>
 
                         <p:column headerText="Staff EPF No"
-                                  filterBy="#{p.bill.toStaff.epfNo}"
+                                  filterBy="#{p.staffEpfNo}"
                                   filterMatchMode="contains">
                             <f:facet name="header"><p:outputLabel value="Staff EPF No"/></f:facet>
-                            <p:outputLabel value="#{p.bill.toStaff.epfNo}" />
+                            <p:outputLabel value="#{p.staffEpfNo}" />
                         </p:column>
 
                         <p:column headerText="Staff Name"
-                                  filterBy="#{p.bill.toStaff.person.nameWithTitle}"
+                                  filterBy="#{p.staffNameWithTitle}"
                                   filterMatchMode="contains">
                             <f:facet name="header"><p:outputLabel value="Staff Name"/></f:facet>
-                            <p:outputLabel value="#{p.bill.toStaff.person.nameWithTitle}" />
+                            <p:outputLabel value="#{p.staffNameWithTitle}" />
                         </p:column>
 
                         <p:column headerText="Bill Type">
                             <f:facet name="header"><p:outputLabel value="Bill Type"/></f:facet>
-                            <p:outputLabel value="Pharmacy Bill" rendered="#{p.bill.billType ne 'OpdBill'}" />
-                            <p:outputLabel value="OPD Bill" rendered="#{p.bill.billType eq 'OpdBill'}" />
+                            <p:outputLabel value="Pharmacy Bill" rendered="#{p.pharmacyBill}" />
+                            <p:outputLabel value="OPD Bill" rendered="#{not p.pharmacyBill}" />
                         </p:column>
 
                         <p:column headerText="Date">
                             <f:facet name="header"><p:outputLabel value="Date"/></f:facet>
-                            <h:outputLabel value="#{p.bill.createdAt}">
+                            <h:outputLabel value="#{p.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Gross Amount" style="text-align: right">
                             <f:facet name="header"><p:outputLabel value="Gross Amount"/></f:facet>
-                            <p:outputLabel value="#{p.bill.total * (p.paidValue / p.bill.netTotal)}">
+                            <p:outputLabel value="#{p.grossAmount}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </p:outputLabel>
                             <f:facet name="footer">
