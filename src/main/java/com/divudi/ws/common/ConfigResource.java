@@ -73,6 +73,20 @@ public class ConfigResource {
         return successResponse();
     }
 
+    @POST
+    @Path("setInteger/{key}/{value}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response setIntegerValue(@PathParam("key") String key,
+            @PathParam("value") int value,
+            @Context HttpHeaders headers) {
+        String apiKey = headers.getHeaderString("Config");
+        if (!apiKeyController.isValidKey(apiKey)) {
+            return unauthorizedResponse();
+        }
+        configOptionApplicationController.setIntegerValueByKey(key, value);
+        return successResponse();
+    }
+
     private Response successResponse() {
         return Response.ok("Configuration updated successfully.").build();
     }
