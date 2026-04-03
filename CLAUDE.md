@@ -55,6 +55,9 @@
 ### When Working on Inward / Inpatient Module
 - [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
 
+### When Adding a New Privilege
+- [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
+
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
 
