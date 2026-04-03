@@ -65,6 +65,8 @@ public class MdInwardReportController implements Serializable {
     AdmissionType admissionType;
     Admission current;
     Institution institution;
+    Institution site;
+    private String dateBasis = "createdAt";
     double total = 0.0;
     List<BillFee> billfees;
     Bill bill;
@@ -388,15 +390,36 @@ public class MdInwardReportController implements Serializable {
 
         String sql;
         Map temMap = new HashMap();
+        String dateField1 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.createdAt";
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 //                + " and b.patientEncounter.paymentFinalized=true "
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField1 + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.institution =:inst ";
+            temMap.put("inst", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            temMap.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.department =:dept ";
+            temMap.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:paymentMethod ";
+            temMap.put("paymentMethod", paymentMethod);
         }
 
         sql += " order by b.createdAt ";
@@ -412,15 +435,36 @@ public class MdInwardReportController implements Serializable {
         }
 
         temMap = new HashMap();
+        String dateField2 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.createdAt";
         sql = "select count(distinct(b.patientEncounter)) from Bill b where"
                 + " b.billType = :billType "
                 //                + " and b.patientEncounter.paymentFinalized=true "
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField2 + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.institution =:inst ";
+            temMap.put("inst", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            temMap.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.department =:dept ";
+            temMap.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:paymentMethod ";
+            temMap.put("paymentMethod", paymentMethod);
         }
 
         sql += " order by b.createdAt ";
@@ -439,18 +483,32 @@ public class MdInwardReportController implements Serializable {
 
         String sql;
         Map temMap = new HashMap();
+        String dateField3 = "b.bill.createdAt";
         sql = "select b from BillItem b where "
                 + " b.bill.billType = :billType "
-                + " and b.bill.institution=:ins "
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false  ";
 
+        if (institution != null) {
+            sql += " and b.bill.institution=:ins ";
+            temMap.put("ins", institution);
+        }
+
         if (reportKeyWord.getString().equals("0")) {
+            dateField3 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.bill.createdAt";
             if (admissionType != null) {
                 sql += " and b.patientEncounter.admissionType =:ad ";
                 temMap.put("ad", admissionType);
             }
             sql += " and b.patientEncounter is not null ";
+            if (site != null) {
+                sql += " and b.patientEncounter.department.site =:site ";
+                temMap.put("site", site);
+            }
+            if (dept != null) {
+                sql += " and b.patientEncounter.department =:dept ";
+                temMap.put("dept", dept);
+            }
         } else if (reportKeyWord.getString().equals("1")) {
             sql += " and b.referenceBill.billType=:refTp";
             temMap.put("refTp", BillType.OpdBill);
@@ -460,10 +518,14 @@ public class MdInwardReportController implements Serializable {
             temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
         }
 
+        if (paymentMethod != null) {
+            sql += " and b.bill.paymentMethod =:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
         sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.CashRecieveBill);
-        temMap.put("ins", getSessionController().getInstitution());
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -741,6 +803,26 @@ public class MdInwardReportController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public void clearDepartment() {
+        this.dept = null;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
     }
 
 //    public void listInwardBillItems(){
