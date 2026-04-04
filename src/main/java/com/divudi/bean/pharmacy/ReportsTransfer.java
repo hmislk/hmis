@@ -14,6 +14,7 @@ import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -120,6 +121,9 @@ public class ReportsTransfer implements Serializable {
     private BillType[] billTypes;
 
     private Institution institution;
+    private Institution site;
+    private String dateBasis = "createdAt";
+    private PaymentMethod paymentMethod;
     private List<Stock> stocks;
     private List<ItemCount> itemCounts;
     private List<ItemCountWithOutMargin> itemCountWithOutMargins;
@@ -3330,6 +3334,38 @@ public class ReportsTransfer implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
 
     public List<Stock> getStocks() {

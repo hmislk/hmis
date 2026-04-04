@@ -54,8 +54,10 @@ public class ReportKeyWord {
     Speciality speciality;
     Patient patient;
     Institution institution;
+    Institution site;
     Institution bank;
     Institution institutionBank;
+    private String dateBasis = "createdAt";
     PaymentMethod paymentMethod;
     Item item;
     Category category;
@@ -535,6 +537,20 @@ public class ReportKeyWord {
         this.bool3 = bool3;
     }
 
+    public Institution getSite() {
+        return site;
+    }
 
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
 
 }

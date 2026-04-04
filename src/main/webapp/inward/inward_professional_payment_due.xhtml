@@ -16,75 +16,60 @@
                     <p:panel header="Search Bills" >
 
                         <h:panelGrid columns="2" class="mt-4 mb-2">
-                            <div class="row w-100">
-                                <div class="col-6">
-                                    <h:panelGrid columns="2">
-                                        <h:outputLabel value="From Date" class="mx-4 w-100" />
-                                        <p:calendar 
-                                            class="mx-4 w-100 my-1" 
-                                            inputStyleClass="w-100" 
-                                            id="fromDate" 
-                                            value="#{searchController.fromDate}"
-                                            navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                        </p:calendar>
+                            <h:outputLabel value="From Date" />
+                            <p:calendar
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="fromDate"
+                                value="#{admissionReportController.fromDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <h:outputLabel value="To Date" class="mx-4 "/>
-                                        <p:calendar  
-                                            id="toDate" 
-                                            class="mx-4 w-100 my-1"
-                                            inputStyleClass="w-100" 
-                                            value="#{searchController.toDate}"
-                                            navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                        </p:calendar>
+                            <h:outputLabel value="To Date" />
+                            <p:calendar
+                                id="toDate"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{admissionReportController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                        <h:outputLabel class="mx-4 " value="Inward service Bill No"/>
-                                        <p:inputText 
-                                            class=" mx-4 w-100"  
-                                            autocomplete="off" 
-                                            
-                                            value="#{searchController.searchKeyword.billNo}" />
+                            <h:outputLabel value="Date Basis" />
+                            <p:selectOneMenu styleClass="w-100" value="#{admissionReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
 
-                                        <h:outputLabel class="mx-4 " value="Patient Name"/>
-                                        <p:inputText 
-                                            class="p-1 w-100 mx-4"
-                                            autocomplete="off" 
-                                            value="#{searchController.searchKeyword.patientName}" />
+                            <h:outputLabel value="Admission Type" />
+                            <p:selectOneMenu styleClass="w-100" value="#{admissionReportController.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
 
-                                        <h:outputLabel class="mx-4 " value="Speciality"/> 
-                                        <p:inputText 
-                                            class="mx-4 w-100" 
-                                            autocomplete="off" 
-                                            value="#{searchController.searchKeyword.speciality}" />
+                            <h:outputLabel value="Payment Method" />
+                            <p:selectOneMenu styleClass="w-100" value="#{admissionReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
 
-                                        <h:outputLabel class="mx-4 " value="Doctor Name"/>    
-                                        <p:inputText
-                                            class="mx-4 w-100 "
-                                            autocomplete="off" 
-                                            value="#{searchController.searchKeyword.staffName}" />
+                            <h:outputLabel value="Institution" />
+                            <p:selectOneMenu styleClass="w-100" value="#{admissionReportController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            </p:selectOneMenu>
 
-                                        <h:outputLabel class="mx-4 " value="Service Name"/>  
-                                        <p:inputText 
-                                            class="mx-4 w-100" 
-                                            autocomplete="off" 
-                                            value="#{searchController.searchKeyword.itemName}" />
+                            <h:outputLabel value="Site" />
+                            <p:selectOneMenu styleClass="w-100" value="#{admissionReportController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            </p:selectOneMenu>
 
-                                        <h:outputLabel class="mx-4 " value="Charges"/>
-                                        <p:inputText
-                                            class="mx-4 w-100 "
-                                            autocomplete="off"
-                                            value="#{searchController.searchKeyword.total}"/>
-                                    </h:panelGrid>
-
-                                </div>
-                            </div>
-
-
-
-
-
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete styleClass="w-100" completeMethod="#{departmentController.completeDept}"
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                            forceSelection="true" value="#{admissionReportController.department}" />
                         </h:panelGrid>
+
                         <h:panelGrid class="mx-4" columns="3">
                             <p:commandButton icon="fas fa-search" class="" id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
                             <p:commandButton icon="fas fa-print" class="mx-1 ui-button-info" value="Print" ajax="false" action="#"  >
@@ -93,7 +78,7 @@
 
                             <p:commandButton icon="fas fa-file-excel" class="mx-1 ui-button-success" ajax="false" value="Excel"   actionListener="#{searchController.createDueFeeTableInwardAll()}">
                                 <p:dataExporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
-                            </p:commandButton> 
+                            </p:commandButton>
                         </h:panelGrid>
 
 
@@ -106,7 +91,7 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
-                            <p:column headerText="Speciality"> 
+                            <p:column headerText="Speciality">
                                 <f:facet name="header">
                                     <h:outputLabel value="Speciality"/>
                                 </f:facet>
@@ -129,7 +114,7 @@
 
                             <p:column headerText="Patient" >
                                 <h:commandLink action="/inward/payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>
 
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
