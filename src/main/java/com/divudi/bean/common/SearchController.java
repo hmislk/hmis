@@ -4487,6 +4487,7 @@ public class SearchController implements Serializable {
         bills = null;
         pharmacyPurchaseOrderDtos = null;
         billSummaryRows = null;
+        opdSaleSummaryDtos = null;
         netTotal = 0.0;
         discount = 0.0;
         grossTotal = 0.0;
@@ -16618,6 +16619,17 @@ public class SearchController implements Serializable {
 
     public void createItemizedSalesSummaryDto() {
         opdSaleSummaryDtos = generateItemizedSalesSummaryDto();
+    }
+
+    public void createCombinedItemizedServiceSummaryDto() {
+        List<BillTypeAtomic> btas = new ArrayList<>(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND);
+        opdSaleSummaryDtos = billService.fetchOpdSaleSummaryDTOs(
+                fromDate, toDate, institution, site, department, category, item, btas);
     }
 
     public void createItemizedSalesReport() {
