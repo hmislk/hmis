@@ -4487,6 +4487,7 @@ public class SearchController implements Serializable {
         bills = null;
         pharmacyPurchaseOrderDtos = null;
         billSummaryRows = null;
+        opdSaleSummaryDtos = null;
         netTotal = 0.0;
         discount = 0.0;
         grossTotal = 0.0;
