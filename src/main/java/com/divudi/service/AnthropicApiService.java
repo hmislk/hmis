@@ -303,6 +303,17 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/balance_history/staff_welfare_histories", "Get staff welfare financial history"}
                 });
 
+        appendModule(sb, "Pharmacy - Backfill Operations", "/pharmacy",
+                "ADMINISTRATIVE/MAINTENANCE ONLY — requires explicit system-administrator authorisation. "
+                + "Reconstruct missing BillFinanceDetail (BFD) and BillItemFinanceDetail (BIFD) records "
+                + "on historical pharmacy bills that were saved before the finance-detail system was introduced. "
+                + "Always supply auditComment and approvedBy. Do NOT execute these without administrator approval.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical PHARMACY_STOCK_ADJUSTMENT and PHARMACY_RETAIL_RATE_ADJUSTMENT bills"},
+                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"}
+                });
+
         appendModule(sb, "Finance - Bill Data Correction", "/bill_data_correction",
                 "Apply corrections and adjustments to financial bill records.",
                 githubUrl(branch, "developer_docs/API_BILL_DATA_CORRECTION.md"),
