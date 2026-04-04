@@ -221,8 +221,9 @@ public class AnthropicApiService implements Serializable {
         if (userHmisApiKey != null && !userHmisApiKey.trim().isEmpty()) {
             sb.append("## Authentication\n");
             sb.append("API key: ").append(userHmisApiKey.trim()).append("\n");
-            sb.append("Header: Finance\n");
-            sb.append("Pass this key in the 'Finance' HTTP header for all authenticated requests.\n\n");
+            sb.append("Default header: Finance\n");
+            sb.append("Pass this key in the 'Finance' HTTP header for most authenticated requests.\n");
+            sb.append("Exception: the Channel/Booking module (/channel/*) uses the 'Token' header instead of 'Finance'.\n\n");
         }
 
         sb.append("## Available API Modules\n");
@@ -318,6 +319,25 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/bill",                          "Get bills for a date range"},
                     {"GET", "/costing_data/by_bill_number/{bill_number}", "Get a specific bill by bill number"},
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
+                });
+
+        appendModule(sb, "Channel / Booking", "/channel",
+                "Manage online doctor appointment bookings end-to-end: browse specialties, hospitals, doctors and sessions, then create, edit, complete or cancel bookings. Authentication uses the 'Token' header (not 'Finance'). Wrong booking parameters can create bad appointments — always confirm session availability before saving.",
+                githubUrl(branch, "developer_docs/API_CHANNEL_BOOKING.md"),
+                new String[][]{
+                    {"POST", "/channel/specializations",    "List all medical specialties available for booking"},
+                    {"POST", "/channel/hospitals",          "List all hospitals/channeling centers"},
+                    {"POST", "/channel/doctors",            "List all consultants with hospital and specialty details"},
+                    {"POST", "/channel/doctorAvailability", "Find session instances by hospital, specialty, doctor name and/or date"},
+                    {"GET",  "/channel/searchData",         "Search doctors by name or ID with optional date/hospital filters (query params)"},
+                    {"POST", "/channel/doctorSessions",     "Get upcoming sessions for a specific doctor at a hospital"},
+                    {"POST", "/channel/doctorSession",      "Get full details of a single session instance by sessionID"},
+                    {"POST", "/channel/save",               "Create a temporary (unpaid) booking — returns refNo"},
+                    {"POST", "/channel/edit",               "Update patient details on an unpaid booking by refNo"},
+                    {"POST", "/channel/complete",           "Finalize and pay a temporary booking (statusId=1 to confirm)"},
+                    {"POST", "/channel/channelHistoryList", "List all bookings for an agent within a date range"},
+                    {"POST", "/channel/channelHistoryByRef","Get full booking details by client reference number"},
+                    {"POST", "/channel/cancellation",       "Cancel a confirmed booking by refNo"}
                 });
 
         sb.append("## Your Capabilities\n");
