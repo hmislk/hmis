@@ -1,125 +1,114 @@
-# User Management API Documentation for Developers
+# User Management API
 
 ## Overview
 
-This document describes the User Management REST API introduced for administrative user operations and role/privilege administration.
+The User Management API provides REST endpoints for administering HMIS users, roles, privileges, department assignments, and login history. It is the preferred way to perform user admin operations — direct database manipulation should be avoided.
 
-The API is split into two resource groups:
+The API is split into three resource groups:
 
-1. **User APIs** (`/api/users`) for user CRUD, password operations, user privilege assignment, and user department assignment.
-2. **Role APIs** (`/api/user-roles`) for role CRUD and role privilege assignment.
+| Group | Base Path | Purpose |
+|---|---|---|
+| User API | `/api/users` | User CRUD, passwords, privilege assignment, department assignment |
+| Role API | `/api/user-roles` | Role CRUD and role privilege assignment |
+| Login History API | `/api/logins` | Query login history by user, department, or date range |
 
-These APIs use the same response envelope pattern used across HMIS APIs:
-
-- Success:
-
-```json
-{
-  "status": "success",
-  "code": 200,
-  "data": {}
-}
-```
-
-- Error:
+All endpoints use the standard HMIS response envelope:
 
 ```json
-{
-  "status": "error",
-  "code": 400,
-  "message": "error details"
-}
-```
+{ "status": "success", "code": 200, "data": {} }
+{ "status": "error",   "code": 400, "message": "error details" }
+```text
+
+---
 
 ## Base Configuration
 
-- **Base URL**: `http://localhost:8080` (adjust per environment)
-- **API Base Paths**:
-  - `/api/users`
-  - `/api/user-roles`
-- **Authentication**: API key in `Finance` header
-- **Content Type**: `application/json`
-- **Date Format**: `yyyy-MM-dd HH:mm:ss`
+| Setting | Value |
+|---|---|
+| Base URL | `http://<host>/<context>` (e.g. `http://localhost:9090/rh`) |
+| Authentication header | `Finance: <api_key>` |
+| Content-Type | `application/json` |
+| Date format | `yyyy-MM-dd HH:mm:ss` |
 
 ---
 
 ## Authentication
 
-All endpoints require a valid API key:
+All endpoints require a valid API key passed in the `Finance` header. A key is valid when:
+- It exists and is not retired
+- It is linked to an activated, non-retired web user
+- Its expiry date is in the future
 
-```bash
--H "Finance: YOUR_API_KEY"
-```
-
-A key is considered valid only when:
-- key exists;
-- key has a linked web user;
-- key has a non-null expiry date;
-- key is not expired;
-- linked user is activated and not retired.
-
-If validation fails, API returns:
-- **401** with message: `Not a valid key`
+Failed auth returns **401** `Not a valid key`.
 
 ---
 
-## Security & Privilege Model
+## Admin Privilege Requirement
 
-### Read access
-Any valid API key can call read/list endpoints.
+Write operations (create, update, retire, assign) require the calling user to hold the `Admin` privilege. The User API checks both direct user privileges and role-based privileges. The Role API checks direct user privileges only.
 
-### Admin-required operations
-Create/update/retire and assignment operations require **Admin** privilege.
-
-- User API admin check supports:
-  - direct user privilege (`WebUserPrivilege`), or
-  - role-based admin privilege (`WebUserRolePrivilege`).
-- Role API admin check supports:
-  - direct user privilege only.
-
-If privilege check fails, API returns:
-- **403** with message: `Insufficient privileges`
+Failed privilege check returns **403** `Insufficient privileges`.
 
 ---
 
-## Endpoints Reference
+## A. User API (`/api/users`)
 
-## A. User APIs (`/api/users`)
+### 1. List / Search Users
 
-### 1) List/Search Users
+```http
+GET /api/users?query={text}&departmentId={id}&page={n}&size={n}
+GET /api/users/search?query={text}&departmentId={id}&page={n}&size={n}
+```text
 
-**GET** `/api/users?query={query}&page={page}&size={size}`
-**GET** `/api/users/search?query={query}&page={page}&size={size}` (alias)
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `query` | String | — | Case-insensitive match on user name, code, or person name |
+| `departmentId` | Long | — | Filter to users assigned to this loggable department |
+| `page` | Int | `0` | Zero-based page number |
+| `size` | Int | `20` | Page size, min 1, max 100 |
 
-- `query` (optional): matches user name/code/person name (case-insensitive)
-- `page` (optional): default `0`
-- `size` (optional): default `20`, min `1`, max `100`
+When `departmentId` is supplied, results are restricted to users who have that department in their `WebUserDepartment` (loggable department) list. `query` can be combined with `departmentId`.
 
-**Example**
+**Example — all users in OPD:**
 ```bash
-curl -X GET "http://localhost:8080/api/users?query=admin&page=0&size=20" \
+curl "http://localhost:9090/rh/api/users?departmentId=481" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
-### 2) Get User by ID
+**Example — search by name within a department:**
+```bash
+curl "http://localhost:9090/rh/api/users?query=tharindi&departmentId=481" \
+  -H "Finance: YOUR_API_KEY"
+```text
 
-**GET** `/api/users/{id}`
+**Response items:** `id`, `name`, `userName`, `code`, `staffNameWithTitle`
 
-Returns user details map.
+---
 
-### 3) Create User
+### 2. Get User by ID
 
-**POST** `/api/users`
+```http
+GET /api/users/{id}
+```text
 
-**Required**: `name`, `password`
+**Response fields:** `id`, `name`, `code`, `email`, `telNo`, `activated`, `retired`, `institutionId`, `departmentId`, `siteId`, `roleId`, `personName`
 
-**Example body**
+---
+
+### 3. Create User
+
+```http
+POST /api/users
+```text
+
+**Required fields:** `name`, `password`
+
 ```json
 {
   "name": "api_user_01",
   "password": "StrongPassword#123",
   "code": "API001",
-  "email": "api.user@hospital.lk",
+  "email": "user@hospital.lk",
   "telNo": "+94112223344",
   "personName": "API User",
   "personMobile": "+94771234567",
@@ -129,406 +118,497 @@ Returns user details map.
   "roleId": 3,
   "activated": true
 }
-```
+```text
 
-**Validation notes**
-- duplicate active user name is rejected (`User name already exists`)
-- `name` and `password` are mandatory (`name and password are required`)
+Rejects duplicate active user names with `400 User name already exists`.
 
-### 4) Update User
+---
 
-**PUT** `/api/users/{id}`
+### 4. Update User
 
-Partial updates are supported (only provided fields are updated).
+```http
+PUT /api/users/{id}
+```text
 
-### 5) Retire User (soft delete)
+Partial update — only fields present in the body are changed.
 
-**DELETE** `/api/users/{id}?retireComments={reason}`
+---
 
-Marks user as retired and records retire metadata.
+### 5. Retire User
 
-### 6) Reset User Password (Admin)
+```http
+DELETE /api/users/{id}?retireComments={reason}
+```text
 
-**POST** `/api/users/{id}/reset-password`
+Soft-retires the user (sets `retired=true`). Irreversible via API.
 
-**Body**
+---
+
+### 6. Reset Password (Admin)
+
+```http
+POST /api/users/{id}/reset-password
+```text
+
 ```json
-{
-  "newPassword": "NewPassword#456"
-}
-```
+{ "newPassword": "NewPassword#456" }
+```text
 
-Returns: `Password reset successful`.
+Sets `needToResetPassword=true` so the user is prompted to change on next login.
 
-### 7) Change Password (Self or Admin)
+---
 
-**POST** `/api/users/{id}/change-password`
+### 7. Change Own Password
 
-**Body (self-service)**
+```http
+POST /api/users/{id}/change-password
+```text
+
 ```json
 {
   "currentPassword": "CurrentPassword#123",
   "newPassword": "NewPassword#789"
 }
-```
+```text
 
-Rules:
-- User can change own password if `currentPassword` matches.
-- Admin can change any user password without current password.
-
-Returns: `Password changed successfully`.
-
-### 8) List User Privileges
-
-**GET** `/api/users/{id}/privileges`
-
-Response items:
-- `id`
-- `privilege`
-- `departmentId`
-
-### 9) Assign User Privileges
-
-**POST** `/api/users/{id}/privileges`
-
-**Body**
-```json
-{
-  "privileges": ["Admin", "PharmacyIssueBill"],
-  "departmentId": 10
-}
-```
-
-Notes:
-- duplicates are ignored;
-- invalid privilege names return 400 (enum parsing failure message);
-- returns full updated privilege list.
-
-### 10) Revoke User Privilege
-
-**DELETE** `/api/users/{id}/privileges/{privilegeId}`
-
-Soft-retires the specific privilege assignment.
-
-Returns: `Privilege revoked`.
-
-### 11) List User Departments
-
-**GET** `/api/users/{id}/departments`
-
-Response items:
-- `id`
-- `departmentId`
-- `departmentName`
-
-### 12) Assign User Departments
-
-**POST** `/api/users/{id}/departments`
-
-**Body**
-```json
-{
-  "departmentIds": [10, 11, 12]
-}
-```
-
-Notes:
-- non-existing department IDs are skipped;
-- existing active assignments are not duplicated;
-- returns updated assigned department list.
+- Users changing their own password must supply `currentPassword`.
+- Admins can change any user's password without `currentPassword`.
 
 ---
 
-## B. User Role APIs (`/api/user-roles`)
+### 8. List Available Privilege Names
 
-### 1) List Roles
+```http
+GET /api/users/privileges/available
+```text
 
-**GET** `/api/user-roles`
+Returns the full list of valid privilege enum names from `Privileges.java`. Use this to discover valid values before calling assign endpoints.
 
-### 2) Get Role by ID
+```bash
+curl "http://localhost:9090/rh/api/users/privileges/available" \
+  -H "Finance: YOUR_API_KEY"
+```text
 
-**GET** `/api/user-roles/{id}`
+**Response:** `["Admin", "Opd", "Inward", "ClinicalPatientEdit", ...]`
 
-### 3) Create Role
+---
 
-**POST** `/api/user-roles`
+### 9. List User's Privileges
 
-**Body**
+```http
+GET /api/users/{id}/privileges
+```text
+
+**Response items:** `id`, `privilege`, `departmentId`
+
+---
+
+### 10. Assign Privileges to a Single User
+
+```http
+POST /api/users/{id}/privileges
+```text
+
 ```json
 {
-  "name": "DepartmentAdmin",
-  "description": "Department-level admin operations"
+  "privileges": ["ClinicalPatientEdit", "OpdEditPatientDetails"],
+  "departmentId": 481
 }
-```
+```text
 
-### 4) Update Role
+- `departmentId` is optional; if omitted the privilege is assigned without department scope (applies globally for the user).
+- Existing active assignments are skipped (no duplicates).
+- Invalid privilege names return **400**.
+- Returns the full updated privilege list for the user.
 
-**PUT** `/api/user-roles/{id}`
+---
 
-**Body**
+### 11. Bulk Assign Privileges to Multiple Users
+
+```http
+POST /api/users/bulk-privileges
+```text
+
+Assigns a set of privileges to multiple users in a single call. This is the recommended approach for onboarding a department or rolling out a new privilege set.
+
 ```json
 {
-  "name": "DepartmentAdministrator",
-  "description": "Updated description"
+  "userIds": [20701, 547569, 44338],
+  "privileges": ["ClinicalPatientEdit", "OpdEditPatientDetails", "ClinicalPatientNameChange"],
+  "departmentId": 481
 }
-```
+```text
 
-### 5) Retire Role
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `userIds` | List\<Long\> | Yes | Users to receive the privileges |
+| `privileges` | List\<String\> | Yes | Privilege enum names to assign |
+| `departmentId` | Long | No | If supplied, assigns to this department only. If omitted, assigns across **each user's own loggable departments** |
 
-**DELETE** `/api/user-roles/{id}`
+**Behaviour when `departmentId` is omitted:** for each user, the API iterates all their active `WebUserDepartment` entries and assigns the privileges to each one. Existing assignments are silently skipped.
 
-### 6) List Role Privileges
+**Response:** object with `processed` (per-user summary) and `skippedUsers` (IDs that could not be processed):
 
-**GET** `/api/user-roles/{id}/privileges`
-
-Response items:
-- `id`
-- `privilege`
-- `departmentId`
-
-### 7) Assign Role Privileges
-
-**POST** `/api/user-roles/{id}/privileges`
-
-**Body**
 ```json
 {
-  "privileges": ["Admin", "CollectingCentreBillCreate"],
-  "departmentId": 10
+  "status": "success",
+  "code": 200,
+  "data": {
+    "processed": [
+      { "userId": 20701, "userName": "tharindi", "privilegesAdded": 13, "privilegesSkipped": 1 },
+      { "userId": 547569, "userName": "binosha",  "privilegesAdded": 14, "privilegesSkipped": 0 }
+    ],
+    "skippedUsers": [
+      { "userId": 99999, "reason": "not_found" },
+      { "userId": 88888, "reason": "retired" }
+    ]
+  }
 }
-```
+```text
 
-Notes:
-- duplicates are ignored;
-- invalid privilege names return 400;
-- returns updated role privilege list.
+**Example — grant patient editing to all users in a department across their own departments:**
+```bash
+curl -X POST "http://localhost:9090/rh/api/users/bulk-privileges" \
+  -H "Finance: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userIds": [20701, 547569, 44338],
+    "privileges": [
+      "ClinicalPatientEdit", "ClinicalPatientAdd", "ClinicalPatientDetails",
+      "ClinicalPatientNameChange", "ClinicalPatientPhoneNumberEdit",
+      "OpdEditPatientDetails", "LabEditPatient"
+    ]
+  }'
+```text
+
+---
+
+### 12. Revoke User Privilege
+
+```http
+DELETE /api/users/{id}/privileges/{privilegeId}
+```text
+
+Soft-retires a single privilege assignment. Returns `Privilege revoked`.
+
+---
+
+### 13. List User's Loggable Departments
+
+```http
+GET /api/users/{id}/departments
+```text
+
+**Response items:** `id`, `departmentId`, `departmentName`
+
+---
+
+### 14. Assign Loggable Departments to User
+
+```http
+POST /api/users/{id}/departments
+```text
+
+```json
+{ "departmentIds": [481, 86405, 1048772] }
+```text
+
+- Existing active assignments are skipped.
+- Non-existent department IDs return **400**.
+- Returns the updated department list.
+
+---
+
+## B. Role API (`/api/user-roles`)
+
+### 1. List Roles
+
+```http
+GET /api/user-roles
+```text
+
+**Response items:** `id`, `name`, `description`, `retired`
+
+### 2. Get Role by ID
+
+```http
+GET /api/user-roles/{id}
+```text
+
+### 3. Create Role
+
+```http
+POST /api/user-roles
+```text
+
+```json
+{ "name": "PharmacySupervisor", "description": "Pharmacy supervision role" }
+```text
+
+### 4. Update Role
+
+```http
+PUT /api/user-roles/{id}
+```text
+
+### 5. Retire Role
+
+```http
+DELETE /api/user-roles/{id}
+```text
+
+### 6. List Role Privileges
+
+```http
+GET /api/user-roles/{id}/privileges
+```text
+
+**Response items:** `id`, `privilege`, `departmentId`
+
+### 7. Assign Role Privileges
+
+```http
+POST /api/user-roles/{id}/privileges
+```text
+
+```json
+{
+  "privileges": ["Pharmacy", "PharmacyIssueBill"],
+  "departmentId": 485
+}
+```text
+
+Duplicates are skipped. Returns updated role privilege list.
+
+---
+
+## C. Login History API (`/api/logins`)
+
+Useful for finding which users have recently accessed a department — e.g. before bulk-assigning a new privilege.
+
+### 1. List Logins
+
+```http
+GET /api/logins?departmentId={id}&userId={id}&fromDate={date}&toDate={date}&days={n}&page={n}&size={n}
+```text
+
+| Parameter | Type | Description |
+|---|---|---|
+| `departmentId` | Long | Filter by department |
+| `userId` | Long | Filter by user |
+| `days` | Int | Logins from the last N days (takes precedence over `fromDate`/`toDate`) |
+| `fromDate` | String | Start of range, format `yyyy-MM-dd` (inclusive) |
+| `toDate` | String | End of range, format `yyyy-MM-dd` (inclusive, end of day) |
+| `page` | Int | Default `0` |
+| `size` | Int | Default `20`, max `100` |
+
+Results are ordered most recent first.
+
+**Response items:** `id`, `userId`, `userName`, `departmentId`, `departmentName`, `institutionId`, `logedAt`, `logoutAt`, `ipAddress`, `browser`
+
+**Examples:**
+```bash
+# Last 10 days in OPD
+curl "http://localhost:9090/rh/api/logins?departmentId=481&days=10&size=50" \
+  -H "Finance: YOUR_API_KEY"
+
+# Specific date range
+curl "http://localhost:9090/rh/api/logins?departmentId=481&fromDate=2026-03-01&toDate=2026-03-31" \
+  -H "Finance: YOUR_API_KEY"
+```text
+
+---
+
+### 2. Last Login Per User
+
+```http
+GET /api/logins/last-per-user?departmentId={id}&size={n}
+```text
+
+Returns one record per unique user (the most recent login), deduplicated in application memory. Ideal for finding the active user set for a department.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `departmentId` | Long | Filter by department |
+| `size` | Int | Max distinct users to return, default `20`, max `100` |
+
+**Response items:** `userId`, `userName`, `departmentId`, `departmentName`, `lastLogin`
+
+```bash
+curl "http://localhost:9090/rh/api/logins/last-per-user?departmentId=481&size=50" \
+  -H "Finance: YOUR_API_KEY"
+```text
+
+---
+
+## Common Workflows
+
+### Workflow A: Grant a privilege set to all recent users of a department
+
+```bash
+# Step 1: Find department ID
+curl "http://localhost:9090/rh/api/departments/search?query=MRI" \
+  -H "Finance: YOUR_API_KEY"
+# → departmentId = 1048772
+
+# Step 2: Find users who logged in during the last 10 days
+curl "http://localhost:9090/rh/api/logins/last-per-user?departmentId=1048772&size=50" \
+  -H "Finance: YOUR_API_KEY"
+# → userIds = [20701, 547569, ...]
+
+# Step 3: Discover valid privilege names
+curl "http://localhost:9090/rh/api/users/privileges/available" \
+  -H "Finance: YOUR_API_KEY"
+
+# Step 4: Bulk-assign across each user's own loggable departments
+curl -X POST "http://localhost:9090/rh/api/users/bulk-privileges" \
+  -H "Finance: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userIds": [20701, 547569],
+    "privileges": ["ClinicalPatientEdit", "OpdEditPatientDetails", "LabEditPatient"]
+  }'
+```text
+
+---
+
+### Workflow B: Onboard a new user with role and departments
+
+```bash
+# Create user
+curl -X POST "http://localhost:9090/rh/api/users" \
+  -H "Finance: YOUR_API_KEY" -H "Content-Type: application/json" \
+  -d '{"name":"new.user","password":"Welcome#2026","personName":"New User","activated":true}'
+# → userId = 99999
+
+# Assign loggable departments
+curl -X POST "http://localhost:9090/rh/api/users/99999/departments" \
+  -H "Finance: YOUR_API_KEY" -H "Content-Type: application/json" \
+  -d '{"departmentIds":[481, 86405]}'
+
+# Assign privileges per department
+curl -X POST "http://localhost:9090/rh/api/users/99999/privileges" \
+  -H "Finance: YOUR_API_KEY" -H "Content-Type: application/json" \
+  -d '{"privileges":["Opd","OpdBilling","Search"],"departmentId":481}'
+```text
+
+---
+
+### Workflow C: Audit who has a specific privilege in a department
+
+```bash
+# List all users in a department
+curl "http://localhost:9090/rh/api/users?departmentId=481&size=100" \
+  -H "Finance: YOUR_API_KEY"
+
+# For each userId, check their privileges
+curl "http://localhost:9090/rh/api/users/20701/privileges" \
+  -H "Finance: YOUR_API_KEY"
+```text
 
 ---
 
 ## Request / Response DTOs
 
-## 1) `UserUpsertRequestDTO`
+### `UserUpsertRequestDTO`
+
+| Field | Type | Create | Update | Description |
+|---|---|---|---|---|
+| `name` | String | Required | Optional | Login name (must be unique) |
+| `password` | String | Required | Optional | Plaintext — API hashes before persisting |
+| `code` | String | — | — | Short code |
+| `email` | String | — | — | Email address |
+| `telNo` | String | — | — | Telephone |
+| `personName` | String | — | — | Display name |
+| `personMobile` | String | — | — | Mobile number |
+| `institutionId` | Long | — | — | Institution link |
+| `siteId` | Long | — | — | Site link |
+| `departmentId` | Long | — | — | Primary department |
+| `roleId` | Long | — | — | Role reference |
+| `activated` | Boolean | — | — | Activation state |
+
+### `BulkPrivilegeAssignmentRequestDTO`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | String | Create: Yes | Login/user name |
-| `password` | String | Create: Yes | Plain password; API hashes before persisting |
-| `code` | String | No | Optional user code |
-| `email` | String | No | Email |
-| `telNo` | String | No | Telephone |
-| `personName` | String | No | Person display name |
-| `personMobile` | String | No | Person mobile |
-| `institutionId` | Long | No | Institution link |
-| `siteId` | Long | No | Site link |
-| `departmentId` | Long | No | Primary department |
-| `roleId` | Long | No | Role reference |
-| `activated` | Boolean | No | Activation state |
+| `userIds` | List\<Long\> | Yes | Target users |
+| `privileges` | List\<String\> | Yes | Privilege enum names (see `/privileges/available`) |
+| `departmentId` | Long | No | If omitted, assigns across all of each user's loggable departments |
 
-## 2) `PasswordChangeRequestDTO`
+### `PrivilegeAssignmentRequestDTO`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `currentPassword` | String | Required for self change | Existing password validation |
-| `newPassword` | String | Yes | New password |
+| `privileges` | List\<String\> | Yes | Privilege enum names |
+| `departmentId` | Long | No | Department scope |
 
-## 3) `PrivilegeAssignmentRequestDTO`
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `privileges` | List<String> | Yes | Privilege enum names |
-| `departmentId` | Long | No | Optional department scope |
-
-## 4) `DepartmentAssignmentRequestDTO`
+### `DepartmentAssignmentRequestDTO`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `departmentIds` | List<Long> | Yes | Department IDs to assign |
+| `departmentIds` | List\<Long\> | Yes | Department IDs to assign |
 
-## 5) `UserRoleUpsertRequestDTO`
+### `PasswordChangeRequestDTO`
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `currentPassword` | String | Self-change only | Validated against stored hash |
+| `newPassword` | String | Yes | New plaintext password |
+
+### `UserRoleUpsertRequestDTO`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `name` | String | Create: Yes | Role name |
 | `description` | String | No | Role description |
 
-## 6) `RolePrivilegeAssignmentRequestDTO`
+### `RolePrivilegeAssignmentRequestDTO`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `privileges` | List<String> | Yes | Privilege enum names |
-| `departmentId` | Long | No | Optional department scope |
+| `privileges` | List\<String\> | Yes | Privilege enum names |
+| `departmentId` | Long | No | Department scope |
 
 ---
 
-## Error Handling
+## Error Reference
 
-Common API errors:
-
-- `401 Not a valid key`
-- `403 Insufficient privileges`
-- `404 User not found`
-- `404 Role not found`
-- `404 Privilege assignment not found`
-- `400 Invalid JSON format`
-- `400 name and password are required`
-- `400 name is required`
-- `400 Request body is required`
-- `400 privileges are required`
-- `400 departmentIds are required`
-- `400 newPassword is required`
-- `400 Current password is invalid`
-- `400 User name already exists`
-
-For invalid privilege enum names, response is `400` with exception-derived message.
-
----
-
-## cURL Examples for Common Workflows
-
-### Create user
-
-```bash
-curl -X POST "http://localhost:8080/api/users" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name":"integration.user",
-    "password":"Secret#123",
-    "personName":"Integration User",
-    "departmentId":10,
-    "roleId":3,
-    "activated":true
-  }'
-```
-
-### Reset password (admin)
-
-```bash
-curl -X POST "http://localhost:8080/api/users/123/reset-password" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"newPassword":"Welcome#2026"}'
-```
-
-### Assign privileges to user
-
-```bash
-curl -X POST "http://localhost:8080/api/users/123/privileges" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"privileges":["Admin","PharmacyIssueBill"],"departmentId":10}'
-```
-
-### Assign departments to user
-
-```bash
-curl -X POST "http://localhost:8080/api/users/123/departments" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"departmentIds":[10,11]}'
-```
-
-### Create role and assign privileges
-
-```bash
-curl -X POST "http://localhost:8080/api/user-roles" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"PharmacySupervisor","description":"Role for pharmacy supervision"}'
-```
-
-```bash
-curl -X POST "http://localhost:8080/api/user-roles/15/privileges" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"privileges":["PharmacyIssueBill","PharmacyReceiveGRN"],"departmentId":10}'
-```
+| HTTP | Message | Cause |
+|---|---|---|
+| 401 | `Not a valid key` | Missing/expired/invalid API key |
+| 403 | `Insufficient privileges` | Caller lacks `Admin` privilege |
+| 404 | `User not found` | User ID not found or retired |
+| 404 | `Role not found` | Role ID not found or retired |
+| 404 | `Department not found` | Department ID invalid |
+| 404 | `Privilege assignment not found` | Privilege ID not found or already retired |
+| 400 | `name and password are required` | Create user missing fields |
+| 400 | `User name already exists` | Duplicate login name |
+| 400 | `privileges are required` | Empty privileges list |
+| 400 | `userIds are required` | Empty userIds in bulk request |
+| 400 | `departmentIds are required` | Empty department list |
+| 400 | `newPassword is required` | Missing new password |
+| 400 | `Current password is invalid` | Wrong current password on self-change |
+| 400 | `Invalid privilege: {name}` | Privilege name not in `Privileges` enum |
+| 400 | `Invalid departmentId` | Non-numeric or non-existent department ID |
+| 400 | `Invalid fromDate format, expected yyyy-MM-dd` | Bad date string |
+| 400 | `Invalid JSON format` | Malformed request body |
+| 500 | `Internal server error` | Unexpected server-side error |
 
 ---
 
-## Security Considerations
+## Security Notes
 
-1. **Use least privilege**: Avoid assigning `Admin` unless absolutely required.
-2. **Use role-based access where possible**: Prefer role privileges over many direct user privilege rows.
-3. **Rotate API keys** regularly and keep expiry dates enforced.
-4. **Always use HTTPS** in production deployments.
-5. **Treat password endpoints as sensitive** and audit calls to reset/change password operations.
-6. **Retire, don’t delete**: API intentionally performs soft retire for users/roles/privilege mappings.
-
----
-
-## C. Login History API (`/api/logins`)
-
-Provides endpoints to query login history, useful for finding which users have recently logged into a specific department.
-
-### 1) List Logins
-
-**GET** `/api/logins?departmentId={id}&userId={id}&page={page}&size={size}`
-
-- `departmentId` (optional): filter by department
-- `userId` (optional): filter by user
-- `page` (optional): default `0`
-- `size` (optional): default `20`, min `1`, max `100`
-
-Returns login records ordered by most recent first.
-
-**Response items**:
-- `id`, `userId`, `userName`, `departmentId`, `departmentName`, `institutionId`, `logedAt`, `logoutAt`, `ipAddress`, `browser`
-
-**Example**
-```bash
-curl -X GET "http://localhost:8080/rh/api/logins?departmentId=485&size=10" \
-  -H "Finance: YOUR_API_KEY"
-```
-
-### 2) Last Login Per User
-
-**GET** `/api/logins/last-per-user?departmentId={id}&size={size}`
-
-Returns the most recent login for each unique user, deduplicated. Ideal for finding "who last logged into Main Pharmacy".
-
-- `departmentId` (optional): filter by department
-- `size` (optional): default `20`, max `100`
-
-**Response items**:
-- `userId`, `userName`, `departmentId`, `departmentName`, `lastLogin`
-
-**Example**
-```bash
-curl -X GET "http://localhost:8080/rh/api/logins/last-per-user?departmentId=485&size=20" \
-  -H "Finance: YOUR_API_KEY"
-```
+1. **Least privilege**: avoid assigning `Admin` unless strictly necessary.
+2. **Prefer roles**: use `WebUserRole` + role privileges rather than many direct user privilege rows.
+3. **Rotate API keys**: enforce short expiry dates; rotate on staff changes.
+4. **HTTPS only** in production — the `Finance` header is a bearer token.
+5. **Audit password resets**: treat reset/change password endpoints as sensitive operations.
+6. **Soft-retire only**: all deletes are soft (retired flag). Privilege rows are never hard-deleted.
 
 ---
 
-## Common Workflow: Find Department Users and Assign Privileges
+## Related Documentation
 
-### Step 1: Search for department
-```bash
-curl -X GET "http://localhost:8080/rh/api/departments/search?query=Main+Pharmacy" \
-  -H "Finance: YOUR_API_KEY"
-# Returns: id=485, name="Main Pharmacy"
-```
-
-### Step 2: Get last logged users for that department
-```bash
-curl -X GET "http://localhost:8080/rh/api/logins/last-per-user?departmentId=485&size=20" \
-  -H "Finance: YOUR_API_KEY"
-# Returns list of users with their last login timestamp
-```
-
-### Step 3: Assign privileges to each user
-```bash
-curl -X POST "http://localhost:8080/rh/api/users/{userId}/privileges" \
-  -H "Finance: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"privileges":["OpdEditPatientDetails"],"departmentId":485}'
-```
-
----
-
-## Related References
-
-- `developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md`
-- `developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md`
-- `developer_docs/API_Documentation_For_AI_Agents.md`
+- `developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md` — department lookup endpoints
+- `developer_docs/API_Documentation_For_AI_Agents.md` — AI agent usage patterns
+- `developer_docs/security/privilege-system.md` — how privileges work in the UI and code
