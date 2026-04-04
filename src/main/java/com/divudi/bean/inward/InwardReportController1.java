@@ -75,6 +75,7 @@ public class InwardReportController1 implements Serializable {
     private Institution institution;
     private Institution site;
     private Institution admittingInstitution;
+    private String dateBasis = "createdAt";
     private boolean outstandingOnly;
     private List<Bill> bills;
     private double debtorBillTotal;
@@ -2455,6 +2456,14 @@ public class InwardReportController1 implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
     }
 
     public Institution getAdmittingInstitution() {

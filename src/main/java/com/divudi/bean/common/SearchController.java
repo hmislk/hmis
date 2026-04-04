@@ -455,6 +455,7 @@ public class SearchController implements Serializable {
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
     private Institution toSite;
+    private String dateBasis = "createdAt";
     private List<Drawer> drawerList;
     private Drawer selectedDrawer;
     private int opdAnalyticsIndex;
@@ -23530,4 +23531,13 @@ public class SearchController implements Serializable {
 
         return params;
     }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
 }
