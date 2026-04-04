@@ -271,6 +271,31 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/stock_history", "Get stock history with date range, item, and department filters"}
                 });
 
+        appendModule(sb, "Pharmaceutical Items", "/pharmaceutical_items",
+                "Manage pharmaceutical item master data (VTM, ATM, VMP, AMP, VMPP, AMPP). Supports search, create, update, retire/restore, and activate/deactivate.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_items/{type}/search", "Search items by name or code (types: vtm, atm, vmp, amp, vmpp, ampp)"},
+                    {"GET",    "/pharmaceutical_items/{type}/{id}",   "Get a pharmaceutical item by ID"},
+                    {"POST",   "/pharmaceutical_items/{type}",         "Create a new pharmaceutical item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}",   "Update an existing pharmaceutical item"},
+                    {"DELETE", "/pharmaceutical_items/{type}/{id}",   "Retire (soft-delete) a pharmaceutical item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}/restore", "Restore (unretire) a retired item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}/status",  "Activate or deactivate an item (?active=true/false)"}
+                });
+
+        appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
+                "Manage pharmaceutical configuration entities: categories, dosage forms, and measurement units.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_config/{type}/search", "Search config items by name (types: categories, dosage_forms, units)"},
+                    {"GET",    "/pharmaceutical_config/{type}/{id}",   "Get a config item by ID"},
+                    {"POST",   "/pharmaceutical_config/{type}",         "Create a new config item"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}",   "Update a config item"},
+                    {"DELETE", "/pharmaceutical_config/{type}/{id}",   "Retire a config item"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}/restore", "Restore a retired config item"}
+                });
+
         appendModule(sb, "Institution Management", "/institutions",
                 "Manage hospitals, clinics, and other healthcare institutions.",
                 githubUrl(branch, "developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md"),
