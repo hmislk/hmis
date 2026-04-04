@@ -221,8 +221,11 @@ public class AnthropicApiService implements Serializable {
         if (userHmisApiKey != null && !userHmisApiKey.trim().isEmpty()) {
             sb.append("## Authentication\n");
             sb.append("API key: ").append(userHmisApiKey.trim()).append("\n");
-            sb.append("Header: Finance\n");
-            sb.append("Pass this key in the 'Finance' HTTP header for all authenticated requests.\n\n");
+            sb.append("Most endpoints use the 'Finance' header. Some modules use different headers:\n");
+            sb.append("- 'Finance' header: Pharmacy, Institution, Department, Finance, Users, Login History, Sites, Inward, and most other modules\n");
+            sb.append("- 'Token' header: Consultant Management (/channel/consultant)\n");
+            sb.append("- 'Config' header: System Configuration (/config)\n");
+            sb.append("Each module description notes its required header when it differs from 'Finance'.\n\n");
         }
 
         sb.append("## Available API Modules\n");

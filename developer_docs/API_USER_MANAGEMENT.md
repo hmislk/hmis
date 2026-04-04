@@ -14,7 +14,23 @@ GET /api/users?query=Buddhika&departmentId=485&page=0&size=20
 Header: Finance: YOUR_API_KEY
 ```
 
-Response: `{ "status": "success", "code": 200, "data": [ { "id", "name", "username", "email", "activated", "retired", ... } ] }`
+Response:
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 101,
+      "name": "John Doe",
+      "username": "jdoe",
+      "email": "jdoe@hospital.lk",
+      "activated": true,
+      "retired": false
+    }
+  ]
+}
+```
 
 ---
 
@@ -115,9 +131,23 @@ Returns per-user summary of `privilegesAdded` and `privilegesSkipped`.
 Base path: `/api/user-roles`
 
 ### GET `/api/user-roles` — List all roles
-### POST `/api/user-roles` — Create role: `{ "name": "Pharmacy Staff", "description": "" }`
+
+### POST `/api/user-roles` — Create role
+
+```json
+{ "name": "Pharmacy Staff", "description": "" }
+```
+
 ### GET `/api/user-roles/{id}` — Get role by ID
+
 ### PUT `/api/user-roles/{id}` — Update role
+
 ### DELETE `/api/user-roles/{id}` — Retire role
+
 ### GET `/api/user-roles/{id}/privileges` — List role's privileges
-### POST `/api/user-roles/{id}/privileges` — Assign privilege to role: `{ "privilege": "OpdBilling", "departmentId": 485 }`
+
+### POST `/api/user-roles/{id}/privileges` — Assign privilege to role
+
+```json
+{ "privilege": "OpdBilling", "departmentId": 485 }
+```

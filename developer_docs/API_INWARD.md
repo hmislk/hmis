@@ -58,26 +58,45 @@ Returns `{ "valid": true/false, "patientName": "...", "balance": 0.0 }`
 
 ### POST `/api/apiInward/payment` — Process an inward payment
 
-Creates a payment bill for an admitted patient.
+Creates an online settlement payment for an admitted patient. Requires a bank institution ID (from `/api/apiInward/banks`).
 
 ```json
 {
-  "bhtNo": "BHT2026001",
+  "bht_no": "BHT2026001",
+  "bank_id": 5,
+  "reference_no": "REF123456",
   "amount": 5000.00,
-  "paymentMethod": "Cash",
-  "bankId": null,
-  "creditCardRef": null,
-  "institutionCode": "RH"
+  "payment_date": "2026-04-04 14:30:00"
 }
 ```
 
-Response includes the generated bill number and payment confirmation.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `bht_no` | string | ✅ | Bed Head Ticket number |
+| `bank_id` | long | ✅ | Bank institution ID from `/api/apiInward/banks` |
+| `reference_no` | string | ✅ | Payment reference/transaction number |
+| `amount` | double | ✅ | Amount to collect (must be > 0) |
+| `payment_date` | string | ❌ | Date/time of payment `yyyy-MM-dd HH:mm:ss` (defaults to now) |
+
+Response:
+```json
+{
+  "bill": {
+    "bill_no": "RH/2026/00123",
+    "bht_no": "BHT2026001",
+    "amount": 5000.0,
+    "reference_no": "REF123456"
+  },
+  "error": "0",
+  "error_description": ""
+}
+```
 
 ---
 
 ### GET `/api/apiInward/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}` — Process payment (GET form)
 
-Alternative GET-based payment endpoint for integrations that cannot POST.
+Legacy GET-based payment endpoint for integrations that cannot POST.
 
 ```bash
 GET /api/apiInward/payment/BHT2026001/5/REF123456/5000.00
@@ -88,6 +107,6 @@ Header: Finance: YOUR_API_KEY
 
 ## Notes
 
-- `bhtNo` is the Bed Head Ticket number assigned at admission
-- Payment methods: `Cash`, `Card`, `Cheque`, `OnlineTransfer`
-- Always validate the admission first before processing payment
+- `bht_no` is the Bed Head Ticket number assigned at admission
+- Payment is processed as an **online settlement** — use `/api/apiInward/banks` to get valid `bank_id` values
+- Always call `/api/apiInward/validateAdmission` first before processing payment

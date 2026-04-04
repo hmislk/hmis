@@ -3887,7 +3887,8 @@ public class ChannelApi {
         try {
             person.setTitle(Title.valueOf(titleStr));
         } catch (IllegalArgumentException e) {
-            person.setTitle(Title.Dr);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(commonFunctionToErrorResponse("Invalid title value: " + titleStr).toString()).build();
         }
 
         if (requestBody.get("mobile") != null) {
@@ -3903,8 +3904,6 @@ public class ChannelApi {
             person.setAddress(requestBody.get("address").toString());
         }
 
-        personFacade.create(person);
-
         Consultant consultant = new Consultant();
         consultant.setPerson(person);
         consultant.setCreatedAt(new Date());
@@ -3913,9 +3912,12 @@ public class ChannelApi {
             consultant.setCode(requestBody.get("code").toString());
         }
         if (requestBody.get("serialNo") != null) {
+            String serialNoStr = requestBody.get("serialNo").toString();
             try {
-                consultant.setCodeInterger(Integer.parseInt(requestBody.get("serialNo").toString()));
-            } catch (NumberFormatException ignored) {
+                consultant.setCodeInterger(Integer.parseInt(serialNoStr));
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("Invalid serialNo value: " + serialNoStr).toString()).build();
             }
         }
         if (requestBody.get("description") != null) {
@@ -3928,26 +3930,37 @@ public class ChannelApi {
             consultant.setQualification(requestBody.get("qualification").toString());
         }
         if (requestBody.get("specialityId") != null) {
+            String specIdStr = requestBody.get("specialityId").toString();
             try {
-                Long specId = Long.parseLong(requestBody.get("specialityId").toString());
+                Long specId = Long.parseLong(specIdStr);
                 Speciality speciality = specialityFacade.find(specId);
-                if (speciality != null) {
-                    consultant.setSpeciality(speciality);
+                if (speciality == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(commonFunctionToErrorResponse("Speciality not found for id: " + specId).toString()).build();
                 }
-            } catch (NumberFormatException ignored) {
+                consultant.setSpeciality(speciality);
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("Invalid specialityId value: " + specIdStr).toString()).build();
             }
         }
         if (requestBody.get("institutionId") != null) {
+            String insIdStr = requestBody.get("institutionId").toString();
             try {
-                Long insId = Long.parseLong(requestBody.get("institutionId").toString());
+                Long insId = Long.parseLong(insIdStr);
                 Institution institution = institutionFacade.find(insId);
-                if (institution != null) {
-                    consultant.setInstitution(institution);
+                if (institution == null) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(commonFunctionToErrorResponse("Institution not found for id: " + insId).toString()).build();
                 }
-            } catch (NumberFormatException ignored) {
+                consultant.setInstitution(institution);
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("Invalid institutionId value: " + insIdStr).toString()).build();
             }
         }
 
+        personFacade.create(person);
         consultantFacade.create(consultant);
 
         Map<String, Object> data = new HashMap<>();
@@ -4003,68 +4016,111 @@ public class ChannelApi {
         }
 
         if (requestBody.containsKey("name")) {
-            String name = requestBody.get("name").toString().trim();
-            if (!name.isEmpty()) {
-                person.setName(name);
+            Object nameVal = requestBody.get("name");
+            if (nameVal != null) {
+                String name = nameVal.toString().trim();
+                if (!name.isEmpty()) {
+                    person.setName(name);
+                }
             }
         }
         if (requestBody.containsKey("title")) {
+            Object titleVal = requestBody.get("title");
+            if (titleVal == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("title cannot be null").toString()).build();
+            }
             try {
-                person.setTitle(Title.valueOf(requestBody.get("title").toString()));
-            } catch (IllegalArgumentException ignored) {
+                person.setTitle(Title.valueOf(titleVal.toString()));
+            } catch (IllegalArgumentException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("Invalid title value: " + titleVal).toString()).build();
             }
         }
         if (requestBody.containsKey("mobile")) {
-            person.setMobile(requestBody.get("mobile").toString());
+            Object v = requestBody.get("mobile");
+            person.setMobile(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("phone")) {
-            person.setPhone(requestBody.get("phone").toString());
+            Object v = requestBody.get("phone");
+            person.setPhone(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("fax")) {
-            person.setFax(requestBody.get("fax").toString());
+            Object v = requestBody.get("fax");
+            person.setFax(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("address")) {
-            person.setAddress(requestBody.get("address").toString());
+            Object v = requestBody.get("address");
+            person.setAddress(v != null ? v.toString() : null);
         }
 
         personFacade.edit(person);
 
         if (requestBody.containsKey("code")) {
-            consultant.setCode(requestBody.get("code").toString());
+            Object v = requestBody.get("code");
+            consultant.setCode(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("serialNo")) {
+            Object v = requestBody.get("serialNo");
+            if (v == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("serialNo cannot be null").toString()).build();
+            }
             try {
-                consultant.setCodeInterger(Integer.parseInt(requestBody.get("serialNo").toString()));
-            } catch (NumberFormatException ignored) {
+                consultant.setCodeInterger(Integer.parseInt(v.toString()));
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(commonFunctionToErrorResponse("Invalid serialNo value: " + v).toString()).build();
             }
         }
         if (requestBody.containsKey("description")) {
-            consultant.setDescription(requestBody.get("description").toString());
+            Object v = requestBody.get("description");
+            consultant.setDescription(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("registration")) {
-            consultant.setRegistration(requestBody.get("registration").toString());
+            Object v = requestBody.get("registration");
+            consultant.setRegistration(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("qualification")) {
-            consultant.setQualification(requestBody.get("qualification").toString());
+            Object v = requestBody.get("qualification");
+            consultant.setQualification(v != null ? v.toString() : null);
         }
         if (requestBody.containsKey("specialityId")) {
-            try {
-                Long specId = Long.parseLong(requestBody.get("specialityId").toString());
-                Speciality speciality = specialityFacade.find(specId);
-                if (speciality != null) {
+            Object v = requestBody.get("specialityId");
+            if (v == null) {
+                consultant.setSpeciality(null);
+            } else {
+                try {
+                    Long specId = Long.parseLong(v.toString());
+                    Speciality speciality = specialityFacade.find(specId);
+                    if (speciality == null) {
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                .entity(commonFunctionToErrorResponse("Speciality not found for id: " + specId).toString()).build();
+                    }
                     consultant.setSpeciality(speciality);
+                } catch (NumberFormatException e) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(commonFunctionToErrorResponse("Invalid specialityId value: " + v).toString()).build();
                 }
-            } catch (NumberFormatException ignored) {
             }
         }
         if (requestBody.containsKey("institutionId")) {
-            try {
-                Long insId = Long.parseLong(requestBody.get("institutionId").toString());
-                Institution institution = institutionFacade.find(insId);
-                if (institution != null) {
+            Object v = requestBody.get("institutionId");
+            if (v == null) {
+                consultant.setInstitution(null);
+            } else {
+                try {
+                    Long insId = Long.parseLong(v.toString());
+                    Institution institution = institutionFacade.find(insId);
+                    if (institution == null) {
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                .entity(commonFunctionToErrorResponse("Institution not found for id: " + insId).toString()).build();
+                    }
                     consultant.setInstitution(institution);
+                } catch (NumberFormatException e) {
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(commonFunctionToErrorResponse("Invalid institutionId value: " + v).toString()).build();
                 }
-            } catch (NumberFormatException ignored) {
             }
         }
 

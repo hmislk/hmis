@@ -160,6 +160,20 @@ curl -X PUT http://localhost:8080/rh/api/channel/consultant/12260013 \
 
 Before creating a consultant you may need the `specialityId` or `institutionId`.
 
+### Search Specialities
+
+Use the Channel API specializations endpoint to discover valid speciality IDs:
+
+```bash
+POST /api/channel/specializations
+Header: Token: YOUR_CHANNEL_API_KEY
+Content-Type: application/json
+
+{ "type": "", "bookingChannel": "YOUR_BOOKING_CHANNEL_CODE" }
+```
+
+Returns a `specialityMap` of `{ "id": "name", ... }`. Use the numeric key as `specialityId`.
+
 ### Search Institutions
 
 ```bash
@@ -167,11 +181,4 @@ GET /api/institutions/search?query=General&limit=10
 Header: Finance: YOUR_API_KEY
 ```
 
-### Search Departments / Institutions
-
-```bash
-GET /api/departments/search?query=Oncology
-Header: Finance: YOUR_API_KEY
-```
-
-> **Note:** The Consultant endpoints use the `Token` header (channel key), while Institution/Department search use the `Finance` header. These may be the same key or different keys depending on your system configuration.
+> **Note:** The Consultant endpoints use the `Token` header (channel key), while Institution search uses the `Finance` header. These may be the same key or different keys depending on your system configuration.
