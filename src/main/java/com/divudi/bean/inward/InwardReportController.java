@@ -2252,12 +2252,13 @@ public class InwardReportController implements Serializable {
     public void fillDischargeBookPaymentFinalizedNoChanges() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 //                + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -2287,12 +2288,13 @@ public class InwardReportController implements Serializable {
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";

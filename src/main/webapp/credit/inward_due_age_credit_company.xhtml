@@ -14,6 +14,32 @@
                         <f:facet name="header">
                             <h:outputLabel value="INWARD DUE AGE" />
                         </f:facet>
+                        <h:panelGrid columns="2" class="my-2">
+                            <h:outputLabel value="From"/>
+                            <p:calendar value="#{creditCompanyDueController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:outputLabel value="To"/>
+                            <p:calendar value="#{creditCompanyDueController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:outputLabel value="Date Basis"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Institution"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Site"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                <f:selectItems value="#{institutionController.sites}" var="dueSite" itemLabel="#{dueSite.name}" itemValue="#{dueSite}"/>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Department"/>
+                            <p:selectOneMenu value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
                         <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTableWithFilters()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     
