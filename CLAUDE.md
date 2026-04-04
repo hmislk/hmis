@@ -25,6 +25,7 @@
 11. **Include issue closing keywords** (`Closes #N`) in commit messages
 12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
 13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+14. **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
 
 ## Situational Guidelines (Reference When Needed)
 
