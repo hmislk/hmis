@@ -320,9 +320,19 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "Consultant Management", "/channel/consultant",
+                "Create new consultant (doctor) records and update existing ones. "
+                + "IMPORTANT: This module uses the 'Token' header for authentication, not 'Finance'.",
+                githubUrl(branch, "developer_docs/API_CONSULTANT_MANAGEMENT.md"),
+                new String[][]{
+                    {"POST", "/channel/consultant",      "Create a new consultant. Required: name. Optional: title, mobile, phone, fax, address, code, serialNo, specialityId, institutionId, registration, qualification, description"},
+                    {"PUT",  "/channel/consultant/{id}", "Update an existing consultant by ID. Same optional fields as POST. Returns 404 if not found."}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
+        sb.append("- Create and update consultant/doctor records\n");
         sb.append("- Analyse reports and uploaded images/documents\n");
         sb.append("- Troubleshoot and explain system behaviour\n\n");
         sb.append("When making API calls, always explain what you are doing and present results clearly. ");
