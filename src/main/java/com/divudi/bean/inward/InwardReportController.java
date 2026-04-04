@@ -146,7 +146,6 @@ public class InwardReportController implements Serializable {
     private String dateBasis = "createdAt";
     Date fromDate;
     Date toDate;
-    private String dateBasis = "createdAt";
     private Date fromYearStartDate;
     private Date toYearEndDate;
 
@@ -4247,14 +4246,6 @@ public class InwardReportController implements Serializable {
 
     public void setVatRegNo(String vatRegNo) {
         this.vatRegNo = vatRegNo;
-    }
-
-    public String getDateBasis() {
-        return dateBasis;
-    }
-
-    public void setDateBasis(String dateBasis) {
-        this.dateBasis = dateBasis;
     }
 
 }

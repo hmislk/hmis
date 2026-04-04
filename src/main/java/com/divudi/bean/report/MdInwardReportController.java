@@ -3154,22 +3154,6 @@ public class MdInwardReportController implements Serializable {
         this.dept = dept;
     }
 
-    public Institution getSite() {
-        return site;
-    }
-
-    public void setSite(Institution site) {
-        this.site = site;
-    }
-
-    public String getDateBasis() {
-        return dateBasis;
-    }
-
-    public void setDateBasis(String dateBasis) {
-        this.dateBasis = dateBasis;
-    }
-
     public List<BillItem> getBillItem() {
         return billItem;
     }
