@@ -221,14 +221,18 @@ public class AnthropicApiService implements Serializable {
         if (userHmisApiKey != null && !userHmisApiKey.trim().isEmpty()) {
             sb.append("## Authentication\n");
             sb.append("API key: ").append(userHmisApiKey.trim()).append("\n");
-            sb.append("Header: Finance\n");
-            sb.append("Pass this key in the 'Finance' HTTP header for all authenticated requests.\n\n");
+            sb.append("Most endpoints use the 'Finance' header. Some modules use different headers:\n");
+            sb.append("- 'Finance' header: Pharmacy, Institution, Department, Finance, Users, Login History, Sites, Inward, FHIR, LIMS, Membership, and most other modules\n");
+            sb.append("- 'Token' header: Consultant Management (/channel/consultant) and Channel/Booking (/channel/*)\n");
+            sb.append("- 'Config' header: System Configuration (/config)\n");
+            sb.append("Each module description notes its required header when it differs from 'Finance'.\n\n");
         }
 
         sb.append("## Available API Modules\n");
         sb.append("Each module lists its operations and a documentationUrl for full parameter details.\n");
         sb.append("If you need the complete documentation for a module, say so and it will be provided.\n\n");
 
+        // ── Pharmacy ──────────────────────────────────────────────────────────
         appendModule(sb, "Pharmacy - Stock Adjustments", "/pharmacy_adjustments",
                 "Adjust pharmacy stock quantities, purchase rates, retail sale rates, and expiry dates.",
                 githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
@@ -271,6 +275,43 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/stock_history", "Get stock history with date range, item, and department filters"}
                 });
 
+        appendModule(sb, "Pharmaceutical Items", "/pharmaceutical_items",
+                "Manage pharmaceutical master data: VTM (active ingredients), ATM, VMP (generic products), AMP (branded products), VMPP, and AMPP. Supports full CRUD, retire/restore, and activate/deactivate.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_items/{type}/search",              "Search items by name or code (types: vtm, atm, vmp, amp, vmpp, ampp)"},
+                    {"GET",    "/pharmaceutical_items/{type}/{id}",                "Get a pharmaceutical item by ID"},
+                    {"POST",   "/pharmaceutical_items/{type}",                     "Create a new pharmaceutical item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}",                "Update an existing pharmaceutical item"},
+                    {"DELETE", "/pharmaceutical_items/{type}/{id}",                "Retire a pharmaceutical item"},
+                    {"POST",   "/pharmaceutical_items/{type}/{id}/restore",        "Restore a retired pharmaceutical item"},
+                    {"PATCH",  "/pharmaceutical_items/{type}/{id}/activate",       "Activate a pharmaceutical item"},
+                    {"PATCH",  "/pharmaceutical_items/{type}/{id}/deactivate",     "Deactivate a pharmaceutical item"}
+                });
+
+        appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
+                "Manage pharmaceutical configuration entities: categories, dosage forms, and measurement units.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_config/{type}/search",  "Search config entries by name or code (types: categories, dosage_forms, units)"},
+                    {"GET",    "/pharmaceutical_config/{type}/{id}",    "Get config entry by ID"},
+                    {"POST",   "/pharmaceutical_config/{type}",         "Create a new config entry"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}",    "Update a config entry"},
+                    {"DELETE", "/pharmaceutical_config/{type}/{id}",    "Retire a config entry"}
+                });
+
+        appendModule(sb, "Pharmacy - Backfill Operations", "/pharmacy",
+                "ADMINISTRATIVE/MAINTENANCE ONLY — requires explicit system-administrator authorisation. "
+                + "Reconstruct missing BillFinanceDetail (BFD) and BillItemFinanceDetail (BIFD) records "
+                + "on historical pharmacy bills. Always supply auditComment and approvedBy. "
+                + "Do NOT execute these without administrator approval.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical pharmacy adjustment bills"},
+                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"}
+                });
+
+        // ── Institution / Department / Sites ──────────────────────────────────
         appendModule(sb, "Institution Management", "/institutions",
                 "Manage hospitals, clinics, and other healthcare institutions.",
                 githubUrl(branch, "developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md"),
@@ -293,6 +334,84 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/departments/{id}",   "Retire a department"}
                 });
 
+        appendModule(sb, "Sites", "/sites",
+                "Manage hospital sites (physical collection points or satellite locations). "
+                + "A site is an Institution with institutionType=Site.",
+                githubUrl(branch, "developer_docs/API_SITES.md"),
+                new String[][]{
+                    {"GET",    "/sites/search",  "Search sites by name or code. Params: query, limit"},
+                    {"GET",    "/sites/{id}",    "Get site by ID"},
+                    {"POST",   "/sites",          "Create a new site. Fields: name, code, address, phone, email"},
+                    {"PUT",    "/sites/{id}",    "Update a site"},
+                    {"DELETE", "/sites/{id}",    "Retire (soft-delete) a site"}
+                });
+
+        // ── Staff / Consultants ───────────────────────────────────────────────
+        appendModule(sb, "Consultant Management", "/channel/consultant",
+                "Create new consultant (doctor) records and update existing ones. "
+                + "IMPORTANT: Uses the 'Token' header, not 'Finance'.",
+                githubUrl(branch, "developer_docs/API_CONSULTANT_MANAGEMENT.md"),
+                new String[][]{
+                    {"POST", "/channel/consultant",      "Create a new consultant. Required: name. Optional: title, mobile, phone, fax, address, code, serialNo, specialityId, institutionId, registration, qualification, description"},
+                    {"PUT",  "/channel/consultant/{id}", "Update an existing consultant by ID. Returns 400 for invalid field values, 404 if not found."}
+                });
+
+        // ── Channel / Booking ─────────────────────────────────────────────────
+        appendModule(sb, "Channel / Booking", "/channel",
+                "Manage online doctor appointment bookings end-to-end: browse specialties, hospitals, doctors and sessions, then create, edit, complete or cancel bookings. "
+                + "IMPORTANT: Uses the 'Token' header (not 'Finance'). Wrong booking parameters can create bad appointments — always confirm session availability before saving.",
+                githubUrl(branch, "developer_docs/API_CHANNEL_BOOKING.md"),
+                new String[][]{
+                    {"POST", "/channel/specializations",    "List all medical specialties available for booking"},
+                    {"POST", "/channel/hospitals",          "List hospitals/institutions available for a booking channel"},
+                    {"POST", "/channel/doctors",            "List doctors filtered by speciality and booking channel"},
+                    {"POST", "/channel/doctorAvailability", "Check a doctor's available sessions for a given date"},
+                    {"POST", "/channel/doctorSessions",     "List all upcoming sessions for a doctor"},
+                    {"POST", "/channel/doctorSession",      "Get details of a single session by ID"},
+                    {"POST", "/channel/save",               "Create a new appointment booking"},
+                    {"POST", "/channel/edit",               "Edit an existing booking"},
+                    {"POST", "/channel/complete",           "Mark a booking as complete/attended"},
+                    {"POST", "/channel/channelHistoryList", "Get appointment booking history"},
+                    {"POST", "/channel/channelHistoryByRef","Get a booking by its reference number"},
+                    {"POST", "/channel/cancellation",       "Cancel an existing booking"}
+                });
+
+        // ── Users / Roles / Privileges ────────────────────────────────────────
+        appendModule(sb, "User Management", "/users",
+                "Create, read, update, and retire HMIS web users. Manage passwords, loggable departments, "
+                + "and individual privilege assignments. Use /users/privileges/available to discover valid privilege names.",
+                githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
+                    {"POST",   "/users",                          "Create a new user"},
+                    {"GET",    "/users/{id}",                     "Get user by ID"},
+                    {"PUT",    "/users/{id}",                     "Update user details"},
+                    {"DELETE", "/users/{id}",                     "Retire (soft-delete) a user"},
+                    {"POST",   "/users/{id}/reset-password",      "Admin reset of user password"},
+                    {"POST",   "/users/{id}/change-password",     "User changes own password"},
+                    {"GET",    "/users/{id}/privileges",          "List privileges for a user"},
+                    {"POST",   "/users/{id}/privileges",          "Assign a privilege to a user"},
+                    {"DELETE", "/users/{id}/privileges",          "Remove a privilege from a user"},
+                    {"GET",    "/users/{id}/departments",         "List loggable departments for a user"},
+                    {"POST",   "/users/{id}/departments",         "Assign a loggable department to a user"},
+                    {"GET",    "/users/privileges/available",     "List all valid privilege enum names"},
+                    {"POST",   "/users/bulk-privileges",          "Bulk-assign privileges to multiple users at once"}
+                });
+
+        appendModule(sb, "User Roles", "/user-roles",
+                "Create and manage user roles. Assign privileges to roles for role-based access control.",
+                githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/user-roles",                     "List all user roles"},
+                    {"POST",   "/user-roles",                     "Create a new role"},
+                    {"GET",    "/user-roles/{id}",                "Get role by ID"},
+                    {"PUT",    "/user-roles/{id}",                "Update a role"},
+                    {"DELETE", "/user-roles/{id}",                "Retire a role"},
+                    {"GET",    "/user-roles/{id}/privileges",     "List privileges assigned to a role"},
+                    {"POST",   "/user-roles/{id}/privileges",     "Assign a privilege to a role"}
+                });
+
+        // ── Finance ───────────────────────────────────────────────────────────
         appendModule(sb, "Finance - Balance History", "/balance_history",
                 "Retrieve financial balance history: drawer entries, patient deposits, agent histories, staff welfare.",
                 githubUrl(branch, "developer_docs/API_BALANCE_HISTORY.md"),
@@ -301,17 +420,6 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/balance_history/patient_deposits",        "Get patient deposit records"},
                     {"GET", "/balance_history/agent_histories",         "Get agent financial history records"},
                     {"GET", "/balance_history/staff_welfare_histories", "Get staff welfare financial history"}
-                });
-
-        appendModule(sb, "Pharmacy - Backfill Operations", "/pharmacy",
-                "ADMINISTRATIVE/MAINTENANCE ONLY — requires explicit system-administrator authorisation. "
-                + "Reconstruct missing BillFinanceDetail (BFD) and BillItemFinanceDetail (BIFD) records "
-                + "on historical pharmacy bills that were saved before the finance-detail system was introduced. "
-                + "Always supply auditComment and approvedBy. Do NOT execute these without administrator approval.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
-                new String[][]{
-                    {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical PHARMACY_STOCK_ADJUSTMENT and PHARMACY_RETAIL_RATE_ADJUSTMENT bills"},
-                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"}
                 });
 
         appendModule(sb, "Finance - Bill Data Correction", "/bill_data_correction",
@@ -331,26 +439,144 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "Finance - Legacy Bill Query", "/finance",
+                "Legacy bill query endpoints. Use for category-based filtering or simple date-range queries. "
+                + "Prefer /costing_data for richer detail. Date format: dd-MM-yyyy; for ranges: dd-MM-yyyy-hh:mm:ss.",
+                githubUrl(branch, "developer_docs/API_FINANCE_LEGACY.md"),
+                new String[][]{
+                    {"GET", "/finance/bill",                                              "Get all bills for today"},
+                    {"GET", "/finance/bill/{date}",                                       "Get bills for a specific date (dd-MM-yyyy)"},
+                    {"GET", "/finance/bill/{from}/{to}",                                  "Get bills for a date range"},
+                    {"GET", "/finance/bill_item",                                         "Get all bills with line items for today"},
+                    {"GET", "/finance/bill_item/{date}",                                  "Get bills with line items for a specific date"},
+                    {"GET", "/finance/bill_item/{from}/{to}",                             "Get bills with line items for a date range"},
+                    {"GET", "/finance/bill_item_cat/{bill_category}",                     "Get bills filtered by BillType category (today)"},
+                    {"GET", "/finance/bill_item_cat/{date}/{bill_category}",              "Get bills by category for a specific date"},
+                    {"GET", "/finance/bill_item_cat/{from}/{to}/{bill_category}",         "Get bills by category for a date range"}
+                });
+
         appendModule(sb, "Finance - QuickBooks Export", "/qb",
-                "Export HMIS financial data for QuickBooks synchronisation. All endpoints use incremental sync: supply the last synced record ID and a start date to retrieve the next batch (up to 2500 records). Use institution_code (string), numeric IDs, and dates in yyyy-MM-dd format.",
+                "Export HMIS financial data for QuickBooks synchronisation. All endpoints use incremental sync: supply the last synced record ID and a start date to retrieve the next batch (up to 2500 records). Dates in yyyy-MM-dd format.",
                 githubUrl(branch, "developer_docs/API_QUICKBOOKS.md"),
                 new String[][]{
-                    {"GET", "/qb/last_invoice_id/{institution_code}/{last_date}",                        "Get the highest bill ID on or after last_date — use as starting point before paginating"},
-                    {"GET", "/qb/cInvList/{institution_code}/{last_invoice_id}/{last_date}",             "Cash-paid invoices (PharmacySale, OpdBill, ChannelPaid, ChannelCash, PharmacyWholeSale)"},
-                    {"GET", "/qb/invList/{institution_code}/{last_invoice_id}/{last_date}",              "Credit-paid outpatient invoices and inpatient final bills"},
-                    {"GET", "/qb/salesRetList/{institution_code}/{last_invoice_id}/{last_date}",         "Sales return / voided invoices"},
-                    {"GET", "/qb/grnList/{institution_code}/{last_grn_id}/{last_date}",                  "Pharmacy Goods Received Notes (purchase bills)"},
-                    {"GET", "/qb/grnRetList/{institution_code}/{last_return_grn_id}/{last_date}",        "GRN returns (goods returned to supplier)"},
-                    {"GET", "/qb/wcList/{institution_code}/{last_return_grn_id}/{last_date}",            "Write-off and stock correction entries"},
-                    {"GET", "/qb/jurList/{institution_code}/{last_return_grn_id}/{last_date}",           "Journal entries"},
-                    {"GET", "/qb/cusPayList/{institution_code}/{last_payment_id}/{last_date}",           "Customer payment records (bill sessions / receipts)"},
-                    {"GET", "/qb/paymentreturn/{institution_code}/{last_return_payment_id}",             "Payment return / refund records (no date filter)"}
+                    {"GET", "/qb/last_invoice_id/{institution_code}/{last_date}",              "Get highest bill ID on or after last_date — use as start before paginating"},
+                    {"GET", "/qb/cInvList/{institution_code}/{last_invoice_id}/{last_date}",   "Cash-paid invoices"},
+                    {"GET", "/qb/invList/{institution_code}/{last_invoice_id}/{last_date}",    "Credit-paid outpatient invoices and inpatient final bills"},
+                    {"GET", "/qb/salesRetList/{institution_code}/{last_invoice_id}/{last_date}","Sales return / voided invoices"},
+                    {"GET", "/qb/grnList/{institution_code}/{last_grn_id}/{last_date}",         "Pharmacy Goods Received Notes"},
+                    {"GET", "/qb/grnRetList/{institution_code}/{last_return_grn_id}/{last_date}","GRN returns"},
+                    {"GET", "/qb/wcList/{institution_code}/{last_return_grn_id}/{last_date}",   "Write-off and stock correction entries"},
+                    {"GET", "/qb/jurList/{institution_code}/{last_return_grn_id}/{last_date}",  "Journal entries"},
+                    {"GET", "/qb/cusPayList/{institution_code}/{last_payment_id}/{last_date}",  "Customer payment records"},
+                    {"GET", "/qb/paymentreturn/{institution_code}/{last_return_payment_id}",    "Payment return / refund records"}
+                });
+
+        // ── Clinical ──────────────────────────────────────────────────────────
+        appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
+                "Manage clinician favourite medicine templates. Includes AI-optimised endpoints: "
+                + "/parse (natural language to structured medicine), /suggest (find similar entities), "
+                + "/validate (bulk entity validation).",
+                githubUrl(branch, "developer_docs/API_CLINICAL_FAVOURITE_MEDICINES.md"),
+                new String[][]{
+                    {"GET",    "/clinical/favourite_medicines",              "List favourite medicine templates"},
+                    {"POST",   "/clinical/favourite_medicines",              "Create a new template"},
+                    {"GET",    "/clinical/favourite_medicines/{id}",         "Get template by ID"},
+                    {"PUT",    "/clinical/favourite_medicines/{id}",         "Update a template"},
+                    {"DELETE", "/clinical/favourite_medicines/{id}",         "Retire a template"},
+                    {"POST",   "/clinical/favourite_medicines/parse",        "Parse natural language medicine instruction into structured data (AI-optimised)"},
+                    {"POST",   "/clinical/favourite_medicines/suggest",      "Auto-suggest similar medicine entities"},
+                    {"POST",   "/clinical/favourite_medicines/validate",     "Bulk-validate a set of medicine entities"},
+                    {"GET",    "/clinical/favourite_medicines/entities/vtms","List/search Virtual Therapeutic Moieties"},
+                    {"GET",    "/clinical/favourite_medicines/entities/amps", "List/search Actual Medicinal Products"}
+                });
+
+        // ── FHIR ──────────────────────────────────────────────────────────────
+        appendModule(sb, "FHIR - Financial Data", "/fhir",
+                "HL7 FHIR R5-compliant access to invoices, GRN records, and payments.",
+                githubUrl(branch, "developer_docs/API_FHIR.md"),
+                new String[][]{
+                    {"GET", "/fhir/cash_invoice/{institution_code}/{last_invoice_id}",         "Get cash invoices newer than last_invoice_id"},
+                    {"GET", "/fhir/credit_invoice/{institution_code}/{last_invoice_id}",       "Get credit invoices newer than last_invoice_id"},
+                    {"GET", "/fhir/invoicereturn/{institution_code}/{last_return_invoice_id}", "Get invoice returns newer than last_return_invoice_id"},
+                    {"GET", "/fhir/grn/{institution_code}/{last_grn_id}",                      "Get GRN records newer than last_grn_id"},
+                    {"GET", "/fhir/payment/{institution_code}/{last_payment_id}",              "Get payment records newer than last_payment_id"}
+                });
+
+        appendModule(sb, "FHIR - Patient", "/fhir/Patient",
+                "HL7 FHIR R5 Patient resource. Authentication uses 'FHIR' header (not 'Finance').",
+                githubUrl(branch, "developer_docs/API_FHIR.md"),
+                new String[][]{
+                    {"GET",  "/fhir/Patient",      "Search patients (FHIR parameters: name, identifier, birthdate, gender)"},
+                    {"GET",  "/fhir/Patient/{id}", "Read a patient by ID"},
+                    {"POST", "/fhir/Patient",      "Create a new patient"},
+                    {"PUT",  "/fhir/Patient/{id}", "Update a patient"}
+                });
+
+        // ── LIMS ──────────────────────────────────────────────────────────────
+        appendModule(sb, "LIMS - Laboratory", "/lims",
+                "Retrieve patient sample barcodes and test lists for laboratory bill processing. "
+                + "Read-only queries. Do NOT use to trigger new lab orders.",
+                githubUrl(branch, "developer_docs/API_LIMS.md"),
+                new String[][]{
+                    {"POST", "/lims/login/mw",                                    "Authenticate a middleware client"},
+                    {"GET",  "/lims/samples/login/{username}/{password}",         "Legacy credential check"},
+                    {"GET",  "/lims/samples/{bill_id}",                           "Get sample barcodes for a bill"},
+                    {"GET",  "/lims/tests/{bill_id}",                             "Get test list for a bill"},
+                    {"GET",  "/lims/patient/{patient_id}/samples",                "Get all samples for a patient"}
+                });
+
+        // ── Membership ────────────────────────────────────────────────────────
+        appendModule(sb, "Membership", "/apiMembership",
+                "Manage membership schemes, patient registration under a membership, and membership billing.",
+                githubUrl(branch, "developer_docs/API_MEMBERSHIP.md"),
+                new String[][]{
+                    {"GET", "/apiMembership/banks",                                                                 "List available bank institutions for payment"},
+                    {"GET", "/apiMembership/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic}",         "Register a new patient under the membership scheme"},
+                    {"GET", "/apiMembership/patient/{patient_id}",                                                  "Get patient details by internal ID"},
+                    {"GET", "/apiMembership/serviceValue",                                                           "Get membership service fee, VAT, and total payable amount"}
+                });
+
+        // ── Inward / Admissions ───────────────────────────────────────────────
+        appendModule(sb, "Inward / Admissions", "/apiInward",
+                "Access inpatient admission records and process payments for admitted patients.",
+                githubUrl(branch, "developer_docs/API_INWARD.md"),
+                new String[][]{
+                    {"GET",  "/apiInward/admissions",                                            "List active inpatient admissions"},
+                    {"GET",  "/apiInward/admissions/byPhone/{phone}",                            "Find admission by patient phone number"},
+                    {"GET",  "/apiInward/banks",                                                  "List available banks/payment institutions"},
+                    {"GET",  "/apiInward/validateAdmission/{bht_no}/{phone}",                    "Validate BHT number and phone before payment"},
+                    {"POST", "/apiInward/payment",                                                "Process online settlement payment for admitted patient (fields: bht_no, bank_id, reference_no, amount, payment_date)"},
+                    {"GET",  "/apiInward/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}", "Legacy GET-based payment endpoint"}
+                });
+
+        // ── Login History / Config ────────────────────────────────────────────
+        appendModule(sb, "Login History", "/logins",
+                "Query user login history filtered by department, user, and date range.",
+                githubUrl(branch, "developer_docs/API_LOGIN_HISTORY.md"),
+                new String[][]{
+                    {"GET", "/logins",               "List logins. Filters: departmentId, userId, days, fromDate (yyyy-MM-dd), toDate, page, size"},
+                    {"GET", "/logins/last-per-user", "Most recent login per unique user. Filters: departmentId, size"}
+                });
+
+        appendModule(sb, "System Configuration", "/config",
+                "Set application configuration options at runtime. "
+                + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
+                githubUrl(branch, "developer_docs/API_CONFIG.md"),
+                new String[][]{
+                    {"POST", "/config/setBoolean/{key}/{value}",  "Set a boolean config option by key name"},
+                    {"POST", "/config/setLongText/{key}/{value}", "Set a text config option by key name"},
+                    {"POST", "/config/setInteger/{key}/{value}",  "Set an integer config option by key name"}
                 });
 
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
-        sb.append("- Analyse reports and uploaded images/documents\n");
+        sb.append("- Create and update consultant/doctor records\n");
+        sb.append("- Manage users, roles, and system privileges\n");
+        sb.append("- Create and manage appointment bookings\n");
+        sb.append("- Access inpatient admission records and process payments\n");
+        sb.append("- Query login history and audit trails\n");
+        sb.append("- Analyse reports and uploaded images/documents, including medicine lists\n");
         sb.append("- Troubleshoot and explain system behaviour\n\n");
         sb.append("When making API calls, always explain what you are doing and present results clearly. ");
         sb.append("If you need the full documentation for a specific module, ask and it will be fetched for you.\n");
