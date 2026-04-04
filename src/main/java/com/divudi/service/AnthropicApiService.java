@@ -320,6 +320,52 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "Pharmaceutical Items", "/pharmaceutical_items",
+                "Manage pharmaceutical master data: VTM (active ingredients), ATM, VMP (generic products), AMP (branded products), VMPP, and AMPP. Supports full CRUD, retire/restore, and activate/deactivate.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_items/{type}/search",       "Search pharmaceutical items by name or code (type: vtm, atm, vmp, amp, vmpp, ampp)"},
+                    {"GET",    "/pharmaceutical_items/{type}/{id}",         "Get a pharmaceutical item by ID"},
+                    {"POST",   "/pharmaceutical_items/{type}",              "Create a new pharmaceutical item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}",         "Update an existing pharmaceutical item"},
+                    {"DELETE", "/pharmaceutical_items/{type}/{id}",         "Retire (soft-delete) a pharmaceutical item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}/restore", "Restore a retired pharmaceutical item"},
+                    {"PUT",    "/pharmaceutical_items/{type}/{id}/status",  "Activate or deactivate a pharmaceutical item (?active=true/false)"}
+                });
+
+        appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
+                "Manage pharmaceutical configuration entities: categories, dosage forms, and measurement units.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_config/{type}/search",       "Search config entities by name (type: categories, dosage_forms, units)"},
+                    {"GET",    "/pharmaceutical_config/{type}/{id}",         "Get a config entity by ID"},
+                    {"POST",   "/pharmaceutical_config/{type}",              "Create a new config entity"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}",         "Update an existing config entity"},
+                    {"DELETE", "/pharmaceutical_config/{type}/{id}",         "Retire a config entity"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}/restore", "Restore a retired config entity"}
+                });
+
+        appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
+                "Manage clinical prescription templates (favourite medicines) by patient age, sex, and setting. "
+                + "Includes AI-optimised endpoints: /validate for bulk entity validation, /suggest for auto-suggestions, "
+                + "and /parse which takes natural language medicine instructions and returns structured prescription data.",
+                githubUrl(branch, "developer_docs/API_CLINICAL_FAVOURITE_MEDICINES.md"),
+                new String[][]{
+                    {"POST",   "/clinical/favourite_medicines",                        "Create a new favourite medicine prescription template"},
+                    {"GET",    "/clinical/favourite_medicines",                        "Search/list favourite medicine templates (supports age, sex, indoor, category filters)"},
+                    {"GET",    "/clinical/favourite_medicines/{id}",                   "Get a favourite medicine template by ID"},
+                    {"PUT",    "/clinical/favourite_medicines/{id}",                   "Update an existing favourite medicine template"},
+                    {"DELETE", "/clinical/favourite_medicines/{id}",                   "Delete (soft) a favourite medicine template"},
+                    {"GET",    "/clinical/favourite_medicines/entities/vtms",          "Search VTMs (active ingredients) by name"},
+                    {"GET",    "/clinical/favourite_medicines/entities/vmps",          "Search VMPs (generic products) by name"},
+                    {"GET",    "/clinical/favourite_medicines/entities/amps",          "Search AMPs (branded products) by name"},
+                    {"GET",    "/clinical/favourite_medicines/entities/units",         "Search measurement units (dose, frequency, duration, issue)"},
+                    {"GET",    "/clinical/favourite_medicines/entities/categories",    "Search dosage form categories"},
+                    {"POST",   "/clinical/favourite_medicines/validate",               "[AI-optimised] Bulk validate entity name/type pairs — returns IDs or flags missing entities"},
+                    {"POST",   "/clinical/favourite_medicines/suggest",                "[AI-optimised] Auto-suggest similar entities for fuzzy matching"},
+                    {"POST",   "/clinical/favourite_medicines/parse",                  "[AI-optimised] Parse natural language medicine instructions into structured prescription data"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
