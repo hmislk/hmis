@@ -320,6 +320,17 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "Membership", "/apiMembership",
+                "Manage membership schemes, patient registration under a membership, and membership billing/payment.",
+                githubUrl(branch, "developer_docs/API_MEMBERSHIP.md"),
+                new String[][]{
+                    {"GET", "/apiMembership/banks",                                                                        "Get list of available bank institutions for payment"},
+                    {"GET", "/apiMembership/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic}",                "Register a new patient under the membership scheme (creates in De-Active state)"},
+                    {"GET", "/apiMembership/patient/{patient_id}",                                                         "Get patient details by internal patient ID"},
+                    {"GET", "/apiMembership/serviceValue",                                                                  "Get the membership service fee, VAT, and total payable amount"},
+                    {"GET", "/apiMembership/payForMembership/{patient_id}/{bank_id}/{credit_card_ref}/{memo}",              "Process credit-card membership payment and activate the patient account"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
