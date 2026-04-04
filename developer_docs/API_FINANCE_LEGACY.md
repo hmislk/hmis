@@ -26,7 +26,7 @@ Finance: <your-api-key>
 | Context | Format | Example |
 |---------|--------|---------|
 | Single date path parameter | `dd-MM-yyyy` | `04-04-2026` |
-| Date-range path parameter | `dd-MM-yyyy-hh:mm:ss` | `01-04-2026-00:00:00` |
+| Date-range path parameter | `dd-MM-yyyy-HH:mm:ss` | `01-04-2026-00:00:00` |
 
 ## Endpoints
 
@@ -67,8 +67,8 @@ Returns all non-retired bills created within the specified date-time range (incl
 **Endpoint:** `GET /api/finance/bill/{from}/{to}`
 
 **Path Parameters:**
-- `from` (string, required): Start datetime in `dd-MM-yyyy-hh:mm:ss` format
-- `to` (string, required): End datetime in `dd-MM-yyyy-hh:mm:ss` format
+- `from` (string, required): Start datetime in `dd-MM-yyyy-HH:mm:ss` format
+- `to` (string, required): End datetime in `dd-MM-yyyy-HH:mm:ss` format
 
 **Example:**
 ```bash
@@ -115,8 +115,8 @@ Returns all non-retired bills with line items created within the specified date-
 **Endpoint:** `GET /api/finance/bill_item/{from}/{to}`
 
 **Path Parameters:**
-- `from` (string, required): Start datetime in `dd-MM-yyyy-hh:mm:ss` format
-- `to` (string, required): End datetime in `dd-MM-yyyy-hh:mm:ss` format
+- `from` (string, required): Start datetime in `dd-MM-yyyy-HH:mm:ss` format
+- `to` (string, required): End datetime in `dd-MM-yyyy-HH:mm:ss` format
 
 **Example:**
 ```bash
@@ -165,8 +165,8 @@ Returns bills with line items for the specified category within the date-time ra
 **Endpoint:** `GET /api/finance/bill_item_cat/{from}/{to}/{bill_category}`
 
 **Path Parameters:**
-- `from` (string, required): Start datetime in `dd-MM-yyyy-hh:mm:ss` format
-- `to` (string, required): End datetime in `dd-MM-yyyy-hh:mm:ss` format
+- `from` (string, required): Start datetime in `dd-MM-yyyy-HH:mm:ss` format
+- `to` (string, required): End datetime in `dd-MM-yyyy-HH:mm:ss` format
 - `bill_category` (string, required): A valid `BillType` enum name (case-sensitive)
 
 **Example:**

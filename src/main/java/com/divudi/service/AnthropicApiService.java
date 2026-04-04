@@ -222,10 +222,12 @@ public class AnthropicApiService implements Serializable {
             sb.append("## Authentication\n");
             sb.append("API key: ").append(userHmisApiKey.trim()).append("\n");
             sb.append("Most endpoints use the 'Finance' header. Some modules use different headers:\n");
-            sb.append("- 'Finance' header: Pharmacy, Institution, Department, Finance, Users, Login History, Sites, Inward, FHIR, LIMS, Membership, and most other modules\n");
+            sb.append("- 'Finance' header: Pharmacy, Institution, Department, Finance, Users, Login History, Sites, Inward, Membership, and most other modules\n");
+            sb.append("- 'FHIR' header: FHIR Patient (/fhir/Patient) — not the Finance header\n");
             sb.append("- 'Token' header: Consultant Management (/channel/consultant) and Channel/Booking (/channel/*)\n");
             sb.append("- 'Config' header: System Configuration (/config)\n");
-            sb.append("Each module description notes its required header when it differs from 'Finance'.\n\n");
+            sb.append("- LIMS authentication is module-specific: /lims uses URL-embedded credentials, /middleware uses JSON-body credentials, /limsmw uses HTTP Basic Auth — do NOT use the Finance header for LIMS.\n");
+            sb.append("Each module description notes its required authentication scheme when it differs from 'Finance'.\n\n");
         }
 
         sb.append("## Available API Modules\n");
@@ -441,7 +443,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Finance - Legacy Bill Query", "/finance",
                 "Legacy bill query endpoints. Use for category-based filtering or simple date-range queries. "
-                + "Prefer /costing_data for richer detail. Date format: dd-MM-yyyy; for ranges: dd-MM-yyyy-hh:mm:ss.",
+                + "Prefer /costing_data for richer detail. Date format: dd-MM-yyyy; for ranges: dd-MM-yyyy-HH:mm:ss.",
                 githubUrl(branch, "developer_docs/API_FINANCE_LEGACY.md"),
                 new String[][]{
                     {"GET", "/finance/bill",                                              "Get all bills for today"},

@@ -15,13 +15,13 @@ The HMIS exposes two FHIR-related API groups:
 
 ### Authentication
 
-```
+```text
 Finance: <your-api-key>
 ```
 
 ### Base URL
 
-```
+```text
 /api/fhir
 ```
 
@@ -121,7 +121,7 @@ Returns payment return records for the given institution.
 
 ### Authentication
 
-```
+```text
 FHIR: <your-api-key>
 ```
 
@@ -129,7 +129,7 @@ FHIR: <your-api-key>
 
 ### Base URL
 
-```
+```text
 /api/fhir/Patient
 ```
 

@@ -249,6 +249,14 @@ public class ChannelApi {
         return jSONObject;
     }
 
+    private JSONObject errorResponse(int httpStatusCode, String msg) {
+        JSONObject jSONObject = new JSONObject();
+        jSONObject.put("code", httpStatusCode);
+        jSONObject.put("type", "Error");
+        jSONObject.put("message", msg);
+        return jSONObject;
+    }
+
     private JSONObject errorMessageNotValidKey() {
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("code", 401);
@@ -3877,18 +3885,22 @@ public class ChannelApi {
         String name = requestBody.get("name") != null ? requestBody.get("name").toString().trim() : "";
         if (name.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(commonFunctionToErrorResponse("name is required").toString()).build();
+                    .entity(errorResponse(400, "name is required").toString()).build();
         }
 
         Person person = new Person();
         person.setName(name);
 
-        String titleStr = requestBody.get("title") != null ? requestBody.get("title").toString() : "Dr";
+        Object titleRaw = requestBody.get("title");
+        String titleStr = (titleRaw != null) ? titleRaw.toString().trim() : "";
+        if (titleStr.isEmpty()) {
+            titleStr = "Dr";
+        }
         try {
             person.setTitle(Title.valueOf(titleStr));
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(commonFunctionToErrorResponse("Invalid title value: " + titleStr).toString()).build();
+                    .entity(errorResponse(400, "Invalid title value: " + titleStr).toString()).build();
         }
 
         if (requestBody.get("mobile") != null) {
@@ -3917,7 +3929,7 @@ public class ChannelApi {
                 consultant.setCodeInterger(Integer.parseInt(serialNoStr));
             } catch (NumberFormatException e) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("Invalid serialNo value: " + serialNoStr).toString()).build();
+                        .entity(errorResponse(400, "Invalid serialNo value: " + serialNoStr).toString()).build();
             }
         }
         if (requestBody.get("description") != null) {
@@ -3936,12 +3948,12 @@ public class ChannelApi {
                 Speciality speciality = specialityFacade.find(specId);
                 if (speciality == null || speciality.isRetired()) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(commonFunctionToErrorResponse("Speciality not found or retired for id: " + specId).toString()).build();
+                            .entity(errorResponse(400, "Speciality not found or retired for id: " + specId).toString()).build();
                 }
                 consultant.setSpeciality(speciality);
             } catch (NumberFormatException e) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("Invalid specialityId value: " + specIdStr).toString()).build();
+                        .entity(errorResponse(400, "Invalid specialityId value: " + specIdStr).toString()).build();
             }
         }
         if (requestBody.get("institutionId") != null) {
@@ -3951,17 +3963,16 @@ public class ChannelApi {
                 Institution institution = institutionFacade.find(insId);
                 if (institution == null || institution.isRetired()) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(commonFunctionToErrorResponse("Institution not found or retired for id: " + insId).toString()).build();
+                            .entity(errorResponse(400, "Institution not found or retired for id: " + insId).toString()).build();
                 }
                 consultant.setInstitution(institution);
             } catch (NumberFormatException e) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("Invalid institutionId value: " + insIdStr).toString()).build();
+                        .entity(errorResponse(400, "Invalid institutionId value: " + insIdStr).toString()).build();
             }
         }
 
-        personFacade.create(person);
-        consultantFacade.create(consultant);
+        consultantFacade.createConsultantWithPerson(person, consultant);
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", consultant.getId());
@@ -4006,13 +4017,13 @@ public class ChannelApi {
         Consultant consultant = consultantFacade.find(id);
         if (consultant == null || consultant.isRetired()) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity(commonFunctionToErrorResponse("Consultant not found for id: " + id).toString()).build();
+                    .entity(errorResponse(404, "Consultant not found for id: " + id).toString()).build();
         }
 
         Person person = consultant.getPerson();
         if (person == null) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(commonFunctionToErrorResponse("Consultant has no associated person record").toString()).build();
+                    .entity(errorResponse(500, "Consultant has no associated person record").toString()).build();
         }
 
         if (requestBody.containsKey("name")) {
@@ -4026,15 +4037,16 @@ public class ChannelApi {
         }
         if (requestBody.containsKey("title")) {
             Object titleVal = requestBody.get("title");
-            if (titleVal == null) {
+            String titleStr = (titleVal != null) ? titleVal.toString().trim() : "";
+            if (titleStr.isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("title cannot be null").toString()).build();
+                        .entity(errorResponse(400, "title cannot be null or blank").toString()).build();
             }
             try {
-                person.setTitle(Title.valueOf(titleVal.toString()));
+                person.setTitle(Title.valueOf(titleStr));
             } catch (IllegalArgumentException e) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("Invalid title value: " + titleVal).toString()).build();
+                        .entity(errorResponse(400, "Invalid title value: " + titleStr).toString()).build();
             }
         }
         if (requestBody.containsKey("mobile")) {
@@ -4062,13 +4074,13 @@ public class ChannelApi {
             Object v = requestBody.get("serialNo");
             if (v == null) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("serialNo cannot be null").toString()).build();
+                        .entity(errorResponse(400, "serialNo cannot be null").toString()).build();
             }
             try {
                 consultant.setCodeInterger(Integer.parseInt(v.toString()));
             } catch (NumberFormatException e) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(commonFunctionToErrorResponse("Invalid serialNo value: " + v).toString()).build();
+                        .entity(errorResponse(400, "Invalid serialNo value: " + v).toString()).build();
             }
         }
         if (requestBody.containsKey("description")) {
@@ -4093,12 +4105,12 @@ public class ChannelApi {
                     Speciality speciality = specialityFacade.find(specId);
                     if (speciality == null || speciality.isRetired()) {
                         return Response.status(Response.Status.BAD_REQUEST)
-                                .entity(commonFunctionToErrorResponse("Speciality not found or retired for id: " + specId).toString()).build();
+                                .entity(errorResponse(400, "Speciality not found or retired for id: " + specId).toString()).build();
                     }
                     consultant.setSpeciality(speciality);
                 } catch (NumberFormatException e) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(commonFunctionToErrorResponse("Invalid specialityId value: " + v).toString()).build();
+                            .entity(errorResponse(400, "Invalid specialityId value: " + v).toString()).build();
                 }
             }
         }
@@ -4112,18 +4124,17 @@ public class ChannelApi {
                     Institution institution = institutionFacade.find(insId);
                     if (institution == null || institution.isRetired()) {
                         return Response.status(Response.Status.BAD_REQUEST)
-                                .entity(commonFunctionToErrorResponse("Institution not found or retired for id: " + insId).toString()).build();
+                                .entity(errorResponse(400, "Institution not found or retired for id: " + insId).toString()).build();
                     }
                     consultant.setInstitution(institution);
                 } catch (NumberFormatException e) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(commonFunctionToErrorResponse("Invalid institutionId value: " + v).toString()).build();
+                            .entity(errorResponse(400, "Invalid institutionId value: " + v).toString()).build();
                 }
             }
         }
 
-        personFacade.edit(person);
-        consultantFacade.edit(consultant);
+        consultantFacade.updateConsultantWithPerson(person, consultant);
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", consultant.getId());
