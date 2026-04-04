@@ -293,6 +293,18 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/departments/{id}",   "Retire a department"}
                 });
 
+        appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
+                "Manage pharmaceutical configuration entities: categories, dosage forms, and measurement units.",
+                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/pharmaceutical_config/{type}/search",         "Search config entries by name or code (types: categories, dosage_forms, units)"},
+                    {"GET",    "/pharmaceutical_config/{type}/{id}",            "Get config entry by ID"},
+                    {"POST",   "/pharmaceutical_config/{type}",                 "Create a new config entry"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}",            "Update a config entry"},
+                    {"DELETE", "/pharmaceutical_config/{type}/{id}",            "Retire (soft-delete) a config entry"},
+                    {"PUT",    "/pharmaceutical_config/{type}/{id}/restore",    "Restore a retired config entry"}
+                });
+
         appendModule(sb, "Finance - Balance History", "/balance_history",
                 "Retrieve financial balance history: drawer entries, patient deposits, agent histories, staff welfare.",
                 githubUrl(branch, "developer_docs/API_BALANCE_HISTORY.md"),
