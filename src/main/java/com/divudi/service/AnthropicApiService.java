@@ -320,6 +320,45 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "LIMS - Sample Barcodes", "/lims",
+                "Retrieve patient sample barcodes and test lists for laboratory bill processing. "
+                + "Read-only queries; credentials are embedded in the URL path (legacy middleware pattern). "
+                + "Do NOT use the middleware path to trigger new lab orders.",
+                githubUrl(branch, "developer_docs/API_LIMS.md"),
+                new String[][]{
+                    {"POST", "/lims/login/mw",                                        "Authenticate a middleware client (JSON body)"},
+                    {"GET",  "/lims/samples/login/{username}/{password}",             "Legacy credential check (URL params)"},
+                    {"GET",  "/lims/samples/{billId}/{username}/{password}",          "Get patient sample barcodes for a bill"},
+                    {"GET",  "/lims/samples1/{billId}/{username}/{password}",         "Get patient sample barcodes (enhanced, with validation)"},
+                    {"GET",  "/lims/opticianPoBillBarcodes/{billid}/{username}/{password}", "Get optician PO bill barcodes"},
+                    {"GET",  "/lims/middleware/{machine}/{message}/{username}/{password}", "Send a raw analyzer message and get LIMS response"}
+                });
+
+        appendModule(sb, "LIMS - Middleware (Analyzer Integration)", "/middleware",
+                "Used by laboratory analyzers to pull test orders and push results into HMIS. "
+                + "CAUTION: POST endpoints write lab results to the database. "
+                + "Only call write endpoints when acting on real analyzer output.",
+                githubUrl(branch, "developer_docs/API_LIMS.md"),
+                new String[][]{
+                    {"GET",  "/middleware",                                  "Health check – returns 'Middleware service is working'"},
+                    {"GET",  "/middleware/test",                             "Health check (alternate path)"},
+                    {"POST", "/middleware/test_orders_for_sample_requests",  "Query test orders for a sample ID (analyzer pull)"},
+                    {"POST", "/middleware/test_results",                     "Receive and store patient results from an analyzer (analyzer push)"}
+                });
+
+        appendModule(sb, "LIMS - HL7 / Analyzer Message Processing", "/limsmw",
+                "Processes HL7 v2, Sysmex ASTM, and JSON observation messages from laboratory analyzers. "
+                + "Authentication via HTTP Basic Auth header. "
+                + "CAUTION: POST endpoints write results to the database.",
+                githubUrl(branch, "developer_docs/API_LIMS.md"),
+                new String[][]{
+                    {"GET",  "/limsmw/test",                        "Health check – returns 'Hello, the path is correct!'"},
+                    {"POST", "/limsmw/login",                        "Authenticate a middleware client (JSON body)"},
+                    {"POST", "/limsmw/observation",                  "Submit a single lab observation/result as JSON (credentials in body)"},
+                    {"POST", "/limsmw/sysmex",                       "Receive a Sysmex ASTM-format message (Basic Auth)"},
+                    {"POST", "/limsmw/limsProcessAnalyzerMessage",   "Process a Base64-encoded HL7 message from an analyzer (Basic Auth)"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
