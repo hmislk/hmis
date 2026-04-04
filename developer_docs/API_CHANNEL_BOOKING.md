@@ -519,7 +519,7 @@ Returns all bookings for a booking agent within a date range.
 ### Response
 ```json
 {
-  "code": 202,
+  "code": "202",
   "message": "Accepted",
   "data": [
     {
@@ -635,7 +635,7 @@ Cancels a confirmed (paid) booking. Only active bookings can be cancelled; tempo
 
 ## Typical Booking Workflow
 
-```
+```text
 1. POST /channel/specializations     → get specialty IDs
 2. POST /channel/hospitals           → get hospital IDs
 3. POST /channel/doctorAvailability  → find available sessions
@@ -646,12 +646,12 @@ Cancels a confirmed (paid) booking. Only active bookings can be cancelled; tempo
 ```
 
 To cancel a confirmed booking:
-```
+```text
 POST /channel/cancellation  → cancel by refNo
 ```
 
 To review bookings:
-```
+```text
 POST /channel/channelHistoryList    → list by date range
 POST /channel/channelHistoryByRef  → single booking by refNo
 ```
