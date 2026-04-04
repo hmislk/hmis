@@ -329,10 +329,90 @@ public class AnthropicApiService implements Serializable {
                     {"PUT",  "/channel/consultant/{id}", "Update an existing consultant by ID. Same optional fields as POST. Returns 404 if not found."}
                 });
 
+        appendModule(sb, "User Management", "/users",
+                "Create, read, update, and retire HMIS web users. Manage passwords, loggable departments, "
+                + "and individual privilege assignments. Use /users/privileges/available to discover valid privilege names.",
+                githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
+                    {"POST",   "/users",                          "Create a new user"},
+                    {"GET",    "/users/{id}",                     "Get user by ID"},
+                    {"PUT",    "/users/{id}",                     "Update user details"},
+                    {"DELETE", "/users/{id}",                     "Retire (soft-delete) a user"},
+                    {"POST",   "/users/{id}/reset-password",      "Admin reset of user password"},
+                    {"POST",   "/users/{id}/change-password",     "User changes own password"},
+                    {"GET",    "/users/{id}/privileges",          "List privileges for a user"},
+                    {"POST",   "/users/{id}/privileges",          "Assign a privilege to a user"},
+                    {"DELETE", "/users/{id}/privileges",          "Remove a privilege from a user"},
+                    {"GET",    "/users/{id}/departments",         "List loggable departments for a user"},
+                    {"POST",   "/users/{id}/departments",         "Assign a loggable department to a user"},
+                    {"GET",    "/users/privileges/available",     "List all valid privilege enum names"},
+                    {"POST",   "/users/bulk-privileges",          "Bulk-assign privileges to multiple users at once"}
+                });
+
+        appendModule(sb, "User Roles", "/user-roles",
+                "Create and manage user roles. Assign privileges to roles for role-based access control.",
+                githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
+                new String[][]{
+                    {"GET",    "/user-roles",                     "List all user roles"},
+                    {"POST",   "/user-roles",                     "Create a new role"},
+                    {"GET",    "/user-roles/{id}",                "Get role by ID"},
+                    {"PUT",    "/user-roles/{id}",                "Update a role"},
+                    {"DELETE", "/user-roles/{id}",                "Retire a role"},
+                    {"GET",    "/user-roles/{id}/privileges",     "List privileges assigned to a role"},
+                    {"POST",   "/user-roles/{id}/privileges",     "Assign a privilege to a role"}
+                });
+
+        appendModule(sb, "Login History", "/logins",
+                "Query user login history filtered by department, user, and date range. "
+                + "Use /logins/last-per-user to find the most recent login per unique user in a department.",
+                githubUrl(branch, "developer_docs/API_LOGIN_HISTORY.md"),
+                new String[][]{
+                    {"GET", "/logins",               "List logins. Filters: departmentId, userId, days, fromDate (yyyy-MM-dd), toDate, page, size"},
+                    {"GET", "/logins/last-per-user", "Most recent login per unique user. Filters: departmentId, size"}
+                });
+
+        appendModule(sb, "System Configuration", "/config",
+                "Set application configuration options at runtime. "
+                + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
+                githubUrl(branch, "developer_docs/API_CONFIG.md"),
+                new String[][]{
+                    {"POST", "/config/setBoolean/{key}/{value}", "Set a boolean config option by key name"},
+                    {"POST", "/config/setLongText/{key}/{value}", "Set a text config option by key name"},
+                    {"POST", "/config/setInteger/{key}/{value}", "Set an integer config option by key name"}
+                });
+
+        appendModule(sb, "Sites", "/sites",
+                "Manage hospital sites (physical collection points or satellite locations). "
+                + "A site is an Institution with institutionType=Site.",
+                githubUrl(branch, "developer_docs/API_SITES.md"),
+                new String[][]{
+                    {"GET",    "/sites/search",  "Search sites by name or code. Params: query, limit"},
+                    {"GET",    "/sites/{id}",    "Get site by ID"},
+                    {"POST",   "/sites",          "Create a new site. Fields: name, code, address, phone, email"},
+                    {"PUT",    "/sites/{id}",    "Update a site"},
+                    {"DELETE", "/sites/{id}",    "Retire (soft-delete) a site"}
+                });
+
+        appendModule(sb, "Inward / Admissions", "/apiInward",
+                "Access inpatient admission records and process payments for admitted patients.",
+                githubUrl(branch, "developer_docs/API_INWARD.md"),
+                new String[][]{
+                    {"GET", "/apiInward/admissions",                                           "List active inpatient admissions"},
+                    {"GET", "/apiInward/admissions/byPhone/{phone}",                           "Find admission by patient phone number"},
+                    {"GET", "/apiInward/banks",                                                "List available banks/payment institutions"},
+                    {"GET", "/apiInward/validateAdmission/{bht_no}/{phone}",                   "Validate a BHT number and phone combination before payment"},
+                    {"POST", "/apiInward/payment",                                             "Process a payment for an admitted patient"},
+                    {"GET", "/apiInward/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}", "Process payment via GET (for integrations that cannot POST)"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
         sb.append("- Create and update consultant/doctor records\n");
+        sb.append("- Manage users, roles, and system privileges\n");
+        sb.append("- Query login history and audit trails\n");
+        sb.append("- Access inpatient admission records and process payments\n");
         sb.append("- Analyse reports and uploaded images/documents\n");
         sb.append("- Troubleshoot and explain system behaviour\n\n");
         sb.append("When making API calls, always explain what you are doing and present results clearly. ");
