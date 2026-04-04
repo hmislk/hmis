@@ -56,6 +56,12 @@ public class CapabilityStatementResource {
                         "Channeling and appointment operations",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Consultant", "/api/channel/consultant",
+                        "Create a new consultant via POST. Update an existing consultant by ID via PUT /api/channel/consultant/{id}. "
+                        + "Required field for POST: name. Optional: title, mobile, phone, fax, address, code, serialNo, "
+                        + "specialityId, institutionId, registration, qualification, description.",
+                        "API Key (Token header)",
+                        "POST", "PUT"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
                         "Clinical favourite medicine management",
                         "API Key",

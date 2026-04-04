@@ -10,6 +10,7 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConsultantController;
+import com.divudi.core.facade.ConsultantFacade;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -110,6 +111,8 @@ public class ChannelApi {
 
     @EJB
     StaffFacade staffFacade;
+    @EJB
+    private ConsultantFacade consultantFacade;
     @EJB
     private ItemFeeFacade ItemFeeFacade;
     @EJB
@@ -3833,6 +3836,252 @@ public class ChannelApi {
 
     public void setAgentReferenceBookController(AgentReferenceBookController AgentReferenceBookController) {
         this.AgentReferenceBookController = AgentReferenceBookController;
+    }
+
+    /**
+     * POST /api/channel/consultant
+     *
+     * Creates a new Consultant (and the associated Person).
+     *
+     * Request headers:
+     *   Token: &lt;api-key&gt;
+     *
+     * Request body (JSON):
+     * {
+     *   "name"          : "NURADH JOSEPH",   // required
+     *   "title"         : "Dr",              // optional, defaults to Dr
+     *   "mobile"        : "0771234567",      // optional
+     *   "phone"         : "",                // optional
+     *   "fax"           : "",                // optional
+     *   "address"       : "",                // optional
+     *   "code"          : "NURADH JOSEPH",   // optional
+     *   "serialNo"      : 1,                 // optional (codeInterger)
+     *   "specialityId"  : 12,               // optional
+     *   "institutionId" : 5,                // optional
+     *   "registration"  : "",               // optional
+     *   "qualification" : "MBBS",           // optional
+     *   "description"   : "ONCOLOGIST"      // optional
+     * }
+     */
+    @POST
+    @Path("/consultant")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createConsultant(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString()).build();
+        }
+
+        String name = requestBody.get("name") != null ? requestBody.get("name").toString().trim() : "";
+        if (name.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(commonFunctionToErrorResponse("name is required").toString()).build();
+        }
+
+        Person person = new Person();
+        person.setName(name);
+
+        String titleStr = requestBody.get("title") != null ? requestBody.get("title").toString() : "Dr";
+        try {
+            person.setTitle(Title.valueOf(titleStr));
+        } catch (IllegalArgumentException e) {
+            person.setTitle(Title.Dr);
+        }
+
+        if (requestBody.get("mobile") != null) {
+            person.setMobile(requestBody.get("mobile").toString());
+        }
+        if (requestBody.get("phone") != null) {
+            person.setPhone(requestBody.get("phone").toString());
+        }
+        if (requestBody.get("fax") != null) {
+            person.setFax(requestBody.get("fax").toString());
+        }
+        if (requestBody.get("address") != null) {
+            person.setAddress(requestBody.get("address").toString());
+        }
+
+        personFacade.create(person);
+
+        Consultant consultant = new Consultant();
+        consultant.setPerson(person);
+        consultant.setCreatedAt(new Date());
+
+        if (requestBody.get("code") != null) {
+            consultant.setCode(requestBody.get("code").toString());
+        }
+        if (requestBody.get("serialNo") != null) {
+            try {
+                consultant.setCodeInterger(Integer.parseInt(requestBody.get("serialNo").toString()));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (requestBody.get("description") != null) {
+            consultant.setDescription(requestBody.get("description").toString());
+        }
+        if (requestBody.get("registration") != null) {
+            consultant.setRegistration(requestBody.get("registration").toString());
+        }
+        if (requestBody.get("qualification") != null) {
+            consultant.setQualification(requestBody.get("qualification").toString());
+        }
+        if (requestBody.get("specialityId") != null) {
+            try {
+                Long specId = Long.parseLong(requestBody.get("specialityId").toString());
+                Speciality speciality = specialityFacade.find(specId);
+                if (speciality != null) {
+                    consultant.setSpeciality(speciality);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (requestBody.get("institutionId") != null) {
+            try {
+                Long insId = Long.parseLong(requestBody.get("institutionId").toString());
+                Institution institution = institutionFacade.find(insId);
+                if (institution != null) {
+                    consultant.setInstitution(institution);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        consultantFacade.create(consultant);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", consultant.getId());
+        data.put("name", person.getName());
+        data.put("title", person.getTitle() != null ? person.getTitle().toString() : "Dr");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "201");
+        response.put("message", "Created");
+        response.put("data", data);
+        response.put("detailMessage", "Consultant created successfully");
+
+        return Response.status(Response.Status.CREATED).entity(response).build();
+    }
+
+    /**
+     * PUT /api/channel/consultant/{id}
+     *
+     * Updates an existing Consultant by ID.
+     *
+     * Request headers:
+     *   Token: &lt;api-key&gt;
+     *
+     * Updatable fields (all optional — only supplied fields are changed):
+     *   name, title, mobile, phone, fax, address, code, serialNo,
+     *   specialityId, institutionId, registration, qualification, description
+     */
+    @PUT
+    @Path("/consultant/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateConsultant(@Context HttpServletRequest requestContext,
+            @PathParam("id") Long id,
+            Map<String, Object> requestBody) {
+
+        String key = requestContext.getHeader("Token");
+        if (!isValidKey(key)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString()).build();
+        }
+
+        Consultant consultant = consultantFacade.find(id);
+        if (consultant == null || consultant.isRetired()) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(commonFunctionToErrorResponse("Consultant not found for id: " + id).toString()).build();
+        }
+
+        Person person = consultant.getPerson();
+        if (person == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(commonFunctionToErrorResponse("Consultant has no associated person record").toString()).build();
+        }
+
+        if (requestBody.containsKey("name")) {
+            String name = requestBody.get("name").toString().trim();
+            if (!name.isEmpty()) {
+                person.setName(name);
+            }
+        }
+        if (requestBody.containsKey("title")) {
+            try {
+                person.setTitle(Title.valueOf(requestBody.get("title").toString()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        if (requestBody.containsKey("mobile")) {
+            person.setMobile(requestBody.get("mobile").toString());
+        }
+        if (requestBody.containsKey("phone")) {
+            person.setPhone(requestBody.get("phone").toString());
+        }
+        if (requestBody.containsKey("fax")) {
+            person.setFax(requestBody.get("fax").toString());
+        }
+        if (requestBody.containsKey("address")) {
+            person.setAddress(requestBody.get("address").toString());
+        }
+
+        personFacade.edit(person);
+
+        if (requestBody.containsKey("code")) {
+            consultant.setCode(requestBody.get("code").toString());
+        }
+        if (requestBody.containsKey("serialNo")) {
+            try {
+                consultant.setCodeInterger(Integer.parseInt(requestBody.get("serialNo").toString()));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (requestBody.containsKey("description")) {
+            consultant.setDescription(requestBody.get("description").toString());
+        }
+        if (requestBody.containsKey("registration")) {
+            consultant.setRegistration(requestBody.get("registration").toString());
+        }
+        if (requestBody.containsKey("qualification")) {
+            consultant.setQualification(requestBody.get("qualification").toString());
+        }
+        if (requestBody.containsKey("specialityId")) {
+            try {
+                Long specId = Long.parseLong(requestBody.get("specialityId").toString());
+                Speciality speciality = specialityFacade.find(specId);
+                if (speciality != null) {
+                    consultant.setSpeciality(speciality);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (requestBody.containsKey("institutionId")) {
+            try {
+                Long insId = Long.parseLong(requestBody.get("institutionId").toString());
+                Institution institution = institutionFacade.find(insId);
+                if (institution != null) {
+                    consultant.setInstitution(institution);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        consultantFacade.edit(consultant);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", consultant.getId());
+        data.put("name", person.getName());
+        data.put("title", person.getTitle() != null ? person.getTitle().toString() : "");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", data);
+        response.put("detailMessage", "Consultant updated successfully");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
     }
 
 }
