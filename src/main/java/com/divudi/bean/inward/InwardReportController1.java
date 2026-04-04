@@ -2482,14 +2482,6 @@ public class InwardReportController1 implements Serializable {
         this.outstandingOnly = outstandingOnly;
     }
 
-    public String getDateBasis() {
-        return dateBasis;
-    }
-
-    public void setDateBasis(String dateBasis) {
-        this.dateBasis = dateBasis;
-    }
-
     /**
      * Returns the JPQL date field to apply to the from/to date range based on dateBasis.
      * @param defaultField the field used when dateBasis is "createdAt" (e.g. "b.bill.createdAt")
