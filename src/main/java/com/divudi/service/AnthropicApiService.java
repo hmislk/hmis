@@ -1,16 +1,25 @@
 package com.divudi.service;
 
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.entity.AiMessage;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.facade.ConfigOptionFacade;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -25,22 +34,32 @@ public class AnthropicApiService implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final String GITHUB_RAW_BASE = "https://raw.githubusercontent.com/hmislk/hmis/";
+    private static final String GITHUB_SEARCH_API = "https://api.github.com/search/code";
+    private static final int MAX_TOOL_ITERATIONS = 10;
+    private static final int MAX_FILE_CONTENT_CHARS = 8000;
 
-    // No pre-fetched doc list. The capability summary is built inline in buildSystemPrompt()
-    // and documentationUrl links are included so Claude can request specific docs on demand.
+    @EJB
+    private ConfigOptionFacade configOptionFacade;
+
+    // -------------------------------------------------------------------------
+    // Public API
+    // -------------------------------------------------------------------------
 
     /**
      * Sends a conversation to Claude API and returns the response text.
+     * Enables agentic tool use (GitHub code search, file fetch, config search).
      *
-     * @param apiKey The Anthropic API key (from ConfigOption "AI Chat - Claude API Key")
-     * @param model The Claude model ID e.g. "claude-opus-4-6" (from ConfigOption "AI Chat - Claude Model")
-     * @param maxTokens Maximum tokens for response (from ConfigOption "AI Chat - Max Tokens")
-     * @param systemPrompt The system prompt to set context (HMIS URL, user API key, doc URLs etc.)
-     * @param conversationHistory List of AiMessage entities representing the conversation so far (NOT including the new user message)
-     * @param userMessage The new user message text
-     * @param attachmentBase64 Optional base64 encoded image/doc (null if no attachment)
-     * @param attachmentMimeType Optional MIME type e.g. "image/png" (null if no attachment)
-     * @return AnthropicResponse object with content, inputTokens, outputTokens
+     * @param apiKey              Anthropic API key
+     * @param model               Claude model ID
+     * @param maxTokens           Maximum response tokens
+     * @param systemPrompt        System prompt
+     * @param conversationHistory Prior messages (NOT including the new user message)
+     * @param userMessage         New user message text
+     * @param attachmentBase64    Optional base64-encoded attachment (null if none)
+     * @param attachmentMimeType  Optional MIME type (null if none)
+     * @param githubToken         Optional GitHub personal access token (empty = unauthenticated)
+     * @param githubBranch        GitHub branch for file fetches (e.g. "development")
+     * @return AnthropicResponse with content, inputTokens, outputTokens
      */
     public AnthropicResponse sendMessage(
             String apiKey,
@@ -50,136 +69,143 @@ public class AnthropicApiService implements Serializable {
             List<AiMessage> conversationHistory,
             String userMessage,
             String attachmentBase64,
-            String attachmentMimeType) {
+            String attachmentMimeType,
+            String githubToken,
+            String githubBranch) {
 
         try {
-            // Build the messages array
-            JsonArrayBuilder messagesBuilder = Json.createArrayBuilder();
+            List<JsonObject> messages = new ArrayList<>();
 
-            // Add conversation history
             for (AiMessage msg : conversationHistory) {
                 if (msg.getContent() == null || msg.getContent().trim().isEmpty()) {
                     continue;
                 }
-                JsonObject historyMsg = Json.createObjectBuilder()
+                messages.add(Json.createObjectBuilder()
                         .add("role", msg.getRole())
                         .add("content", msg.getContent())
-                        .build();
-                messagesBuilder.add(historyMsg);
+                        .build());
             }
 
-            // Build the new user message - handle attachments
-            if (attachmentBase64 != null && !attachmentBase64.isEmpty() && attachmentMimeType != null) {
-                // Multi-part content with attachment
-                JsonArrayBuilder contentBuilder = Json.createArrayBuilder();
+            messages.add(buildUserMessage(userMessage, attachmentBase64, attachmentMimeType));
 
-                // Check if it's an image (vision) or document
-                if (attachmentMimeType.startsWith("image/")) {
-                    // Image - use image block
-                    JsonObject imageSource = Json.createObjectBuilder()
-                            .add("type", "base64")
-                            .add("media_type", attachmentMimeType)
-                            .add("data", attachmentBase64)
-                            .build();
-                    JsonObject imageBlock = Json.createObjectBuilder()
-                            .add("type", "image")
-                            .add("source", imageSource)
-                            .build();
-                    contentBuilder.add(imageBlock);
-                } else {
-                    // Document - use document block (Claude supports PDF, text etc)
-                    JsonObject docSource = Json.createObjectBuilder()
-                            .add("type", "base64")
-                            .add("media_type", attachmentMimeType)
-                            .add("data", attachmentBase64)
-                            .build();
-                    JsonObject docBlock = Json.createObjectBuilder()
-                            .add("type", "document")
-                            .add("source", docSource)
-                            .build();
-                    contentBuilder.add(docBlock);
-                }
+            JsonArray tools = buildToolsArray();
 
-                // Add text part
-                if (userMessage != null && !userMessage.trim().isEmpty()) {
-                    JsonObject textBlock = Json.createObjectBuilder()
-                            .add("type", "text")
-                            .add("text", userMessage)
-                            .build();
-                    contentBuilder.add(textBlock);
-                }
-
-                JsonObject userMsg = Json.createObjectBuilder()
-                        .add("role", "user")
-                        .add("content", contentBuilder.build())
-                        .build();
-                messagesBuilder.add(userMsg);
-            } else {
-                // Simple text message
-                JsonObject userMsg = Json.createObjectBuilder()
-                        .add("role", "user")
-                        .add("content", userMessage != null ? userMessage : "")
-                        .build();
-                messagesBuilder.add(userMsg);
-            }
-
-            // Build the full request body
-            JsonObject requestBody = Json.createObjectBuilder()
-                    .add("model", model != null ? model : "claude-opus-4-6")
-                    .add("max_tokens", maxTokens > 0 ? maxTokens : 4096)
-                    .add("system", systemPrompt != null ? systemPrompt : "")
-                    .add("messages", messagesBuilder.build())
-                    .build();
-
-            String requestBodyString = requestBody.toString();
-
-            // Build the HTTP request
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(30))
                     .build();
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.anthropic.com/v1/messages"))
-                    .timeout(Duration.ofSeconds(120))
-                    .header("Content-Type", "application/json")
-                    .header("x-api-key", apiKey)
-                    .header("anthropic-version", "2023-06-01")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBodyString))
-                    .build();
+            long totalInputTokens = 0L;
+            long totalOutputTokens = 0L;
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            // Total wall-clock deadline: 5 minutes for the entire agentic loop
+            final long loopDeadlineMs = System.currentTimeMillis() + (5 * 60 * 1000L);
+            final long perRequestMaxMs = 120_000L;
 
-            String responseBody = response.body();
+            for (int iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+                long remainingMs = loopDeadlineMs - System.currentTimeMillis();
+                if (remainingMs <= 0) {
+                    return new AnthropicResponse(
+                            "Request timed out: the agentic loop exceeded the 5-minute deadline.",
+                            totalInputTokens, totalOutputTokens);
+                }
+                long requestTimeoutMs = Math.min(perRequestMaxMs, remainingMs);
 
-            if (response.statusCode() != 200) {
-                LOG.log(Level.WARNING, "Anthropic API error {0}: {1}",
-                        new Object[]{response.statusCode(), responseBody});
-                return new AnthropicResponse("Error from AI service (HTTP " + response.statusCode() + "): " + responseBody, 0L, 0L);
-            }
-
-            // Parse the response
-            try (JsonReader reader = Json.createReader(new StringReader(responseBody))) {
-                JsonObject responseJson = reader.readObject();
-
-                // Extract content text
-                String content = "";
-                JsonArray contentArray = responseJson.getJsonArray("content");
-                if (contentArray != null && !contentArray.isEmpty()) {
-                    JsonObject firstContent = contentArray.getJsonObject(0);
-                    content = firstContent.getString("text", "");
+                JsonArrayBuilder messagesBuilder = Json.createArrayBuilder();
+                for (JsonObject msg : messages) {
+                    messagesBuilder.add(msg);
                 }
 
-                // Extract token usage
-                long inputTokens = 0L;
-                long outputTokens = 0L;
+                JsonObject requestBody = Json.createObjectBuilder()
+                        .add("model", model != null ? model : "claude-opus-4-6")
+                        .add("max_tokens", maxTokens > 0 ? maxTokens : 4096)
+                        .add("system", systemPrompt != null ? systemPrompt : "")
+                        .add("tools", tools)
+                        .add("messages", messagesBuilder.build())
+                        .build();
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.anthropic.com/v1/messages"))
+                        .timeout(Duration.ofMillis(requestTimeoutMs))
+                        .header("Content-Type", "application/json")
+                        .header("x-api-key", apiKey)
+                        .header("anthropic-version", "2023-06-01")
+                        .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() != 200) {
+                    LOG.log(Level.WARNING, "Anthropic API error {0}: {1}",
+                            new Object[]{response.statusCode(), response.body()});
+                    return new AnthropicResponse(
+                            "Error from AI service (HTTP " + response.statusCode() + "): " + response.body(),
+                            totalInputTokens, totalOutputTokens);
+                }
+
+                JsonObject responseJson;
+                try (JsonReader reader = Json.createReader(new StringReader(response.body()))) {
+                    responseJson = reader.readObject();
+                }
+
                 JsonObject usage = responseJson.getJsonObject("usage");
                 if (usage != null) {
-                    inputTokens = usage.getInt("input_tokens", 0);
-                    outputTokens = usage.getInt("output_tokens", 0);
+                    totalInputTokens += usage.getInt("input_tokens", 0);
+                    totalOutputTokens += usage.getInt("output_tokens", 0);
                 }
 
-                return new AnthropicResponse(content, inputTokens, outputTokens);
+                String stopReason = responseJson.getString("stop_reason", "end_turn");
+                JsonArray contentArray = responseJson.getJsonArray("content");
+
+                if ("end_turn".equals(stopReason)) {
+                    return new AnthropicResponse(
+                            extractTextFromContent(contentArray),
+                            totalInputTokens, totalOutputTokens);
+                }
+
+                if ("tool_use".equals(stopReason) && contentArray != null) {
+                    // Append the assistant's response (with tool_use blocks) to messages
+                    messages.add(Json.createObjectBuilder()
+                            .add("role", "assistant")
+                            .add("content", contentArray)
+                            .build());
+
+                    // Execute each tool call and collect results
+                    JsonArrayBuilder toolResultsBuilder = Json.createArrayBuilder();
+                    for (int i = 0; i < contentArray.size(); i++) {
+                        JsonObject block = contentArray.getJsonObject(i);
+                        if ("tool_use".equals(block.getString("type", ""))) {
+                            String toolId = block.getString("id", "");
+                            String toolName = block.getString("name", "");
+                            JsonObject toolInput = block.containsKey("input")
+                                    ? block.getJsonObject("input")
+                                    : Json.createObjectBuilder().build();
+
+                            String result = executeToolCall(toolName, toolInput, githubToken, githubBranch);
+                            LOG.log(Level.INFO, "Tool {0} returned {1} chars", new Object[]{toolName, result.length()});
+
+                            toolResultsBuilder.add(Json.createObjectBuilder()
+                                    .add("type", "tool_result")
+                                    .add("tool_use_id", toolId)
+                                    .add("content", result));
+                        }
+                    }
+
+                    // Append user message with tool results
+                    messages.add(Json.createObjectBuilder()
+                            .add("role", "user")
+                            .add("content", toolResultsBuilder.build())
+                            .build());
+                } else {
+                    // Unexpected stop_reason — return whatever text we have
+                    return new AnthropicResponse(
+                            extractTextFromContent(contentArray),
+                            totalInputTokens, totalOutputTokens);
+                }
             }
+
+            return new AnthropicResponse(
+                    "The AI reached the maximum number of tool-use steps. Please try rephrasing your question.",
+                    totalInputTokens, totalOutputTokens);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -192,14 +218,357 @@ public class AnthropicApiService implements Serializable {
     }
 
     /**
-     * Builds the system prompt with HMIS context and an inline capability statement.
+     * Backward-compatible overload — no GitHub token or branch supplied.
+     * Tools are still available; GitHub tools use unauthenticated access (60 req/hr).
+     */
+    public AnthropicResponse sendMessage(
+            String apiKey,
+            String model,
+            int maxTokens,
+            String systemPrompt,
+            List<AiMessage> conversationHistory,
+            String userMessage,
+            String attachmentBase64,
+            String attachmentMimeType) {
+        return sendMessage(apiKey, model, maxTokens, systemPrompt, conversationHistory,
+                userMessage, attachmentBase64, attachmentMimeType, "", "development");
+    }
+
+    // -------------------------------------------------------------------------
+    // Tool definitions
+    // -------------------------------------------------------------------------
+
+    private JsonArray buildToolsArray() {
+        JsonObject searchCodeTool = Json.createObjectBuilder()
+                .add("name", "search_github_code")
+                .add("description",
+                        "Search the hmislk/hmis GitHub repository for source files matching a keyword query. "
+                        + "Use this to find relevant Java classes, XHTML pages, or configuration keys related to a user's question.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search keywords, class names, field names, etc."))
+                                .add("extension", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Optional file extension filter, e.g. 'java' or 'xhtml'. Omit to search all files.")))
+                        .add("required", Json.createArrayBuilder().add("query")))
+                .build();
+
+        JsonObject fetchFileTool = Json.createObjectBuilder()
+                .add("name", "fetch_github_file")
+                .add("description",
+                        "Fetch the full content of a specific file from the hmislk/hmis GitHub repository. "
+                        + "Use this after search_github_code to read the actual source code or XHTML of a matched file.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("path", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Repository-relative file path, e.g. 'src/main/webapp/inward/inward_admission.xhtml'"))
+                                .add("branch", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Branch name. Defaults to the configured branch if omitted.")))
+                        .add("required", Json.createArrayBuilder().add("path")))
+                .build();
+
+        JsonObject searchConfigTool = Json.createObjectBuilder()
+                .add("name", "search_config_options")
+                .add("description",
+                        "Search the live HMIS application configuration options by keyword. "
+                        + "Returns matching config keys, their types, and current values. "
+                        + "Use this to find and explain configuration that controls system behaviour. "
+                        + "Sensitive values (API keys, passwords, tokens) are automatically masked.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("keyword", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Keyword to search in config option keys (case-insensitive)")))
+                        .add("required", Json.createArrayBuilder().add("keyword")))
+                .build();
+
+        return Json.createArrayBuilder()
+                .add(searchCodeTool)
+                .add(fetchFileTool)
+                .add(searchConfigTool)
+                .build();
+    }
+
+    // -------------------------------------------------------------------------
+    // Tool execution
+    // -------------------------------------------------------------------------
+
+    private String executeToolCall(String toolName, JsonObject toolInput, String githubToken, String githubBranch) {
+        try {
+            switch (toolName) {
+                case "search_github_code": {
+                    String query = toolInput.getString("query", "");
+                    String extension = toolInput.containsKey("extension")
+                            ? toolInput.getString("extension", "") : "";
+                    return searchGithubCode(query, extension, githubToken);
+                }
+                case "fetch_github_file": {
+                    String path = toolInput.getString("path", "");
+                    String branch = toolInput.containsKey("branch")
+                            ? toolInput.getString("branch", "") : "";
+                    if (branch == null || branch.isEmpty()) {
+                        branch = (githubBranch != null && !githubBranch.isEmpty())
+                                ? githubBranch : "development";
+                    }
+                    return fetchGithubFile(path, branch, githubToken);
+                }
+                case "search_config_options": {
+                    String keyword = toolInput.getString("keyword", "");
+                    return searchConfigOptions(keyword);
+                }
+                default:
+                    return "Unknown tool: " + toolName;
+            }
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Tool execution failed for {0}: {1}", new Object[]{toolName, e.getMessage()});
+            return "Tool execution error: " + e.getMessage();
+        }
+    }
+
+    private String searchGithubCode(String query, String extension, String githubToken) {
+        try {
+            if (query == null || query.trim().isEmpty()) {
+                return "Error: query is required.";
+            }
+            String q = URLEncoder.encode(query + " repo:hmislk/hmis", StandardCharsets.UTF_8);
+            if (extension != null && !extension.isEmpty()) {
+                q += "+" + URLEncoder.encode("extension:" + extension, StandardCharsets.UTF_8);
+            }
+            String url = GITHUB_SEARCH_API + "?q=" + q + "&per_page=10";
+
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Accept", "application/vnd.github+json")
+                    .GET();
+            if (githubToken != null && !githubToken.isEmpty()) {
+                reqBuilder.header("Authorization", "Bearer " + githubToken);
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                return "GitHub search failed (HTTP " + response.statusCode() + "): " + response.body();
+            }
+
+            try (JsonReader reader = Json.createReader(new StringReader(response.body()))) {
+                JsonObject json = reader.readObject();
+                int totalCount = json.getInt("total_count", 0);
+                JsonArray items = json.getJsonArray("items");
+
+                if (items == null || items.isEmpty()) {
+                    return "No results found for query: " + query;
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Found ").append(totalCount).append(" result(s). Top matches:\n\n");
+                for (int i = 0; i < items.size(); i++) {
+                    JsonObject item = items.getJsonObject(i);
+                    String path = item.getString("path", "");
+                    String name = item.getString("name", "");
+                    sb.append("- ").append(path).append(" (").append(name).append(")\n");
+                    if (item.containsKey("text_matches")) {
+                        JsonArray matches = item.getJsonArray("text_matches");
+                        for (int j = 0; j < Math.min(2, matches.size()); j++) {
+                            JsonObject match = matches.getJsonObject(j);
+                            String fragment = match.getString("fragment", "").trim();
+                            if (!fragment.isEmpty()) {
+                                int end = Math.min(200, fragment.length());
+                                sb.append("  Snippet: ").append(fragment, 0, end).append("\n");
+                            }
+                        }
+                    }
+                }
+                return sb.toString();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "GitHub search interrupted.";
+        } catch (Exception e) {
+            return "GitHub search error: " + e.getMessage();
+        }
+    }
+
+    private String fetchGithubFile(String path, String branch, String githubToken) {
+        try {
+            if (path == null || path.trim().isEmpty()) {
+                return "Error: path is required.";
+            }
+            String url = GITHUB_RAW_BASE + branch + "/" + path;
+
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(20))
+                    .GET();
+            if (githubToken != null && !githubToken.isEmpty()) {
+                reqBuilder.header("Authorization", "Bearer " + githubToken);
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 404) {
+                return "File not found: " + path + " (branch: " + branch + ")";
+            }
+            if (response.statusCode() != 200) {
+                return "Failed to fetch file (HTTP " + response.statusCode() + "): " + path;
+            }
+
+            String content = response.body();
+            if (content.length() > MAX_FILE_CONTENT_CHARS) {
+                content = content.substring(0, MAX_FILE_CONTENT_CHARS)
+                        + "\n\n[... content truncated at " + MAX_FILE_CONTENT_CHARS + " characters ...]";
+            }
+            return "File: " + path + " (branch: " + branch + ")\n\n" + content;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "File fetch interrupted.";
+        } catch (Exception e) {
+            return "File fetch error: " + e.getMessage();
+        }
+    }
+
+    private String searchConfigOptions(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "Error: keyword is required.";
+        }
+        try {
+            String jpql = "SELECT o FROM ConfigOption o "
+                    + "WHERE o.retired = false "
+                    + "AND o.scope = :scope "
+                    + "AND LOWER(o.optionKey) LIKE :kw "
+                    + "ORDER BY o.optionKey";
+            Map<String, Object> params = new HashMap<>();
+            params.put("scope", OptionScope.APPLICATION);
+            params.put("kw", "%" + keyword.toLowerCase() + "%");
+
+            List<ConfigOption> options = configOptionFacade.findByJpql(jpql, params);
+
+            if (options == null || options.isEmpty()) {
+                return "No config options found matching: " + keyword;
+            }
+
+            final int maxRows = 20;
+            final int maxValueChars = 200;
+            int displayed = Math.min(options.size(), maxRows);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Found ").append(options.size())
+                    .append(" config option(s) matching \"").append(keyword).append("\"");
+            if (options.size() > maxRows) {
+                sb.append(" (showing first ").append(maxRows).append(")");
+            }
+            sb.append(":\n\n");
+
+            for (ConfigOption opt : options.subList(0, displayed)) {
+                String value = maskSensitiveValue(opt.getOptionKey(), opt.getOptionValue());
+                if (value != null && value.length() > maxValueChars) {
+                    value = value.substring(0, maxValueChars) + "... (truncated)";
+                }
+                sb.append("Key: ").append(opt.getOptionKey()).append("\n");
+                sb.append("Type: ").append(opt.getValueType()).append("\n");
+                sb.append("Value: ").append(value).append("\n\n");
+            }
+            if (options.size() > maxRows) {
+                sb.append("... ").append(options.size() - maxRows).append(" more match(es) omitted. Refine your keyword for fewer results.\n");
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Config option search failed", e);
+            return "Config search error: " + e.getMessage();
+        }
+    }
+
+    private String maskSensitiveValue(String key, String value) {
+        if (key == null || value == null || value.isEmpty()) {
+            return value;
+        }
+        String lk = key.toLowerCase();
+        if (lk.contains("password") || lk.contains("secret")
+                || lk.contains("api key") || lk.contains("token")
+                || lk.contains("apikey") || lk.contains("private")) {
+            return "***masked***";
+        }
+        return value;
+    }
+
+    // -------------------------------------------------------------------------
+    // Message building helpers
+    // -------------------------------------------------------------------------
+
+    private JsonObject buildUserMessage(String userMessage, String attachmentBase64, String attachmentMimeType) {
+        if (attachmentBase64 != null && !attachmentBase64.isEmpty() && attachmentMimeType != null) {
+            JsonArrayBuilder contentBuilder = Json.createArrayBuilder();
+
+            if (attachmentMimeType.startsWith("image/")) {
+                JsonObject imageSource = Json.createObjectBuilder()
+                        .add("type", "base64")
+                        .add("media_type", attachmentMimeType)
+                        .add("data", attachmentBase64)
+                        .build();
+                contentBuilder.add(Json.createObjectBuilder()
+                        .add("type", "image")
+                        .add("source", imageSource));
+            } else {
+                JsonObject docSource = Json.createObjectBuilder()
+                        .add("type", "base64")
+                        .add("media_type", attachmentMimeType)
+                        .add("data", attachmentBase64)
+                        .build();
+                contentBuilder.add(Json.createObjectBuilder()
+                        .add("type", "document")
+                        .add("source", docSource));
+            }
+
+            if (userMessage != null && !userMessage.trim().isEmpty()) {
+                contentBuilder.add(Json.createObjectBuilder()
+                        .add("type", "text")
+                        .add("text", userMessage));
+            }
+
+            return Json.createObjectBuilder()
+                    .add("role", "user")
+                    .add("content", contentBuilder.build())
+                    .build();
+        } else {
+            return Json.createObjectBuilder()
+                    .add("role", "user")
+                    .add("content", userMessage != null ? userMessage : "")
+                    .build();
+        }
+    }
+
+    private String extractTextFromContent(JsonArray contentArray) {
+        if (contentArray == null) {
+            return "";
+        }
+        for (int i = 0; i < contentArray.size(); i++) {
+            JsonObject block = contentArray.getJsonObject(i);
+            if ("text".equals(block.getString("type", ""))) {
+                return block.getString("text", "");
+            }
+        }
+        return "";
+    }
+
+    // -------------------------------------------------------------------------
+    // System prompt
+    // -------------------------------------------------------------------------
+
+    /**
+     * Builds the system prompt with HMIS context and tool-use instructions.
      *
-     * <p>Instead of fetching all documentation files upfront (which is slow and causes
-     * request timeouts), this method embeds a compact capability summary with documentation
-     * URLs. Claude can request the full content of any specific module's documentation
-     * during the conversation.</p>
-     *
-     * @param hmisApiBaseUrl  The HMIS REST API base URL (auto-detected from request)
+     * @param hmisApiBaseUrl  The HMIS REST API base URL
      * @param userHmisApiKey  The logged-in user's active HMIS API key value
      * @param githubBranch    The GitHub branch for documentation links (e.g. "development")
      */
@@ -230,9 +599,28 @@ public class AnthropicApiService implements Serializable {
             sb.append("Each module description notes its required authentication scheme when it differs from 'Finance'.\n\n");
         }
 
+        sb.append("## Tools Available to You\n");
+        sb.append("You have three tools to ground your answers in the actual codebase and live configuration:\n\n");
+        sb.append("### search_github_code\n");
+        sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
+        sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
+        sb.append("### fetch_github_file\n");
+        sb.append("Fetches the full content of a specific file from the repository (default branch: ").append(branch).append("). ");
+        sb.append("Use after search_github_code to read the actual source or XHTML.\n\n");
+        sb.append("### search_config_options\n");
+        sb.append("Searches live application configuration options by keyword and returns the key name, type, and current value. ");
+        sb.append("Use this to find config keys that control a behaviour the user is asking about. ");
+        sb.append("You can then use POST /config/setBoolean, /config/setInteger, or /config/setLongText to change a value if the user asks.\n\n");
+
+        sb.append("## How to Use the Tools\n");
+        sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
+        sb.append("- Fetch specific files (Java controllers, XHTML pages) to read the logic that controls the behaviour.\n");
+        sb.append("- Search config options to find whether a configuration key controls the behaviour.\n");
+        sb.append("- Combine tool results to give a precise, grounded answer with the actual config key name and current value.\n");
+        sb.append("- If you identify a config fix, offer to apply it via the REST API (ask the user to confirm before writing).\n\n");
+
         sb.append("## Available API Modules\n");
-        sb.append("Each module lists its operations and a documentationUrl for full parameter details.\n");
-        sb.append("If you need the complete documentation for a module, say so and it will be provided.\n\n");
+        sb.append("Each module lists its operations. For detailed parameter documentation, use fetch_github_file on the relevant developer_docs file.\n\n");
 
         // ── Pharmacy ──────────────────────────────────────────────────────────
         appendModule(sb, "Pharmacy - Stock Adjustments", "/pharmacy_adjustments",
@@ -574,16 +962,18 @@ public class AnthropicApiService implements Serializable {
                 });
 
         appendModule(sb, "System Configuration", "/config",
-                "Set application configuration options at runtime. "
+                "Search and set application configuration options at runtime. "
                 + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
                 githubUrl(branch, "developer_docs/API_CONFIG.md"),
                 new String[][]{
+                    {"GET",  "/config/search?keyword={keyword}", "Search config options by keyword (returns key, type, current value)"},
                     {"POST", "/config/setBoolean/{key}/{value}",  "Set a boolean config option by key name"},
                     {"POST", "/config/setLongText/{key}/{value}", "Set a text config option by key name"},
                     {"POST", "/config/setInteger/{key}/{value}",  "Set an integer config option by key name"}
                 });
 
         sb.append("## Your Capabilities\n");
+        sb.append("- Search the live codebase and configuration to answer questions grounded in actual system behaviour\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
         sb.append("- Create and update consultant/doctor records\n");
@@ -592,19 +982,15 @@ public class AnthropicApiService implements Serializable {
         sb.append("- Access inpatient admission records and process payments\n");
         sb.append("- Query login history and audit trails\n");
         sb.append("- Analyse reports and uploaded images/documents, including medicine lists\n");
-        sb.append("- Troubleshoot and explain system behaviour\n\n");
+        sb.append("- Troubleshoot and explain system behaviour using the actual source code\n\n");
         sb.append("When making API calls, always explain what you are doing and present results clearly. ");
-        sb.append("If you need the full documentation for a specific module, ask and it will be fetched for you.\n");
+        sb.append("When answering questions about system behaviour, use the tools to search the actual source code and configuration rather than guessing.\n");
 
         return sb.toString();
     }
 
     /**
      * Fetches the full documentation content for a specific module.
-     * Call this when the user or Claude requests detailed documentation for a module.
-     *
-     * @param documentationUrl The GitHub raw URL for the documentation file
-     * @return Documentation content, or null if unavailable
      */
     public String fetchDocumentation(String documentationUrl) {
         return fetchTextFromUrl(documentationUrl);
@@ -628,10 +1014,6 @@ public class AnthropicApiService implements Serializable {
         sb.append("\n");
     }
 
-    /**
-     * Fetches the text content of a URL (used for GitHub raw API docs).
-     * Returns null on failure so callers can skip gracefully.
-     */
     private String fetchTextFromUrl(String url) {
         try {
             HttpClient client = HttpClient.newBuilder()
@@ -656,9 +1038,10 @@ public class AnthropicApiService implements Serializable {
         return null;
     }
 
-    /**
-     * Simple response wrapper class.
-     */
+    // -------------------------------------------------------------------------
+    // Response wrapper
+    // -------------------------------------------------------------------------
+
     public static class AnthropicResponse {
         private final String content;
         private final Long inputTokens;
