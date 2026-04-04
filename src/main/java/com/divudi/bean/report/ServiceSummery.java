@@ -22,6 +22,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
+import com.divudi.core.data.dto.StaffWelfarePaymentDTO;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceCategory;
@@ -100,6 +101,7 @@ public class ServiceSummery implements Serializable {
 
     private List<BillItem> billItems;
     private List<Payment> payments;
+    private List<StaffWelfarePaymentDTO> staffWelfarePayments;
     private List<Staff> staffs;
     private List<Bill> bills;
     private List<String1Value5> string1Value5;
@@ -952,6 +954,71 @@ public class ServiceSummery implements Serializable {
 
         fixDiscountsAndMarginsInRows(payments);
         calculateTotalsForPayments(payments);
+    }
+
+    /**
+     * DTO-based version of opdPharmacyStaffWelfarePayments().
+     * Fetches all required display fields in a single JOIN query to avoid
+     * N+1 lazy-load timeouts on large date ranges.
+     */
+    public void opdPharmacyStaffWelfarePaymentsDto() {
+        String jpql = "SELECT new com.divudi.core.data.dto.StaffWelfarePaymentDTO("
+                + " b.deptId,"
+                + " st.epfNo,"
+                + " per.title,"
+                + " per.name,"
+                + " b.billTypeAtomic,"
+                + " b.createdAt,"
+                + " b.total,"
+                + " b.netTotal,"
+                + " b.discount,"
+                + " p.paidValue)"
+                + " FROM Payment p"
+                + " JOIN p.bill b"
+                + " JOIN b.toStaff st"
+                + " JOIN st.person per"
+                + " WHERE p.retired = false"
+                + " AND p.paymentMethod = :pm"
+                + " AND b.retired = false"
+                + " AND b.createdAt BETWEEN :fd AND :td"
+                + " AND b.billTypeAtomic IN :btas"
+                + " ORDER BY b.id";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+        m.put("btas", billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills());
+
+        if (staff != null) {
+            jpql += " AND st.id = :staffId";
+            m.put("staffId", staff.getId());
+        }
+
+        staffWelfarePayments = (List<StaffWelfarePaymentDTO>) paymentFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        calculateTotalsForStaffWelfarePayments(staffWelfarePayments);
+    }
+
+    public void calculateTotalsForStaffWelfarePayments(List<StaffWelfarePaymentDTO> rows) {
+        totalBill = 0.0;
+        discountBill = 0.0;
+        netTotalBill = 0.0;
+        if (rows == null) return;
+        for (StaffWelfarePaymentDTO row : rows) {
+            if (row.getBillNetTotal() == 0.0 || row.getPaidValue() == 0.0) continue;
+            totalBill += row.getGrossAmount();
+            discountBill += row.getDiscountValue();
+            netTotalBill += row.getPaidValue();
+        }
+    }
+
+    public List<StaffWelfarePaymentDTO> getStaffWelfarePayments() {
+        return staffWelfarePayments;
+    }
+
+    public void setStaffWelfarePayments(List<StaffWelfarePaymentDTO> staffWelfarePayments) {
+        this.staffWelfarePayments = staffWelfarePayments;
     }
 
     public void fixDiscountsAndMarginsInRows(List<Payment> payments) {
