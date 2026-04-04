@@ -636,22 +636,22 @@ Cancels a confirmed (paid) booking. Only active bookings can be cancelled; tempo
 ## Typical Booking Workflow
 
 ```text
-1. POST /channel/specializations     → get specialty IDs
-2. POST /channel/hospitals           → get hospital IDs
-3. POST /channel/doctorAvailability  → find available sessions
-4. POST /channel/doctorSession       → confirm session details and nextNo
-5. POST /channel/save                → create temporary booking (get refNo)
-6. POST /channel/edit                → (optional) update patient details
-7. POST /channel/complete            → finalize and pay (statusId=1)
+1. POST /api/channel/specializations     → get specialty IDs
+2. POST /api/channel/hospitals           → get hospital IDs
+3. POST /api/channel/doctorAvailability  → find available sessions
+4. POST /api/channel/doctorSession       → confirm session details and nextNo
+5. POST /api/channel/save                → create temporary booking (get refNo)
+6. POST /api/channel/edit                → (optional) update patient details
+7. POST /api/channel/complete            → finalize and pay (statusId=1)
 ```
 
 To cancel a confirmed booking:
 ```text
-POST /channel/cancellation  → cancel by refNo
+POST /api/channel/cancellation  → cancel by refNo
 ```
 
 To review bookings:
 ```text
-POST /channel/channelHistoryList    → list by date range
-POST /channel/channelHistoryByRef  → single booking by refNo
+POST /api/channel/channelHistoryList    → list by date range
+POST /api/channel/channelHistoryByRef  → single booking by refNo
 ```

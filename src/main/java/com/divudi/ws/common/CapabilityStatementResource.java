@@ -34,7 +34,7 @@ public class CapabilityStatementResource {
                         .add("name", "HMIS REST API")
                         .add("version", "1.0")
                         .add("description", "Hospital Management Information System API")
-                        .add("authentication", "API Key required. Most endpoints use 'Finance' header; Consultant endpoints use 'Token' header; Config endpoints use 'Config' header. See per-resource authentication field.")
+                        .add("authentication", "API Key required. Most endpoints use 'Finance' header; Channel/Booking and Consultant endpoints use 'Token' header; FHIR Patient endpoints use 'FHIR' header; Config endpoints use 'Config' header. See per-resource authentication field for specifics.")
                         .add("contact", "HMIS Support Team")
                         .add("termsOfUse", "Use according to institutional HMIS API access policies")
                         .add("resources", buildResources())

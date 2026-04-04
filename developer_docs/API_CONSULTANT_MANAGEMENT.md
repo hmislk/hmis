@@ -81,6 +81,10 @@ Creates a new `Consultant` entity and its associated `Person` record.
 | Status | Reason |
 |--------|--------|
 | 400 Bad Request | `name` is missing or blank |
+| 400 Bad Request | `title` is not one of the valid enum values |
+| 400 Bad Request | `serialNo` is not a valid integer |
+| 400 Bad Request | `specialityId` is not a valid integer or the speciality is not found / retired |
+| 400 Bad Request | `institutionId` is not a valid integer or the institution is not found / retired |
 | 401 Unauthorized | Missing, expired, or invalid Token |
 
 #### Example — curl
@@ -139,6 +143,10 @@ Same optional fields as the POST endpoint. Only include the fields you want to c
 
 | Status | Reason |
 |--------|--------|
+| 400 Bad Request | `title` is not one of the valid enum values |
+| 400 Bad Request | `serialNo` is not a valid integer |
+| 400 Bad Request | `specialityId` is not a valid integer or the speciality is not found / retired |
+| 400 Bad Request | `institutionId` is not a valid integer or the institution is not found / retired |
 | 401 Unauthorized | Missing, expired, or invalid Token |
 | 404 Not Found | No active consultant exists with the given ID |
 

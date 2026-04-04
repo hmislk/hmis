@@ -52,7 +52,21 @@ GET /api/apiInward/validateAdmission/BHT2026001/0771234567
 Header: Finance: YOUR_API_KEY
 ```
 
-Returns `{ "valid": true/false, "patientName": "...", "balance": 0.0 }`
+Response fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `error` | string | `"0"` = valid, `"1"` = not valid or error |
+| `error_description` | string | `"Valid"`, `"Not Valid"`, or `"Invalid Argument."` |
+
+Example (valid):
+```json
+{ "error": "0", "error_description": "Valid" }
+```
+Example (not valid):
+```json
+{ "error": "1", "error_description": "Not Valid" }
+```
 
 ---
 
@@ -109,4 +123,4 @@ Header: Finance: YOUR_API_KEY
 
 - `bht_no` is the Bed Head Ticket number assigned at admission
 - Payment is processed as an **online settlement** — use `/api/apiInward/banks` to get valid `bank_id` values
-- Always call `/api/apiInward/validateAdmission` first before processing payment
+- It is recommended to call `/api/apiInward/validateAdmission` before processing payment as a best practice; however `POST /payment` does not enforce this as a hard precondition and will accept requests without a prior validate call

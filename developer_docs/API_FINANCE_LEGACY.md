@@ -11,16 +11,18 @@ For richer financial data (including finance details, pharmaceutical item detail
 ## Authentication
 All endpoints require API Key-based authentication using the `Finance` header.
 
-```
+```text
 Finance: <your-api-key>
 ```
 
 ## Base URL
-```
+
+```text
 /api/finance
 ```
 
 ## Date Formats
+
 | Context | Format | Example |
 |---------|--------|---------|
 | Single date path parameter | `dd-MM-yyyy` | `04-04-2026` |

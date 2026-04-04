@@ -251,7 +251,7 @@ All endpoints return JSON error objects on failure:
 {
   "status": "error",
   "code": 401,
-  "message": "Invalid or missing FHIR API key"
+  "message": "Invalid or missing API key"
 }
 ```
 

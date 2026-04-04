@@ -3934,9 +3934,9 @@ public class ChannelApi {
             try {
                 Long specId = Long.parseLong(specIdStr);
                 Speciality speciality = specialityFacade.find(specId);
-                if (speciality == null) {
+                if (speciality == null || speciality.isRetired()) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(commonFunctionToErrorResponse("Speciality not found for id: " + specId).toString()).build();
+                            .entity(commonFunctionToErrorResponse("Speciality not found or retired for id: " + specId).toString()).build();
                 }
                 consultant.setSpeciality(speciality);
             } catch (NumberFormatException e) {
@@ -3949,9 +3949,9 @@ public class ChannelApi {
             try {
                 Long insId = Long.parseLong(insIdStr);
                 Institution institution = institutionFacade.find(insId);
-                if (institution == null) {
+                if (institution == null || institution.isRetired()) {
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(commonFunctionToErrorResponse("Institution not found for id: " + insId).toString()).build();
+                            .entity(commonFunctionToErrorResponse("Institution not found or retired for id: " + insId).toString()).build();
                 }
                 consultant.setInstitution(institution);
             } catch (NumberFormatException e) {
@@ -4054,8 +4054,6 @@ public class ChannelApi {
             person.setAddress(v != null ? v.toString() : null);
         }
 
-        personFacade.edit(person);
-
         if (requestBody.containsKey("code")) {
             Object v = requestBody.get("code");
             consultant.setCode(v != null ? v.toString() : null);
@@ -4093,9 +4091,9 @@ public class ChannelApi {
                 try {
                     Long specId = Long.parseLong(v.toString());
                     Speciality speciality = specialityFacade.find(specId);
-                    if (speciality == null) {
+                    if (speciality == null || speciality.isRetired()) {
                         return Response.status(Response.Status.BAD_REQUEST)
-                                .entity(commonFunctionToErrorResponse("Speciality not found for id: " + specId).toString()).build();
+                                .entity(commonFunctionToErrorResponse("Speciality not found or retired for id: " + specId).toString()).build();
                     }
                     consultant.setSpeciality(speciality);
                 } catch (NumberFormatException e) {
@@ -4112,9 +4110,9 @@ public class ChannelApi {
                 try {
                     Long insId = Long.parseLong(v.toString());
                     Institution institution = institutionFacade.find(insId);
-                    if (institution == null) {
+                    if (institution == null || institution.isRetired()) {
                         return Response.status(Response.Status.BAD_REQUEST)
-                                .entity(commonFunctionToErrorResponse("Institution not found for id: " + insId).toString()).build();
+                                .entity(commonFunctionToErrorResponse("Institution not found or retired for id: " + insId).toString()).build();
                     }
                     consultant.setInstitution(institution);
                 } catch (NumberFormatException e) {
@@ -4124,6 +4122,7 @@ public class ChannelApi {
             }
         }
 
+        personFacade.edit(person);
         consultantFacade.edit(consultant);
 
         Map<String, Object> data = new HashMap<>();

@@ -473,9 +473,9 @@ public class AnthropicApiService implements Serializable {
 
         // ── Clinical ──────────────────────────────────────────────────────────
         appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
-                "Manage clinician favourite medicine templates. Includes AI-optimised endpoints: "
-                + "/parse (natural language to structured medicine), /suggest (find similar entities), "
-                + "/validate (bulk entity validation).",
+                "Manage clinician favourite medicine templates. "
+                + "/validate (bulk entity validation) is live. "
+                + "/parse and /suggest are not yet implemented (return 501).",
                 githubUrl(branch, "developer_docs/API_CLINICAL_FAVOURITE_MEDICINES.md"),
                 new String[][]{
                     {"GET",    "/clinical/favourite_medicines",              "List favourite medicine templates"},
@@ -483,8 +483,8 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/clinical/favourite_medicines/{id}",         "Get template by ID"},
                     {"PUT",    "/clinical/favourite_medicines/{id}",         "Update a template"},
                     {"DELETE", "/clinical/favourite_medicines/{id}",         "Retire a template"},
-                    {"POST",   "/clinical/favourite_medicines/parse",        "Parse natural language medicine instruction into structured data (AI-optimised)"},
-                    {"POST",   "/clinical/favourite_medicines/suggest",      "Auto-suggest similar medicine entities"},
+                    {"POST",   "/clinical/favourite_medicines/parse",        "Not implemented (501) — reserved for future natural language parsing"},
+                    {"POST",   "/clinical/favourite_medicines/suggest",      "Not implemented (501) — reserved for future auto-suggest"},
                     {"POST",   "/clinical/favourite_medicines/validate",     "Bulk-validate a set of medicine entities"},
                     {"GET",    "/clinical/favourite_medicines/entities/vtms","List/search Virtual Therapeutic Moieties"},
                     {"GET",    "/clinical/favourite_medicines/entities/amps", "List/search Actual Medicinal Products"}
@@ -492,37 +492,50 @@ public class AnthropicApiService implements Serializable {
 
         // ── FHIR ──────────────────────────────────────────────────────────────
         appendModule(sb, "FHIR - Financial Data", "/fhir",
-                "HL7 FHIR R5-compliant access to invoices, GRN records, and payments.",
+                "HL7 FHIR R5-compliant access to invoices, GRN records, payments, and returns. Uses 'Finance' header.",
                 githubUrl(branch, "developer_docs/API_FHIR.md"),
                 new String[][]{
-                    {"GET", "/fhir/cash_invoice/{institution_code}/{last_invoice_id}",         "Get cash invoices newer than last_invoice_id"},
-                    {"GET", "/fhir/credit_invoice/{institution_code}/{last_invoice_id}",       "Get credit invoices newer than last_invoice_id"},
-                    {"GET", "/fhir/invoicereturn/{institution_code}/{last_return_invoice_id}", "Get invoice returns newer than last_return_invoice_id"},
-                    {"GET", "/fhir/grn/{institution_code}/{last_grn_id}",                      "Get GRN records newer than last_grn_id"},
-                    {"GET", "/fhir/payment/{institution_code}/{last_payment_id}",              "Get payment records newer than last_payment_id"}
+                    {"GET", "/fhir/cash_invoice/{institution_code}/{last_invoice_id}",           "Get cash invoices newer than last_invoice_id"},
+                    {"GET", "/fhir/credit_invoice/{institution_code}/{last_invoice_id}",         "Get credit invoices newer than last_invoice_id"},
+                    {"GET", "/fhir/invoicereturn/{institution_code}/{last_return_invoice_id}",   "Get invoice returns newer than last_return_invoice_id"},
+                    {"GET", "/fhir/grn/{institution_code}/{last_grn_id}",                        "Get GRN records newer than last_grn_id"},
+                    {"GET", "/fhir/grnreturn/{institution_code}/{last_return_grn_id}",           "Get GRN returns newer than last_return_grn_id"},
+                    {"GET", "/fhir/payment/{institution_code}/{last_payment_id}",                "Get payment records newer than last_payment_id"},
+                    {"GET", "/fhir/paymentreturn/{institution_code}/{last_return_payment_id}",   "Get payment return / refund records"}
                 });
 
         appendModule(sb, "FHIR - Patient", "/fhir/Patient",
                 "HL7 FHIR R5 Patient resource. Authentication uses 'FHIR' header (not 'Finance').",
                 githubUrl(branch, "developer_docs/API_FHIR.md"),
                 new String[][]{
-                    {"GET",  "/fhir/Patient",      "Search patients (FHIR parameters: name, identifier, birthdate, gender)"},
+                    {"GET",  "/fhir/Patient",      "Search patients (supported parameters: name, phone, identifier)"},
                     {"GET",  "/fhir/Patient/{id}", "Read a patient by ID"},
                     {"POST", "/fhir/Patient",      "Create a new patient"},
                     {"PUT",  "/fhir/Patient/{id}", "Update a patient"}
                 });
 
         // ── LIMS ──────────────────────────────────────────────────────────────
-        appendModule(sb, "LIMS - Laboratory", "/lims",
-                "Retrieve patient sample barcodes and test lists for laboratory bill processing. "
-                + "Read-only queries. Do NOT use to trigger new lab orders.",
+        appendModule(sb, "LIMS - Laboratory (/lims, /middleware, /limsmw)", "/lims",
+                "Three resources for laboratory integration. "
+                + "/lims: sample barcodes and legacy credential checks (URL-embedded credentials). "
+                + "/middleware: analyzer middleware for test orders and result ingestion (JSON body credentials). "
+                + "/limsmw: HL7/Sysmex/observation processing (HTTP Basic Auth). "
+                + "CAUTION: result-write endpoints (/middleware/test_results, /limsmw/observation, /limsmw/sysmex, /limsmw/limsProcessAnalyzerMessage) write into patient records — never call manually.",
                 githubUrl(branch, "developer_docs/API_LIMS.md"),
                 new String[][]{
-                    {"POST", "/lims/login/mw",                                    "Authenticate a middleware client"},
-                    {"GET",  "/lims/samples/login/{username}/{password}",         "Legacy credential check"},
-                    {"GET",  "/lims/samples/{bill_id}",                           "Get sample barcodes for a bill"},
-                    {"GET",  "/lims/tests/{bill_id}",                             "Get test list for a bill"},
-                    {"GET",  "/lims/patient/{patient_id}/samples",                "Get all samples for a patient"}
+                    {"POST", "/lims/login/mw",                                          "Authenticate a middleware client (JSON body)"},
+                    {"GET",  "/lims/samples/login/{username}/{password}",               "Legacy credential check (URL params)"},
+                    {"GET",  "/lims/samples/{billId}/{username}/{password}",            "Get sample barcodes for a bill"},
+                    {"GET",  "/lims/samples1/{billId}/{username}/{password}",           "Get sample barcodes (enhanced, preferred)"},
+                    {"GET",  "/lims/middleware/{machine}/{message}/{username}/{password}","Send raw analyzer message"},
+                    {"GET",  "/middleware",                                              "Middleware health check"},
+                    {"POST", "/middleware/test_orders_for_sample_requests",             "Get test orders for sample IDs"},
+                    {"POST", "/middleware/test_results",                                "Push analyzer results into HMIS (WRITE — use with care)"},
+                    {"GET",  "/limsmw/test",                                            "LIMS middleware health check"},
+                    {"POST", "/limsmw/observation",                                     "Submit a single observation result (WRITE)"},
+                    {"POST", "/limsmw/sysmex",                                          "Receive Sysmex ASTM message (HTTP Basic Auth, WRITE)"},
+                    {"POST", "/limsmw/limsProcessAnalyzerMessage",                      "Process HL7 analyzer message (HTTP Basic Auth, WRITE)"},
+                    {"POST", "/limsmw/login",                                           "Authenticate a middleware client"}
                 });
 
         // ── Membership ────────────────────────────────────────────────────────
