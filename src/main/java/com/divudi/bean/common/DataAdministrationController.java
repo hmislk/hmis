@@ -4885,13 +4885,21 @@ public class DataAdministrationController implements Serializable {
 
     public void dischargeOldDuplicateEncounters() {
         try {
-            String sql = "UPDATE patientencounter pe "
+            String t = patientEncounterFacade.getTableName();
+            String pr = patientRoomFacade.getTableName();
+            // Group by the actual room (roomFacilityCharge_id in patientroom), not by the
+            // PatientRoom assignment ID. Multiple PatientRoom records can point to the same
+            // physical room, so grouping by currentPatientRoom_id only catches duplicates
+            // within the same assignment, not across different admissions to the same room.
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
                     + "JOIN ( "
-                    + "  SELECT MAX(id) AS keep_id, currentPatientRoom_id "
-                    + "  FROM patientencounter "
-                    + "  WHERE discharged = 0 AND paymentFinalized = 0 AND currentPatientRoom_id IS NOT NULL "
-                    + "  GROUP BY currentPatientRoom_id "
-                    + ") latest ON pe.currentPatientRoom_id = latest.currentPatientRoom_id "
+                    + "  SELECT MAX(pe2.id) AS keep_id, prm2.roomFacilityCharge_id "
+                    + "  FROM " + t + " pe2 "
+                    + "  JOIN " + pr + " prm2 ON pe2.currentPatientRoom_id = prm2.id "
+                    + "  WHERE pe2.discharged = 0 AND pe2.paymentFinalized = 0 AND pe2.currentPatientRoom_id IS NOT NULL "
+                    + "  GROUP BY prm2.roomFacilityCharge_id "
+                    + ") latest ON prm.roomFacilityCharge_id = latest.roomFacilityCharge_id "
                     + "SET pe.discharged = 1 "
                     + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
                     + "AND pe.id != latest.keep_id "
@@ -4911,7 +4919,8 @@ public class DataAdministrationController implements Serializable {
             return;
         }
         try {
-            String sql = "UPDATE patientencounter "
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " "
                     + "SET discharged = 1 "
                     + "WHERE discharged = 0 AND paymentFinalized = 0 "
                     + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";

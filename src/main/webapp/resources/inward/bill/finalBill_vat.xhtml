@@ -100,6 +100,17 @@
                                 </div>
                             </div>
                         </div>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('')}">
+                            <div class="row">
+                                <div class="col-5">
+                                    <div class="d-flex ">
+                                        <div ><h:outputLabel value="NIC No" /></div>
+                                        <div ><h:outputLabel value=":" /></div>
+                                        <div ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}" /></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
                         <div class="row">
                             <div class="col-5">
                                 <div class="d-flex ">

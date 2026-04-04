@@ -149,15 +149,29 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET"))
                 .add(resource("Login History", "/api/logins",
-                        "Login history query and last-login-per-user by department",
+                        "Login history filtered by department, user, and date range (days, fromDate, toDate). "
+                        + "Also exposes /api/logins/last-per-user for the most recent login per unique user in a department.",
                         "API Key",
                         "GET"))
                 .add(resource("Users", "/api/users",
-                        "User management operations",
+                        "User CRUD, password reset/change, loggable department assignment, "
+                        + "and per-user privilege assignment with department scope. "
+                        + "Supports filtering by departmentId and query string.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",
+                        "Assign a set of privileges to multiple users in one call. "
+                        + "If departmentId is omitted, privileges are assigned across each user's own loggable departments. "
+                        + "Returns a per-user summary of privilegesAdded and privilegesSkipped.",
+                        "API Key",
+                        "POST"))
+                .add(resource("Available Privileges", "/api/users/privileges/available",
+                        "Returns the complete list of valid privilege enum names from Privileges.java. "
+                        + "Use this to discover assignable privilege names before calling assign endpoints.",
+                        "API Key",
+                        "GET"))
                 .add(resource("User Roles", "/api/user-roles",
-                        "User role management operations",
+                        "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
