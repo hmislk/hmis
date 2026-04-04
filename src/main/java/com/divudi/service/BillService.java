@@ -2848,8 +2848,18 @@ public class BillService {
             Department department,
             Category category,
             Item item) {
+        return fetchOpdSaleSummaryDTOs(fromDate, toDate, institution, site, department, category, item,
+                BillTypeAtomic.findByServiceType(ServiceType.OPD));
+    }
 
-        List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+    public List<OpdSaleSummaryDTO> fetchOpdSaleSummaryDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Category category,
+            Item item,
+            List<BillTypeAtomic> billTypeAtomics) {
 
         // Step 1: Main aggregation query per item (no staff join to avoid fan-out / EclipseLink WITH clause incompatibility)
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("

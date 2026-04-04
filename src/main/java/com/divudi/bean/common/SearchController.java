@@ -16620,6 +16620,17 @@ public class SearchController implements Serializable {
         opdSaleSummaryDtos = generateItemizedSalesSummaryDto();
     }
 
+    public void createCombinedItemizedServiceSummaryDto() {
+        List<BillTypeAtomic> btas = new ArrayList<>(BillTypeAtomic.findByServiceType(ServiceType.OPD));
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND);
+        opdSaleSummaryDtos = billService.fetchOpdSaleSummaryDTOs(
+                fromDate, toDate, institution, site, department, category, item, btas);
+    }
+
     public void createItemizedSalesReport() {
         bundle = generateItemizedSalesReport();
         if (withProfessionalFee) {
