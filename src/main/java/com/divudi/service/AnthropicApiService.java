@@ -320,6 +320,29 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "FHIR - Financial Data", "/fhir",
+                "HL7 FHIR R5-compliant access to invoices, GRN records, and payments. Uses the 'Finance' header for authentication.",
+                githubUrl(branch, "developer_docs/API_FHIR.md"),
+                new String[][]{
+                    {"GET", "/fhir/cash_invoice/{institution_code}/{last_invoice_id}",          "Get cash invoices newer than last_invoice_id"},
+                    {"GET", "/fhir/credit_invoice/{institution_code}/{last_invoice_id}",        "Get credit invoices newer than last_invoice_id"},
+                    {"GET", "/fhir/invoicereturn/{institution_code}/{last_return_invoice_id}",  "Get invoice returns newer than last_return_invoice_id"},
+                    {"GET", "/fhir/grn/{institution_code}/{last_grn_id}",                       "Get GRN records newer than last_grn_id"},
+                    {"GET", "/fhir/grnreturn/{institution_code}/{last_return_grn_id}",          "Get GRN returns newer than last_return_grn_id"},
+                    {"GET", "/fhir/payment/{institution_code}/{last_payment_id}",               "Get payment records newer than last_payment_id"},
+                    {"GET", "/fhir/paymentreturn/{institution_code}/{last_return_payment_id}",  "Get payment returns newer than last_return_payment_id"}
+                });
+
+        appendModule(sb, "FHIR - Patient", "/fhir/Patient",
+                "FHIR R5 Patient resource operations. IMPORTANT: uses the 'FHIR' header for authentication, NOT the 'Finance' header.",
+                githubUrl(branch, "developer_docs/API_FHIR.md"),
+                new String[][]{
+                    {"GET",  "/fhir/Patient/{id}",  "Get patient by HMIS internal ID"},
+                    {"GET",  "/fhir/Patient",        "Search patients by name, phone, or identifier (at least one required; max 50 results)"},
+                    {"POST", "/fhir/Patient",        "Create a new patient from a FHIR R5 Patient resource"},
+                    {"PUT",  "/fhir/Patient/{id}",  "Partially update an existing patient"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
