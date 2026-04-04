@@ -197,7 +197,11 @@
                                     icon="fas fa-file-excel"
                                     ajax="false"
                                     value="Excel">
-                                    <p:dataExporter type="xlsx" target="tblExport" fileName="collection_center_wise_invoice_list_report"/>
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        target="tblExport" 
+                                        fileName="collection_center_wise_invoice_list_report_#{reportsController.fromDateFormatted()}_to_#{reportsController.toDateFormatted()}"
+                                        postProcessor="#{reportsController.postProcessCollectionCenterWiseInvoiceListReportExcel}"/>
                                 </p:commandButton>
 
                                 <p:commandButton
@@ -205,8 +209,8 @@
                                     icon="fa-solid fa-file-pdf"
                                     style="width: 150px"
                                     ajax="false"
-                                    value="PDF">
-                                    <p:dataExporter type="pdf" target="tblExport" fileName="collection_center_wise_invoice_list_report.pdf"/>
+                                    value="PDF"
+                                    action="#{reportsController.exportCollectionCenterWiseInvoiceListReportToPDF()}">
                                 </p:commandButton>
 
                             </h:panelGrid>
