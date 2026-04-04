@@ -3,6 +3,7 @@ package com.divudi.ws.common;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.core.data.Privileges;
+import com.divudi.core.data.dto.user.BulkPrivilegeAssignmentRequestDTO;
 import com.divudi.core.data.dto.user.DepartmentAssignmentRequestDTO;
 import com.divudi.core.data.dto.user.PasswordChangeRequestDTO;
 import com.divudi.core.data.dto.user.PrivilegeAssignmentRequestDTO;
@@ -74,11 +75,28 @@ public class UserManagementApi {
             }
             int offset = (int) offsetLong;
 
+            String departmentIdStr = value("departmentId");
+
             Map<String, Object> m = new HashMap<>();
-            String jpql = "select w from WebUser w where w.retired=false ";
-            if (q != null && !q.trim().isEmpty()) {
-                jpql += " and (upper(w.name) like :q or upper(w.code) like :q or upper(w.webUserPerson.name) like :q) ";
-                m.put("q", "%" + q.trim().toUpperCase() + "%");
+            String jpql;
+            if (departmentIdStr != null && !departmentIdStr.trim().isEmpty()) {
+                Long deptId = parseLong(departmentIdStr, null);
+                if (deptId == null) return errorResponse("Invalid departmentId", 400);
+                Department dept = departmentFacade.find(deptId);
+                if (dept == null) return errorResponse("Department not found", 404);
+                jpql = "select distinct w from WebUser w join WebUserDepartment wud on wud.webUser=w"
+                        + " where w.retired=false and wud.retired=false and wud.department=:dept";
+                m.put("dept", dept);
+                if (q != null && !q.trim().isEmpty()) {
+                    jpql += " and (upper(w.name) like :q or upper(w.code) like :q or upper(w.webUserPerson.name) like :q)";
+                    m.put("q", "%" + q.trim().toUpperCase() + "%");
+                }
+            } else {
+                jpql = "select w from WebUser w where w.retired=false";
+                if (q != null && !q.trim().isEmpty()) {
+                    jpql += " and (upper(w.name) like :q or upper(w.code) like :q or upper(w.webUserPerson.name) like :q)";
+                    m.put("q", "%" + q.trim().toUpperCase() + "%");
+                }
             }
             jpql += " order by w.name";
             List<WebUser> users = webUserFacade.findByJpql(jpql, m, size + offset);
@@ -390,6 +408,107 @@ public class UserManagementApi {
         }
     }
 
+    @GET
+    @Path("/privileges/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listAvailablePrivileges() {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        List<String> out = new ArrayList<>();
+        for (Privileges p : Privileges.values()) {
+            out.add(p.name());
+        }
+        return successResponse(out);
+    }
+
+    @POST
+    @Path("/bulk-privileges")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkAssignPrivileges(String body) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+            BulkPrivilegeAssignmentRequestDTO req = gson.fromJson(body, BulkPrivilegeAssignmentRequestDTO.class);
+            if (req == null || req.getUserIds() == null || req.getUserIds().isEmpty()) {
+                return errorResponse("userIds are required", 400);
+            }
+            if (req.getPrivileges() == null || req.getPrivileges().isEmpty()) {
+                return errorResponse("privileges are required", 400);
+            }
+            // Validate privilege names up front
+            List<Privileges> privileges = new ArrayList<>();
+            for (String pName : req.getPrivileges()) {
+                try {
+                    privileges.add(Privileges.valueOf(pName));
+                } catch (IllegalArgumentException e) {
+                    return errorResponse("Invalid privilege: " + pName, 400);
+                }
+            }
+            Department fixedDept = req.getDepartmentId() != null ? departmentFacade.find(req.getDepartmentId()) : null;
+            if (req.getDepartmentId() != null && fixedDept == null) {
+                return errorResponse("Department not found: " + req.getDepartmentId(), 404);
+            }
+
+            List<Map<String, Object>> summary = new ArrayList<>();
+            for (Long userId : req.getUserIds()) {
+                WebUser u = webUserFacade.find(userId);
+                if (u == null || u.isRetired()) continue;
+
+                // Determine target departments: fixed dept or all of the user's loggable departments
+                List<Department> targetDepts = new ArrayList<>();
+                if (fixedDept != null) {
+                    targetDepts.add(fixedDept);
+                } else {
+                    List<WebUserDepartment> userDepts = webUserDepartmentFacade.findByJpql(
+                            "select d from WebUserDepartment d where d.retired=false and d.webUser=:u",
+                            Collections.singletonMap("u", u));
+                    for (WebUserDepartment wud : userDepts) {
+                        if (wud.getDepartment() != null) targetDepts.add(wud.getDepartment());
+                    }
+                }
+
+                int added = 0;
+                int skipped = 0;
+                for (Department dept : targetDepts) {
+                    for (Privileges p : privileges) {
+                        Map<String, Object> check = new HashMap<>();
+                        check.put("u", u);
+                        check.put("p", p);
+                        check.put("d", dept);
+                        List<WebUserPrivilege> ex = webUserPrivilegeFacade.findByJpql(
+                                "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p and wp.department=:d",
+                                check);
+                        if (!ex.isEmpty()) {
+                            skipped++;
+                            continue;
+                        }
+                        WebUserPrivilege wp = new WebUserPrivilege();
+                        wp.setWebUser(u);
+                        wp.setPrivilege(p);
+                        wp.setDepartment(dept);
+                        wp.setCreater(apiUser);
+                        wp.setCreatedAt(new Date());
+                        webUserPrivilegeFacade.create(wp);
+                        added++;
+                    }
+                }
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("userId", u.getId());
+                entry.put("userName", u.getName());
+                entry.put("privilegesAdded", added);
+                entry.put("privilegesSkipped", skipped);
+                summary.add(entry);
+            }
+            return successResponse(summary);
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON format", 400);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
     private void applyUserChanges(WebUser u, UserUpsertRequestDTO req, WebUser actor, boolean create) {
         if (req.getName() != null) u.setName(req.getName().trim());
         if (req.getCode() != null) u.setCode(req.getCode());
@@ -437,6 +556,8 @@ public class UserManagementApi {
     private String value(String key) { return uriInfo.getQueryParameters().getFirst(key); }
 
     private int parseInt(String v, int d) { try { return v == null ? d : Integer.parseInt(v); } catch (Exception e) { return d; } }
+
+    private Long parseLong(String v, Long d) { try { return v == null ? d : Long.parseLong(v); } catch (Exception e) { return d; } }
 
     private WebUser validateApiUser() {
         String key = requestContext.getHeader("Finance");
