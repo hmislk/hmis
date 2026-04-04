@@ -3360,14 +3360,6 @@ public class ReportsTransfer implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
-    public AdmissionType getAdmissionType() {
-        return admissionType;
-    }
-
-    public void setAdmissionType(AdmissionType admissionType) {
-        this.admissionType = admissionType;
-    }
-
     public List<Stock> getStocks() {
         return stocks;
     }

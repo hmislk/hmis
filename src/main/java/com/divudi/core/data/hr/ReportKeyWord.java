@@ -402,6 +402,7 @@ public class ReportKeyWord {
         speciality = null;
         patient = null;
         institution = null;
+        site = null;
         bank = null;
         institutionBank = null;
         paymentMethod = null;
@@ -416,6 +417,7 @@ public class ReportKeyWord {
         webUser = null;
         string = "0";
         string1 = "0";
+        dateBasis = "createdAt";
         bool1 = false;
     }
 
