@@ -320,6 +320,23 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "Finance - Legacy Bill Query", "/finance",
+                "Legacy bill query endpoints. Use for category-based filtering (BillType) or simple date-range queries. "
+                + "Prefer /costing_data for richer financial detail (cost rates, pharmaceutical data, payment breakdown). "
+                + "Authentication header: 'Finance'. Date format for single date: dd-MM-yyyy; for ranges: dd-MM-yyyy-hh:mm:ss.",
+                githubUrl(branch, "developer_docs/API_FINANCE_LEGACY.md"),
+                new String[][]{
+                    {"GET", "/finance/bill",                                   "Get all bills for today"},
+                    {"GET", "/finance/bill/{date}",                            "Get bills for a specific date (dd-MM-yyyy)"},
+                    {"GET", "/finance/bill/{from}/{to}",                       "Get bills for a date-time range"},
+                    {"GET", "/finance/bill_item",                              "Get all bills with line items for today"},
+                    {"GET", "/finance/bill_item/{date}",                       "Get bills with line items for a specific date"},
+                    {"GET", "/finance/bill_item/{from}/{to}",                  "Get bills with line items for a date-time range"},
+                    {"GET", "/finance/bill_item_cat/{bill_category}",          "Get bills with line items filtered by BillType category (today)"},
+                    {"GET", "/finance/bill_item_cat/{date}/{bill_category}",   "Get bills with line items by category and date"},
+                    {"GET", "/finance/bill_item_cat/{from}/{to}/{bill_category}", "Get bills with line items by category and date-time range"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
