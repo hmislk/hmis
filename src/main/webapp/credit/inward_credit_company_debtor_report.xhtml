@@ -57,7 +57,25 @@
                                 itemValue="#{cc}"
                                 forceSelection="true" />
 
-                            <!-- Row 2: Institution | Site | Department -->
+                            <!-- Row 2: Date Basis -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf017;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="dateBasisMenu" styleClass="w-100 form-control"
+                                             value="#{inwardReportController1.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Payment/Bill Date" />
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!-- Row 3: Institution | Site | Department -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
@@ -175,8 +193,16 @@
                                 styleClass="form-check-input mt-2" />
 
                             <p:spacer width="50" />
-                            <p:spacer />
-                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Payment Method" for="pmMenuDebtor" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="pmMenuDebtor" styleClass="w-100 form-control"
+                                             value="#{inwardReportController1.paymentMethod}">
+                                <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
 
