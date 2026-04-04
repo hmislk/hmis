@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.entity.AiMessage;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.facade.ConfigOptionFacade;
@@ -96,7 +97,19 @@ public class AnthropicApiService implements Serializable {
             long totalInputTokens = 0L;
             long totalOutputTokens = 0L;
 
+            // Total wall-clock deadline: 5 minutes for the entire agentic loop
+            final long loopDeadlineMs = System.currentTimeMillis() + (5 * 60 * 1000L);
+            final long perRequestMaxMs = 120_000L;
+
             for (int iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+                long remainingMs = loopDeadlineMs - System.currentTimeMillis();
+                if (remainingMs <= 0) {
+                    return new AnthropicResponse(
+                            "Request timed out: the agentic loop exceeded the 5-minute deadline.",
+                            totalInputTokens, totalOutputTokens);
+                }
+                long requestTimeoutMs = Math.min(perRequestMaxMs, remainingMs);
+
                 JsonArrayBuilder messagesBuilder = Json.createArrayBuilder();
                 for (JsonObject msg : messages) {
                     messagesBuilder.add(msg);
@@ -112,7 +125,7 @@ public class AnthropicApiService implements Serializable {
 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://api.anthropic.com/v1/messages"))
-                        .timeout(Duration.ofSeconds(120))
+                        .timeout(Duration.ofMillis(requestTimeoutMs))
                         .header("Content-Type", "application/json")
                         .header("x-api-key", apiKey)
                         .header("anthropic-version", "2023-06-01")
@@ -432,10 +445,11 @@ public class AnthropicApiService implements Serializable {
         try {
             String jpql = "SELECT o FROM ConfigOption o "
                     + "WHERE o.retired = false "
-                    + "AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL "
+                    + "AND o.scope = :scope "
                     + "AND LOWER(o.optionKey) LIKE :kw "
                     + "ORDER BY o.optionKey";
             Map<String, Object> params = new HashMap<>();
+            params.put("scope", OptionScope.APPLICATION);
             params.put("kw", "%" + keyword.toLowerCase() + "%");
 
             List<ConfigOption> options = configOptionFacade.findByJpql(jpql, params);
@@ -444,14 +458,29 @@ public class AnthropicApiService implements Serializable {
                 return "No config options found matching: " + keyword;
             }
 
+            final int maxRows = 20;
+            final int maxValueChars = 200;
+            int displayed = Math.min(options.size(), maxRows);
+
             StringBuilder sb = new StringBuilder();
             sb.append("Found ").append(options.size())
-                    .append(" config option(s) matching \"").append(keyword).append("\":\n\n");
-            for (ConfigOption opt : options) {
+                    .append(" config option(s) matching \"").append(keyword).append("\"");
+            if (options.size() > maxRows) {
+                sb.append(" (showing first ").append(maxRows).append(")");
+            }
+            sb.append(":\n\n");
+
+            for (ConfigOption opt : options.subList(0, displayed)) {
                 String value = maskSensitiveValue(opt.getOptionKey(), opt.getOptionValue());
+                if (value != null && value.length() > maxValueChars) {
+                    value = value.substring(0, maxValueChars) + "... (truncated)";
+                }
                 sb.append("Key: ").append(opt.getOptionKey()).append("\n");
                 sb.append("Type: ").append(opt.getValueType()).append("\n");
                 sb.append("Value: ").append(value).append("\n\n");
+            }
+            if (options.size() > maxRows) {
+                sb.append("... ").append(options.size() - maxRows).append(" more match(es) omitted. Refine your keyword for fewer results.\n");
             }
             return sb.toString();
         } catch (Exception e) {

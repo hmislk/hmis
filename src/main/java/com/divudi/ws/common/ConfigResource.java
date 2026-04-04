@@ -2,6 +2,9 @@ package com.divudi.ws.common;
 
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.ApiKeyType;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.facade.ConfigOptionFacade;
 import java.util.HashMap;
@@ -106,8 +109,10 @@ public class ConfigResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchConfigOptions(@QueryParam("keyword") String keyword,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        String apiKeyValue = headers.getHeaderString("Config");
+        ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
+        if (apiKey == null || apiKey.getKeyType() != ApiKeyType.Config
+                || apiKey.getDateOfExpiary().before(new java.util.Date())) {
             return unauthorizedResponse();
         }
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -117,10 +122,11 @@ public class ConfigResource {
         }
         String jpql = "SELECT o FROM ConfigOption o "
                 + "WHERE o.retired = false "
-                + "AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL "
+                + "AND o.scope = :scope "
                 + "AND LOWER(o.optionKey) LIKE :kw "
                 + "ORDER BY o.optionKey";
         Map<String, Object> params = new HashMap<>();
+        params.put("scope", OptionScope.APPLICATION);
         params.put("kw", "%" + keyword.toLowerCase().trim() + "%");
 
         List<ConfigOption> options = configOptionFacade.findByJpql(jpql, params);
