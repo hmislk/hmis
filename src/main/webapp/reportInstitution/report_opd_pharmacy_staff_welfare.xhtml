@@ -23,6 +23,24 @@
                     <h:outputLabel value="To Date"/>
                     <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{serviceSummery.toDate}" pattern="dd MMMM yyyy  HH:mm:ss" >
                     </p:calendar>
+
+                    <h:outputLabel value="Staff (optional)"/>
+                    <p:autoComplete
+                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                        class="w-100 mx-4"
+                        inputStyleClass="w-100"
+                        value="#{serviceSummery.staff}"
+                        var="w"
+                        scrollHeight="450"
+                        itemLabel="#{w.person.name}"
+                        itemValue="#{w}">
+                        <p:column headerText="Name">
+                            <h:outputText value="#{w.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputText value="#{w.staffCode}"/>
+                        </p:column>
+                    </p:autoComplete>
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
                     <p:commandButton id="btnRefresh" value="Process" ajax="false"

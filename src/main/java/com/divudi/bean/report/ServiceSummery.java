@@ -990,6 +990,11 @@ public class ServiceSummery implements Serializable {
         m.put("pm", PaymentMethod.Staff_Welfare);
         m.put("btas", billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills());
 
+        if (staff != null) {
+            jpql += " AND st.id = :staffId";
+            m.put("staffId", staff.getId());
+        }
+
         staffWelfarePayments = (List<StaffWelfarePaymentDTO>) paymentFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         calculateTotalsForStaffWelfarePayments(staffWelfarePayments);
