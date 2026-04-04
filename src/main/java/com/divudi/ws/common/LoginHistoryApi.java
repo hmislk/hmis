@@ -92,6 +92,7 @@ public class LoginHistoryApi {
             String toDateStr = value("toDate");
             String daysStr = value("days");
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
             if (daysStr != null && !daysStr.trim().isEmpty()) {
                 int days = parseInt(daysStr, -1);
                 if (days < 0) return errorResponse("Invalid days value", 400);
@@ -122,6 +123,7 @@ public class LoginHistoryApi {
                         cal.set(Calendar.HOUR_OF_DAY, 23);
                         cal.set(Calendar.MINUTE, 59);
                         cal.set(Calendar.SECOND, 59);
+                        cal.set(Calendar.MILLISECOND, 999);
                         jpql.append(" and l.logedAt<=:toDate");
                         m.put("toDate", cal.getTime());
                     } catch (Exception e) {

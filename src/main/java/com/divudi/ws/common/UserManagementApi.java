@@ -452,9 +452,16 @@ public class UserManagementApi {
             }
 
             List<Map<String, Object>> summary = new ArrayList<>();
+            List<Map<String, Object>> skippedUsers = new ArrayList<>();
             for (Long userId : req.getUserIds()) {
                 WebUser u = webUserFacade.find(userId);
-                if (u == null || u.isRetired()) continue;
+                if (u == null || u.isRetired()) {
+                    Map<String, Object> skipped = new HashMap<>();
+                    skipped.put("userId", userId);
+                    skipped.put("reason", u == null ? "not_found" : "retired");
+                    skippedUsers.add(skipped);
+                    continue;
+                }
 
                 // Determine target departments: fixed dept or all of the user's loggable departments
                 List<Department> targetDepts = new ArrayList<>();
@@ -501,7 +508,10 @@ public class UserManagementApi {
                 entry.put("privilegesSkipped", skipped);
                 summary.add(entry);
             }
-            return successResponse(summary);
+            Map<String, Object> result = new HashMap<>();
+            result.put("processed", summary);
+            result.put("skippedUsers", skippedUsers);
+            return successResponse(result);
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);
         } catch (Exception e) {

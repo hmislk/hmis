@@ -247,16 +247,22 @@ Assigns a set of privileges to multiple users in a single call. This is the reco
 
 **Behaviour when `departmentId` is omitted:** for each user, the API iterates all their active `WebUserDepartment` entries and assigns the privileges to each one. Existing assignments are silently skipped.
 
-**Response:** per-user summary array:
+**Response:** object with `processed` (per-user summary) and `skippedUsers` (IDs that could not be processed):
 
 ```json
 {
   "status": "success",
   "code": 200,
-  "data": [
-    { "userId": 20701, "userName": "tharindi", "privilegesAdded": 13, "privilegesSkipped": 1 },
-    { "userId": 547569, "userName": "binosha",  "privilegesAdded": 14, "privilegesSkipped": 0 }
-  ]
+  "data": {
+    "processed": [
+      { "userId": 20701, "userName": "tharindi", "privilegesAdded": 13, "privilegesSkipped": 1 },
+      { "userId": 547569, "userName": "binosha",  "privilegesAdded": 14, "privilegesSkipped": 0 }
+    ],
+    "skippedUsers": [
+      { "userId": 99999, "reason": "not_found" },
+      { "userId": 88888, "reason": "retired" }
+    ]
+  }
 }
 ```
 
