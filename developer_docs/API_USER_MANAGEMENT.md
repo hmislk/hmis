@@ -17,7 +17,7 @@ All endpoints use the standard HMIS response envelope:
 ```json
 { "status": "success", "code": 200, "data": {} }
 { "status": "error",   "code": 400, "message": "error details" }
-```
+```text
 
 ---
 
@@ -55,10 +55,10 @@ Failed privilege check returns **403** `Insufficient privileges`.
 
 ### 1. List / Search Users
 
-```
+```http
 GET /api/users?query={text}&departmentId={id}&page={n}&size={n}
 GET /api/users/search?query={text}&departmentId={id}&page={n}&size={n}
-```
+```text
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -73,13 +73,13 @@ When `departmentId` is supplied, results are restricted to users who have that d
 ```bash
 curl "http://localhost:9090/rh/api/users?departmentId=481" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
 **Example — search by name within a department:**
 ```bash
 curl "http://localhost:9090/rh/api/users?query=tharindi&departmentId=481" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
 **Response items:** `id`, `name`, `userName`, `code`, `staffNameWithTitle`
 
@@ -87,9 +87,9 @@ curl "http://localhost:9090/rh/api/users?query=tharindi&departmentId=481" \
 
 ### 2. Get User by ID
 
-```
+```http
 GET /api/users/{id}
-```
+```text
 
 **Response fields:** `id`, `name`, `code`, `email`, `telNo`, `activated`, `retired`, `institutionId`, `departmentId`, `siteId`, `roleId`, `personName`
 
@@ -97,9 +97,9 @@ GET /api/users/{id}
 
 ### 3. Create User
 
-```
+```http
 POST /api/users
-```
+```text
 
 **Required fields:** `name`, `password`
 
@@ -118,7 +118,7 @@ POST /api/users
   "roleId": 3,
   "activated": true
 }
-```
+```text
 
 Rejects duplicate active user names with `400 User name already exists`.
 
@@ -126,9 +126,9 @@ Rejects duplicate active user names with `400 User name already exists`.
 
 ### 4. Update User
 
-```
+```http
 PUT /api/users/{id}
-```
+```text
 
 Partial update — only fields present in the body are changed.
 
@@ -136,9 +136,9 @@ Partial update — only fields present in the body are changed.
 
 ### 5. Retire User
 
-```
+```http
 DELETE /api/users/{id}?retireComments={reason}
-```
+```text
 
 Soft-retires the user (sets `retired=true`). Irreversible via API.
 
@@ -146,13 +146,13 @@ Soft-retires the user (sets `retired=true`). Irreversible via API.
 
 ### 6. Reset Password (Admin)
 
-```
+```http
 POST /api/users/{id}/reset-password
-```
+```text
 
 ```json
 { "newPassword": "NewPassword#456" }
-```
+```text
 
 Sets `needToResetPassword=true` so the user is prompted to change on next login.
 
@@ -160,16 +160,16 @@ Sets `needToResetPassword=true` so the user is prompted to change on next login.
 
 ### 7. Change Own Password
 
-```
+```http
 POST /api/users/{id}/change-password
-```
+```text
 
 ```json
 {
   "currentPassword": "CurrentPassword#123",
   "newPassword": "NewPassword#789"
 }
-```
+```text
 
 - Users changing their own password must supply `currentPassword`.
 - Admins can change any user's password without `currentPassword`.
@@ -178,16 +178,16 @@ POST /api/users/{id}/change-password
 
 ### 8. List Available Privilege Names
 
-```
+```http
 GET /api/users/privileges/available
-```
+```text
 
 Returns the full list of valid privilege enum names from `Privileges.java`. Use this to discover valid values before calling assign endpoints.
 
 ```bash
 curl "http://localhost:9090/rh/api/users/privileges/available" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
 **Response:** `["Admin", "Opd", "Inward", "ClinicalPatientEdit", ...]`
 
@@ -195,9 +195,9 @@ curl "http://localhost:9090/rh/api/users/privileges/available" \
 
 ### 9. List User's Privileges
 
-```
+```http
 GET /api/users/{id}/privileges
-```
+```text
 
 **Response items:** `id`, `privilege`, `departmentId`
 
@@ -205,18 +205,18 @@ GET /api/users/{id}/privileges
 
 ### 10. Assign Privileges to a Single User
 
-```
+```http
 POST /api/users/{id}/privileges
-```
+```text
 
 ```json
 {
   "privileges": ["ClinicalPatientEdit", "OpdEditPatientDetails"],
   "departmentId": 481
 }
-```
+```text
 
-- `departmentId` is required (scopes the privilege to a department).
+- `departmentId` is optional; if omitted the privilege is assigned without department scope (applies globally for the user).
 - Existing active assignments are skipped (no duplicates).
 - Invalid privilege names return **400**.
 - Returns the full updated privilege list for the user.
@@ -225,9 +225,9 @@ POST /api/users/{id}/privileges
 
 ### 11. Bulk Assign Privileges to Multiple Users
 
-```
+```http
 POST /api/users/bulk-privileges
-```
+```text
 
 Assigns a set of privileges to multiple users in a single call. This is the recommended approach for onboarding a department or rolling out a new privilege set.
 
@@ -237,7 +237,7 @@ Assigns a set of privileges to multiple users in a single call. This is the reco
   "privileges": ["ClinicalPatientEdit", "OpdEditPatientDetails", "ClinicalPatientNameChange"],
   "departmentId": 481
 }
-```
+```text
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -264,7 +264,7 @@ Assigns a set of privileges to multiple users in a single call. This is the reco
     ]
   }
 }
-```
+```text
 
 **Example — grant patient editing to all users in a department across their own departments:**
 ```bash
@@ -279,15 +279,15 @@ curl -X POST "http://localhost:9090/rh/api/users/bulk-privileges" \
       "OpdEditPatientDetails", "LabEditPatient"
     ]
   }'
-```
+```text
 
 ---
 
 ### 12. Revoke User Privilege
 
-```
+```http
 DELETE /api/users/{id}/privileges/{privilegeId}
-```
+```text
 
 Soft-retires a single privilege assignment. Returns `Privilege revoked`.
 
@@ -295,9 +295,9 @@ Soft-retires a single privilege assignment. Returns `Privilege revoked`.
 
 ### 13. List User's Loggable Departments
 
-```
+```http
 GET /api/users/{id}/departments
-```
+```text
 
 **Response items:** `id`, `departmentId`, `departmentName`
 
@@ -305,13 +305,13 @@ GET /api/users/{id}/departments
 
 ### 14. Assign Loggable Departments to User
 
-```
+```http
 POST /api/users/{id}/departments
-```
+```text
 
 ```json
 { "departmentIds": [481, 86405, 1048772] }
-```
+```text
 
 - Existing active assignments are skipped.
 - Non-existent department IDs return **400**.
@@ -323,60 +323,60 @@ POST /api/users/{id}/departments
 
 ### 1. List Roles
 
-```
+```http
 GET /api/user-roles
-```
+```text
 
 **Response items:** `id`, `name`, `description`, `retired`
 
 ### 2. Get Role by ID
 
-```
+```http
 GET /api/user-roles/{id}
-```
+```text
 
 ### 3. Create Role
 
-```
+```http
 POST /api/user-roles
-```
+```text
 
 ```json
 { "name": "PharmacySupervisor", "description": "Pharmacy supervision role" }
-```
+```text
 
 ### 4. Update Role
 
-```
+```http
 PUT /api/user-roles/{id}
-```
+```text
 
 ### 5. Retire Role
 
-```
+```http
 DELETE /api/user-roles/{id}
-```
+```text
 
 ### 6. List Role Privileges
 
-```
+```http
 GET /api/user-roles/{id}/privileges
-```
+```text
 
 **Response items:** `id`, `privilege`, `departmentId`
 
 ### 7. Assign Role Privileges
 
-```
+```http
 POST /api/user-roles/{id}/privileges
-```
+```text
 
 ```json
 {
   "privileges": ["Pharmacy", "PharmacyIssueBill"],
   "departmentId": 485
 }
-```
+```text
 
 Duplicates are skipped. Returns updated role privilege list.
 
@@ -388,9 +388,9 @@ Useful for finding which users have recently accessed a department — e.g. befo
 
 ### 1. List Logins
 
-```
+```http
 GET /api/logins?departmentId={id}&userId={id}&fromDate={date}&toDate={date}&days={n}&page={n}&size={n}
-```
+```text
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -415,15 +415,15 @@ curl "http://localhost:9090/rh/api/logins?departmentId=481&days=10&size=50" \
 # Specific date range
 curl "http://localhost:9090/rh/api/logins?departmentId=481&fromDate=2026-03-01&toDate=2026-03-31" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
 ---
 
 ### 2. Last Login Per User
 
-```
+```http
 GET /api/logins/last-per-user?departmentId={id}&size={n}
-```
+```text
 
 Returns one record per unique user (the most recent login), deduplicated in application memory. Ideal for finding the active user set for a department.
 
@@ -437,7 +437,7 @@ Returns one record per unique user (the most recent login), deduplicated in appl
 ```bash
 curl "http://localhost:9090/rh/api/logins/last-per-user?departmentId=481&size=50" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
 ---
 
@@ -468,7 +468,7 @@ curl -X POST "http://localhost:9090/rh/api/users/bulk-privileges" \
     "userIds": [20701, 547569],
     "privileges": ["ClinicalPatientEdit", "OpdEditPatientDetails", "LabEditPatient"]
   }'
-```
+```text
 
 ---
 
@@ -490,7 +490,7 @@ curl -X POST "http://localhost:9090/rh/api/users/99999/departments" \
 curl -X POST "http://localhost:9090/rh/api/users/99999/privileges" \
   -H "Finance: YOUR_API_KEY" -H "Content-Type: application/json" \
   -d '{"privileges":["Opd","OpdBilling","Search"],"departmentId":481}'
-```
+```text
 
 ---
 
@@ -504,7 +504,7 @@ curl "http://localhost:9090/rh/api/users?departmentId=481&size=100" \
 # For each userId, check their privileges
 curl "http://localhost:9090/rh/api/users/20701/privileges" \
   -H "Finance: YOUR_API_KEY"
-```
+```text
 
 ---
 

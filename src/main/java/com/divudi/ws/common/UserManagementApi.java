@@ -437,13 +437,33 @@ public class UserManagementApi {
             if (req.getPrivileges() == null || req.getPrivileges().isEmpty()) {
                 return errorResponse("privileges are required", 400);
             }
-            // Validate privilege names up front
+            final int MAX_USERS = 500;
+            final int MAX_PRIVILEGES = 100;
+            if (req.getUserIds().size() > MAX_USERS) {
+                return errorResponse("Too many userIds. Max allowed: " + MAX_USERS, 400);
+            }
+            if (req.getPrivileges().size() > MAX_PRIVILEGES) {
+                return errorResponse("Too many privileges. Max allowed: " + MAX_PRIVILEGES, 400);
+            }
+            // Deduplicate inputs
+            req.setUserIds(new ArrayList<>(new LinkedHashSet<>(req.getUserIds())));
+            req.setPrivileges(new ArrayList<>(new LinkedHashSet<>(req.getPrivileges())));
+            // Validate and resolve privilege names up front, guarding against null/blank
             List<Privileges> privileges = new ArrayList<>();
             for (String pName : req.getPrivileges()) {
+                if (pName == null || pName.trim().isEmpty()) {
+                    return errorResponse("privileges list contains a null or blank entry", 400);
+                }
                 try {
-                    privileges.add(Privileges.valueOf(pName));
+                    privileges.add(Privileges.valueOf(pName.trim()));
                 } catch (IllegalArgumentException e) {
                     return errorResponse("Invalid privilege: " + pName, 400);
+                }
+            }
+            // Guard against null elements in userIds
+            for (Long userId : req.getUserIds()) {
+                if (userId == null) {
+                    return errorResponse("userIds cannot contain null", 400);
                 }
             }
             Department fixedDept = req.getDepartmentId() != null ? departmentFacade.find(req.getDepartmentId()) : null;
