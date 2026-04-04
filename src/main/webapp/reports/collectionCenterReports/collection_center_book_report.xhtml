@@ -96,15 +96,19 @@
                                                  style="width: 150px"
                                                  icon="fas fa-file-excel"
                                                  ajax="false" value="Excel">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                    <p:dataExporter 
+                                        type="xlsx" 
+                                        target="tblExport" 
+                                        fileName="itemized_sale_summary" 
+                                        postProcessor="#{reportController.postProcessCollectionCenterBookReportExcel}"/>
                                 </p:commandButton>
                                 <p:commandButton 
                                     class="mx-2 ui-button-danger" 
                                     style="width: 150px"
                                     icon="fa-solid fa-file-pdf"
                                     ajax="false" 
-                                    value="PDF">
-                                    <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
+                                    value="PDF"
+                                    action="#{reportController.exportCollectionCenterBookReportToPDF()}">
                                 </p:commandButton>
                             </div>
                             <div  class="col-md-2">

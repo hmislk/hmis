@@ -8432,7 +8432,7 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
         }
     }
     
-       // Filters for test_wise_count_report
+       // Filters for route analysis report
     public Map<String, Object> getFiltersForRouteAnalysisReport() {
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         Map<String, Object> filters = new LinkedHashMap<>();
