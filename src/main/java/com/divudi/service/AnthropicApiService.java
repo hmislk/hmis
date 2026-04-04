@@ -320,6 +320,22 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/costing_data/by_bill_id/{bill_id}",         "Get a specific bill by internal ID"}
                 });
 
+        appendModule(sb, "Finance - QuickBooks Export", "/qb",
+                "Export HMIS financial data for QuickBooks synchronisation. All endpoints use incremental sync: supply the last synced record ID and a start date to retrieve the next batch (up to 2500 records). Use institution_code (string), numeric IDs, and dates in yyyy-MM-dd format.",
+                githubUrl(branch, "developer_docs/API_QUICKBOOKS.md"),
+                new String[][]{
+                    {"GET", "/qb/last_invoice_id/{institution_code}/{last_date}",                        "Get the highest bill ID on or after last_date — use as starting point before paginating"},
+                    {"GET", "/qb/cInvList/{institution_code}/{last_invoice_id}/{last_date}",             "Cash-paid invoices (PharmacySale, OpdBill, ChannelPaid, ChannelCash, PharmacyWholeSale)"},
+                    {"GET", "/qb/invList/{institution_code}/{last_invoice_id}/{last_date}",              "Credit-paid outpatient invoices and inpatient final bills"},
+                    {"GET", "/qb/salesRetList/{institution_code}/{last_invoice_id}/{last_date}",         "Sales return / voided invoices"},
+                    {"GET", "/qb/grnList/{institution_code}/{last_grn_id}/{last_date}",                  "Pharmacy Goods Received Notes (purchase bills)"},
+                    {"GET", "/qb/grnRetList/{institution_code}/{last_return_grn_id}/{last_date}",        "GRN returns (goods returned to supplier)"},
+                    {"GET", "/qb/wcList/{institution_code}/{last_return_grn_id}/{last_date}",            "Write-off and stock correction entries"},
+                    {"GET", "/qb/jurList/{institution_code}/{last_return_grn_id}/{last_date}",           "Journal entries"},
+                    {"GET", "/qb/cusPayList/{institution_code}/{last_payment_id}/{last_date}",           "Customer payment records (bill sessions / receipts)"},
+                    {"GET", "/qb/paymentreturn/{institution_code}/{last_return_payment_id}",             "Payment return / refund records (no date filter)"}
+                });
+
         sb.append("## Your Capabilities\n");
         sb.append("- Query and search HMIS data via REST API calls\n");
         sb.append("- Adjust stock, pharmacy, and financial data\n");
