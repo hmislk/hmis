@@ -34,6 +34,7 @@ public class ViewScopeDataTransferController  implements Serializable {
     private Boolean needToCreateOpdBillForChannellingBillSession;
     private Boolean needToFillMembershipDetails;
     private Boolean needToPrepareForNewBooking;
+    private Boolean needToFillFeeTotalsByBillFees;
 
 
     private String sessionInstanceFilter;
@@ -208,7 +209,13 @@ public class ViewScopeDataTransferController  implements Serializable {
         this.paymentScheme = paymentScheme;
     }
 
+    public void setNeedToFillFeeTotalsByBillFees(Boolean needToFillFeeTotalsByBillFees) {
+        this.needToFillFeeTotalsByBillFees = needToFillFeeTotalsByBillFees;
+    }
 
+    public Boolean getNeedToFillFeeTotalsByBillFees() {
+        return needToFillFeeTotalsByBillFees;
+    }
 
 
 }

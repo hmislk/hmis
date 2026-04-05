@@ -626,14 +626,6 @@
                         icon="fa fa-search">
                     </p:menuitem>
 
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/inward/inward_reports?faces-redirect=true" 
-                        value="Inpatient Analytics"
-                        icon="pi pi-chart-bar" 
-                        rendered="#{webUserController.hasPrivilege('InwardReport')}" >
-                    </p:menuitem>
-
                     <p:menuitem
                         ajax="false"
                         id="smNursingWorkBench"
@@ -642,6 +634,14 @@
                         icon="fa-solid fa-user-nurse"
                         rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
                         action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/inward/inward_reports?faces-redirect=true"
+                        value="Inpatient Analytics"
+                        icon="pi pi-chart-bar"
+                        rendered="#{webUserController.hasPrivilege('InwardReport')}" >
                     </p:menuitem>
 
                 </p:submenu>

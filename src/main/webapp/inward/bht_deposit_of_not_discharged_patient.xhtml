@@ -41,14 +41,27 @@
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
 
+                            <p:outputLabel value="Date Basis"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Payment/Bill Date" />
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.dept}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
                             <h:outputLabel value="B H T No :" ></h:outputLabel>
                             <h:panelGrid columns="1">
-                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true"
                                                 value="#{mdInwardReportController.patientEncounter}"
-                                                completeMethod="#{admissionController.completePatientAll}" 
-                                                var="myItem" itemValue="#{myItem}" 
-                                                itemLabel="#{myItem.bhtNo}" 
-                                                size="30"  >                                   
+                                                completeMethod="#{admissionController.completePatientAll}"
+                                                var="myItem" itemValue="#{myItem}"
+                                                itemLabel="#{myItem.bhtNo}"
+                                                size="30"  >
                                     <p:column>
                                         #{myItem.bhtNo}
                                     </p:column>
@@ -64,7 +77,7 @@
                                     <p:column>
                                         <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
                                     </p:column>
-                                </p:autoComplete>   
+                                </p:autoComplete>
 
                             </h:panelGrid>
                         </h:panelGrid>

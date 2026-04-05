@@ -26,6 +26,31 @@
                                 <p:calendar value="#{mdInwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                                 <p:outputLabel value="To" ></p:outputLabel>
                                 <p:calendar value="#{mdInwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
+                                <p:outputLabel value="Date Basis" />
+                                <p:selectOneMenu styleClass="w-100" value="#{mdInwardReportController1.dateBasis}">
+                                    <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                    <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Admission Type" />
+                                <p:selectOneMenu styleClass="w-100" value="#{mdInwardReportController1.admissionType}">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Payment Method" />
+                                <p:selectOneMenu styleClass="w-100" value="#{mdInwardReportController1.paymentMethod}">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Institution" />
+                                <p:selectOneMenu styleClass="w-100" value="#{mdInwardReportController1.institution}" filter="true">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                </p:selectOneMenu>
+                                <p:outputLabel value="Site" />
+                                <p:selectOneMenu styleClass="w-100" value="#{mdInwardReportController1.site}" filter="true">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                </p:selectOneMenu>
                             </h:panelGrid>
 
                             <p:panelGrid columns="1">
