@@ -45,6 +45,14 @@
                                     <h:outputText value="#{financialTransactionController.selectedFundTransferRequest.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
+                                    <h:outputText value="Already Fulfilled"/>
+                                    <h:outputText value="#{financialTransactionController.getFulfilledAmountForRequest(financialTransactionController.selectedFundTransferRequest)}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <h:outputText value="Remaining to Issue"/>
+                                    <h:outputText value="#{financialTransactionController.getRemainingAmountForRequest(financialTransactionController.selectedFundTransferRequest)}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </p:panelGrid>
                             </p:panel>
                         </h:panelGroup>
