@@ -1701,12 +1701,16 @@ public class PharmacySaleBhtController implements Serializable {
         long t1 = System.currentTimeMillis();
         System.out.println("[addBillItem] validation: " + (t1 - t0) + "ms");
 
-        Stock stockEntity = getStock();
+        // Use getReference() — a lightweight JPA proxy, no DB hit.
+        // All data needed for the bill item comes from selectedStockDto.
+        Stock stockRef = getStockFacade().getReference(selectedStockId);
+        ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
+        Item itemRef = getItemFacade().getReference(selectedStockDto.getItemId());
         long t2 = System.currentTimeMillis();
-        System.out.println("[addBillItem] stockFacade.find: " + (t2 - t1) + "ms");
+        System.out.println("[addBillItem] getReferences: " + (t2 - t1) + "ms");
 
-        billItem.getPharmaceuticalBillItem().setStock(stockEntity);
-        billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+        billItem.getPharmaceuticalBillItem().setStock(stockRef);
+        billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchRef);
 
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
@@ -1717,7 +1721,6 @@ public class PharmacySaleBhtController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             List<ClinicalFindingValue> allergyListOfPatient = pharmacyService.getAllergyListForPatient(patientEncounter.getPatient());
             List<BillItem> billItems = new ArrayList<>();
-            billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
             billItems.add(billItem);
             if (allergyListOfPatient != null && !allergyListOfPatient.isEmpty()) {
                 String allergyMsg = pharmacyService.isAllergyForPatient(patientEncounter.getPatient(), billItems, allergyListOfPatient);
@@ -1731,14 +1734,14 @@ public class PharmacySaleBhtController implements Serializable {
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - Math.abs(qty));
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        billItem.setItem(stockEntity.getItemBatch().getItem());
+        billItem.setItem(itemRef);
         billItem.setQty(qty);
-        billItem.getPharmaceuticalBillItem().setDoe(stockEntity.getItemBatch().getDateOfExpire());
+        billItem.getPharmaceuticalBillItem().setDoe(selectedStockDto.getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
-        calculateRates(billItem);
+        calculateRates(billItem, selectedStockDto.getRetailRate());
         long t3 = System.currentTimeMillis();
         System.out.println("[addBillItem] calculateRates: " + (t3 - t2) + "ms");
 
@@ -1757,58 +1760,30 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private void calTotal() {
-
-// Start debugging
-        // Start debugging
-        // Start debugging
-        // Start debugging
-        // Reset total
+        if (getPreBill().getBillItems() == null) {
+            return;
+        }
         getPreBill().setTotal(0);
-
-        // Local counters
         double netTot = 0.0;
         double discount = 0.0;
         double grossTot = 0.0;
         double marginTotal = 0.0;
         int index = 0;
-
-        // Optional: see how many BillItems we're about to process
-        if (getPreBill().getBillItems() != null) {
-        } else {
-            return; // Possibly return here if no items
-        }
-
         for (BillItem b : getPreBill().getBillItems()) {
-
-            // Check if retired
             if (b.isRetired()) {
                 continue;
             }
-
-            // Set serial number
             b.setSearialNo(index++);
-
-            // Accumulate totals
             netTot += b.getNetValue();
             grossTot += b.getGrossValue();
             discount += b.getDiscount();
             marginTotal += b.getMarginValue();
-
-            // Add the netValue to the Bill's total
-            getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
         }
-        // Show intermediate totals
-        // Show intermediate totals
-
-        // Now set values back on the Bill
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
         getPreBill().setGrantTotal(grossTot);
         getPreBill().setDiscount(discount);
         getPreBill().setMargin(marginTotal);
-        // Final debug
-        // Final debug
-
     }
 
     @EJB
@@ -1930,7 +1905,6 @@ public class PharmacySaleBhtController implements Serializable {
         getBillItem().setNetRate(rate);
         getBillItem().setDiscount(0.0);
 
-        System.out.println(">>> DTO-based quantity calculation: Qty=" + quantity + ", Rate=" + rate + ", Value=" + grossValue);
     }
 
     public void calculateBillItem() {
@@ -2104,6 +2078,60 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetValue(netValue);
         bi.setMarginRate(marginRate);
         bi.setNetRate(originalRate + marginRate);
+        bi.setAdjustedValue(netValue);
+        bi.setDiscount(0);
+
+        System.out.println("[calculateRates] TOTAL: " + (System.currentTimeMillis() - calcStartTime) + "ms");
+    }
+
+    /**
+     * Rate-aware overload: accepts retailRate from DTO to avoid loading the Stock/ItemBatch entity.
+     */
+    public void calculateRates(BillItem bi, double retailRate) {
+        long calcStartTime = System.currentTimeMillis();
+
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+
+        Department matrixDept = null;
+        boolean matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey(
+                "Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
+        boolean matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey(
+                "Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+
+        if (matrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                matrixDept = getSessionController().getDepartment();
+            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                matrixDept = getPatientEncounter().getDepartment();
+            } else if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            }
+        } else {
+            matrixDept = getSessionController().getDepartment();
+        }
+
+        double quantity = bi.getQty();
+        double estimatedValue = retailRate * quantity;
+
+        PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
+
+        long t2 = System.currentTimeMillis();
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
+        System.out.println("[calculateRates] fetchInwardMargin: " + (System.currentTimeMillis() - t2) + "ms");
+
+        double marginPercentage = priceMatrix != null ? priceMatrix.getMargin() / 100 : 0.0;
+        double marginRate = marginPercentage * retailRate;
+        double grossValue = retailRate * quantity;
+        double netValue = grossValue + marginRate * quantity;
+
+        bi.setRate(retailRate);
+        bi.setGrossValue(grossValue);
+        bi.setMarginValue(marginRate * quantity);
+        bi.setNetValue(netValue);
+        bi.setMarginRate(marginRate);
+        bi.setNetRate(retailRate + marginRate);
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
 
