@@ -9,6 +9,7 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.LoginsFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -85,6 +86,50 @@ public class LoginHistoryApi {
                 if (uid == null) return errorResponse("Invalid userId", 400);
                 jpql.append(" and l.webUser.id=:uid");
                 m.put("uid", uid);
+            }
+
+            String fromDateStr = value("fromDate");
+            String toDateStr = value("toDate");
+            String daysStr = value("days");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+            if (daysStr != null && !daysStr.trim().isEmpty()) {
+                int days = parseInt(daysStr, -1);
+                if (days < 0) return errorResponse("Invalid days value", 400);
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.DAY_OF_YEAR, -days);
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                jpql.append(" and l.logedAt>=:fromDate");
+                m.put("fromDate", cal.getTime());
+            } else {
+                if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
+                    try {
+                        Date fromDate = sdf.parse(fromDateStr);
+                        jpql.append(" and l.logedAt>=:fromDate");
+                        m.put("fromDate", fromDate);
+                    } catch (Exception e) {
+                        return errorResponse("Invalid fromDate format, expected yyyy-MM-dd", 400);
+                    }
+                }
+                if (toDateStr != null && !toDateStr.trim().isEmpty()) {
+                    try {
+                        Date toDate = sdf.parse(toDateStr);
+                        // Include the full toDate day
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(toDate);
+                        cal.set(Calendar.HOUR_OF_DAY, 23);
+                        cal.set(Calendar.MINUTE, 59);
+                        cal.set(Calendar.SECOND, 59);
+                        cal.set(Calendar.MILLISECOND, 999);
+                        jpql.append(" and l.logedAt<=:toDate");
+                        m.put("toDate", cal.getTime());
+                    } catch (Exception e) {
+                        return errorResponse("Invalid toDate format, expected yyyy-MM-dd", 400);
+                    }
+                }
             }
 
             jpql.append(" order by l.logedAt desc");

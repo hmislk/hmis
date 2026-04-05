@@ -75,6 +75,7 @@ public class InwardReportController1 implements Serializable {
     private Institution institution;
     private Institution site;
     private Institution admittingInstitution;
+    private String dateBasis = "createdAt";
     private boolean outstandingOnly;
     private List<Bill> bills;
     private double debtorBillTotal;
@@ -2457,6 +2458,14 @@ public class InwardReportController1 implements Serializable {
         this.site = site;
     }
 
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
     public Institution getAdmittingInstitution() {
         return admittingInstitution;
     }
@@ -2471,6 +2480,20 @@ public class InwardReportController1 implements Serializable {
 
     public void setOutstandingOnly(boolean outstandingOnly) {
         this.outstandingOnly = outstandingOnly;
+    }
+
+    /**
+     * Returns the JPQL date field to apply to the from/to date range based on dateBasis.
+     * @param defaultField the field used when dateBasis is "createdAt" (e.g. "b.bill.createdAt")
+     * @param encounterAlias JPQL path to the PatientEncounter (e.g. "b.patientEncounter")
+     */
+    private String resolveDateField(String basis, String defaultField, String encounterAlias) {
+        if ("dischargeDate".equals(basis)) {
+            return encounterAlias + ".dateOfDischarge";
+        } else if ("admissionDate".equals(basis)) {
+            return encounterAlias + ".dateOfAdmission";
+        }
+        return defaultField;
     }
 
     public List<Bill> getBills() {
@@ -2884,11 +2907,12 @@ public class InwardReportController1 implements Serializable {
 
     public void inwardCreditCompanyDebtors() {
         HashMap hm = new HashMap();
+        String dateField = resolveDateField(dateBasis, "b.billDate", "b.patientEncounter");
         String sql = "Select b from Bill b "
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
-                + " and b.billDate between :frm and :to ";
+                + " and " + dateField + " between :frm and :to ";
 
         if (institution != null) {
             sql += " and b.creditCompany=:cc ";
@@ -2909,6 +2933,10 @@ public class InwardReportController1 implements Serializable {
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType=:at ";
             hm.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod=:pm ";
+            hm.put("pm", paymentMethod);
         }
         if (outstandingOnly) {
             sql += " and (abs(b.netTotal) - abs(b.paidAmount)) > :minVal ";
@@ -2935,12 +2963,13 @@ public class InwardReportController1 implements Serializable {
 
     public void inwardCreditCompanyPayments() {
         HashMap hm = new HashMap();
+        String dateField = resolveDateField(dateBasis, "b.bill.createdAt", "b.patientEncounter");
         String sql = "Select b from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
                 + " and b.bill.cancelled=false "
                 + " and b.bill.billTypeAtomic=:bta "
-                + " and b.bill.createdAt between :frm and :to ";
+                + " and " + dateField + " between :frm and :to ";
 
         if (institution != null) {
             sql += " and b.referenceBill.creditCompany=:cc ";

@@ -140,6 +140,14 @@ public class LabTestHistoryService {
     public void addReportRemoveHistory(PatientInvestigation pi, PatientReport pr, String reason, Institution institution, Department department, WebUser createdBy) {
         addNewHistoryWithUser(TestHistoryType.REPORT_REMOVE, null, null, pi, pr, null, null, null, null, null, null, null, reason, institution, department, createdBy);
     }
+    
+    public void addParientDetailsEditHistory(PatientInvestigation pi, PatientReport pr, Institution institution, Department department, WebUser createdBy) {
+        addNewHistoryWithUser(TestHistoryType.PATIENT_DETAILS_CHANGE, null, null, pi, pr, null, null, null, null, null, null, null, null, institution, department, createdBy);
+    }
+    
+    public void addReCalculateDynamicLabelHistory(PatientInvestigation pi, PatientReport pr, Institution institution, Department department, WebUser createdBy) {
+        addNewHistoryWithUser(TestHistoryType.RECALCULATE_DYNAMICLABEL, null, null, pi, pr, null, null, null, null, null, null, null, null, institution, department, createdBy);
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Report Sent - SMS">

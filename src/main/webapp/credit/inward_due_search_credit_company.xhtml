@@ -23,7 +23,36 @@
                                 <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                     <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                                 </p:calendar>
-                                <p:spacer width="100" height="1"/>
+                                <h:outputLabel value="Date Basis"/>
+                                <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
+                                    <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
+                                    <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Admission Type"/>
+                                <p:selectOneMenu value="#{creditCompanyDueController.admissionType}">
+                                    <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Payment Method"/>
+                                <p:selectOneMenu value="#{creditCompanyDueController.paymentMethod}">
+                                    <f:selectItem itemLabel="All Methods" itemValue="#{null}"/>
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Institution"/>
+                                <p:selectOneMenu value="#{creditCompanyDueController.institution}" filter="true">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Site"/>
+                                <p:selectOneMenu value="#{creditCompanyDueController.site}" filter="true">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.sites}" var="dueSite" itemLabel="#{dueSite.name}" itemValue="#{dueSite}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Department"/>
+                                <p:selectOneMenu value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
                             </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{creditCompanyDueController.createInwardCreditDue()}" />
