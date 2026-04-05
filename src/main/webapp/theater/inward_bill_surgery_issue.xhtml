@@ -165,10 +165,19 @@
                                             <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
                                         </p:commandButton>
 
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-cut"
+                                            class="ui-button-operating-theatre"
+                                            value="Surgery Dashboard"
+                                            action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile()}">
+                                            <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill}" target="#{surgeryBillController.surgeryBill}"/>
+                                        </p:commandButton>
+
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                            <p:commandButton 
-                                                value="Nursing WorkBench" 
-                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                            <p:commandButton
+                                                value="Nursing WorkBench"
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                                 ajax="false"
                                                 class="ui-button-operating-theatre"
                                                 icon="fa fa-arrow-left">
@@ -217,41 +226,43 @@
                                                             accesskey="i"
                                                             forceSelection="true"
                                                             id="acStock"
-                                                            value="#{pharmacySaleBhtController.stock}"
+                                                            value="#{pharmacySaleBhtController.selectedStockDto}"
+                                                            completeMethod="#{pharmacySaleBhtController.completeAvailableStockOptimizedDto}"
+                                                            converter="#{pharmacySaleBhtController.stockDtoConverter}"
+                                                            var="i"
+                                                            itemLabel="#{i.itemName}"
+                                                            itemValue="#{i}"
                                                             size="60"
                                                             class="w-100"
                                                             inputStyleClass="form-control"
-                                                            completeMethod="#{stockController.completeAvailableStocks}"
-                                                            var="i"
-                                                            itemLabel="#{i.itemBatch.item.name}"
-                                                            itemValue="#{i}"
+                                                            minQueryLength="3"
+                                                            maxResults="100"
                                                             >
-                                                            <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.itemBatch.item.name}" >
-                                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                                 severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                            <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                                <h:outputLabel value="#{i.itemName}" >
+                                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ':
+                                                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}"
+                                                                                 severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
                                                                 </h:outputLabel>
                                                             </p:column>
 
-                                                            <p:column headerText="Code" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                                            <p:column headerText="Code" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                                <h:outputLabel value="#{i.code}" ></h:outputLabel>
                                                             </p:column>
 
-                                                            <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.stock}" >
+                                                            <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                                <h:outputLabel value="#{i.stockQty}" >
                                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                                 </h:outputLabel>
                                                             </p:column>
 
-                                                            <p:column headerText="Expiry" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                                            <p:column headerText="Expiry" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                                <h:outputLabel value="#{i.dateOfExpire}" >
                                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                                 </h:outputLabel>
                                                             </p:column>
 
-                                                            <p:ajax event="focus" process="acStock" ></p:ajax>
-                                                            <p:ajax event="itemSelect"   listener="#{pharmacySaleBhtController.handleSelect}"  update="focusQty" ></p:ajax>
+                                                            <p:ajax event="itemSelect" listener="#{pharmacySaleBhtController.handleStockSelect}" process="acStock" update="focusQty" ></p:ajax>
 
                                                         </p:autoComplete>
 
@@ -438,10 +449,19 @@
                                         </div>
                                     </h:panelGroup>
 
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-cut"
+                                        class="ui-button-operating-theatre"
+                                        value="Surgery Dashboard"
+                                        action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile()}">
+                                        <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill}" target="#{surgeryBillController.surgeryBill}"/>
+                                    </p:commandButton>
+
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                        <p:commandButton 
-                                            value="Nursing WorkBench" 
-                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
                                             class="ui-button-operating-theatre"
                                             icon="fa fa-arrow-left">
@@ -453,7 +473,7 @@
 
                         <div >
                             <h:panelGroup   id="gpBillPreview">
-                                <phi:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                                <phi:issueBill bill="#{pharmacySaleBhtController.printBill}" title="Theatre Direct Issue"/>
                             </h:panelGroup>
                         </div>
 
