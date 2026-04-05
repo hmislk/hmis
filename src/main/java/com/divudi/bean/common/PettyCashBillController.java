@@ -22,6 +22,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PettyCashType;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.facade.PaymentFacade;
@@ -89,6 +90,8 @@ public class PettyCashBillController implements Serializable {
     private PaymentMethod paymentMethod;
     private boolean printPriview;
     private List<Bill> billList;
+    
+    private PettyCashType currentBillType;
 
     public PettyCashBillController() {
     }
@@ -505,7 +508,7 @@ public class PettyCashBillController implements Serializable {
         printPreview = false;
         newPerson = null;
         comment = null;
-
+        currentBillType = null;
         tabId = "tabStaff";
     }
 
@@ -726,6 +729,14 @@ public class PettyCashBillController implements Serializable {
 
     public void setTotalOfRedundedBills(double totalOfRedundedBills) {
         this.totalOfRedundedBills = totalOfRedundedBills;
+    }
+
+    public PettyCashType getCurrentBillType() {
+        return currentBillType;
+    }
+
+    public void setCurrentBillType(PettyCashType currentBillType) {
+        this.currentBillType = currentBillType;
     }
 
 }
