@@ -347,8 +347,6 @@ public class PharmacyService {
         PharmacyBundle bundle;
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        for (BillTypeAtomic bta : billTypeAtomics) {
-        }
 
         List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
@@ -517,6 +515,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );

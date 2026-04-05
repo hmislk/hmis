@@ -33,5 +33,9 @@ public enum MessageType {
     BulkPatientSms,
     BulkNumberSms,
     ConfirmationEmail,
-    CustomSMS
+    CustomSMS,
+    @Deprecated
+    OTP,
+    PatientPortalOTP,
+    PatientPortal_Link
 }

@@ -157,6 +157,15 @@
                                                 ajax="false"
                                                 disabled="#{labAmppController.selectedAmppDto eq null}">
                                             </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewList"
+                                                value="All AMPPs List"
+                                                action="#{labAmppController.navigateToLabAmppList()}"
+                                                ajax="false"
+                                                styleClass="ui-button-secondary m-1"
+                                                icon="fas fa-list"
+                                                title="View and download the full list of Lab AMPPs"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>

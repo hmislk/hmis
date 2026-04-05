@@ -740,7 +740,9 @@ public class WebUserController implements Serializable {
                 + "wu.webUserPerson.name, "
                 + "wu.id, "
                 + "wu.code, "
-                + "wu.staff.person.name) "
+                + "wu.staff.person.name, "
+                + "wu.institution.name, "
+                + "wu.department.name) "
                 + "from WebUser wu "
                 + "where wu.retired=:ret "
                 + "and wu.staff is not null "
@@ -757,7 +759,9 @@ public class WebUserController implements Serializable {
                 + "wu.webUserPerson.name, "
                 + "wu.id, "
                 + "wu.code, "
-                + "wu.staff.person.name) "
+                + "wu.staff.person.name, "
+                + "wu.institution.name, "
+                + "wu.department.name) "
                 + "from WebUser wu "
                 + "where wu.retired=:ret "
                 + "and wu.staff is not null "
@@ -1312,7 +1316,7 @@ public class WebUserController implements Serializable {
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
-        getFacade().edit(current);
+        getFacade().editAndCommit(current);
         WebUserPasswordHistory wh = new WebUserPasswordHistory();
         wh.setWebUser(current);
         wh.setPassword(hashedPassword);

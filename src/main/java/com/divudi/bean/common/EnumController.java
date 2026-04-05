@@ -114,6 +114,18 @@ public class EnumController implements Serializable {
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
+        paymentMethodsForChannelSettling = null;
+        paymentMethodsForPharmacyBilling = null;
+        paymentMethodsUnderMultipleForPharmacyBilling = null;
+        paymentMethodsForPettyCashBilling = null;
+        paymentMethodsForMultiplePaymentMethod = null;
+        paymentMethodsForPatientDepositRefund = null;
+        paymentMethodsForPatientDepositCancel = null;
+        paymentMethodsForStaffCreditSettle = null;
+        paymentMethodsForPatientDeposit = null;
+        paymentMethodsForOpdBillCanceling = null;
+        paymentMethodsForGrn = null;
+        paymentMethodsForDirectPurchase = null;
     }
 
     public void fillPaymentMethodsForPatientDeposit() {
@@ -879,6 +891,22 @@ public class EnumController implements Serializable {
     public PaymentMethod[] getPaymentMethods() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.Credit,
+            PaymentMethod.ewallet,
+            PaymentMethod.Staff_Welfare,
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.MultiplePaymentMethods};
+
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForChannelAbsentReport() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.OnCall,
             PaymentMethod.Card,
             PaymentMethod.Cheque,
             PaymentMethod.Slip,

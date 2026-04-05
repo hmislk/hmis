@@ -1,0 +1,569 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="All Cashier Summary Report Print" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="All Cashier Summary Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="all_cashier_summary?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    width: 297mm;
+                                    margin: auto;
+                                    zoom: 1.8;
+                                }
+
+                                table{
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    table-layout: fixed;
+                                    font-size: 9px;
+                                }
+
+                                th, td{
+                                    border: 1px solid #000;
+                                    padding: 2px 3px;
+                                    text-align: left;
+                                    word-wrap: break-word;
+                                }
+
+                                th{
+                                    font-weight: bold;
+                                }
+
+                                .header{
+                                    font-size: 10px;
+                                    text-align: center;
+                                }
+
+                                tfoot{
+                                    font-weight: bold;
+                                }
+                            }
+
+
+
+                            @media print{
+
+                                @page{
+                                    size: A4 landscape;
+                                    margin: 8mm;
+                                }
+
+                                body{
+                                    margin:0;
+                                    padding:0;
+                                }
+
+                                .paper{
+                                    width: 100%;
+                                }
+
+                                table{
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    table-layout: fixed;
+                                    font-size: 9px;
+                                }
+
+                                th, td{
+                                    border: 1px solid #000;
+                                    padding: 2px;
+                                    text-align: left;
+                                    word-break: break-word;
+                                }
+
+                                th{
+                                    font-weight: bold;
+                                }
+
+                                .header{
+                                    font-size: 10px;
+                                    text-align: center;
+                                    margin-bottom: 4px;
+                                }
+
+                                tfoot{
+                                    font-weight: bold;
+                                    font-size: 10px;
+                                }
+
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+
+                                    <!-- Institution -->
+                                    <h:panelGroup layout="block"
+                                                  styleClass="d-flex justify-content-center text-5 gap-2"
+                                                  style="font-weight: 700; font-size: 22px;"
+                                                  rendered="#{not empty searchController.institution}">
+                                        <h:outputText value="#{searchController.institution.name}" />
+                                    </h:panelGroup>
+
+                                    <!-- Site -->
+                                    <h:panelGroup layout="block"
+                                                  styleClass="d-flex justify-content-center text-5 gap-2"
+                                                  style="font-weight: 700; font-size: 16px;"
+                                                  rendered="#{not empty searchController.site}">
+                                        <h:outputText value="#{searchController.site.name}" />
+                                    </h:panelGroup>
+
+                                    <!-- Department -->
+                                    <h:panelGroup layout="block"
+                                                  styleClass="d-flex justify-content-center text-5 gap-2"
+                                                  style="font-weight: 700; font-size: 14px;"
+                                                  rendered="#{not empty searchController.department}">
+                                        <h:outputText value="#{searchController.department.name}" />
+                                    </h:panelGroup>
+
+                                    <div class="text-center" style="font-size:11px; margin-top:5px;">
+
+                                        From Date :
+                                        <h:outputText value="#{searchController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+
+                                        |
+
+                                        To Date :
+                                        <h:outputText value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+
+                                    </div>
+
+                                    <div class="text-center" style="font-size:11px; margin-top:5px;">
+                                        User :
+                                        <h:outputText value="#{searchController.webUser.webUserPerson.name}"
+                                                      rendered="#{not empty searchController.webUser}" />
+                                        <h:outputText value="All Users"
+                                                      rendered="#{empty searchController.webUser}" />
+                                    </div>                            
+
+                                    <!-- Report Name -->
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 12px; margin-top:5px; margin-bottom: 5px;">
+                                        <h:outputText value="All Cashier Summary Report" />
+                                    </div>
+
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Cashier" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Institution" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style=" font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Site" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style=" font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Department" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style=" font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Date" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style=" font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Handed Over Date" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <ui:fragment rendered="#{searchController.bundle.hasCashTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Cash" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasCardTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Card" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="false">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Multiple Payment Methods" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Credit" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Staff Welfare" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Voucher" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasIouTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="IOU" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Agent" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Cheque" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Slip" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="eWallet" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Patient Deposit" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Patient Points" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasOnCallTransaction}">
+                                                    <th style=" font-weight: 700; text-align: left;">
+                                                        <h:outputText value="Online Settlement" style="margin-left:  1mm;"/>
+                                                    </th>
+                                                </ui:fragment>
+                                                <th style=" font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Grand Total" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style=" font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Collection Total" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style=" font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Total NOT included in Collection Total" style="margin-left:  1mm;"/>
+                                                </th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{searchController.bundle.reportTemplateRows}" var="summary" varStatus="i">
+                                                <tr>
+                                                    <td style=" text-align: left;" >
+                                                        <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" style="margin-left: 1mm;" />
+                                                    </td>
+                                                    <td style=" text-align: left;">
+                                                        <h:outputText value="#{summary.department.institution.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style=" text-align: left;">
+                                                        <h:outputText value="#{summary.department.site.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style=" text-align: left;">
+                                                        <h:outputText value="#{summary.department.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style=" text-align: left;">
+                                                        <h:outputText value="#{summary.date}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                                        </h:outputText>
+                                                    </td>    
+                                                    <td style=" text-align: left;">
+                                                        <h:outputText value="#{summary.date}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasCashTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.cashValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasCardTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.cardValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="false">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.multiplePaymentMethodsValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.creditValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.staffWelfareValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.voucherValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasIouTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.iouValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.agentValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.chequeValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.slipValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.ewalletValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.patientDepositValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.patientPointsValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{searchController.bundle.hasOnCallTransaction}">
+                                                        <td style="text-align:right;">
+                                                            <h:outputText value="#{summary.onlineSettlementValue}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </ui:fragment>
+                                                    <td style=" text-align: right;">
+                                                        <h:outputText value="#{searchController.rowCashierGrandTotal(summary)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style=" text-align: right;">
+                                                        <h:outputText value="#{searchController.rowCashierCollectionTotal(summary)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style=" text-align: right;">
+                                                        <h:outputText value="#{searchController.rowCashierExcludedTotal(summary)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td style=" text-align: left;"/>
+                                                <td style=" text-align: left;"/>
+                                                <td style=" text-align: right;"/>
+                                                <td style=" text-align: right;"/>
+                                                <td style=" text-align: right;"/>
+                                                <td style=" text-align: right;"/>
+                                                <ui:fragment rendered="#{searchController.bundle.hasCashTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.cashValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasCardTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.cardValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="false">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.multiplePaymentMethodsValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.creditValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.staffWelfareValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.voucherValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasIouTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.iouValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.agentValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.chequeValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.slipValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.ewalletValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.patientDepositValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.patientPointsValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{searchController.bundle.hasOnCallTransaction}">
+                                                    <td style="text-align:right;">
+                                                        <h:outputText value="#{searchController.bundle.onlineSettlementValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </ui:fragment>
+                                                <td style=" text-align: right;">
+                                                    <h:outputText value="#{searchController.allCashierSummaryGrandTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style=" text-align: right;">
+                                                    <h:outputText value="#{searchController.allCashierSummaryCollectionTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style=" text-align: right;">
+                                                    <h:outputText value="#{searchController.allCashierSummaryExcludedTotal}" style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

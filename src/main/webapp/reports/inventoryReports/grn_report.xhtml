@@ -168,49 +168,42 @@
                                              value="Process"
                                              action="#{pharmacyController.generateGrnReportTable()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                             rendered="#{pharmacyController.reportType eq 'detailReport'}">
-                                <p:printer target="tbl1"/>
-                            </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                             rendered="#{pharmacyController.reportType eq 'returnReport'}">
-                                <p:printer target="tbl2"/>
-                            </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:printer target="tbl3"/>
-                            </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                             rendered="#{pharmacyController.reportType eq 'cancellationReport'}">
-                                <p:printer target="tbl4"/>
+                            <p:commandButton
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="To Print"
+                                action="grn_report_print?faces-redirect=true">
                             </p:commandButton>
 
                             <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Export to Excel"
+                                value="Excel"
                                 action="#{pharmacyController.exportGrnDetailReportToExcel()}"
                                 rendered="#{pharmacyController.reportType eq 'detailReport'}"/>
                             <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Export to Excel"
+                                value="Excel"
                                 action="#{pharmacyController.exportGrnReturnReportToExcel()}"
                                 rendered="#{pharmacyController.reportType eq 'returnReport'}"/>
                             <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Export to Excel"
+                                value="Excel"
                                 rendered="#{pharmacyController.reportType eq 'cancellationReport'}"
                                 action="#{pharmacyController.exportGrnCancellationReportToExcel()}"/>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                             value="Download"
-                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:dataExporter type="xlsx" target="tbl3" fileName="grn_summery_report"/>
-                            </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" ajax="false"
+                                value="Excel"
+                                rendered="#{pharmacyController.reportType eq 'summeryReport'}"
+                                action="#{pharmacyController.exportSummaryReportToExcel()}"
+                                />
 
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'detailReport'}"
@@ -219,9 +212,8 @@
                                              rendered="#{pharmacyController.reportType eq 'returnReport'}"
                                              action="#{pharmacyController.exportGrnReturnReportToPdf}"/>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}">
-                                <p:dataExporter type="pdf" target="tbl3" fileName="grn_summery_report"/>
-                            </p:commandButton>
+                                             rendered="#{pharmacyController.reportType eq 'summeryReport'}"
+                                             action="#{pharmacyController.exportSummaryReportToPdf()}"/>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'cancellationReport'}"
                                              action="#{pharmacyController.exportGrnCancellationReportToPdf}"/>

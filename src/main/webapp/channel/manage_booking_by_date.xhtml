@@ -488,16 +488,15 @@
                                                     class="w-100"
                                                     value="#{bookingControllerViewScope.settlePaymentMethod}"
                                                     >
-
                                                     <f:selectItems 
                                                         value="#{enumController.paymentMethodsForChannelSettling}"  
                                                         var="pm"
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
                                                     <p:ajax process="@this" 
-                                                            update="paymentDetails"
+                                                            update="gdManageBookings :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} paymentDetails"
                                                             event="change"
-                                                            listener="#{bookingControllerViewScope.listnerForPaymentMethodChangeOnCreditSettle()}"/>
+                                                            listener="#{bookingControllerViewScope.calculateSelectedBillSessionTotalForSettling()}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Discount Scheme"/>

@@ -46,6 +46,17 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - Cache autocomplete results for converter
 - Defer expensive discount calculations
 
+## GRN Report Testing
+
+When testing GRN / Direct Purchase report changes:
+- The `ruhunu` local database typically has richer GRN data than `rh` and is better for testing
+- Test URL: `http://localhost:8080/rh/faces/reports/inventoryReports/grn.xhtml`
+- Print view (navigated from grn.xhtml): `grn_detailed_view.xhtml`, `grn_summary_view.xhtml`
+- Key bill types: `PHARMACY_GRN`, `PHARMACY_GRN_RETURN`, `PHARMACY_GRN_CANCELLED`, `PHARMACY_DIRECT_PURCHASE`, `PHARMACY_DIRECT_PURCHASE_REFUND`, `PHARMACY_DIRECT_PURCHASE_CANCELLED`
+- `PHARMACY_DIRECT_PURCHASE` bills have **null** `referenceBill` — always null-guard before accessing `bill.getReferenceBill()`
+- Date/time formats in exports must use `sessionController.getApplicationPreference().getLongDateTimeFormat()` — never hardcode
+- Excel/PDF filenames must not contain colons — use `getLongDateFormat()` (not datetime) and sanitize with `.replaceAll("[: /]", "_")`
+
 ## Backward Compatibility
 
 - Never "fix" `purcahseRate` spelling - it's a database column name

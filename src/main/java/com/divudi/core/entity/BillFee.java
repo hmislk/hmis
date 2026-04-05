@@ -642,6 +642,17 @@ public class BillFee implements Serializable, RetirableEntity {
         this.tmpChangedValue = tmpChangedValue;
     }
 
+    public double getDisplayRate() {
+        if (tmpChangedValue != null) {
+            return tmpChangedValue;
+        }
+        return fee != null ? fee.getFee() : 0.0;
+    }
+
+    public void setDisplayRate(double displayRate) {
+        this.tmpChangedValue = displayRate;
+    }
+
     public Double getTmpSettleChangedValue() {
         return tmpSettleChangedValue;
     }

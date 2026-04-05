@@ -220,7 +220,6 @@ public class LaboratoryManagementController implements Serializable {
             }
         } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
             laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
-            navigateToPatientReportsFromSelectedBill(bill);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
         } else {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
@@ -245,8 +244,7 @@ public class LaboratoryManagementController implements Serializable {
                 return "/lab/generate_barcode_p?faces-redirect=true";
             }
         } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
-            laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_INVESTIGATIONS);
-            navigateToInvestigationsFromSelectedBill(bill);
+            laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
         } else {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
@@ -568,7 +566,7 @@ public class LaboratoryManagementController implements Serializable {
             if (configOptionApplicationController.getBooleanValueByKey("The system uses the Old Laboratory Dashboard as its default interface", false)) {
                 return "/lab/search_for_reporting_ondemand?faces-redirect=true";
             } else if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
-                listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+                listingEntity = ListingEntity.PATIENT_REPORTS;
                 return "/lab/laboratory_management_dashboard?faces-redirect=true";
             } else {
                 patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
@@ -589,12 +587,27 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public String navigateToBackFormPatientReportPrintView() {
-        if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
-            listingEntity = ListingEntity.PATIENT_REPORTS;
-            return "/lab/laboratory_management_dashboard?faces-redirect=true";
-        } else {
-            patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
-            return "/lab/generate_barcode_p?faces-redirect=true";
+        if (sessionController.getLoggedUser().getLoginPage() == null) {
+            if (configOptionApplicationController.getBooleanValueByKey("The system uses the Old Laboratory Dashboard as its default interface", false)) {
+                return "/lab/search_for_reporting_ondemand?faces-redirect=true";
+            } else if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
+                listingEntity = ListingEntity.PATIENT_REPORTS;
+                return "/lab/laboratory_management_dashboard?faces-redirect=true";
+            } else {
+                patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+                return "/lab/generate_barcode_p?faces-redirect=true";
+            }
+        } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
+            laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+            return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
+        }else{
+            if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
+                listingEntity = ListingEntity.PATIENT_REPORTS;
+                return "/lab/laboratory_management_dashboard?faces-redirect=true";
+            } else {
+                patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
+                return "/lab/generate_barcode_p?faces-redirect=true";
+            }
         }
     }
 
@@ -2391,7 +2404,7 @@ public class LaboratoryManagementController implements Serializable {
 
     public List<PatientReportLight> patientReports(Long patientInvestigationId) {
         String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
-                + " r.id, r.approved, r.printComplete, r.handoverComplete, r.reportType, r.qrCodeContentsLink)"
+                + " r.id, r.approved, r.printComplete, r.handoverComplete, r.sendSMSComplete, r.sendEmailComplete, r.reportType, r.qrCodeContentsLink)"
                 + " from PatientReport r "
                 + " where r.patientInvestigation.id=:piId"
                 + " and r.retired = :ret ";

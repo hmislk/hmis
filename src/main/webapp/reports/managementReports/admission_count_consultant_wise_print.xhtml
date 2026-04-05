@@ -9,23 +9,36 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form >
+                <h:form id="printForm">
+                    <h:inputHidden id="specialtyLineChartImg" value="#{inwardReportController.specialtyLineChartImage}"/>
+                    <h:inputHidden id="specialtyBarChartImg"  value="#{inwardReportController.specialtyBarChartImage}"/>
+                    <h:inputHidden id="doctorLineChartImg"    value="#{inwardReportController.doctorLineChartImage}"/>
+                    <h:inputHidden id="doctorBarChartImg"     value="#{inwardReportController.doctorBarChartImage}"/>
                     <p:panel header="Doctor Wise Admission Count" styleClass="w-100">
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
                                 <h:outputText value="Doctor Wise Admission Count Report Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         icon="fa-solid fa-print"
                                         class="ui-button-info"
                                         style="width: 150px"
-                                        ajax="false" 
+                                        ajax="false"
                                         value="Print">
                                         <p:printer target="reportView" />
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Back to Report" 
+                                    <p:commandButton
+                                        icon="fas fa-file-pdf"
+                                        class="ui-button-danger"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="PDF"
+                                        onclick="captureChartsForPdf();">
+                                        <p:fileDownload value="#{inwardReportController.admissionCountPdf}"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
@@ -131,142 +144,280 @@
                                         <div class="d-flex gap-3">
                                             <h:outputText value="From Date :" style="width: 6em!important; font-weight: 600;"/>
                                             <h:outputText value="#{inwardReportController.fromYearStartDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </div>
                                         <h:outputText value="" style="width: 5mm!important;"/>
                                         <div class="d-flex gap-3">
                                             <h:outputText value="To Date :" style="width: 4em!important; font-weight: 600;"/>
                                             <h:outputText value="#{inwardReportController.toYearEndDate}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </div>
                                         <div></div>
                                     </div>
-                                    
-                                        <div class="d-flex justify-content-between mt-2 w-100 gap-2" id="toinsdept">
-                                            <table>
-                                                <thead>
-                                                    <tr>
-                                                        <th style="font-weight: 700; text-align: center; height: 25px;">
-                                                            <h:outputText value="Doctor Name" />
-                                                        </th>
-                                                        <th style="font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Speciality" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Jan" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Feb" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Mar" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Apr" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="May" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Jun" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Jul" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Aug" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Sep" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Oct" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Nov" />
-                                                        </th>
-                                                        <th style="width: 10mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Dec" />
-                                                        </th>
-                                                        <th style="width: 25mm; font-weight: 700; text-align: center;">
-                                                            <h:outputText value="Total" />
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <ui:repeat value="#{inwardReportController.list}" var="item">
-                                                        <tr>
-                                                            <ui:fragment rendered="#{!item.subtotal and !item.grandTotal}">
-                                                                <td>
-                                                                    <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm;" />
-                                                                </td>
-                                                                <td>
-                                                                    <h:outputText value="#{item.specialityName}" style="margin-left: 1mm;" />
-                                                                </td>
-                                                            </ui:fragment>
-                                                            <ui:fragment rendered="#{item.subtotal and !item.grandTotal}">
-                                                                <td colspan="2" style="font-weight:bold; background-color: #ebebef;">
-                                                                    <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm; font-weight:bold;" />
-                                                                </td>
-                                                            </ui:fragment>
-                                                            <ui:fragment rendered="#{!item.subtotal and item.grandTotal}">
-                                                                <td colspan="2" style="font-weight:bold; text-align: center; background-color: #ebebef; height: 30px;">
-                                                                    <h:outputText value="#{item.nameWithTitle}" style="font-weight:bold; font-size: 15px;" />
-                                                                </td>
-                                                            </ui:fragment>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.january}" rendered="#{item.january > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.february}" rendered="#{item.february > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.march}" rendered="#{item.march > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.april}" rendered="#{item.april > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.may}" rendered="#{item.may > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.june}" rendered="#{item.june > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.july}" rendered="#{item.july > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.august}" rendered="#{item.august > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.september}" rendered="#{item.september > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.october}" rendered="#{item.october > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.november}" rendered="#{item.november > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
-                                                                <h:outputText value="#{item.december}" rendered="#{item.december > 0}"/>
-                                                            </td>
-                                                            <td style="text-align: center; background-color: #ebebef; color: black; font-weight: bold;">
-                                                                <h:outputText value="#{item.totalAdmissions}" style="text-align: center; #{item.grandTotal ? 'font-size: 15px;' : ''}" />
-                                                            </td>
-                                                        </tr>
-                                                    </ui:repeat> 
-                                                </tbody>
-                                            </table>
 
+                                    <div class="d-flex justify-content-between mt-2 w-100 gap-2" id="toinsdept">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th style="font-weight: 700; text-align: center; height: 25px;">
+                                                        <h:outputText value="Doctor Name" />
+                                                    </th>
+                                                    <th style="font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Speciality" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Jan" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Feb" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Mar" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Apr" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="May" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Jun" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Jul" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Aug" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Sep" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Oct" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Nov" />
+                                                    </th>
+                                                    <th style="width: 10mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Dec" />
+                                                    </th>
+                                                    <th style="width: 25mm; font-weight: 700; text-align: center;">
+                                                        <h:outputText value="Total" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{inwardReportController.list}" var="item">
+                                                    <tr>
+                                                        <ui:fragment rendered="#{!item.subtotal and !item.grandTotal}">
+                                                            <td>
+                                                                <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm;" />
+                                                            </td>
+                                                            <td>
+                                                                <h:outputText value="#{item.specialityName}" style="margin-left: 1mm;" />
+                                                            </td>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered="#{item.subtotal and !item.grandTotal}">
+                                                            <td colspan="2" style="font-weight:bold; background-color: #ebebef;">
+                                                                <h:outputText value="#{item.nameWithTitle}" style="margin-left: 1mm; font-weight:bold;" />
+                                                            </td>
+                                                        </ui:fragment>
+                                                        <ui:fragment rendered="#{!item.subtotal and item.grandTotal}">
+                                                            <td colspan="2" style="font-weight:bold; text-align: center; background-color: #ebebef; height: 30px;">
+                                                                <h:outputText value="#{item.nameWithTitle}" style="font-weight:bold; font-size: 15px;" />
+                                                            </td>
+                                                        </ui:fragment>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.january}" rendered="#{item.january > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.february}" rendered="#{item.february > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.march}" rendered="#{item.march > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.april}" rendered="#{item.april > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.may}" rendered="#{item.may > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.june}" rendered="#{item.june > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.july}" rendered="#{item.july > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.august}" rendered="#{item.august > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.september}" rendered="#{item.september > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.october}" rendered="#{item.october > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.november}" rendered="#{item.november > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; #{item.subtotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; #{item.grandTotal ? 'font-weight:bold; font-size: 15px; background-color: #ebebef;' : ''}">
+                                                            <h:outputText value="#{item.december}" rendered="#{item.december > 0}"/>
+                                                        </td>
+                                                        <td style="text-align: center; background-color: #ebebef; color: black; font-weight: bold;">
+                                                            <h:outputText value="#{item.totalAdmissions}" style="text-align: center; #{item.grandTotal ? 'font-size: 15px;' : ''}" />
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat> 
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+
+                                    <div class="d-flex justify-content-between">
+
+                                        <div class="mt-1" style="font-size: 11px; padding-top: 3px;">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="Processed By :" style="font-weight: 600;"/>
+                                                <h:outputText value="#{inwardReportController.admissionReportProcessedBy}"/>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="Processed At :" style="font-weight: 600;"/>
+                                                <h:outputText value="#{inwardReportController.admissionReportProcessedAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </div>
                                         </div>
 
+                                        <div class="mt-1 text-end" style="font-size: 11px; padding-top: 3px;">
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <h:outputText value="Printed By :" style="font-weight: 600;"/>
+                                                <h:outputText value="#{sessionController.loggedUser.webUserPerson != null ? sessionController.loggedUser.webUserPerson.name : sessionController.loggedUser.name}"/>
+                                            </div>
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <h:outputText value="Printed At :" style="font-weight: 600;"/>
+                                                <span id="printedAtSpan"></span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
                                 </div>
+
+                                <!-- Charts section - rendered as static images so p:printer copies them correctly -->
+                                <div style="margin-top: 15mm; page-break-before: always;">
+                                    <div style="font-weight: bold; font-size: 16px; text-align: center; margin-bottom: 8mm;">
+                                        Admission Count Visual Reports
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5mm;">
+                                        <div style="width: 48%;">
+                                            <div style="font-weight: bold; text-align: center; margin-bottom: 3mm;">Specialty Wise Admission Trend</div>
+                                            <img id="visSpecialtyLineImg" style="width:100%; height:280px;" alt="Specialty Wise Admission Trend"/>
+                                        </div>
+                                        <div style="width: 48%;">
+                                            <div style="font-weight: bold; text-align: center; margin-bottom: 3mm;">Specialty Wise Admission Count</div>
+                                            <img id="visSpecialtyBarImg" style="width:100%; height:280px;" alt="Specialty Wise Admission Count"/>
+                                        </div>
+                                        <div style="width: 48%;">
+                                            <div style="font-weight: bold; text-align: center; margin-bottom: 3mm;">Doctor Wise Admission Trend</div>
+                                            <img id="visDoctorLineImg" style="width:100%; height:280px;" alt="Doctor Wise Admission Trend"/>
+                                        </div>
+                                        <div style="width: 48%;">
+                                            <div style="font-weight: bold; text-align: center; margin-bottom: 3mm;">Doctor Wise Admission Count</div>
+                                            <img id="visDoctorBarImg" style="width:100%; height:280px;" alt="Doctor Wise Admission Count"/>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </h:panelGroup>
 
                     </p:panel>
+
+                    <!-- Off-screen charts rendered at full size for PDF export -->
+                    <h:panelGroup layout="block"
+                                  style="position:fixed; left:-9999px; top:0; width:900px;"
+                                  rendered="#{not empty inwardReportController.list}">
+                        <div style="width:900px; height:450px;">
+                            <p:chart value="#{inwardReportController.specialtyLineChartModel}"
+                                     widgetVar="expPrintSpecialtyLineWV"
+                                     style="width:100%; height:450px;"/>
+                        </div>
+                        <div style="width:900px; height:450px;">
+                            <p:chart value="#{inwardReportController.specialtyBarChartModel}"
+                                     widgetVar="expPrintSpecialtyBarWV"
+                                     style="width:100%; height:450px;"/>
+                        </div>
+                        <div style="width:900px; height:450px;">
+                            <p:chart value="#{inwardReportController.lineChartModel}"
+                                     widgetVar="expPrintDoctorLineWV"
+                                     style="width:100%; height:450px;"/>
+                        </div>
+                        <div style="width:900px; height:450px;">
+                            <p:chart value="#{inwardReportController.barChartModel}"
+                                     widgetVar="expPrintDoctorBarWV"
+                                     style="width:100%; height:450px;"/>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:outputScript>
+                        // Maps off-screen export widget → visible img element id
+                        var chartMappings = [
+                        { wv: 'expPrintSpecialtyLineWV', imgId: 'visSpecialtyLineImg', hiddenId: 'printForm:specialtyLineChartImg' },
+                        { wv: 'expPrintSpecialtyBarWV',  imgId: 'visSpecialtyBarImg',  hiddenId: 'printForm:specialtyBarChartImg'  },
+                        { wv: 'expPrintDoctorLineWV',    imgId: 'visDoctorLineImg',    hiddenId: 'printForm:doctorLineChartImg'    },
+                        { wv: 'expPrintDoctorBarWV',     imgId: 'visDoctorBarImg',     hiddenId: 'printForm:doctorBarChartImg'     }
+                        ];
+
+                        // Populate visible img elements from off-screen charts so p:printer can copy them
+                        function populateChartImages() {
+                        chartMappings.forEach(function(m) {
+                        try {
+                        var widget = PF(m.wv);
+                        if (widget &amp;&amp; widget.chart) {
+                        var img = document.getElementById(m.imgId);
+                        if (img) {
+                        img.src = widget.chart.toBase64Image('image/png', 1);
+                        }
+                        }
+                        } catch(e) {
+                        console.warn('Chart image populate failed: ' + m.wv, e);
+                        }
+                        });
+                        }
+
+                        // Set printed-at timestamp on page load
+                        window.addEventListener('load', function() {
+                        var span = document.getElementById('printedAtSpan');
+                        if (span) {
+                        var now = new Date();
+                        span.textContent = now.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})
+                        + ' ' + now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+                        }
+                        setTimeout(populateChartImages, 500);
+                        });
+
+                        // Called by the PDF button before form submit
+                        function captureChartsForPdf() {
+                        chartMappings.forEach(function(m) {
+                        try {
+                        var widget = PF(m.wv);
+                        if (widget &amp;&amp; widget.chart) {
+                        var b64 = widget.chart.toBase64Image('image/png', 1);
+                        var input = document.getElementById(m.hiddenId);
+                        if (input) input.value = b64;
+                        var img = document.getElementById(m.imgId);
+                        if (img) img.src = b64;
+                        }
+                        } catch(e) {
+                        console.warn('Chart capture failed: ' + m.wv, e);
+                        }
+                        });
+                        }
+                    </h:outputScript>
+
                 </h:form>
             </ui:define>
         </ui:composition>

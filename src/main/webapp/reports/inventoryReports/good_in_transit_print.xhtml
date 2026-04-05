@@ -8,88 +8,8 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css" />
                 <h:form >
-                    <style>
-                            @media screen{
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                    zoom: 1.0;
-                                }
-                                
-                                
-                            }
-                            
-                            @media print {
-                                @page {
-                                    size: A4 landscape!important;
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 8pt;
-                                    }
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-                                
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm!important;
-                                }
-                                
-                            }
-
-                            @media screen, print {
-                                .header{
-                                    line-height: 1.1;
-                                    margin: 0mm!important;
-                                }
-                                
-                                table {
-                                    width: 99.9%;
-                                    font-size: 9pt!important;
-                                    margin-top: 3mm!important;
-                                    border-collapse: collapse !important;
-                                }
-                                
-                                th, td {
-                                    border: 1pt solid #000000 !important;
-                                    padding: 1pt!important;
-                                    text-align: left;
-                                    overflow-wrap: break-word;
-                                    white-space: normal;
-                                }
-
-                                .report-header-table {
-                                    border-collapse: collapse;
-                                    font-size: 8pt!important;
-                                }
-
-                                .report-header-table .label {
-                                    font-weight: 600;
-                                    padding-right: 5px;
-                                    white-space: nowrap;
-                                }
-
-                                .report-header-table td {
-                                    padding: 3px 8px;
-                                    vertical-align: top;
-                                }
-
-                                /* Hide PrimeFaces sort icons in datatable headers */
-                                .ui-sortable-column .ui-sortable-column-icon,
-                                .ui-sortable-column .ui-sortable-icon,
-                                .ui-sortable-column .pi-sort,
-                                .ui-sortable-column .ui-sort-up,
-                                .ui-sortable-column .ui-sort-down,
-                                .ui-sortable-column .ui-column-title .pi-sort {
-                                    display: none !important;
-                                }
-                            }
-                            
-                        </style>
                         <h:panelGroup>
                             <p:panel header="Good In Transit" styleClass="my-2" >
                                 <f:facet name="header">
@@ -133,12 +53,12 @@
                                                     <!-- Row 1 -->
                                                     <h:outputText value="From Date:" styleClass="label"/>
                                                     <h:outputText value="#{pharmacyReportController.fromDate}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
 
                                                     <h:outputText value="To Date:" styleClass="label"/>
                                                     <h:outputText value="#{pharmacyReportController.toDate}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
 
                                                     <h:outputText value="Issuing/Returning Doc.Status:" styleClass="label"/>
@@ -194,38 +114,39 @@
                                     </div>
                                     <p:dataTable id="tbl"
                                                 value="#{pharmacyReportController.pharmacyRows}" var="bi"
-                                                styleClass="table-small">
-                                        <p:column headerText="Bill No." width="15mm">
+                                                styleClass="table"
+                                                style="font-size: 8pt!important;">
+                                        <p:column headerText="Bill No." width="25mm">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Bill No."/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.bill.deptId}"/>
+                                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
                                         </p:column>
-                                        <p:column headerText="Staff" width="25mm">
+                                        <p:column headerText="Staff" width="23mm">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Staff"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.bill.toStaff.person.name}"/>
+                                            <h:outputText value="#{bi.billItem.bill.toStaff.person.name}"/>
                                         </p:column>
-                                        <p:column headerText="Item" width="35mm">
+                                        <p:column headerText="Item" width="30mm">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Item"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.item.name}"/>
+                                            <h:outputText value="#{bi.billItem.item.name}"/>
                                         </p:column>
                                         <p:column headerText="Code" width="15mm">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Code"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.item.code}"/>
+                                            <h:outputText value="#{bi.billItem.item.code}"/>
                                         </p:column>
                                         <p:column headerText="Dosage Form" width="12mm">
-                                            <h:outputLabel value="#{bi.billItem.item.dosageForm != null ? bi.billItem.item.dosageForm.name : ''}"/>
+                                            <h:outputText value="#{bi.billItem.item.dosageForm != null ? bi.billItem.item.dosageForm.name : ''}"/>
                                         </p:column>
                                         <p:column headerText="Stock"
                                                 sortBy="#{bi.billItem.pharmaceuticalBillItem.qty}"
                                                 styleClass="text-end"
-                                                width="14mm">
+                                                width="12mm">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Stock"/>
                                             </f:facet>
@@ -264,10 +185,10 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="Expiry"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                            <h:outputText value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
                                                 <f:convertDateTime timeZone="Asia/Colombo"
                                                                 pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </p:column>
                                         <p:column headerText="From Department"
                                                 sortBy="#{bi.billItem.bill.fromDepartment.name}"
@@ -275,8 +196,8 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="From Department"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.bill.fromDepartment.name}">
-                                            </h:outputLabel>
+                                            <h:outputText value="#{bi.billItem.bill.fromDepartment.name}">
+                                            </h:outputText>
                                         </p:column>
                                         <p:column 
                                                 sortBy="#{bi.billItem.bill.toDepartment.name}"
@@ -284,8 +205,8 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="To Department"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.bill.toDepartment.name}">
-                                            </h:outputLabel>
+                                            <h:outputText value="#{bi.billItem.bill.toDepartment.name}">
+                                            </h:outputText>
                                         </p:column>
                                         <p:column headerText="Issued Date"
                                                 sortBy="#{bi.billItem.bill.createdAt}"
@@ -293,10 +214,10 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="Issued Date"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.bill.createdAt}">
+                                            <h:outputText value="#{bi.billItem.bill.createdAt}">
                                                 <f:convertDateTime timeZone="Asia/Colombo"
                                                                 pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </p:column>
                                         <p:column headerText="Retail Sale Value"
                                                 styleClass="averageNumericColumn text-end"
@@ -306,15 +227,15 @@
                                             </f:facet>
                                             <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
                                                 <!-- For pending and accepted items, show remaining/received retail value from maps -->
-                                                <h:outputLabel value="#{pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id]}">
+                                                <h:outputText value="#{pharmacyReportController.billItemRemainingRetailValues[bi.billItem.id]}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
                                                 <!-- For other report types, show total issued retail value -->
-                                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtRetailRate)}">
+                                                <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtRetailRate)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </h:panelGroup>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="text-end">
@@ -330,15 +251,15 @@
                                             </f:facet>
                                             <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
                                                 <!-- For pending and accepted items, show remaining/received purchase value from maps -->
-                                                <h:outputLabel value="#{pharmacyReportController.billItemRemainingPurchaseValues[bi.billItem.id]}">
+                                                <h:outputText value="#{pharmacyReportController.billItemRemainingPurchaseValues[bi.billItem.id]}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
                                                 <!-- For other report types, show total issued purchase value -->
-                                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtPurchaseRate)}">
+                                                <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtPurchaseRate)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </h:panelGroup>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="text-end">
@@ -354,15 +275,15 @@
                                             </f:facet>
                                             <h:panelGroup rendered="#{pharmacyReportController.reportType eq 'pending' or pharmacyReportController.reportType eq 'accepted'}">
                                                 <!-- For pending and accepted items, show remaining/received cost value from maps -->
-                                                <h:outputLabel value="#{pharmacyReportController.billItemRemainingCostValues[bi.billItem.id]}">
+                                                <h:outputText value="#{pharmacyReportController.billItemRemainingCostValues[bi.billItem.id]}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{pharmacyReportController.reportType ne 'pending' and pharmacyReportController.reportType ne 'accepted'}">
                                                 <!-- For other report types, show total issued cost value -->
-                                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtCostRate)}">
+                                                <h:outputText value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtCostRate)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </h:panelGroup>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="text-end">
@@ -374,8 +295,8 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="Comments"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bi.billItem.bill.comments}">
-                                            </h:outputLabel>
+                                            <h:outputText value="#{bi.billItem.bill.comments}">
+                                            </h:outputText>
                                         </p:column>
                                     </p:dataTable>
                                 </div>

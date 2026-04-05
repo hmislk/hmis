@@ -191,6 +191,9 @@ public class Payment implements Serializable, RetirableEntity {
     @ManyToOne
     private Institution toInstitution;
 
+    @ManyToOne
+    private WebUser floatRecipient;
+
     private Staff toStaff;
 
     // newly added fields
@@ -758,6 +761,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setCurrentHolder(WebUser currentHolder) {
         this.currentHolder = currentHolder;
+    }
+
+    public WebUser getFloatRecipient() {
+        return floatRecipient;
+    }
+
+    public void setFloatRecipient(WebUser floatRecipient) {
+        this.floatRecipient = floatRecipient;
     }
 
     public boolean isCancelled() {
