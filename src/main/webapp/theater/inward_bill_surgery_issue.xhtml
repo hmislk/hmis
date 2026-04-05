@@ -136,14 +136,12 @@
 
                                     <div class="col-auto d-flex justify-content-end gap-2" >
                                         <p:commandButton
-                                            ajax= "false"
+                                            ajax="false"
                                             accesskey="s"
                                             value="Settle"
                                             action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}"
                                             class="ui-button-success"
-                                            icon="fa fa-check"
-                                            update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "
-                                            actionListener="#{pharmacySaleBhtController.calculateAllRates}" >
+                                            icon="fa fa-check">
                                         </p:commandButton>
                                         <p:commandButton
                                             accesskey="n"
@@ -274,14 +272,36 @@
                                                             accesskey="q"
                                                             id="txtQty"
                                                             class="w-100"
+                                                            onfocus="this.select()"
                                                             value="#{pharmacySaleBhtController.qty}">
-                                                            <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
-                                                            <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
+                                                            <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtValue"></p:ajax>
+                                                            <p:ajax event="blur"   listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtValue"></p:ajax>
                                                         </p:inputText>
-
+                                                    </div>
+                                                    <div class="col-md-1" >
+                                                        <p:outputLabel value="Rate" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
+                                                        <p:inputText
+                                                            disabled="true"
+                                                            id="txtRate"
+                                                            class="w-100"
+                                                            value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}"
+                                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </p:inputText>
+                                                    </div>
+                                                    <div class="col-md-1" >
+                                                        <p:outputLabel value="Value" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
+                                                        <p:inputText
+                                                            disabled="true"
+                                                            id="txtValue"
+                                                            class="w-100"
+                                                            value="#{pharmacySaleBhtController.billItem.netValue}"
+                                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </p:inputText>
                                                     </div>
                                                     <div class="col-md-2">
-                                                        <p:outputLabel value="" ></p:outputLabel><br/>
+                                                        <p:outputLabel value="&#160;" ></p:outputLabel>
                                                         <p:commandButton
                                                             accesskey="a"
                                                             id="btnAdd"
@@ -290,7 +310,8 @@
                                                             icon="fa fa-plus"
                                                             class="ui-button-success"
                                                             action="#{pharmacySaleBhtController.addBillItem}"
-                                                            ajax="false">
+                                                            process="@this txtQty acStock"
+                                                            update="pBis acStock txtQty txtRate txtValue focusItem">
                                                         </p:commandButton>
                                                     </div>
 
