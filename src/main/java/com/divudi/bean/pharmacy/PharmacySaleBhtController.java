@@ -1701,13 +1701,13 @@ public class PharmacySaleBhtController implements Serializable {
         long t1 = System.currentTimeMillis();
         System.out.println("[addBillItem] validation: " + (t1 - t0) + "ms");
 
-        // Use getReference() — a lightweight JPA proxy, no DB hit.
-        // All data needed for the bill item comes from selectedStockDto.
+        // Stock and ItemBatch as proxies (no DB hit) — only used for FK persistence.
+        // Item must be fully loaded so fetchInwardMargin can navigate item.category.
         Stock stockRef = getStockFacade().getReference(selectedStockId);
         ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
-        Item itemRef = getItemFacade().getReference(selectedStockDto.getItemId());
+        Item itemEntity = getItemFacade().find(selectedStockDto.getItemId());
         long t2 = System.currentTimeMillis();
-        System.out.println("[addBillItem] getReferences: " + (t2 - t1) + "ms");
+        System.out.println("[addBillItem] refs+itemFacade.find: " + (t2 - t1) + "ms");
 
         billItem.getPharmaceuticalBillItem().setStock(stockRef);
         billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchRef);
@@ -1734,7 +1734,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - Math.abs(qty));
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        billItem.setItem(itemRef);
+        billItem.setItem(itemEntity);
         billItem.setQty(qty);
         billItem.getPharmaceuticalBillItem().setDoe(selectedStockDto.getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
