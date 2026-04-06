@@ -726,6 +726,18 @@ public class BillService {
         btas.add(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         return btas;
     }
+    
+     public List<BillTypeAtomic> fetchBillTypeAtomicsPharmacySale(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        
+        return btas;
+    }
 
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -2848,8 +2860,18 @@ public class BillService {
             Department department,
             Category category,
             Item item) {
+        return fetchOpdSaleSummaryDTOs(fromDate, toDate, institution, site, department, category, item,
+                BillTypeAtomic.findByServiceType(ServiceType.OPD));
+    }
 
-        List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+    public List<OpdSaleSummaryDTO> fetchOpdSaleSummaryDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Category category,
+            Item item,
+            List<BillTypeAtomic> billTypeAtomics) {
 
         // Step 1: Main aggregation query per item (no staff join to avoid fan-out / EclipseLink WITH clause incompatibility)
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("

@@ -63,6 +63,7 @@
                                 value="Submit Request"
                                 title="Submit float transfer request"
                                 ajax="false"
+                                rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
                                 action="#{financialTransactionController.settleFloatTransferRequest()}"/>
 
                         </p:panelGrid>
