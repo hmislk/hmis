@@ -120,6 +120,24 @@ If you found hardcoded values in Steps 3 or 4:
 6. Verify again with Step 2 and Step 4
 7. Now you can safely commit and push
 
+### Step 6: Preserve "Do NOT Remove" Properties
+
+When reverting or editing `persistence.xml`, ensure the following properties marked `Do NOT Remove` are **always present**:
+
+```xml
+<!-- EclipseLink concurrency manager tuning (issue #19397) - Do NOT Remove -->
+<property name="eclipselink.concurrency.manager.waittime" value="10000"/>
+<property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
+<property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
+
+<!-- Sequence pre-allocation fix for SEQUENCE table lock contention (issue #19626) - Do NOT Remove -->
+<property name="eclipselink.sequence.default-sequence-preallocation-size" value="50"/>
+```
+
+These are production-critical tuning properties. Removing them causes:
+- **Concurrency manager properties**: cache lock waits of up to 900 seconds, silent hangs instead of fast-fail errors
+- **Sequence preallocation**: each ID allocation acquires a table-level lock on the SEQUENCE table, causing severe slowness under load (retail sales affected)
+
 ## Why This Matters
 
 ### Local Development vs. QA Deployment

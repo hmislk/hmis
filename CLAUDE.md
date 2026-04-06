@@ -18,11 +18,14 @@
 6. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
 7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
 8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
+9. **🚨 JPQL FIRST, NATIVE SQL LAST**: Always use JPQL for database queries. Native SQL (`nativeScalarQuery`, `executeNativeSql`) is only permitted when there is a significant, demonstrated performance constraint that JPQL cannot address. Never reach for native SQL just because JPQL is harder to write.
+10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
 
 ### Git & Branching
-9. **Include issue closing keywords** (`Closes #N`) in commit messages
-10. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
-11. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+11. **Include issue closing keywords** (`Closes #N`) in commit messages
+12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
+14. **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
 
 ## Situational Guidelines (Reference When Needed)
 
@@ -35,6 +38,7 @@
 
 ### When Working on JSF/AJAX
 - [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules
+- [Navigation Patterns](developer_docs/jsf/navigation-patterns.md) - viewAction anti-pattern, initialization in navigation methods
 - [DataTable Selection Guide](developer_docs/jsf/primefaces-datatable-selection.md) - Selection patterns
 
 ### When Working with DTOs
@@ -51,6 +55,9 @@
 
 ### When Working on Inward / Inpatient Module
 - [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
+
+### When Adding a New Privilege
+- [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
 
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format

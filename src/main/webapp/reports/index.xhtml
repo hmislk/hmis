@@ -113,6 +113,13 @@
                                     <p:commandButton class="w-100" ajax="false"
                                         value="10. IOU Conversion Payments"
                                         action="#{iouBillController.navigateToIouConversionPaymentReport()}" />
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="11. Handover Status"
+                                        action="#{financialTransactionController.navigateToHandoverStatusReport()}" />
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="12. Float Transfer Report"
+                                        rendered="#{webUserController.hasPrivilege('ViewFundTransferReports')}"
+                                        action="#{financialTransactionController.navigateToFundTransferReport()}" />
 
                                 </div>
                             </p:tab>

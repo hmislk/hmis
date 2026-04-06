@@ -626,25 +626,25 @@
                         icon="fa fa-search">
                     </p:menuitem>
 
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/inward/inward_reports?faces-redirect=true" 
+                    <p:menuitem
+                        ajax="false"
+                        id="smNursingWorkBench"
+                        value="Nursing WorkBench"
+                        title="Nursing WorkBench"
+                        icon="fa-solid fa-user-nurse"
+                        rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                        action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/inward/inward_reports?faces-redirect=true"
                         value="Inpatient Analytics"
-                        icon="pi pi-chart-bar" 
+                        icon="pi pi-chart-bar"
                         rendered="#{webUserController.hasPrivilege('InwardReport')}" >
                     </p:menuitem>
 
                 </p:submenu>
-
-                <!--            Nurce Section-->
-                <p:menuitem
-                    ajax="false" 
-                    id="smNursingWorkBench"
-                    style="zoom: 1.2;"
-                    icon="fa-solid fa-user-nurse"
-                    rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
-                    action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">   
-                </p:menuitem>
 
                 <!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
@@ -2131,6 +2131,8 @@
                                 <h:outputText value="#{sessionController.loggedSite.name}" ></h:outputText>
                                 <h:outputText value="Department" ></h:outputText>
                                 <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                                <h:outputText value="Username" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.name}" ></h:outputText>
                                 <h:outputText value="User" ></h:outputText>
                                 <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
                             </p:panelGrid>

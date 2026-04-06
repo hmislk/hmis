@@ -368,7 +368,7 @@
                                         >
 
                                         <p:column headerText="Charge Type" rendered="#{c.total > 0}">
-                                            <h:outputLabel value="#{c.inwardChargeType.name}"/>
+                                            <h:outputLabel value="#{bhtSummeryController.getChargeTypeLabel(c.inwardChargeType)}"/>
                                         </p:column>
                                         <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
                                             <h:outputLabel value="#{c.total}" style="font-weight: bold">

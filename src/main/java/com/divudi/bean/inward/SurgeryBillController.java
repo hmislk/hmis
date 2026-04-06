@@ -27,6 +27,8 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -34,6 +36,7 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,8 +45,10 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -60,6 +65,11 @@ public class SurgeryBillController implements Serializable {
     private List<EncounterComponent> proEncounterComponents;
     private List<EncounterComponent> timedEncounterComponents;
     private List<DepartmentBillItems> departmentBillItems;
+    private boolean duplicateConfirmationPending = false;
+    // Clinical details (no billing)
+    private EncounterComponent clinicalEncounterComponent;
+    private List<EncounterComponent> clinicalEncounterComponents;
+    private Speciality clinicalSpeciality;
     //////
 
     @EJB
@@ -80,6 +90,8 @@ public class SurgeryBillController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PharmacyBean pharmacyBean;
+    @EJB
+    private StaffFacade staffFacade;
 
     //////
     @Inject
@@ -118,12 +130,110 @@ public class SurgeryBillController implements Serializable {
         resetSurgeryBillValues();
         getSurgeryBill().setPatientEncounter(pe1);
 
-        return "/theater/inward_bill_surgery?faces-redirect=true";
+        return "/theater/surgery_workbench?faces-redirect=true";
     }
 
     public String navigateToAddSurgeriesFromMenu() {
         resetSurgeryBillValues();
-        return "/theater/inward_bill_surgery?faces-redirect=true";
+        return "/theater/surgery_workbench?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryListFromAdmissionProfile() {
+        PatientEncounter pe1 = getSurgeryBill().getPatientEncounter();
+        resetSurgeryBillValues();
+        getSurgeryBill().setPatientEncounter(pe1);
+        surgeryList = null;
+        return "/theater/inward_bill_surgery_list?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryListFromMenu() {
+        resetSurgeryBillValues();
+        surgeryList = null;
+        return "/theater/inward_bill_surgery_list?faces-redirect=true";
+    }
+
+    // -------------------------------------------------------------------------
+    // Surgery list & delete
+    // -------------------------------------------------------------------------
+
+    private List<Bill> surgeryList;
+    private Bill selectedSurgeryToDelete;
+    private List<Bill> blockingBillsForDelete;
+
+    public List<Bill> getSurgeryList() {
+        if (surgeryList == null && getSurgeryBill().getPatientEncounter() != null) {
+            String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                    + " AND b.billType = :bt AND b.patientEncounter = :pe ORDER BY b.createdAt";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("bt", BillType.SurgeryBill);
+            params.put("pe", getSurgeryBill().getPatientEncounter());
+            surgeryList = getBillFacade().findByJpql(jpql, params);
+        }
+        return surgeryList;
+    }
+
+    /**
+     * Called when user clicks Delete on a surgery row.
+     * Checks for active child bills (professional, service, pharmacy, store)
+     * linked via forwardReferenceBill. If any exist the delete is blocked and
+     * blockingBillsForDelete is populated so the UI can show a warning.
+     */
+    public void checkAndDeleteSurgery(Bill surgery) {
+        if (surgery == null || surgery.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("Admission ?");
+            return;
+        }
+        if (surgery.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
+            return;
+        }
+
+        selectedSurgeryToDelete = surgery;
+        blockingBillsForDelete = findActiveBillsByForwardRef(surgery);
+
+        if (!blockingBillsForDelete.isEmpty()) {
+            // Do not delete — UI will render the warning panel
+            JsfUtil.addErrorMessage("This surgery has related bills that must be cancelled first. See the list below.");
+            return;
+        }
+
+        // Safe to retire
+        retireSurgeryBill(surgery);
+        getBillBean().updateBatchBill(surgery);
+        surgeryList = null; // refresh list
+        JsfUtil.addSuccessMessage("Surgery removed successfully.");
+    }
+
+    private List<Bill> findActiveBillsByForwardRef(Bill surgery) {
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                + " AND b.forwardReferenceBill = :surg";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("surg", surgery);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    private void retireSurgeryBill(Bill surgery) {
+        surgery.setRetired(true);
+        surgery.setRetiredAt(new Date());
+        surgery.setRetirer(getSessionController().getLoggedUser());
+        getBillFacade().edit(surgery);
+
+        // Also retire the linked procedure PatientEncounter
+        if (surgery.getProcedure() != null && surgery.getProcedure().getId() != null) {
+            PatientEncounter proc = surgery.getProcedure();
+            proc.setRetired(true);
+            proc.setRetiredAt(new Date());
+            proc.setRetirer(getSessionController().getLoggedUser());
+            getPatientEncounterFacade().edit(proc);
+        }
+    }
+
+    public Bill getSelectedSurgeryToDelete() {
+        return selectedSurgeryToDelete;
+    }
+
+    public List<Bill> getBlockingBillsForDelete() {
+        return blockingBillsForDelete;
     }
 
     private void updateBillFee(BillFee bf) {
@@ -253,7 +363,13 @@ public class SurgeryBillController implements Serializable {
         timedEncounterComponents = null;
         departmentBillItems = null;
         pharmacyIssues = null;
-
+        surgeryList = null;
+        selectedSurgeryToDelete = null;
+        blockingBillsForDelete = null;
+        duplicateConfirmationPending = false;
+        clinicalEncounterComponent = null;
+        clinicalEncounterComponents = null;
+        clinicalSpeciality = null;
     }
 
     public void saveProcedure() {
@@ -261,11 +377,14 @@ public class SurgeryBillController implements Serializable {
         PatientEncounter procedure = getSurgeryBill().getProcedure();
 
         if (procedure.getId() == null || procedure.getId() == 0) {
-            procedure.setParentEncounter(getSurgeryBill().getPatientEncounter());
             procedure.setCreatedAt(new Date());
             procedure.setCreater(getSessionController().getLoggedUser());
-
+            // Persist without parentEncounter first to avoid cascade issues with
+            // the detached admission entity in the persistence context
             getPatientEncounterFacade().create(procedure);
+            // Now link to parent and update
+            procedure.setParentEncounter(getSurgeryBill().getPatientEncounter());
+            getPatientEncounterFacade().edit(procedure);
         } else {
             getPatientEncounterFacade().edit(procedure);
         }
@@ -436,26 +555,7 @@ public class SurgeryBillController implements Serializable {
     }
 
     public String save() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        if (generalChecking()) {
-            return "";
-        }
-
-        saveProcedure();
-        saveSurgeryBill();
-
-        if (!getProEncounterComponents().isEmpty()) {
-            saveProfessionalBill();
-        }
-        getBillBean().updateBatchBill(getSurgeryBill());
-        JsfUtil.addSuccessMessage("Surgery Detail Added");
-        bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
-        resetSurgeryBillValues();
-
-        return bhtSummeryController.navigateToInpatientProfile();
+        return performSave();
     }
 
     public void edit(){
@@ -479,6 +579,154 @@ public class SurgeryBillController implements Serializable {
     public SurgeryBillController() {
     }
 
+    // -------------------------------------------------------------------------
+    // Clinical Details (Performed By / Assisted By / Anaesthesia By / Op Notes)
+    // -------------------------------------------------------------------------
+
+    public String navigateToSurgicalDetails(Bill surgery) {
+        clinicalEncounterComponent = null;
+        clinicalEncounterComponents = null;
+        clinicalSpeciality = null;
+        this.surgeryBill = surgery;
+        if (surgery != null && surgery.getProcedure() != null) {
+            if (surgery.getProcedure().getFromTime() == null) {
+                surgery.getProcedure().setFromTime(new Date());
+            }
+            if (surgery.getProcedure().getToTime() == null) {
+                surgery.getProcedure().setToTime(new Date());
+            }
+        }
+        fetchClinicalEncounterComponents();
+        return "/theater/surgery_clinical_details?faces-redirect=true";
+    }
+
+    private void fetchClinicalEncounterComponents() {
+        clinicalEncounterComponents = null;
+        if (surgeryBill == null || surgeryBill.getProcedure() == null
+                || surgeryBill.getProcedure().getId() == null) {
+            clinicalEncounterComponents = new ArrayList<>();
+            return;
+        }
+        String jpql = "SELECT ec FROM EncounterComponent ec"
+                + " WHERE ec.retired = false"
+                + " AND ec.patientEncounter = :proc"
+                + " AND ec.billFee IS NULL"
+                + " ORDER BY ec.orderNo";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("proc", surgeryBill.getProcedure());
+        clinicalEncounterComponents = getEncounterComponentFacade().findByJpql(jpql, params);
+    }
+
+    public void addClinicalStaff() {
+        if (surgeryBill == null || surgeryBill.getProcedure() == null) {
+            JsfUtil.addErrorMessage("No surgery selected.");
+            return;
+        }
+        if (surgeryBill.getPatientEncounter() != null && surgeryBill.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Payment finalized; cannot modify clinical details.");
+            return;
+        }
+        if (getClinicalEncounterComponent().getStaff() == null) {
+            JsfUtil.addErrorMessage("Select Staff.");
+            return;
+        }
+        if (getClinicalEncounterComponent().getPatientEncounterComponentType() == null) {
+            JsfUtil.addErrorMessage("Select Role.");
+            return;
+        }
+        clinicalEncounterComponent.setOrderNo(getClinicalEncounterComponents().size());
+        clinicalEncounterComponent.setPatientEncounter(surgeryBill.getProcedure());
+        clinicalEncounterComponent.setCreatedAt(new Date());
+        clinicalEncounterComponent.setCreater(getSessionController().getLoggedUser());
+        getEncounterComponentFacade().create(clinicalEncounterComponent);
+        getClinicalEncounterComponents().add(clinicalEncounterComponent);
+        clinicalEncounterComponent = null;
+        clinicalSpeciality = null;
+        JsfUtil.addSuccessMessage("Staff member added.");
+    }
+
+    public void removeClinicalStaff(EncounterComponent ec) {
+        if (surgeryBill != null && surgeryBill.getPatientEncounter() != null && surgeryBill.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Payment finalized; cannot modify clinical details.");
+            return;
+        }
+        ec.setRetired(true);
+        ec.setRetiredAt(new Date());
+        ec.setRetirer(getSessionController().getLoggedUser());
+        getEncounterComponentFacade().edit(ec);
+        getClinicalEncounterComponents().remove(ec);
+        int index = 0;
+        for (EncounterComponent remaining : getClinicalEncounterComponents()) {
+            remaining.setOrderNo(index++);
+            getEncounterComponentFacade().edit(remaining);
+        }
+        JsfUtil.addSuccessMessage("Removed.");
+    }
+
+    public void saveSurgicalDetails() {
+        if (surgeryBill == null || surgeryBill.getProcedure() == null) {
+            JsfUtil.addErrorMessage("No surgery selected.");
+            return;
+        }
+        if (surgeryBill.getPatientEncounter() != null && surgeryBill.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Payment finalized; cannot modify clinical details.");
+            return;
+        }
+        PatientEncounter proc = surgeryBill.getProcedure();
+        getPatientEncounterFacade().edit(proc);
+        JsfUtil.addSuccessMessage("Surgical details saved.");
+    }
+
+    public List<Staff> completeClinicalStaff(String qry) {
+        String sql = "select c from Staff c where c.retired=false";
+        HashMap<String, Object> hm = new HashMap<>();
+        if (clinicalSpeciality != null) {
+            sql += " and c.speciality=:sp";
+            hm.put("sp", clinicalSpeciality);
+        }
+        sql += " and ((c.person.name) like :q or (c.code) like :q) order by c.person.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        return staffFacade.findByJpql(sql, hm, 20);
+    }
+
+    public Speciality getClinicalSpeciality() {
+        return clinicalSpeciality;
+    }
+
+    public void setClinicalSpeciality(Speciality clinicalSpeciality) {
+        this.clinicalSpeciality = clinicalSpeciality;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
+    }
+
+    public EncounterComponent getClinicalEncounterComponent() {
+        if (clinicalEncounterComponent == null) {
+            clinicalEncounterComponent = new EncounterComponent();
+        }
+        return clinicalEncounterComponent;
+    }
+
+    public void setClinicalEncounterComponent(EncounterComponent clinicalEncounterComponent) {
+        this.clinicalEncounterComponent = clinicalEncounterComponent;
+    }
+
+    public List<EncounterComponent> getClinicalEncounterComponents() {
+        if (clinicalEncounterComponents == null) {
+            fetchClinicalEncounterComponents();
+        }
+        return clinicalEncounterComponents;
+    }
+
+    public void setClinicalEncounterComponents(List<EncounterComponent> clinicalEncounterComponents) {
+        this.clinicalEncounterComponents = clinicalEncounterComponents;
+    }
+
     public Bill getSurgeryBill() {
         if (surgeryBill == null) {
             surgeryBill = new BilledBill();
@@ -486,6 +734,17 @@ public class SurgeryBillController implements Serializable {
             surgeryBill.setProcedure(new PatientEncounter());
         }
         return surgeryBill;
+    }
+
+    /**
+     * Re-fetches the current surgery bill from the database so that the
+     * in-memory object reflects any totals updated by child-bill operations
+     * (e.g. professional fee cancellation) that ran in a different bean.
+     */
+    public void refreshSurgeryBillFromDb() {
+        if (surgeryBill != null && surgeryBill.getId() != null) {
+            surgeryBill = getBillFacade().find(surgeryBill.getId());
+        }
     }
 
 //    private List<Bill> getBillsByForwardRef(Bill b) {
@@ -627,7 +886,100 @@ public class SurgeryBillController implements Serializable {
         }
 
         return false;
+    }
 
+    private boolean isDuplicateSurgery() {
+        if (getSurgeryBill().getId() != null) {
+            return false; // editing existing bill — no duplicate check
+        }
+        Long peId = getSurgeryBill().getPatientEncounter().getId();
+        Long itemId = getSurgeryBill().getProcedure().getItem().getId();
+        String dupJpql = "SELECT COUNT(pe) FROM PatientEncounter pe"
+                + " WHERE pe.parentEncounter.id = :peId AND pe.item.id = :itemId"
+                + " AND pe.retired = false";
+        HashMap<String, Object> dupParams = new HashMap<>();
+        dupParams.put("peId", peId);
+        dupParams.put("itemId", itemId);
+        long count = getPatientEncounterFacade().findLongByJpql(dupJpql, dupParams);
+        return count > 0;
+    }
+
+    /**
+     * Called by the "Add New Surgery" button (AJAX).
+     * If a duplicate is detected, pushes a JS call to open the confirmation
+     * dialog. Otherwise saves and redirects programmatically so that AJAX
+     * navigation works correctly.
+     */
+    public void checkBeforeSave() {
+        if (generalChecking()) {
+            duplicateConfirmationPending = false;
+            return;
+        }
+        if (isDuplicateSurgery()) {
+            duplicateConfirmationPending = true;
+            PrimeFaces.current().executeScript("PF('dlgDupConfirm').show();");
+        } else {
+            duplicateConfirmationPending = false;
+            performSaveAndRedirect();
+        }
+    }
+
+    /**
+     * Called when the user explicitly confirms adding a duplicate surgery
+     * (ajax=false button in the dialog).
+     */
+    public String saveConfirmed() {
+        duplicateConfirmationPending = false;
+        return performSave();
+    }
+
+    private void performSaveAndRedirect() {
+        if (generalChecking()) {
+            return;
+        }
+        saveProcedure();
+        saveSurgeryBill();
+        if (!getProEncounterComponents().isEmpty()) {
+            saveProfessionalBill();
+        }
+        getBillBean().updateBatchBill(getSurgeryBill());
+        JsfUtil.addSuccessMessage("Surgery Detail Added");
+        PatientEncounter pe = getSurgeryBill().getPatientEncounter();
+        bhtSummeryController.setPatientEncounter(pe);
+        resetSurgeryBillValues();
+        String outcome = bhtSummeryController.navigateToInpatientProfile();
+        try {
+            FacesContext fc = FacesContext.getCurrentInstance();
+            String viewId = outcome.replace("?faces-redirect=true", "");
+            String contextPath = fc.getExternalContext().getRequestContextPath();
+            fc.getExternalContext().redirect(contextPath + "/faces" + viewId);
+        } catch (java.io.IOException e) {
+            // ignore — page will remain but success message is already shown
+        }
+    }
+
+    private String performSave() {
+        if (generalChecking()) {
+            return "";
+        }
+        saveProcedure();
+        saveSurgeryBill();
+        if (!getProEncounterComponents().isEmpty()) {
+            saveProfessionalBill();
+        }
+        getBillBean().updateBatchBill(getSurgeryBill());
+        JsfUtil.addSuccessMessage("Surgery Detail Added");
+        bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
+        resetSurgeryBillValues();
+        return bhtSummeryController.navigateToInpatientProfile();
+    }
+
+    public boolean isDuplicateConfirmationPending() {
+        return duplicateConfirmationPending;
+    }
+
+    public void setDuplicateConfirmationPending(boolean duplicateConfirmationPending) {
+        this.duplicateConfirmationPending = duplicateConfirmationPending;
     }
 
     public void addProfessionalFee() {

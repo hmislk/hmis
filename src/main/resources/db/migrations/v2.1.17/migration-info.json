@@ -1,0 +1,38 @@
+{
+    "version": "v2.1.17",
+    "description": "Drop 23 unnecessary indexes and FK constraints on patientsample table to reduce lock contention and deadlocks",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 5,
+    "requiresDowntime": false,
+    "affectedTables": ["patientsample"],
+    "affectedModules": ["Laboratory"],
+    "preRequisites": [
+        "Database backup completed",
+        "Ensure no heavy lab operations during migration",
+        "This migration drops FK constraints and indexes - JPA/EclipseLink handles referential integrity at application level"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Pre-migration analysis - count indexes and table size"
+        },
+        {
+            "description": "Drop 16 FK constraints and indexes for 100% NULL columns (cardinality 1)"
+        },
+        {
+            "description": "Drop 7 FK constraints and indexes for low-cardinality columns never used in queries"
+        },
+        {
+            "description": "Post-migration verification - confirm index count reduced and table size decreased"
+        }
+    ],
+    "expectedOutcome": {
+        "primaryFix": "Reduce patientsample index overhead from ~142MB (39 indexes) to ~60MB (16 indexes), significantly reducing lock contention during bulk edit() operations",
+        "impact": "Faster writes on patientsample table, reduced deadlock probability during concurrent lab sample processing",
+        "droppedIndexCount": 23
+    },
+    "rollbackNotes": [
+        "Rollback script re-creates all 23 FK constraints and their indexes",
+        "No data loss from this migration - only index/constraint metadata changes"
+    ],
+    "relatedIssue": "#19399 - Optimize PatientSample bulk operations to prevent DB deadlocks and lock contention"
+}

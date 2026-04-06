@@ -79,6 +79,19 @@
                                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
                                                 </div>
                                             </div>
+                                            <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('')}">
+                                                <div class="d-flex justify-content-between w-100">
+                                                    <div class="w-100 ">
+                                                        <h:outputLabel value="NIC No" />
+                                                    </div>
+                                                    <div class="w-100 text-right">
+                                                        <h:outputLabel value=":" />
+                                                    </div>
+                                                    <div class="w-100 text-right ">
+                                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}" />
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
                                         </div>
                                     </div>
                                 </td>

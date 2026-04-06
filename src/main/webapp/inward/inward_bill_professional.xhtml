@@ -503,6 +503,22 @@
                                             styleClass="ui-button-warning"
                                             ajax="false"
                                             actionListener="#{inwardProfessionalBillController.makeNull()}" />
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Inpatient Profile"
+                                                icon="fa fa-id-card"
+                                                styleClass="ui-button-secondary"
+                                                action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                                <f:setPropertyActionListener
+                                                    target="#{bhtSummeryController.patientEncounter}"
+                                                    value="#{inwardProfessionalBillController.current.patientEncounter}" />
+                                                <f:setPropertyActionListener
+                                                    target="#{admissionController.current}"
+                                                    value="#{inwardProfessionalBillController.current.patientEncounter}" />
+                                            </p:commandButton>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
                             </f:facet>

@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="My Float Transfer Requests">
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <h:outputLabel value="From Date" for="fromDate" class="fw-bold"/>
+                                <p:datePicker
+                                    id="fromDate"
+                                    showTime="true"
+                                    value="#{financialTransactionController.myFloatRequestsFromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"/>
+                            </div>
+                            <div class="col-md-3">
+                                <h:outputLabel value="To Date" for="toDate" class="fw-bold"/>
+                                <p:datePicker
+                                    id="toDate"
+                                    showTime="true"
+                                    value="#{financialTransactionController.myFloatRequestsToDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"/>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <p:commandButton
+                                    value="Search"
+                                    icon="pi pi-search"
+                                    action="#{financialTransactionController.fillMyFundTransferRequests()}"
+                                    update="tblMyRequests"
+                                    class="ui-button-primary"/>
+                            </div>
+                        </div>
+
+                        <p:dataTable
+                            id="tblMyRequests"
+                            value="#{financialTransactionController.myFundTransferRequestsOut}"
+                            var="bp"
+                            rowKey="#{bp.id}"
+                            emptyMessage="No float transfer requests found for the selected period"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="bottom">
+
+                            <p:column headerText="Request No">
+                                <h:outputText value="#{bp.deptId}"/>
+                            </p:column>
+
+                            <p:column headerText="Requested From">
+                                <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+
+                            <p:column headerText="Request Date/Time">
+                                <h:outputText value="#{bp.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Requested Amount" styleClass="text-end">
+                                <h:outputText value="#{bp.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Comments">
+                                <h:outputText value="#{bp.comments}"/>
+                            </p:column>
+
+                            <p:column headerText="Status">
+                                <h:panelGroup rendered="#{bp.forwardReferenceBill ne null}">
+                                    <span class="badge bg-success">Fully Fulfilled</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.forwardReferenceBill eq null and not bp.cancelled and financialTransactionController.getFulfilledAmountForRequest(bp) gt 0}">
+                                    <span class="badge bg-info text-dark">Partially Fulfilled</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.forwardReferenceBill eq null and not bp.cancelled and financialTransactionController.getFulfilledAmountForRequest(bp) le 0}">
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.cancelled}">
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width: 120px;">
+                                <p:commandButton
+                                    value="Cancel"
+                                    icon="pi pi-times"
+                                    title="Cancel this request"
+                                    action="#{financialTransactionController.cancelFloatTransferRequest(bp)}"
+                                    ajax="false"
+                                    rendered="#{bp.forwardReferenceBill eq null and not bp.cancelled}"
+                                    class="ui-button-danger ui-button-sm"/>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

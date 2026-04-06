@@ -159,6 +159,11 @@ public class PharmacyErrorChecking implements Serializable {
         binCardTotalOut = 0;
         if (binCardEntries != null) {
             for (PharmacyBinCardDTO dto : binCardEntries) {
+                if(List.of(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT, 
+                        BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                        BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT).contains(dto.getBillTypeAtomic())){
+                    continue;
+                }
                 double qtyPlusFree = dto.getTransQtyPlusFreeQty();
                 if (qtyPlusFree > 0) {
                     binCardTotalIn += qtyPlusFree;

@@ -103,6 +103,9 @@ public class Fee implements Serializable {
     Speciality fromSpeciality;
     @ManyToOne
     Speciality toSpaciality;
+    
+    private boolean primaryFee;
+    
     private boolean discountAllowed;
 
     public Fee() {
@@ -462,6 +465,14 @@ public class Fee implements Serializable {
 
     public void setForDepartment(Department forDepartment) {
         this.forDepartment = forDepartment;
+    }
+
+    public boolean isPrimaryFee() {
+        return primaryFee;
+    }
+
+    public void setPrimaryFee(boolean primaryFee) {
+        this.primaryFee = primaryFee;
     }
 
     

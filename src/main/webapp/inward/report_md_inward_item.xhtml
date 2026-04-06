@@ -12,113 +12,141 @@
 
             <p:panel header="Inpatient Service Summary">
 
-                <h:panelGrid columns="2" class="w-100 my-2">
-                    <h:panelGrid columns="2" class="" >
 
-                        <h:outputLabel value="Date Type"/>
-                        <p:selectOneMenu class="w-100 mx-4" autoWidth="false" id="dateFilterType"
-                                         value="#{mdInwardReportController.dateFilterType}">
-                            <f:selectItem itemLabel="Service Added Date" itemValue="SERVICE_ADDED"/>
-                            <f:selectItem itemLabel="Admitted Date" itemValue="ADMITTED"/>
-                            <f:selectItem itemLabel="Discharged Date" itemValue="DISCHARGED"/>
-                            <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
-                        </p:selectOneMenu>
+                <p:panelGrid columns="4" class="w-100 my-2" >
 
-                        <h:outputLabel value="From"/>
-                        <p:calendar class="mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            <f:ajax event="dateSelect" render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                        </p:calendar>
+                    <h:outputLabel for="dateFilterType" value="Date Type"/>
+                    <p:selectOneMenu class="w-100" id="dateFilterType"
+                                     value="#{mdInwardReportController.dateFilterType}">
+                        <f:selectItem itemLabel="Service Added Date" itemValue="SERVICE_ADDED"/>
+                        <f:selectItem itemLabel="Admitted Date" itemValue="ADMITTED"/>
+                        <f:selectItem itemLabel="Discharged Date" itemValue="DISCHARGED"/>
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
 
-                        <h:outputLabel value="To"/>
-                        <p:calendar class="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            <f:ajax event="dateSelect" render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                        </p:calendar>
+                    <h:outputLabel for="fromDate" value="From"/>
+                    <p:calendar class="w-100"
+                                inputStyleClass="w-100" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <f:ajax event="dateSelect" render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:calendar>
 
-                        <h:outputLabel value="Payment Method"/>
-                        <p:selectOneMenu class="w-100 mx-4" autoWidth="false" id="pm"
-                                         value="#{mdInwardReportController.paymentMethod}">
-                            <f:selectItem itemLabel="All Payment Methods"/>
-                            <f:selectItems value="#{mdInwardReportController.paymentMethods}"/>
-                            <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
-                        </p:selectOneMenu>
+                    <h:outputLabel for="toDate" value="To"/>
+                    <p:calendar class="w-100"
+                                inputStyleClass="w-100" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <f:ajax event="dateSelect" render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:calendar>
 
-                        <p:outputLabel value="Institution" />
-                        <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
-                                        completeMethod="#{institutionController.completeIns}"
-                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="w-100 mx-4">
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                        </p:autoComplete>
-                        <p:outputLabel value="Department" />
-                        <p:autoComplete class="mx-4" id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
-                        </p:autoComplete>
-                        <p:outputLabel value="Category" />
-                        <p:autoComplete value="#{mdInwardReportController.category}" id="ct"
-                                        forceSelection="true"
-                                        completeMethod="#{categoryController.completeCategoryService}"
-                                        var="cat" itemLabel="#{cat.name}"
-                                        itemValue="#{cat}"
-                                        class="mx-4 w-100">
-                            <p:column headerText="Category">
-                                <h:outputLabel value="#{cat.name}"/>
-                            </p:column>
-                            <p:column headerText="Parent Category" class="mx-4">
-                                <h:outputLabel value="#{cat.parentCategory.name}"/>
-                            </p:column>
-                            <p:column headerText="TYPE">
-                                <h:outputLabel value="Parent Category"
-                                               rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
-                                <h:outputLabel value="Child Category"
-                                               rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+                    <h:outputLabel for="admType" value="Admission Type"/>
+                    <p:selectOneMenu class="w-100" id="admType"
+                                     value="#{mdInwardReportController.admissionType}">
+                        <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                        <f:selectItems value="#{admissionTypeController.items}"
+                                       var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
 
-                            </p:column>
+                    <h:outputLabel for="pm" value="Payment Method"/>
+                    <p:selectOneMenu class="w-100" id="pm"
+                                     value="#{mdInwardReportController.paymentMethod}">
+                        <f:selectItem itemLabel="All Payment Methods"/>
+                        <f:selectItems value="#{mdInwardReportController.paymentMethods}"/>
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
 
-                        </p:autoComplete>
-                        <p:outputLabel value="Item" />
-                        <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true"
-                                         value="#{mdInwardReportController.item}"
-                                         completeMethod="#{itemController.completeAllServicesAndInvestigationsCategory}"
-                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                         class="mx-4 w-100">
-                            <p:column>
-                                <h:outputLabel value="#{ix.name}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{ix.department.name}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{ix.total}"
-                                               rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:column>
-                            <p:ajax event="itemSelect" process="acIx ct" update="@all" />
-                            <p:ajax event="focus" process="ct"/>
-                        </p:autoComplete>
+                    <p:outputLabel for="ins" value="Institution" />
+                    <p:autoComplete class="w-100"
+                                    inputStyleClass="w-100" id="ins" value="#{mdInwardReportController.institution}"
+                                    completeMethod="#{institutionController.completeIns}"
+                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                        <p:column>
+                            #{ix.name}
+                        </p:column>
+                    </p:autoComplete>
 
-                    </h:panelGrid>
-                </h:panelGrid>
-                <div class="d-flex justify-content-between my-2">
+                    <h:outputLabel for="siteMenu" value="Site"/>
+                    <p:selectOneMenu class="w-100" id="siteMenu"
+                                     value="#{mdInwardReportController.site}"
+                                     filter="true">
+                        <f:selectItem itemLabel="All Sites" />
+                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="dept" value="Department" />
+                    <p:autoComplete class="w-100"
+                                    inputStyleClass="w-100"  id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
+                    </p:autoComplete>
+                    <p:outputLabel for="ct" value="Category" />
+                    <p:autoComplete value="#{mdInwardReportController.category}" id="ct"
+                                    forceSelection="true"
+                                    completeMethod="#{categoryController.completeCategoryService}"
+                                    var="cat" itemLabel="#{cat.name}"
+                                    itemValue="#{cat}"
+                                    class="w-100"
+                                    inputStyleClass="w-100">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{cat.name}"/>
+                        </p:column>
+                        <p:column headerText="Parent Category" class="mx-2">
+                            <h:outputLabel value="#{cat.parentCategory.name}"/>
+                        </p:column>
+                        <p:column headerText="TYPE">
+                            <h:outputLabel value="Parent Category"
+                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                            <h:outputLabel value="Child Category"
+                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+
+                        </p:column>
+
+                    </p:autoComplete>
+
+
+
+                    <p:outputLabel for="acIx" value="Item" />
+                    <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true"
+                                     value="#{mdInwardReportController.item}"
+                                     completeMethod="#{itemController.completeAllServicesAndInvestigationsCategory}"
+                                     var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                     class="w-100"
+                                     inputStyleClass="w-100">
+                        <p:column>
+                            <h:outputLabel value="#{ix.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{ix.department.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{ix.total}"
+                                           rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:ajax event="itemSelect" process="acIx ct" update="@all" />
+                        <p:ajax event="focus" process="ct"/>
+                    </p:autoComplete>
+
+                </p:panelGrid>
+
+                <div class="d-flex align-items-center my-3">
                     <p:commandButton
                         ajax="false"
                         value="Process"
                         icon="fas fa-cogs"
-                        class="ui-button-warning w-100"
+                        class="ui-button-warning mx-2"
                         action="#{mdInwardReportController.processInpatientServiceSummary}" />
                     <p:commandButton
                         ajax="false"
                         icon="fas fa-file-excel"
                         value="Download Excel"
                         actionListener="#{mdInwardReportController.processInpatientServiceSummary}"
-                        class="w-100 ui-button-success mx-2">
+                        class="ui-button-success mx-2">
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
                     </p:commandButton>
                     <p:commandButton
                         icon="fas fa-print"
                         ajax="false"
                         value="Print"
-                        class="w-100 ui-button-info" >
+                        class="mx-2 ui-button-info" >
                         <p:printer target="reportPrint"/>
                     </p:commandButton>
                 </div>

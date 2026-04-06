@@ -158,6 +158,22 @@ public class AgentAndCcApplicationController {
         return agentHistoryFacade.findDoubleByJpql(jpql, params);
     }
 
+    /**
+     * Reads the current CC balance directly from the database using JPQL,
+     * bypassing both the EclipseLink L1 (persistence context) and L2 (shared)
+     * caches. Using em.find() with BYPASS only skips the L2 cache — if the
+     * Institution entity is already in the current persistence context (L1),
+     * EclipseLink returns the stale cached copy. A JPQL query always hits the
+     * database, guaranteeing we read the latest committed balance.
+     */
+    private double fetchCurrentBalance(Long ccId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("ccId", ccId);
+        Double balance = institutionFacade.findDoubleByJpql(
+                "SELECT i.ballance FROM Institution i WHERE i.id = :ccId", params);
+        return balance != null ? balance : 0.0;
+    }
+
     private void handleCcBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
 
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
@@ -180,7 +196,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(0);
             agentHistory.setComment(comments);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 
             double balanceAfterTx = balanceBeforeTx;
 
@@ -223,7 +239,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(hospitalFee);
             agentHistory.setPaidAmountByAgency(null);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
 
             agentHistory.setBalanceBeforeTransaction(
@@ -264,7 +280,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(hospitalFee);
             agentHistory.setPaidAmountByAgency(null);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
 
 
@@ -308,7 +324,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setAdjustmentToAgencyBalance(Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(
@@ -349,7 +365,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(
@@ -392,7 +408,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setAdjustmentToAgencyBalance(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx + transactionValue;
 
             agentHistory.setBalanceBeforeTransaction(
@@ -435,7 +451,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setPaidAmountByAgency(Math.abs(transactionValue));
             agentHistory.setComment(comment);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(
@@ -477,7 +493,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setAdjustmentToAgencyBalance(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
             double balanceAfterTx = balanceBeforeTx - Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(
@@ -518,7 +534,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(transactionValue);
             agentHistory.setPaidAmountByAgency(transactionValue);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 
             double balanceAfterTx = balanceBeforeTx + collectingCentreFee;
 
@@ -561,7 +577,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(-transactionValue);
             agentHistory.setPaidAmountToAgency(transactionValue);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 
             double balanceAfterTx = balanceBeforeTx - collectingCentreFee;
 
@@ -607,7 +623,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setTransactionValue(Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(Math.abs(transactionValue));
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
@@ -651,7 +667,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setPaidAmountByAgency(transactionValue);
             agentHistory.setComment(comments);
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 
             double balanceAfterTx = balanceBeforeTx + collectingCentreFee;
 
@@ -698,7 +714,7 @@ public class AgentAndCcApplicationController {
             //agentHistory.setTransactionValue(transactionValue);
             agentHistory.setTransactionValue(0 - Math.abs(hospitalFee));
 
-            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 
             double balanceAfterTx = balanceBeforeTx - hospitalFee;
 

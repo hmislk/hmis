@@ -1075,7 +1075,8 @@ public class PharmacySummaryReportController implements Serializable {
         );
         List<BillTypeAtomic> floatOutTypes = Arrays.asList(
                 BillTypeAtomic.FUND_TRANSFER_BILL,
-                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED,
+                BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED
         );
 
         floatInRow = fetchFloatSummaryRow(floatInTypes);

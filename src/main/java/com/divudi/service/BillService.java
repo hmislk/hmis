@@ -726,6 +726,18 @@ public class BillService {
         btas.add(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         return btas;
     }
+    
+     public List<BillTypeAtomic> fetchBillTypeAtomicsPharmacySale(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        
+        return btas;
+    }
 
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -1785,6 +1797,81 @@ public class BillService {
 
         return results;
     }
+    
+    public List<PharmacyIncomeBillDTO> fetchBillsAsPharmacyIncomeBillDTOs(
+            Long shiftStartBillId, 
+            Long shiftEndBillId, 
+            Long createrId
+            ){
+
+        String jpql;
+        Map params = new HashMap();
+        
+        List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+        );
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO("
+                + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, coalesce(b.netTotal, 0.0), b.paymentMethod, coalesce(b.total, 0.0), "
+                + " b.patientEncounter, coalesce(b.discount, 0.0), coalesce(b.margin, 0.0), coalesce(b.serviceCharge, 0.0), b.paymentScheme, "
+                + " coalesce(bfd.totalRetailSaleValue, 0.0), coalesce(bfd.totalPurchaseValue, 0.0), coalesce(bfd.totalCostValue, 0.0) ) "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " left join b.patientEncounter pe "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.id > :shiftStartBillId "
+                + " and b.creater.id = :createrId";
+        
+        if (shiftEndBillId != null) {
+            jpql += " AND b.id < :shiftEndBillId";
+            params.put("shiftEndBillId", shiftEndBillId);
+        }        
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("shiftStartBillId", shiftStartBillId);
+        params.put("createrId", createrId);
+
+        jpql += " order by b.createdAt desc  ";
+
+        List<PharmacyIncomeBillDTO> results = (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (results != null && !results.isEmpty()) {
+            for (int i = 0; i < Math.min(5, results.size()); i++) {
+                PharmacyIncomeBillDTO dto = results.get(i);
+            }
+        }
+
+        return results;
+    }
 
     // Debug method to count bills before DTO testing
     public Long countPharmacyReturnWithoutTrasingBills(
@@ -2097,6 +2184,57 @@ public class BillService {
             jpql += " and b.paymentScheme=:paymentScheme";
             params.put("paymentScheme", paymentScheme);
         }
+
+        jpql += " order by b.createdAt desc";
+        // Debug logging
+        // Debug logging
+
+        return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public List<OpdIncomeReportDTO> fetchOpdIncomeReportDTOs( 
+            Long shiftStartBillId, 
+            Long shiftEndBillId, 
+            Long createrId) {
+        
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            
+
+        String jpql = "select new com.divudi.core.data.dto.OpdIncomeReportDTO("
+                + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, "
+                + " coalesce(b.netTotal,0.0), b.paymentMethod, coalesce(b.total,0.0), "
+                + " pe, coalesce(b.discount,0.0), coalesce(b.margin,0.0), "
+                + " coalesce(b.serviceCharge,0.0), b.paymentScheme ) "
+                + " from Bill b "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " left join b.patientEncounter pe "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.id > :shiftStartBillId";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("shiftStartBillId", shiftStartBillId);
+        
+        if (shiftEndBillId != null) {
+            jpql += " AND b.id < :shiftEndBillId";
+            params.put("shiftEndBillId", shiftEndBillId);
+        }
+        
+        jpql += " and b.creater.id = :createrId ";
+        params.put("createrId", createrId);
 
         jpql += " order by b.createdAt desc";
         // Debug logging
@@ -2722,8 +2860,18 @@ public class BillService {
             Department department,
             Category category,
             Item item) {
+        return fetchOpdSaleSummaryDTOs(fromDate, toDate, institution, site, department, category, item,
+                BillTypeAtomic.findByServiceType(ServiceType.OPD));
+    }
 
-        List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+    public List<OpdSaleSummaryDTO> fetchOpdSaleSummaryDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Category category,
+            Item item,
+            List<BillTypeAtomic> billTypeAtomics) {
 
         // Step 1: Main aggregation query per item (no staff join to avoid fan-out / EclipseLink WITH clause incompatibility)
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
