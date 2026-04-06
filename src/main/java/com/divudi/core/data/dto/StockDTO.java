@@ -57,8 +57,9 @@ public class StockDTO implements Serializable {
     }
 
     // Constructor for optimized direct-issue autocomplete: includes stock/itemBatch/item IDs
+    // Double variant (EclipseLink autoboxes primitive double entity fields to Double)
     public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
-                    String genericName, double retailRate, Double stockQty, Date dateOfExpire) {
+                    String genericName, Double retailRate, Double stockQty, Date dateOfExpire) {
         this.id = stockId;
         this.itemBatchId = itemBatchId;
         this.itemId = itemId;
@@ -68,6 +69,12 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
         this.stockQty = stockQty;
         this.dateOfExpire = dateOfExpire;
+    }
+
+    // Primitive double variant for strict EclipseLink type matching
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double retailRate, double stockQty, Date dateOfExpire) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
     }
 
     // Same as above, with allowFractions
