@@ -627,7 +627,8 @@ public class PharmacySaleBhtController implements Serializable {
                     getBillItem().getPharmaceuticalBillItem().setItemBatch(getItemBatchFacade().getReference(selectedDto.getItemBatchId()));
                 }
                 if (selectedDto.getItemId() != null) {
-                    getBillItem().setItem(getItemFacade().getReference(selectedDto.getItemId()));
+                    // Use find (not getReference) so item.category is available for price matrix
+                    getBillItem().setItem(getItemFacade().find(selectedDto.getItemId()));
                 }
                 calculateRatesFromDto(getBillItem(), selectedDto);
             }
@@ -1701,13 +1702,11 @@ public class PharmacySaleBhtController implements Serializable {
         long t1 = System.currentTimeMillis();
         System.out.println("[addBillItem] validation: " + (t1 - t0) + "ms");
 
-        // Stock and ItemBatch as proxies (no DB hit) — only used for FK persistence.
-        // Item must be fully loaded so fetchInwardMargin can navigate item.category.
+        // Stock and ItemBatch proxies for FK persistence; Item already loaded in handleStockSelect
         Stock stockRef = getStockFacade().getReference(selectedStockId);
         ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
-        Item itemEntity = getItemFacade().find(selectedStockDto.getItemId());
         long t2 = System.currentTimeMillis();
-        System.out.println("[addBillItem] refs+itemFacade.find: " + (t2 - t1) + "ms, itemId=" + selectedStockDto.getItemId() + ", itemFound=" + (itemEntity != null));
+        System.out.println("[addBillItem] getReferences: " + (t2 - t1) + "ms");
 
         billItem.getPharmaceuticalBillItem().setStock(stockRef);
         billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchRef);
@@ -1734,7 +1733,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - Math.abs(qty));
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        billItem.setItem(itemEntity);
         billItem.setQty(qty);
         billItem.getPharmaceuticalBillItem().setDoe(selectedStockDto.getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
