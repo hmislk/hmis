@@ -438,12 +438,21 @@
                                             action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}" >
                                         </p:commandButton>
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             class="my-1 w-100"
                                             value="Cashier Bill List"
                                             icon=""
-                                            ajax="false" 
+                                            ajax="false"
                                             action="#{searchController.navigateToListSingleUserBills()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            class="my-1 w-100"
+                                            value="Float Transfer Report"
+                                            icon="fa fa-exchange-alt"
+                                            ajax="false"
+                                            rendered="#{webUserController.hasPrivilege('ViewFundTransferReports')}"
+                                            action="#{financialTransactionController.navigateToFundTransferReport()}" >
                                         </p:commandButton>
                                     </p>
                                 </p:tab>
