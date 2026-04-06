@@ -1550,6 +1550,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("AI Chat - Claude API Key", "");
         getShortTextValueByKey("AI Chat - Claude Model", "claude-opus-4-6");
         getShortTextValueByKey("AI Chat - GitHub Branch", "development");
+        getShortTextValueByKey("AI Chat - GitHub Token", "");
         getIntegerValueByKey("AI Chat - Max Tokens", 4096);
     }
 

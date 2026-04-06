@@ -78,9 +78,12 @@
 
                             <p:column headerText="Status">
                                 <h:panelGroup rendered="#{bp.forwardReferenceBill ne null}">
-                                    <span class="badge bg-success">Fulfilled</span>
+                                    <span class="badge bg-success">Fully Fulfilled</span>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{bp.forwardReferenceBill eq null and not bp.cancelled}">
+                                <h:panelGroup rendered="#{bp.forwardReferenceBill eq null and not bp.cancelled and financialTransactionController.getFulfilledAmountForRequest(bp) gt 0}">
+                                    <span class="badge bg-info text-dark">Partially Fulfilled</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.forwardReferenceBill eq null and not bp.cancelled and financialTransactionController.getFulfilledAmountForRequest(bp) le 0}">
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bp.cancelled}">

@@ -102,9 +102,9 @@
                     style="width: 150px"
                     class="mx-2 ui-button-info"
                     ajax="false" 
-                    value="Print"
-                    action="#{reportController.processCollectingCentreStatementReportNew()}">
-                    <p:printer target="tbl" />
+                    value="To Print"
+                    action="collection_center_statement_view?faces-redirect=true">
+      
                 </p:commandButton>
 
                 <p:commandButton 
@@ -114,7 +114,12 @@
                     ajax="false" 
                     value="Excel"
                     action="#{reportController.processCollectingCentreStatementReportNew()}">
-                    <p:dataExporter type="xlsx" target="tbl"  fileName="cc_statement.xlsx" ></p:dataExporter>
+                    <p:dataExporter 
+                        type="xlsx" 
+                        target="tbl"  
+                        fileName="cc_statement_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}.xlsx" 
+                        postProcessor="#{reportController.postProcessCollectionCenterStatementReportExcel}">
+                    </p:dataExporter>
                 </p:commandButton>
 
                 <p:commandButton 
@@ -123,8 +128,7 @@
                     icon="fa-solid fa-file-pdf"
                     ajax="false" 
                     value="PDF"
-                    action="#{reportController.processCollectingCentreStatementReportNew()}">
-                    <p:dataExporter type="pdf" target="tbl"  fileName="cc_statement.pdf" ></p:dataExporter>
+                    action="#{reportController.exportCollectionCenterStatementReportToPDF()}">
                 </p:commandButton>
 
                 <div  style="float: right;">
@@ -379,7 +383,8 @@
                 <p:column
                     width="10em"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
-                    headerText="Developers" >
+                    headerText="Developers" 
+                    exportable="false">
                     <p:commandLink 
                         ajax="false"
                         value="Edit Balance History"

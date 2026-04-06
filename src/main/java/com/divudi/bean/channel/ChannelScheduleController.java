@@ -382,7 +382,7 @@ public class ChannelScheduleController implements Serializable {
             if (bs.getBill() == null) {
                 continue;
             }
-            if (bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
+            if (bs.getBill().getPatient() == null || bs.getBill().getPatient().getPerson() == null || bs.getBill().getPatient().getPerson().getSmsNumber() == null) {
                 continue;
             }
             Sms e = new Sms();
@@ -1203,6 +1203,12 @@ public class ChannelScheduleController implements Serializable {
 
     public void fillSessionInstance() {
         sessionInstances = fetchCreatedSessionsInstances(current);
+    }
+
+    // session_instance_managment load sessionInstances and fees for service session
+    public void handleSessionSelectionSessionManagement() {
+        fillSessionInstance();
+        fillFees();
     }
 
     public List<SessionInstance> fetchCreatedSessionsInstances(ServiceSession ss) {
