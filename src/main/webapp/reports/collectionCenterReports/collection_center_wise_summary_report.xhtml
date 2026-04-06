@@ -132,8 +132,13 @@
                                 value="Process"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-2"  >
-                                <p:printer target="dtaPr"/>
+                            <p:commandButton 
+                                style="width: 150px" 
+                                ajax="false" 
+                                value="Print" 
+                                icon="fas fa-print" 
+                                class="ui-button-info mx-2"
+                                action="collection_center_wise_summary_report_view?faces-redirect=true">
                             </p:commandButton>
                             <p:commandButton 
                                 style="width: 150px" 
@@ -197,6 +202,10 @@
                             </p:column>
                             <p:column headerText="CC Route" filterMatchMode="contains" sortBy="#{c.institution.route.name}" filterBy="#{c.institution.route.name}">
                                 <h:outputText value="#{c.institution.route.name}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Total" >
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Count" filterMatchMode="contains" sortBy="#{c.itemCount}" filterBy="#{c.itemCount}">
                                 <h:outputText value="#{c.itemCount}" ></h:outputText>
