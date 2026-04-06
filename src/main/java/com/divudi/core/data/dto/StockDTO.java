@@ -58,7 +58,7 @@ public class StockDTO implements Serializable {
 
     // Constructor for optimized direct-issue autocomplete: includes stock/itemBatch/item IDs
     public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
-                    String genericName, Double retailRate, Double stockQty, Date dateOfExpire) {
+                    String genericName, double retailRate, Double stockQty, Date dateOfExpire) {
         this.id = stockId;
         this.itemBatchId = itemBatchId;
         this.itemId = itemId;
