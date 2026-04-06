@@ -291,7 +291,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (patientEncounter == null) {
             patientEncounter = getBatchBill().getPatientEncounter();
         }
-        if (getBatchBill().getPatientEncounter().isDischarged()) {
+        if (patientEncounter.isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
