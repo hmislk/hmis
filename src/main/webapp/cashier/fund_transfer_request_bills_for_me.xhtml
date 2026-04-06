@@ -49,6 +49,18 @@
                                 </h:outputText>
                             </p:column>
 
+                            <p:column headerText="Fulfilled So Far" styleClass="text-end">
+                                <h:outputText value="#{financialTransactionController.getFulfilledAmountForRequest(bp)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Remaining" styleClass="text-end">
+                                <h:outputText value="#{financialTransactionController.getRemainingAmountForRequest(bp)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
                             <p:column headerText="Comments">
                                 <h:outputText value="#{bp.comments}"/>
                             </p:column>

@@ -2488,6 +2488,29 @@ public class FinancialTransactionController implements Serializable {
         myFundTransferRequestsOut = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public double getFulfilledAmountForRequest(Bill request) {
+        if (request == null || request.getId() == null) {
+            return 0.0;
+        }
+        String jpql = "select coalesce(sum(t.netTotal), 0.0) from Bill t "
+                + "where t.backwardReferenceBill = :req "
+                + "and t.billTypeAtomic = :btype "
+                + "and (t.cancelled = false or t.cancelled is null) "
+                + "and t.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("req", request);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        Double sum = billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return sum != null ? Math.abs(sum) : 0.0;
+    }
+
+    public double getRemainingAmountForRequest(Bill request) {
+        if (request == null) {
+            return 0.0;
+        }
+        return Math.max(0.0, request.getNetTotal() - getFulfilledAmountForRequest(request));
+    }
+
     private void prepareToAddNewFundDepositBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.DepositFundBill);
@@ -3049,7 +3072,7 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
-        // If this transfer was initiated from a float transfer request, mark the request as fulfilled
+        // If this transfer was initiated from a float transfer request, handle partial/full fulfillment
         if (selectedFundTransferRequest != null) {
             Bill freshRequest = billFacade.find(selectedFundTransferRequest.getId());
             if (freshRequest == null
@@ -3061,8 +3084,23 @@ public class FinancialTransactionController implements Serializable {
                 JsfUtil.addErrorMessage("Float transfer request is no longer valid");
                 return "";
             }
-            freshRequest.setForwardReferenceBill(currentBill);
-            billController.save(freshRequest);
+            double alreadyFulfilled = getFulfilledAmountForRequest(freshRequest);
+            double remaining = Math.max(0.0, freshRequest.getNetTotal() - alreadyFulfilled);
+            double thisTransferAmount = Math.abs(billTotal);
+            if (thisTransferAmount > remaining + 0.001) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Transfer amount (" + thisTransferAmount + ") exceeds remaining balance (" + remaining + ")");
+                return "";
+            }
+            // Link this transfer back to its originating request
+            currentBill.setBackwardReferenceBill(freshRequest);
+            billController.save(currentBill);
+            // Mark request as fully fulfilled only when total issued covers the requested amount
+            double newTotalFulfilled = alreadyFulfilled + thisTransferAmount;
+            if (newTotalFulfilled >= freshRequest.getNetTotal() - 0.001) {
+                freshRequest.setForwardReferenceBill(currentBill);
+                billController.save(freshRequest);
+            }
         }
         floatTransferStarted = false;
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
