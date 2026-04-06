@@ -106,6 +106,7 @@
                                 value="Transfer Float Out"
                                 title="Finalise and send the float to the selected user"
                                 ajax="false"
+                                rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
                                 action="#{financialTransactionController.settleFundTransferBill()}" >
                             </p:commandButton>
 

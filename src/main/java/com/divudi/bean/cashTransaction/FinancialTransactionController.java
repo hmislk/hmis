@@ -10,6 +10,7 @@ import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
@@ -132,6 +133,8 @@ public class FinancialTransactionController implements Serializable {
     AuditEventController auditEventController;
     @Inject
     private NotificationController notificationController;
+    @Inject
+    private WebUserController webUserController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -2948,6 +2951,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleFundTransferBill() {
+        if (!webUserController.hasPrivilege("IssueFundTransfer")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to issue a float transfer.");
+            return "";
+        }
         if (floatTransferStarted) {
             JsfUtil.addErrorMessage("Already Started");
             return "";
