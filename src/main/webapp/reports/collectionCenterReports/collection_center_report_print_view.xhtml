@@ -284,7 +284,7 @@
                                                         <h:outputText value=" [Refunded]" rendered="#{patientInvestigation.billItem.bill.refunded}" style="margin-left: 1mm; font-weight: 700;"/>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{empty patientInvestigation.printingUser ? "Not Printed" : patientInvestigation.printingUser.name}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{empty patientInvestigation.printingUser ? 'Not Printed' : patientInvestigation.printingUser.name}" style="margin-left: 1mm;"></h:outputText>
                                                     </td>
                                                     <td>
                                                         <h:outputText value="#{patientInvestigation.printingAt}" rendered="#{not empty patientInvestigation.printingAt}" style="margin-left: 1mm;">
