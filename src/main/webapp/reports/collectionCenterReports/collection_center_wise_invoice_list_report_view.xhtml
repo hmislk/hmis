@@ -11,10 +11,10 @@
             <ui:define name="content">
 
                 <h:form >
-                    <p:panel header="Collection Center Balance Report Print" styleClass="w-100">
+                    <p:panel header="Collection Center Wise Invoice List Report Print" styleClass="w-100">
                         <f:facet name="header"  >
                             <div class="d-flex justify-content-between">
-                                <h:outputText value="Collection Center Balance Report Print" class="mt-2"/>
+                                <h:outputText value="Collection Center Wise Invoice List Report Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
@@ -30,7 +30,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="collection_center_balance_report?faces-redirect=true" >
+                                        action="collection_center_wise_invoice_list_report?faces-redirect=true" >
                                     </p:commandButton>
                                 </div>
 
@@ -127,26 +127,46 @@
                                         <h:outputText value="#{sessionController.institution.name}"/>
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                        <h:outputText value="Collection Center Balance Report Print"/>
-                                        <h:panelGroup  rendered="#{reportController.department ne null}">
+                                        <h:outputText value="Collection Center Wise Invoice List Report Print"/>
+                                        <h:panelGroup  rendered="#{reportsController.department ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
-                                                <h:outputText value="#{reportController.department.name}"/>
+                                                <h:outputText value="#{reportsController.department.name}"/>
                                             </div>
                                         </h:panelGroup>
                                     </div>
                                     <div class="d-flex justify-content-center mt-2" style="font-size:12px; flex-wrap:wrap; gap:16px;">
     
                                         <div class="d-flex gap-2">
-                                            <h:outputText value="Date" style="font-weight:600;"/>
-                                            <h:outputText value="#{reportController.fromDate}">
+                                            <h:outputText value="From Date" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportsController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="To Date" style="font-weight:600;"/>
+                                            <h:outputText value="#{reportsController.toDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <h:outputText value="Collection Center Name" style="font-weight:600;"/>
-                                            <h:outputText value="#{empty reportController.collectingCentre ? 'All CCs' : reportController.collectingCentre.name}"/>
+                                            <h:outputText value="Institution" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.institution ? 'All institutions' : reportsController.institution.name}"/>
                                         </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Site" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.site ? 'All Sites' : reportsController.site.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Department" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.department ? 'All departments' : reportsController.department.name}"/>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <h:outputText value="Agent Name" style="font-weight:600;"/>
+                                            <h:outputText value="#{empty reportsController.collectingCentre ? 'All Collection Centers' : reportsController.collectingCentre.name}"/>
+                                        </div>
+                                      
 
                                     </div>
                                 </div>
@@ -159,64 +179,103 @@
                                                     <h:outputText value="S. No" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="font-weight: 700;">
-                                                    <h:outputText value="CC Name" style="margin-left: 1mm;"/>
-                                                </th>
-                                                <th style="font-weight: 700;">
-                                                    <h:outputText value="CC Route" style="margin-left: 1mm;"/>
-                                                </th>
-                                                <th style="font-weight: 700;">
                                                     <h:outputText value="CC Code" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="font-weight: 700;">
-                                                    <h:outputText value="CC Phone No." style="margin-left: 1mm;"/>
+                                                    <h:outputText value="CC Name" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="font-weight: 700;">
-                                                    <h:outputText value="CC Credit Limit" style="margin-left: 1mm;"/>
+                                                    <h:outputText value="Bill No." style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="font-weight: 700;">
-                                                    <h:outputText value="Max Credit Limit" style="margin-left: 1mm;"/>
+                                                    <h:outputText value="Balance Before" style="margin-left: 1mm;"/>
                                                 </th>
                                                 <th style="font-weight: 700;">
-                                                    <h:outputText value="CC Balance" style="margin-left: 1mm;"/>
+                                                    <h:outputText value="Transaction Value(Hos. Fee)" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="CC (%)" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="CC Aount" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="After Balance" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Creator" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="font-weight: 700;">
+                                                    <h:outputText value="Created Date" style="margin-left: 1mm;"/>
                                                 </th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{reportController.bundle.reportTemplateRows}" var="ah" varStatus="i">
+                                            <ui:repeat value="#{reportsController.bundle.reportTemplateRows}" var="bi" varStatus="b">
                                                 <tr>
                                                     <td>
-                                                        <h:outputText value="#{i.index + 1}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{b.index + 1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{ah.agentHistory.agency.name}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{bi.bill.collectingCentre.code}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{ah.agentHistory.agency.route.name}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{bi.bill.collectingCentre.name}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td>
-                                                        <h:outputText value="#{ah.agentHistory.agency.code}" style="margin-left: 1mm;"/>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputText value="#{ah.agentHistory.agency.phone}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{bi.bill.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <h:outputText value="#{ah.agentHistory.agency.maxCreditLimit}" style="margin-left: 1mm;">
-                                                            <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                                        <h:outputText value="#{agentAndCcApplicationController.ccBalanceBefore(bi.bill)}" style="margin-left: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <h:outputText value="#{ah.agentHistory.agency.maxCreditLimit}" style="margin-left: 1mm;">
-                                                            <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                                        <h:outputText value="#{bi.bill.totalHospitalFee}" style="margin-left: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right;">
-                                                        <h:outputText value="#{ah.agentHistory.balanceAfterTransaction}" style="margin-left: 1mm;">
-                                                            <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                                        <h:outputText value="#{bi.bill.totalCenterFee != 0.0 and bi.bill.netTotal != 0.0 ? (bi.bill.totalCenterFee / bi.bill.netTotal) * 100 : 0}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{bi.bill.totalCenterFee}" style="margin-left: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText value="#{agentAndCcApplicationController.ccBalanceAfter(bi.bill)}" style="margin-left: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.bill.creater.webUserPerson.name}" style="margin-left: 1mm;"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{bi.bill.createdAt}" style="margin-left: 1mm;">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                 </tr>
                                             </ui:repeat>
                                         </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="5" style="margin-left: 1mm;"></td>
+                                                <td style="font-weight: 700; text-align: right;">
+                                                    <h:outputText value="#{reportsController.bundle.total}" style="margin-left: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="margin-left: 1mm;"></td>
+                                                <td style="font-weight: 700; text-align: right;">
+                                                    <h:outputText value="#{reportsController.bundle.ccTotal}" style="margin-left: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td colspan="3" style="margin-left: 1mm;"></td>
+                                            </tr>
+                                        </tfoot>
                                     </table>
 
                                 </div>

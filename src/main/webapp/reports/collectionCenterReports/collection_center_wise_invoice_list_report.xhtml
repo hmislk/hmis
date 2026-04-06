@@ -187,8 +187,8 @@
                                     class="m-2 ui-button-info"
                                     style="width: 150px"
                                     ajax="false"
-                                    value="Print">
-                                    <p:printer target="tblExport"/>
+                                    value="Print"
+                                    action="collection_center_wise_invoice_list_report_view?faces-redirect=true">
                                 </p:commandButton>
                                 
                                 <p:commandButton
@@ -246,7 +246,7 @@
                             rowIndexVar="b"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="20,50,100">
-                            <p:column headerText="S1. No" style="width: 50px;">
+                            <p:column headerText="S. No" style="width: 50px;">
                                 <h:outputText value="#{b+1}"/>
                             </p:column>
                             <p:column headerText="CC Code" style="width: 100px;">
