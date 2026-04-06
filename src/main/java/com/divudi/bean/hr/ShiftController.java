@@ -24,6 +24,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -127,11 +128,36 @@ public class ShiftController implements Serializable {
 
         return shifts;
     }
+    
+    public List<Shift> getAvailablePreviousShifts() {
+        if (shiftList == null) {
+            return null;
+        }
+
+        if (current == null || current.getId() == null) {
+            return shiftList;
+        }
+
+        return shiftList.stream()
+                .filter(s -> s != null
+                        && s.getId() != null
+                        && !s.getId().equals(current.getId()))
+                .collect(Collectors.toList());
+    }
 
     public void saveSelected() {
         if (errorCheck()) {
             return;
         }
+
+        if (getCurrent().getPreviousShift() != null
+                && getCurrent().getId() != null
+                && getCurrent().getPreviousShift().getId() != null
+                && getCurrent().getPreviousShift().getId().equals(getCurrent().getId())) {
+            JsfUtil.addErrorMessage("A shift cannot be its own previous shift.");
+            return;
+        }
+
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");

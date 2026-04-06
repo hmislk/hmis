@@ -95,26 +95,17 @@
                                 </p:calendar>  
 
                                 <p:outputLabel value="Previous Shift"/>
-                                <p:autoComplete value="#{shiftController.current.previousShift}"
-                                                forceSelection="true"
-                                                completeMethod="#{shiftController.completeShift}"
-                                                var="mys"
-                                                class="w-100 mx-4"
-                                                inputStyleClass="w-100"
-                                                itemLabel="#{mys.name}" 
-                                                itemValue="#{mys}">                                  
-                                </p:autoComplete>
+                                <p:selectOneMenu value="#{shiftController.current.previousShift}" filter="true" class="w-100 mx-4" style="width:100%">
+                                    <f:selectItem itemLabel="Select Previous Shift" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{shiftController.availablePreviousShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
+                                </p:selectOneMenu>
 
                                 <p:outputLabel value="Next Shift"/>
-                                <p:autoComplete value="#{shiftController.current.nextShift}"
-                                                forceSelection="true"
-                                                completeMethod="#{shiftController.completeShift}"
-                                                var="mys" 
-                                                class="w-100 mx-4"
-                                                inputStyleClass="w-100"
-                                                itemLabel="#{mys.name}" 
-                                                itemValue="#{mys}">                                  
-                                </p:autoComplete>
+                                <p:selectOneMenu value="#{shiftController.current.nextShift}" filter="true" class="w-100 mx-4" style="width:100%">
+                                    <f:selectItem itemLabel="Select Next Shift" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItems value="#{shiftController.availablePreviousShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
+                                </p:selectOneMenu>
+                                
                                 <h:outputLabel value="Leave Hour Full"/>
                                 <p:inputText class="w-100 mx-4" value="#{shiftController.current.leaveHourFull}"/>
                                 <h:outputLabel value="Leave Hour Half"/>
