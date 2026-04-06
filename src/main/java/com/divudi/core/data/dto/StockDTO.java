@@ -56,6 +56,20 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
     }
 
+    // Constructor for optimized direct-issue autocomplete: includes stock/itemBatch/item IDs
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double retailRate, Double stockQty, Date dateOfExpire) {
+        this.id = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+    }
+
     // Same as above, with allowFractions
     public StockDTO(Long id, String itemName, String code, String genericName,
                     Double retailRate, Double stockQty, Date dateOfExpire,

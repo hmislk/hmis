@@ -1707,7 +1707,7 @@ public class PharmacySaleBhtController implements Serializable {
         ItemBatch itemBatchRef = getItemBatchFacade().getReference(selectedStockDto.getItemBatchId());
         Item itemEntity = getItemFacade().find(selectedStockDto.getItemId());
         long t2 = System.currentTimeMillis();
-        System.out.println("[addBillItem] refs+itemFacade.find: " + (t2 - t1) + "ms");
+        System.out.println("[addBillItem] refs+itemFacade.find: " + (t2 - t1) + "ms, itemId=" + selectedStockDto.getItemId() + ", itemFound=" + (itemEntity != null));
 
         billItem.getPharmaceuticalBillItem().setStock(stockRef);
         billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchRef);
@@ -2118,7 +2118,10 @@ public class PharmacySaleBhtController implements Serializable {
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
         long t2 = System.currentTimeMillis();
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
+        PriceMatrix priceMatrix = null;
+        if (bi.getItem() != null) {
+            priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
+        }
         System.out.println("[calculateRates] fetchInwardMargin: " + (System.currentTimeMillis() - t2) + "ms");
 
         double marginPercentage = priceMatrix != null ? priceMatrix.getMargin() / 100 : 0.0;
@@ -2736,8 +2739,8 @@ public class PharmacySaleBhtController implements Serializable {
         parameters.put("stockMin", 0.0);
 
         String sql = "SELECT NEW com.divudi.core.data.dto.StockDTO("
-                + "s.id, s.itemBatch.item.name, s.itemBatch.item.code, s.itemBatch.item.vmp.name, "
-                + "s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire) "
+                + "s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, "
+                + "s.itemBatch.item.vmp.name, s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire) "
                 + "FROM Stock s "
                 + "WHERE s.id IN :stockIds AND s.stock > :stockMin";
 
@@ -2780,8 +2783,8 @@ public class PharmacySaleBhtController implements Serializable {
                 "Enable search medicines by generic name(VMP)", false);
 
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, ")
+                .append("i.itemBatch.item.vmp.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
                 .append("FROM Stock i ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
