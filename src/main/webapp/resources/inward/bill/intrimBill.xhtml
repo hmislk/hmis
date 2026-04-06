@@ -97,6 +97,24 @@
                             </div>
                         </div>
 
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('')}">
+                            <div class="row mb-2">
+                                <div class="col-6 w-50 d-flex">
+                                    <div class="d-flex text-left w-100">
+                                        <div class="w-100 text-left">
+                                            <h:outputLabel value="NIC No " />
+                                        </div>
+                                        <div class="text-left w-100 ">
+                                            <h:outputLabel value=":" />
+                                        </div>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
                         <div class="row mb-2">
                             <div class="col-6 w-50 d-flex">
                                 <div class="d-flex text-left w-100">

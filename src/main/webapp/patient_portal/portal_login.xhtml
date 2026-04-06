@@ -745,11 +745,54 @@
                 color: var(--emerald);
             }
 
+            /* ── OTP DIGIT BOXES ─────────────────────────────────── */
+            .otp-boxes-wrap {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+                margin-top: 0.4rem;
+                margin-bottom: 1rem;
+            }
+            .otp-box {
+                width: 2.8rem;
+                height: 3.2rem;
+                text-align: center;
+                font-size: 1.35rem;
+                font-weight: 700;
+                font-family: 'Syne', sans-serif;
+                border: 2px solid var(--border);
+                border-radius: 10px;
+                background: var(--white);
+                color: var(--forest-deep);
+                outline: none;
+                transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+                caret-color: var(--forest-bright);
+                -webkit-appearance: none;
+                -moz-appearance: textfield;
+            }
+            .otp-box::-webkit-inner-spin-button,
+            .otp-box::-webkit-outer-spin-button { -webkit-appearance: none; }
+            .otp-box:focus {
+                border-color: var(--forest-bright);
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--forest-bright) 11%, transparent);
+            }
+            .otp-box.filled {
+                border-color: var(--emerald);
+                background: color-mix(in srgb, var(--emerald) 6%, white);
+            }
+
             /* ── RESPONSIVE TWEAKS ───────────────────────────────── */
             @media (max-width: 480px) {
                 .otp-card {
                     padding: 1.75rem 1.25rem;
                     border-radius: 18px;
+                }
+                .otp-box {
+                    width: 2.3rem;
+                    height: 2.8rem;
+                    font-size: 1.1rem;
+                    border-radius: 8px;
+                    gap: 0.35rem;
                 }
                 .card-title  {
                     font-size: 1.3rem;
@@ -1218,6 +1261,85 @@
                 }
             }
 
+            function otpBoxInput(el, index, total) {
+                el.value = el.value.replace(/\D/g, '').slice(0, 1);
+                if (el.value.length === 1) {
+                    el.classList.add('filled');
+                    if (index < total - 1) {
+                        var next = document.querySelector('.otp-box[data-index="' + (index + 1) + '"]');
+                        if (next) { next.focus(); next.select(); }
+                    }
+                } else {
+                    el.classList.remove('filled');
+                }
+                assembleOtp(total);
+            }
+
+            function otpBoxKeydown(el, index, event, total) {
+                if (event.key === 'Backspace') {
+                    if (el.value === '' && index > 0) {
+                        var prev = document.querySelector('.otp-box[data-index="' + (index - 1) + '"]');
+                        if (prev) { prev.value = ''; prev.classList.remove('filled'); prev.focus(); prev.select(); }
+                        assembleOtp(total);
+                    }
+                } else if (event.key === 'ArrowLeft' && index > 0) {
+                    var prevBox = document.querySelector('.otp-box[data-index="' + (index - 1) + '"]');
+                    if (prevBox) prevBox.focus();
+                } else if (event.key === 'ArrowRight' && index < total - 1) {
+                    var nextBox = document.querySelector('.otp-box[data-index="' + (index + 1) + '"]');
+                    if (nextBox) nextBox.focus();
+                }
+            }
+
+            function otpBoxPaste(event, total) {
+                event.preventDefault();
+                var text = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                var boxes = document.querySelectorAll('.otp-box');
+                for (var i = 0; i < boxes.length && i < text.length; i++) {
+                    boxes[i].value = text[i];
+                    boxes[i].classList.add('filled');
+                }
+                assembleOtp(total);
+                var lastIdx = Math.min(text.length, total) - 1;
+                if (lastIdx >= 0) {
+                    var lastBox = document.querySelector('.otp-box[data-index="' + lastIdx + '"]');
+                    if (lastBox) lastBox.focus();
+                }
+            }
+
+            function assembleOtp(total) {
+                var otp = '';
+                for (var i = 0; i < total; i++) {
+                    var box = document.querySelector('.otp-box[data-index="' + i + '"]');
+                    otp += (box && box.value) ? box.value : '';
+                }
+                var hidden = document.getElementById('form:otpHiddenInput');
+                if (hidden) hidden.value = otp;
+            }
+
+            function initOtpBoxes(total) {
+                var container = document.getElementById('otpBoxesContainer');
+                if (!container) return;
+                container.innerHTML = '';
+                for (var i = 0; i < total; i++) {
+                    var inp = document.createElement('input');
+                    inp.type = 'text';
+                    inp.className = 'otp-box';
+                    inp.maxLength = 1;
+                    inp.setAttribute('inputmode', 'numeric');
+                    inp.setAttribute('pattern', '[0-9]*');
+                    inp.autocomplete = 'off';
+                    inp.setAttribute('data-index', i);
+                    (function(idx) {
+                        inp.oninput    = function()  { otpBoxInput(this, idx, total); };
+                        inp.onkeydown  = function(e) { otpBoxKeydown(this, idx, e, total); };
+                        inp.onpaste    = function(e) { otpBoxPaste(e, total); };
+                        inp.onfocus    = function()  { this.select(); };
+                    })(i);
+                    container.appendChild(inp);
+                }
+            }
+
             var otpCountdownInterval = null;
 
             function startOtpCountdown(expiryEpochMs) {
@@ -1402,21 +1524,21 @@
                                             <div id="otpEntrySection">
                                                 <div class="field-group">
                                                     <label class="field-label">One-Time Password</label>
-                                                    <div class="field-wrap">
-                                                        <i class="fas fa-key f-icon"/>
-                                                        <p:inputText
-                                                            value="#{patientPortalController.patientEnteredOtp}"
-                                                            onfocus="this.select()"
-                                                            placeholder="Enter OTP">
-                                                        </p:inputText>
-                                                    </div>
+                                                    <div class="otp-boxes-wrap" id="otpBoxesContainer"></div>
+                                                    <script type="text/javascript">
+                                                        //<![CDATA[
+                                                        initOtpBoxes(#{patientPortalController.otpLength});
+                                                        //]]>
+                                                    </script>
+                                                    <h:inputHidden id="otpHiddenInput" value="#{patientPortalController.patientEnteredOtp}"/>
                                                 </div>
                                                 <div class="btn-verify">
                                                     <p:commandButton
                                                         value="Verify OTP"
                                                         icon="fas fa-circle-check"
                                                         action="#{patientPortalController.otpVerification}"
-                                                        update="globalMessages portalContentPanel"/>
+                                                        update="globalMessages portalContentPanel"
+                                                        onclick="assembleOtp(#{patientPortalController.otpLength})"/>
                                                 </div>
                                             </div>
                                             <div class="resend-wrap">

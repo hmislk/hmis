@@ -4908,6 +4908,267 @@ public class ReportsController implements Serializable {
             }
         }, LaboratoryReport.LABORATORY_WORKLOAD_REPORT, sessionController.getLoggedUser());
     }
+    
+      // Filters for laboratory_workload_report
+    public Map<String, Object> getFiltersForLaboratoryWorkloadReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", sdf.format(getFromDate()));
+        filters.put("To Date", sdf.format(getToDate()));
+        filters.put("Report Type", reportType);
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Laboratory",category != null ? category.getName() : "All");
+        filters.put("CC Name", collectingCentre != null ? collectingCentre.getName() : "All");
+        filters.put("CC Route",route != null ? route.getName() : "All");
+        filters.put("Visit Type",visitType);
+        filters.put("Patient MRN No.",mrnNo != null ? mrnNo : "All");
+        filters.put("Investigation",investigation != null ? investigation.getName(): "All");
+        filters.put("Referring Doctor",referingDoctor != null ? referingDoctor.getPerson().getNameWithTitle() : "All");
+        return filters;
+    }
+    
+    public void exportLaboratoryWorkloadDetailReportToPDF() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Laboratory_workload_detailed_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Laboratory_workload_detailed_report.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        DecimalFormat df = new DecimalFormat("#,##0.##");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Laboratory Workload Detail Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+            
+            boolean isVisitCC = "CC".equals(visitType);
+
+            int columnCount =isVisitCC  ? 19 : 17;
+            Map<String, Object> filters = getFiltersForLaboratoryWorkloadReport();
+            com.itextpdf.text.pdf.PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths;
+            String[] headers;
+
+            if (isVisitCC){
+                headers = new String[]{"Sample ID", "Invoice No.", "MRN", "Name", "Age","Gender","Investigation","Lab Department", "CC", "CC Route","Invoiced Date","Invoiced By","Received Date","Received By","Remarks","Patient Source","Patient Type","Referring Doctor","Item Value"};
+                columnWidths = new float[]{1f, 2f, 1f, 2f, 0.5f, 0.5f, 2f, 1f,1f,1f,1f,1f,1f,1f,1f,0.5f,0.5f,2f,1f};
+            } else{
+                headers = new String[]{"Sample ID", "Invoice No.", "MRN", "Name", "Age","Gender","Investigation","Lab Department","Invoiced Date","Invoiced By","Received Date","Received By","Remarks","Patient Source","Patient Type","Referring Doctor","Item Value"};
+                columnWidths = new float[]{1f, 2f, 1f, 2f, 0.5f, 0.5f, 2f, 1f,1f,1f,1f,1f,1f,0.5f,0.5f,2f,1f};
+            }
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 7)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            // list of the sanple carrier reports
+            List<ReportTemplateRow> rows = bundle.getReportTemplateRows();
+            for (ReportTemplateRow row : rows) {
+                table.addCell(textCell(patientInvestigationController.getPatientSamplesByInvestigationAsString(row.getBillItem().getPatientInvestigation()), bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getPatientEncounter()!= null ? row.getBillItem().getPatientEncounter().getFinalBill().getDeptId() : row.getBillItem().getBill().getDeptId() ,bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getPatient().getPhn(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getPatient().getPerson().getNameWithTitle(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getPatient().getPerson().getAgeAsString(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getBill().getPatient().getPerson().getSex().getLabel(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getItem().getName(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getItem().getDepartment().getName(),bodyFontSmall));
+                
+                if (isVisitCC){
+                   table.addCell(textCell(row.getBillItem().getBill().getCollectingCentre().getName(),bodyFontSmall)); 
+                   table.addCell(textCell( row.getBillItem().getBill().getCollectingCentre().getRoute().getName(),bodyFontSmall)); 
+                }
+ 
+                table.addCell(textCell(row.getBillItem().getPatientEncounter() != null ? sdf.format(row.getBillItem().getPatientEncounter().getFinalBill().getCreatedAt()) : sdf.format(row.getBillItem().getBill().getCreatedAt()),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getPatientEncounter() != null ? row.getBillItem().getPatientEncounter().getFinalBill().getCreater().getWebUserPerson().getNameWithTitle() : row.getBillItem().getBill().getCreater().getWebUserPerson().getNameWithTitle(),bodyFontSmall));
+                table.addCell(textCell(row.getBillItem().getPatientInvestigation().getSampleAcceptedAt() != null ? sdf.format(row.getBillItem().getPatientInvestigation().getSampleAcceptedAt()) : "-",bodyFontSmall));
+                table.addCell(textCell( row.getBillItem().getPatientInvestigation().getSampleAcceptedBy() != null ? row.getBillItem().getPatientInvestigation().getSampleAcceptedBy().getWebUserPerson().getNameWithTitle() : "-",bodyFontSmall));
+                table.addCell(textCell( row.getBillItem().getBill().getComments() != null ?row.getBillItem().getBill().getComments() : "-" ,bodyFontSmall));
+                table.addCell(textCell( row.getBillItem().getBill().getIpOpOrCc(),bodyFontSmall));
+                
+                if ("IP".equals(visitType)){
+                    table.addCell(textCell( row.getBillItem().getBill().getPatientEncounter().getPaymentMethod().getLabel(),bodyFontSmall));
+                } else {
+                    table.addCell(textCell( row.getBillItem().getBill().getPaymentMethod().getLabel(),bodyFontSmall));
+                }
+                table.addCell(textCell( row.getBillItem().getBill().getReferredBy()!=null ? row.getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle() : "-",bodyFontSmall));
+                table.addCell(numCell( row.getBillItem().getNetValue(),bodyFontSmall));
+          
+            }
+            com.itextpdf.text.pdf.PdfPCell footerCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Total", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 10)));
+            int footerSpan = 0;
+            if (isVisitCC){
+                footerSpan = 18;
+            }else {
+                footerSpan = 16;
+            }
+            footerCell.setColspan(footerSpan);
+            footerCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(numCell(bundle.getTotal(), bodyFontSmall));
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsController.class
+                    .getName()).log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+        } 
+    }
+   
+    // PostProcessor for laboratory_workload_report excel export
+    public void postProcessLaboratoryWorkloadReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "Laboratory Workload Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForLaboratoryWorkloadReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Laboratory Workload Report", filters);
+        }
+    }
+    
+public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
+    try {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        pdf.setMargins(36f, 36f, 20f, 36f);
+
+        // ── BaseColor definitions ─────────────────────────────────────
+        java.awt.Color black      = new java.awt.Color(0,   0,   0);
+        java.awt.Color lightGray  = new java.awt.Color(245, 245, 245);
+        java.awt.Color borderGray = new java.awt.Color(180, 180, 180);
+
+        // ── Font definitions ──────────────────────────────────────────
+        com.lowagie.text.Font hospitalFont = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 16f, com.lowagie.text.Font.BOLD,   black);
+        com.lowagie.text.Font reportFont   = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 13f, com.lowagie.text.Font.BOLD,   black);
+        com.lowagie.text.Font dateFont     = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 10f, com.lowagie.text.Font.NORMAL, black);
+        com.lowagie.text.Font labelFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.BOLD,   black);
+        com.lowagie.text.Font valueFont    = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA,  9f, com.lowagie.text.Font.NORMAL, black);
+
+        // ── Institution name ─────────────────────────────────────────────
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "No Logged Institution";
+        com.lowagie.text.Paragraph hospitalName = new com.lowagie.text.Paragraph(institutionName, hospitalFont);
+        hospitalName.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+        hospitalName.setSpacingAfter(2f);
+        pdf.add(hospitalName);
+
+        // ── Report title ──────────────────────────────────────────────
+        com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("Laboratory Workload Summary Report", reportFont);
+        reportTitle.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+        reportTitle.setSpacingAfter(2f);
+        pdf.add(reportTitle);
+
+        // ── Generated date ────────────────────────────────────────────
+        SimpleDateFormat sdf = new SimpleDateFormat(
+                sessionController.getApplicationPreference().getLongDateTimeFormat());
+        com.lowagie.text.Paragraph dateLine = new com.lowagie.text.Paragraph("Date: " + sdf.format(new Date()), dateFont);
+        dateLine.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
+        dateLine.setSpacingAfter(10f);
+        pdf.add(dateLine);
+
+        // ── Filter summary table ──────────────────────────────────────
+        Map<String, Object> filters = getFiltersForLaboratoryWorkloadReport();
+
+        com.lowagie.text.pdf.PdfPTable filterTable = new com.lowagie.text.pdf.PdfPTable(8);
+        filterTable.setWidthPercentage(100f);
+        filterTable.setWidths(new float[]{15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f});
+        filterTable.setSpacingAfter(10f);
+
+        List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
+        int totalEntries = entries.size();
+        int cols = 4;
+
+        for (Map.Entry<String, Object> entry : entries) {
+
+            // Label cell
+            com.lowagie.text.pdf.PdfPCell labelCell = new com.lowagie.text.pdf.PdfPCell(
+                    new com.lowagie.text.Phrase(entry.getKey(), labelFont));
+            labelCell.setBorderColor(borderGray);
+            labelCell.setBorderWidth(0.5f);
+            labelCell.setPadding(4f);
+            labelCell.setBackgroundColor(lightGray);
+            filterTable.addCell(labelCell);
+
+            // Value cell
+            String val = entry.getValue() != null ? entry.getValue().toString() : "";
+            com.lowagie.text.pdf.PdfPCell valueCell = new com.lowagie.text.pdf.PdfPCell(
+                    new com.lowagie.text.Phrase(val, valueFont));
+            valueCell.setBorderColor(borderGray);
+            valueCell.setBorderWidth(0.5f);
+            valueCell.setPadding(4f);
+            filterTable.addCell(valueCell);
+        }
+
+        // ── Pad last row with empty cells if needed ───────────────────
+        int remainder = totalEntries % cols;
+        if (remainder != 0) {
+            int emptyCells = (cols - remainder) * 2;
+            for (int i = 0; i < emptyCells; i++) {
+                com.lowagie.text.pdf.PdfPCell empty = new com.lowagie.text.pdf.PdfPCell(
+                        new com.lowagie.text.Phrase(""));
+                empty.setBorderColor(borderGray);
+                empty.setBorderWidth(0.5f);
+                empty.setPadding(4f);
+                filterTable.addCell(empty);
+            }
+        }
+
+        pdf.add(filterTable);
+
+    } catch (com.lowagie.text.DocumentException e) {
+        e.printStackTrace();
+    }
+}
+    
 
     private List<BillTypeAtomic> cancelAndRefundBillTypeAtomics() {
         return Arrays.asList(

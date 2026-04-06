@@ -549,6 +549,8 @@ public class PurchaseOrderController implements Serializable {
     }
 
     public void generateBillComponent() {
+        // Clear any previously generated items to prevent duplicates from repeated calls
+        billItems = null;
 
         for (PharmaceuticalBillItem i : pharmaceuticalBillItemFacade.getPharmaceuticalBillItems(getRequestedBill())) {
             BillItem bi = new BillItem();

@@ -11,6 +11,7 @@
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
         <cc:attribute name="cancelled" />
+        <cc:attribute name="title" default="Issue Bill" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -39,7 +40,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Issue Bill"   />    
+                <h:outputLabel value="#{cc.attrs.title}"   />
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>

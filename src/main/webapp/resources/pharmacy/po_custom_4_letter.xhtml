@@ -164,12 +164,12 @@
             <div class="row mt-1">
                 <div class="col-5">
                     <h:outputLabel value="Prepared By : &nbsp;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.checkedBy.name}"/>
                 </div>
                 <div class="col-2"></div>
                 <div class="col-5" style="text-align: right;">
                     <h:outputLabel style="text-align: right" value="Prepared At : &nbsp;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.checkeAt}">
                         <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                     </h:outputLabel>
                 </div>

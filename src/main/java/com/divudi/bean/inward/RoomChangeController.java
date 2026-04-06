@@ -20,6 +20,7 @@ import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -68,6 +69,8 @@ public class RoomChangeController implements Serializable {
 
     @EJB
     private AdmissionFacade ejbFacade;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -303,6 +306,14 @@ public class RoomChangeController implements Serializable {
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
         notificationController.createNotification(pR, "Discharge");
+
+        // Sync room discharge to the parent encounter when this is the last (current) room
+        if (pR.getNextRoom() == null && pR.getPatientEncounter() != null) {
+            com.divudi.core.entity.PatientEncounter encounter = pR.getPatientEncounter();
+            encounter.setRoomDischargeDateTime(pR.getDischargedAt());
+            encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
+            patientEncounterFacade.edit(encounter);
+        }
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -330,6 +341,14 @@ public class RoomChangeController implements Serializable {
         pR.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(pR);
         notificationController.createNotification(pR, "Discharge");
+
+        // Sync room discharge to the parent encounter when this is the last (current) room
+        if (pR.getNextRoom() == null && pR.getPatientEncounter() != null) {
+            com.divudi.core.entity.PatientEncounter encounter = pR.getPatientEncounter();
+            encounter.setRoomDischargeDateTime(pR.getDischargedAt());
+            encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
+            patientEncounterFacade.edit(encounter);
+        }
     }
 
     public void dischargeCancel(PatientRoom pR) {

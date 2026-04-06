@@ -119,6 +119,7 @@ public enum Privileges {
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
+    InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -1034,6 +1035,7 @@ public enum Privileges {
             case InwardAppointmentUpdate:
             case InwardAppointmentCancel:
             case InpatientClinicalAssessment:
+            case InpatientClinicalDischarge:
                 return "Inward";
 
             default:

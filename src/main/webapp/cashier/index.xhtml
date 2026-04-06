@@ -8,151 +8,110 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <div class="row" >
-                    <div class="col-2" >
+                <h:outputStylesheet>
+                    .btn-pending {
+                        animation: btn-pulse 1.8s infinite;
+                    }
+                    @keyframes btn-pulse {
+                        0%   { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); }
+                        70%  { box-shadow: 0 0 0 8px rgba(255, 152, 0, 0); }
+                        100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                        .btn-pending {
+                            animation: none;
+                            outline: 3px solid rgba(255, 152, 0, 0.9);
+                        }
+                    }
+                </h:outputStylesheet>
+
+                <div class="row">
+                    <div class="col-2">
                         <h:form>
-
-
                             <p:accordionPanel
                                 class="m-1 w-100"
                                 widgetVar="basic"
                                 id="accordion"
                                 activeIndex="#{financialTransactionController.tabIndex}"
                                 scrollIntoView="center">
-                                <p:ajax process="accordion" ></p:ajax>
-                                <p:tab title="Shift Management">
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-success" 
+                                <p:ajax process="accordion"></p:ajax>
+
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- SHIFT MANAGEMENT                        -->
+                                <!-- ═══════════════════════════════════════ -->
+                                <p:tab title="Shift">
+                                    <!-- Start / End — the two lifecycle anchors -->
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
                                         value="Start Shift"
                                         icon="pi pi-play"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-danger"
                                         value="End Shift"
-                                        icon="pi pi-power-off" 
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillForHandover()}" >
+                                        icon="pi pi-power-off"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillForHandover()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-danger"
-                                        value="End Shift - OLD"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
-                                        icon="pi pi-power-off" 
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
-                                        value="Handover (OLD)"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
-                                        icon="pi pi-forward"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToHandoverCreateBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary" 
-                                        value="My Drawer" 
-                                        icon="pi pi-folder-open" 
-                                        style="background-color: #987bff; color: #ffffff;" 
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToMyDrawer()}">
-                                    </p:commandButton>
-
+                                    <!-- Handover — the primary action that follows ending a shift -->
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-primary"
-                                        value="My Drawer History"
-                                        icon="pi pi-folder-open"
-                                        style="background-color: #11633a; color: #ffffff;"
+                                        value="Handover Current Shift"
+                                        icon="pi pi-forward"
                                         ajax="false"
-                                        action="#{drawerEntryController.navigateToMyDrawerEntry()}">
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Current Shift Handover is enabled')}"
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}">
                                     </p:commandButton>
 
+                                    <!-- View history -->
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Shifts"
+                                        icon="pi pi-map-marker"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyShifts}">
+                                    </p:commandButton>
+
+                                    <!-- Discrepancy recording — orange: requires attention before closing -->
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-warning"
-                                        value="Request Drawer Adjustment"
-                                        icon="pi pi-sliders-h"
-                                        ajax="false"
-                                        action="#{drawerAdjustmentController.navigateToRequestAdjustment()}">
-                                    </p:commandButton>
-
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
                                         value="Record Shift End Cash in Hand"
                                         icon="pi pi-wallet"
                                         ajax="false"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Recording Shift End Cash is Required Before Viewing Shift Reports')}"
-                                        action="#{financialTransactionController.navigateToRecordShiftEndCash()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
-                                        value="Handover Current Shift"
-                                        icon="pi pi-forward"
-                                        ajax="false" 
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Current Shift Handover is enabled')}"
-                                        action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
-                                        value="Handover By Period"
-                                        icon="pi pi-forward"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Period Handover is enabled')}"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedPeriod()}" >
-                                    </p:commandButton>
-
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-secondary"
-                                        value="Handover Shift (OLD)"
-                                        icon="pi pi-forward"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToHandoverCreateBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-info"
-                                        value="My Shifts"
-                                        icon="pi pi-map-marker"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Completed Shift Handover is enabled')}"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToMyShifts}">
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-danger"
-                                        value="Record Shift Shortage"
-                                        icon="pi pi-minus"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToRecordShiftShortage()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-info"
-                                        value="Record Shift Excess"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Excess Bills are enabled')}"
-                                        icon="pi pi-plus"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
+                                        action="#{financialTransactionController.navigateToRecordShiftEndCash()}">
                                     </p:commandButton>
 
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-warning"
+                                        value="Record Shift Shortage"
+                                        icon="pi pi-minus"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToRecordShiftShortage()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Record Shift Excess"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Excess Bills are enabled')}"
+                                        icon="pi pi-plus"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToRecordShiftExcess()}">
+                                    </p:commandButton>
+
+                                    <!-- Shortage bill search / print — read-only -->
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
                                         value="Shift Shortage Bill Search"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         icon="fa fa-search"
                                         ajax="false"
-                                        action="#{financialTransactionController.navigateToCashierShiftBillSearch()}" >
+                                        action="#{financialTransactionController.navigateToCashierShiftBillSearch()}">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -161,11 +120,66 @@
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         icon="pi pi-file"
                                         ajax="false"
-                                        action="#{financialTransactionController.navigateToShiftShortagePrint()}" >
+                                        action="#{financialTransactionController.navigateToShiftShortagePrint()}">
                                     </p:commandButton>
-
                                 </p:tab>
 
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- DRAWER                                  -->
+                                <!-- ═══════════════════════════════════════ -->
+                                <p:tab title="Drawer">
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="My Drawer"
+                                        icon="pi pi-folder-open"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyDrawer()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Drawer History"
+                                        icon="pi pi-history"
+                                        ajax="false"
+                                        action="#{drawerEntryController.navigateToMyDrawerEntry()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Deposit to Safe/Bank"
+                                        icon="pi pi-save"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToFundDepositBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Withdrawals"
+                                        icon="pi pi-upload"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCreateNewFundWithdrawalBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Realize Cheques"
+                                        icon="pi pi-check-square"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToFundDepositBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Request Drawer Adjustment"
+                                        icon="pi pi-sliders-h"
+                                        ajax="false"
+                                        action="#{drawerAdjustmentController.navigateToRequestAdjustment()}">
+                                    </p:commandButton>
+                                </p:tab>
+
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- FLOAT MANAGEMENT                        -->
+                                <!-- ═══════════════════════════════════════ -->
                                 <p:tab title="Float Management">
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-primary"
@@ -173,20 +187,18 @@
                                         icon="pi pi-directions"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
-                                        action="#{financialTransactionController.navigateToFundTransferBill()}" >
+                                        action="#{financialTransactionController.navigateToFundTransferBill()}">
                                     </p:commandButton>
 
-                                    <h:panelGroup layout="block" styleClass="w-100" rendered="#{webUserController.hasPrivilege('ReceiveFundTransfer')}">
-                                        <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                            <p:commandButton
-                                                class="my-1 w-100 ui-button-warning"
-                                                value="Float Transfers for me to Receive"
-                                                icon="pi pi-inbox"
-                                                ajax="false"
-                                                action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
-                                            </p:commandButton>
-                                        </p:badge>
-                                    </h:panelGroup>
+                                    <p:commandButton
+                                        styleClass="my-1 w-100 ui-button-warning#{financialTransactionController.fundTransferBillsToReceiveCount gt 0 ? ' btn-pending' : ''}"
+                                        value="Float Transfers to Receive"
+                                        title="#{financialTransactionController.fundTransferBillsToReceiveCount gt 0 ? financialTransactionController.fundTransferBillsToReceiveCount.toString().concat(' pending') : 'None pending'}"
+                                        icon="pi pi-inbox"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('ReceiveFundTransfer')}"
+                                        action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}">
+                                    </p:commandButton>
 
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-info"
@@ -194,50 +206,51 @@
                                         icon="pi pi-sign-out"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
-                                        action="#{financialTransactionController.navigateToMyFundTransferBillsOut()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="my-1 w-100 ui-button-secondary"
-                                        value="Request Float Transfer"
-                                        icon="fa fa-hand-holding-usd"
-                                        ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
-                                        action="#{financialTransactionController.navigateToFundTransferRequestBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="my-1 w-100 ui-button-warning"
-                                        value="Float Requests For Me"
-                                        icon="pi pi-inbox"
-                                        ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('ProcessFundTransferRequest')}"
-                                        action="#{financialTransactionController.navigateToFundTransferRequestsForMe()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="my-1 w-100 ui-button-info ui-button-outlined"
-                                        value="My Float Requests"
-                                        icon="pi pi-list"
-                                        ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
-                                        action="#{financialTransactionController.navigateToMyFundTransferRequests()}" >
+                                        action="#{financialTransactionController.navigateToMyFundTransferBillsOut()}">
                                     </p:commandButton>
 
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-success"
-                                        value="Transfer Bill Payment Method"
-                                        icon="pi pi-refresh"
+                                        value="Request Float Transfer"
+                                        icon="fa fa-hand-holding-usd"
                                         ajax="false"
-                                        action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
+                                        action="#{financialTransactionController.navigateToFundTransferRequestBill()}">
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        class="my-1 w-100 ui-button-warning"
+                                        styleClass="my-1 w-100 ui-button-warning#{financialTransactionController.fundTransferRequestsForMeCount gt 0 ? ' btn-pending' : ''}"
+                                        value="Float Requests For Me"
+                                        title="#{financialTransactionController.fundTransferRequestsForMeCount gt 0 ? financialTransactionController.fundTransferRequestsForMeCount.toString().concat(' pending') : 'None pending'}"
+                                        icon="pi pi-inbox"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('ProcessFundTransferRequest')}"
+                                        action="#{financialTransactionController.navigateToFundTransferRequestsForMe()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Float Requests"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
+                                        action="#{financialTransactionController.navigateToMyFundTransferRequests()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Transfer Bill Payment Method"
+                                        icon="pi pi-refresh"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToTransferPaymentMethod()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
                                         value="Convert IOU to Cash"
                                         icon="pi pi-money-bill"
                                         ajax="false"
-                                        action="#{iouBillController.navigateToConvertIouToCash()}" >
+                                        action="#{iouBillController.navigateToConvertIouToCash()}">
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -245,230 +258,246 @@
                                         value="My IOU Conversions"
                                         icon="pi pi-list"
                                         ajax="false"
-                                        action="#{iouBillController.navigateToMyIouConversions()}" >
+                                        action="#{iouBillController.navigateToMyIouConversions()}">
                                     </p:commandButton>
                                 </p:tab>
 
-                                <p:tab title="Income &amp; Expense Management">
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary" 
-                                        value="Add Supplimantary Income"
-                                        icon="pi pi-directions"  
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToNewIncomeBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-warning"  
-                                        value="Add Expenses"
-                                        icon="pi pi-inbox" 
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToNewExpenseBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-success"  
-                                        value= "Trace Income &amp; Expense"
-                                        icon="pi pi-refresh" 
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToTraceIncomeExpenseBills()}" >
-                                    </p:commandButton>
-                                </p:tab>
-
-                                <p:tab title="Handover Management">
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
-                                        value="Handover Shift - Old one to cross cheque"
-                                        icon="pi pi-forward"
-                                        ajax="false" 
-                                        rendered="false"
-                                        action="#{financialTransactionController.navigateToHandoverCreateBill}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-danger"
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- HANDOVER                                -->
+                                <!-- ═══════════════════════════════════════ -->
+                                <p:tab title="Handover">
+                                    <p:commandButton
+                                        styleClass="my-1 w-100 ui-button-warning#{financialTransactionController.handoverBillsToReceiveCount gt 0 ? ' btn-pending' : ''}"
                                         value="Shift Handovers to Accept"
+                                        title="#{financialTransactionController.handoverBillsToReceiveCount gt 0 ? financialTransactionController.handoverBillsToReceiveCount.toString().concat(' pending') : 'None pending'}"
                                         icon="pi pi-sign-in"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-info"
                                         value="My Handovers"
                                         icon="pi pi-folder"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToMyHandovers()}" >
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyHandovers()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-info"
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
                                         value="Payment Recording"
                                         icon="pi pi-file"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToPaymentRecording()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-warning"
-                                        value="Withdrawals"
-                                        icon="pi pi-upload"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateNewFundWithdrawalBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-success"
-                                        value="Deposit to Safe/Bank"
-                                        icon="pi pi-save"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToFundDepositBill()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-success"
-                                        value="Realize Cheques"
-                                        icon="pi pi-check-square"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToFundDepositBill()}" >
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToPaymentRecording()}">
                                     </p:commandButton>
                                 </p:tab>
 
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- INCOME AND EXPENSE                      -->
+                                <!-- ═══════════════════════════════════════ -->
+                                <p:tab title="Income &amp; Expense">
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Add Supplementary Income"
+                                        icon="pi pi-directions"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToNewIncomeBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Add Expenses"
+                                        icon="pi pi-inbox"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToNewExpenseBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Trace Income &amp; Expense"
+                                        icon="pi pi-search"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToTraceIncomeExpenseBills()}">
+                                    </p:commandButton>
+                                </p:tab>
+
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- CASH BOOK                               -->
+                                <!-- ═══════════════════════════════════════ -->
                                 <p:tab title="Cash Book">
-
                                     <p:commandButton
-                                        class="my-1 w-100"
+                                        class="my-1 w-100 ui-button-info"
                                         value="Site Cashbook Daily Summary"
-                                        icon=""
+                                        icon="pi pi-book"
                                         ajax="false"
-                                        action="#{searchController.navigateToListCashBookEntrySiteSummary}" >
+                                        action="#{searchController.navigateToListCashBookEntrySiteSummary}">
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        class="my-1 w-100"
+                                        class="my-1 w-100 ui-button-info"
                                         value="Department Cashbook Daily Summary"
-                                        icon=""
+                                        icon="pi pi-book"
                                         ajax="false"
-                                        action="#{searchController.navigateToListCashBookEntryDepartmentSummary}" >
+                                        action="#{searchController.navigateToListCashBookEntryDepartmentSummary}">
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        class="my-1 w-100"
+                                        class="my-1 w-100 ui-button-info"
                                         value="Institution Cashbook Daily Summary"
-                                        icon=""
+                                        icon="pi pi-book"
                                         ajax="false"
-                                        action="#{searchController.navigateToListCashBookEntryInstitutionSummary}" >
+                                        action="#{searchController.navigateToListCashBookEntryInstitutionSummary}">
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        class="my-1 w-100"
+                                        class="my-1 w-100 ui-button-info"
                                         value="Cash Book Entries"
-                                        icon=""
-                                        ajax="false" 
-                                        action="#{searchController.navigateToListCashBookEntry()}" >
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{searchController.navigateToListCashBookEntry()}">
                                     </p:commandButton>
                                 </p:tab>
 
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- REPORTS                                 -->
+                                <!-- ═══════════════════════════════════════ -->
                                 <p:tab title="Reports">
-                                    <p class="m-0">
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Shift Summary"
+                                        icon="pi pi-chart-bar"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyCashierSummary()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="My Shift Summary"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToMyCashierSummary()}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Shift Details"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyCashierSummary()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="My Shift Details"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToMyCashierSummary()}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Department All Cashier Summary"
+                                        icon="pi pi-chart-bar"
+                                        ajax="false"
+                                        action="#{searchController.navigateToMyDepartmentAllCashierSummary}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="My Department All Cashier Summary"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{searchController.navigateToMyDepartmentAllCashierSummary}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        class="my-1 w-100 ui-button-info"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
+                                        value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                        action="daily_summary_by_department?faces-redirect=true"
+                                        actionListener="#{laborataryReportController.reset9BData()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            ajax="false"  
-                                            class="my-1 w-100 ui-button-success "
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
-                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
-                                            action="daily_summary_by_department?faces-redirect=true" 
-                                            actionListener="#{laborataryReportController.reset9BData()}">
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Service Department Revenue Report"
+                                        icon="pi pi-chart-line"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyServiceDepartmentRevenueReportByPeriod()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="My Service Department Revenue Report"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToMyServiceDepartmentRevenueReportByPeriod()}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Professional Payments"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{searchController.navigateToMyProfessionalPayments()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="My Professional Payments"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{searchController.navigateToMyProfessionalPayments()}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Cashier Summary"
+                                        icon="pi pi-chart-bar"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCashierSummary()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Cashier Summary"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToCashierSummary()}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Cashier Summary Breakdown"
+                                        icon="pi pi-chart-pie"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Cashier Summary Breakdown"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}" >
-                                        </p:commandButton>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Cashier Bill List"
+                                        icon="pi pi-list"
+                                        ajax="false"
+                                        action="#{searchController.navigateToListSingleUserBills()}">
+                                    </p:commandButton>
 
-                                        <p:commandButton
-                                            class="my-1 w-100"
-                                            value="Cashier Bill List"
-                                            icon=""
-                                            ajax="false"
-                                            action="#{searchController.navigateToListSingleUserBills()}" >
-                                        </p:commandButton>
-
-                                        <p:commandButton
-                                            class="my-1 w-100"
-                                            value="My Float Transfer Report"
-                                            icon="fa fa-exchange-alt"
-                                            ajax="false"
-                                            action="#{financialTransactionController.navigateToMyFundTransferReport()}" >
-                                        </p:commandButton>
-                                    </p>
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Float Transfer Report"
+                                        icon="fa fa-exchange-alt"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyFundTransferReport()}">
+                                    </p:commandButton>
                                 </p:tab>
 
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- LEGACY (always visible)                 -->
+                                <!-- ═══════════════════════════════════════ -->
+                                <p:tab title="Legacy">
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="End Shift (OLD)"
+                                        icon="pi pi-power-off"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Handover (OLD)"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
+                                        icon="pi pi-forward"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToHandoverCreateBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Handover Shift (OLD)"
+                                        icon="pi pi-forward"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToHandoverCreateBill()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-secondary"
+                                        value="Handover By Period"
+                                        icon="pi pi-forward"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Period Handover is enabled')}"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedPeriod()}">
+                                    </p:commandButton>
+                                </p:tab>
+
+                                <!-- ═══════════════════════════════════════ -->
+                                <!-- ADMIN                                   -->
+                                <!-- ═══════════════════════════════════════ -->
                                 <p:tab title="Admin" rendered="#{webUserController.hasPrivilege('Admin')}">
-                                    <!-- Config Button for Admin Users -->
                                     <div class="mb-2">
-                                        <h:panelGroup >
-                                            <p:commandButton
-                                                value="Config"
-                                                icon="fa fa-cog"
-                                                title="Cashier Dashboard Configuration Management"
-                                                action="#{pageAdminController.navigateToPageAdmin('cashier/index')}"
-                                                ajax="false"
-                                                styleClass="ui-button-secondary w-100">
-                                            </p:commandButton>
-                                        </h:panelGroup>
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Cashier Dashboard Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('cashier/index')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary w-100">
+                                        </p:commandButton>
                                     </div>
 
                                     <p:commandButton
@@ -482,15 +511,10 @@
                                 </p:tab>
 
                             </p:accordionPanel>
-
-
-
-
-
                         </h:form>
                     </div>
-                    <div class="col-10 b-1"  >
-                        <ui:insert name="subcontent" >
+                    <div class="col-10 b-1">
+                        <ui:insert name="subcontent">
                         </ui:insert>
                     </div>
                 </div>

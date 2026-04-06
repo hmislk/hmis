@@ -175,38 +175,37 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{serviceSummery.bills}" var="b" varStatus="i">
+                                            <ui:repeat value="#{serviceSummery.staffWelfarePayments}" var="p" varStatus="i">
                                                 <tr>
                                                     <td style="width: 8mm;" >
                                                         <h:outputText value="#{i.index+1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
-                                                        <h:outputText value="#{b.deptId}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{p.billDeptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
-                                                        <h:outputText value="#{b.toStaff.code}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{p.staffEpfNo}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 50mm; text-align: right;">
-                                                        <h:outputText value="#{b.toStaff.person.nameWithTitle}" style="margin-right: 1mm;">
-                                                        </h:outputText>
+                                                        <h:outputText value="#{p.staffNameWithTitle}" style="margin-right: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{b.createdAt}" style="margin-left: 1mm;">
+                                                        <h:outputText value="#{p.createdAt}" style="margin-left: 1mm;">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 30mm; text-align: right;">
-                                                        <h:outputText value="#{b.total}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{p.grossAmount}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{b.discount}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{p.discountValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 30mm; text-align: right;">
-                                                        <h:outputText value="#{b.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{p.paidValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
