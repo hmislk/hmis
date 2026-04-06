@@ -150,11 +150,23 @@ public class ShiftController implements Serializable {
             return;
         }
 
-        if (getCurrent().getPreviousShift() != null
-                && getCurrent().getId() != null
-                && getCurrent().getPreviousShift().getId() != null
-                && getCurrent().getPreviousShift().getId().equals(getCurrent().getId())) {
+        if (
+                getCurrent().getPreviousShift() != null && 
+                getCurrent().getId() != null && 
+                getCurrent().getPreviousShift().getId() != null && 
+                getCurrent().getPreviousShift().getId().equals(getCurrent().getId())
+        ) {
             JsfUtil.addErrorMessage("A shift cannot be its own previous shift.");
+            return;
+        }
+
+        if (
+                getCurrent().getNextShift() != null && 
+                getCurrent().getId() != null && 
+                getCurrent().getNextShift().getId() != null && 
+                getCurrent().getNextShift().getId().equals(getCurrent().getId())
+        ) {
+            JsfUtil.addErrorMessage("A shift cannot be its own next shift.");
             return;
         }
 
