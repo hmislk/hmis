@@ -97,13 +97,13 @@
                                 <p:outputLabel value="Previous Shift"/>
                                 <p:selectOneMenu value="#{shiftController.current.previousShift}" filter="true" class="w-100 mx-4" style="width:100%">
                                     <f:selectItem itemLabel="Select Previous Shift" itemValue="#{null}" noSelectionOption="true" />
-                                    <f:selectItems value="#{shiftController.availablePreviousShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
+                                    <f:selectItems value="#{shiftController.availableShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Next Shift"/>
                                 <p:selectOneMenu value="#{shiftController.current.nextShift}" filter="true" class="w-100 mx-4" style="width:100%">
                                     <f:selectItem itemLabel="Select Next Shift" itemValue="#{null}" noSelectionOption="true" />
-                                    <f:selectItems value="#{shiftController.availablePreviousShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
+                                    <f:selectItems value="#{shiftController.availableShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
                                 </p:selectOneMenu>
                                 
                                 <h:outputLabel value="Leave Hour Full"/>

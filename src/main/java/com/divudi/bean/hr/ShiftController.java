@@ -129,7 +129,7 @@ public class ShiftController implements Serializable {
         return shifts;
     }
     
-    public List<Shift> getAvailablePreviousShifts() {
+    public List<Shift> getAvailableShifts() {
         if (shiftList == null) {
             return null;
         }
