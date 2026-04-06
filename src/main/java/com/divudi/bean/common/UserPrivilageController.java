@@ -867,6 +867,17 @@ public class UserPrivilageController implements Serializable {
         TreeNode drawerAdjustmentRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentRequestApproval, "Drawer Adjustment Approval"), requestNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentDirect, "Drawer Adjustment Direct (No Approval)"), requestNode);
 
+        // Float Transfer Privileges
+        TreeNode floatTransferNode = new DefaultTreeNode(new PrivilegeHolder(null, "Float Transfer"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.IssueFundTransfer, "Issue Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReceiveFundTransfer, "Receive Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.DeclineFundTransfer, "Decline Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.RequestFundTransfer, "Request Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ProcessFundTransferRequest, "Process Float Transfer Request"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CancelOwnFundTransfer, "Cancel Own Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CancelOthersFundTransfer, "Cancel Others Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ViewFundTransferReports, "View Float Transfer Reports"), floatTransferNode);
+
         // Request Privileges
         TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
         TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);

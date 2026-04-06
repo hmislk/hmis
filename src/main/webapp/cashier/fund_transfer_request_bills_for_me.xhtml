@@ -63,6 +63,7 @@
                                     title="Start float transfer to fulfil this request"
                                     action="#{financialTransactionController.navigateToFundTransferBillFromRequest(bp)}"
                                     ajax="false"
+                                    rendered="#{webUserController.hasPrivilege('ProcessFundTransferRequest')}"
                                     class="ui-button-success"/>
                             </p:column>
 

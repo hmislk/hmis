@@ -172,10 +172,11 @@
                                         value="Float Transfer"
                                         icon="pi pi-directions"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
 
-                                    <div class="w-100">
+                                    <h:panelGroup layout="block" styleClass="w-100" rendered="#{webUserController.hasPrivilege('ReceiveFundTransfer')}">
                                         <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
                                             <p:commandButton
                                                 class="my-1 w-100 ui-button-warning"
@@ -185,13 +186,14 @@
                                                 action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                                             </p:commandButton>
                                         </p:badge>
-                                    </div>
+                                    </h:panelGroup>
 
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-info"
                                         value="My Float Outs"
                                         icon="pi pi-sign-out"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
                                         action="#{financialTransactionController.navigateToMyFundTransferBillsOut()}" >
                                     </p:commandButton>
 
@@ -200,6 +202,7 @@
                                         value="Request Float Transfer"
                                         icon="fa fa-hand-holding-usd"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
                                         action="#{financialTransactionController.navigateToFundTransferRequestBill()}" >
                                     </p:commandButton>
 
@@ -208,6 +211,7 @@
                                         value="Float Requests For Me"
                                         icon="pi pi-inbox"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('ProcessFundTransferRequest')}"
                                         action="#{financialTransactionController.navigateToFundTransferRequestsForMe()}" >
                                     </p:commandButton>
 
@@ -216,6 +220,7 @@
                                         value="My Float Requests"
                                         icon="pi pi-list"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
                                         action="#{financialTransactionController.navigateToMyFundTransferRequests()}" >
                                     </p:commandButton>
 

@@ -696,6 +696,17 @@ public enum Privileges {
     DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Float Transfer">
+    IssueFundTransfer("Issue Float Transfer"),
+    ReceiveFundTransfer("Receive Float Transfer"),
+    DeclineFundTransfer("Decline Float Transfer"),
+    RequestFundTransfer("Request Float Transfer"),
+    ProcessFundTransferRequest("Process Float Transfer Request"),
+    CancelOwnFundTransfer("Cancel Own Float Transfer"),
+    CancelOthersFundTransfer("Cancel Others Float Transfer"),
+    ViewFundTransferReports("View Float Transfer Reports"),
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Developers">
     Developers("Developers"),
     // Administration
@@ -1001,7 +1012,17 @@ public enum Privileges {
             case DrawerAdjustmentRequestApproval:
             case DrawerAdjustmentDirect:
                 return "Approval";
-            
+
+            case IssueFundTransfer:
+            case ReceiveFundTransfer:
+            case DeclineFundTransfer:
+            case RequestFundTransfer:
+            case ProcessFundTransferRequest:
+            case CancelOwnFundTransfer:
+            case CancelOthersFundTransfer:
+            case ViewFundTransferReports:
+                return "Float Transfer";
+
             case NursingWorkBench:
             case ShowDrugCharges:
                 return "Nursing Work Bench";
