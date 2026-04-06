@@ -297,6 +297,10 @@ public class FinancialTransactionController implements Serializable {
     private Date myFloatRequestsToDate;
     boolean floatRequestStarted = false;
 
+    // Float Transfer Report Properties
+    private List<Bill> fundTransferReportBills;
+    private List<Bill> fundTransferRequestReportBills;
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
@@ -5901,6 +5905,102 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bills_my_float_ins?faces-redirect=true";
     }
 
+    public String navigateToFundTransferReport() {
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        toDate = CommonFunctions.getEndOfDay(new Date());
+        user = null;
+        fillFundTransferReport();
+        return "/reports/cashier_reports/float_transfer_report?faces-redirect=true";
+    }
+
+    public String navigateToMyFundTransferReport() {
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        toDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyFundTransferReport();
+        return "/cashier/my_float_transfer_report?faces-redirect=true";
+    }
+
+    public void fillMyFundTransferReport() {
+        Map<String, Object> params = new HashMap<>();
+        WebUser loggedUser = sessionController.getLoggedUser();
+
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("loggedUser", loggedUser);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        String outJpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.fromWebUser=:loggedUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        myFundTransferBillsOut = billFacade.findByJpql(outJpql, params, TemporalType.TIMESTAMP);
+
+        String inJpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.toWebUser=:loggedUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        myFundTransferBillsIn = billFacade.findByJpql(inJpql, params, TemporalType.TIMESTAMP);
+
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        String reqJpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.fromWebUser=:loggedUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        myFundTransferRequestsOut = billFacade.findByJpql(reqJpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void fillFundTransferReport() {
+        fillFundTransferReportBills();
+        fillFundTransferRequestReportBills();
+    }
+
+    public void fillFundTransferReportBills() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if (user != null) {
+            jpql.append("and s.fromWebUser=:fromUser ");
+            params.put("fromUser", user);
+        }
+        jpql.append("order by s.createdAt desc");
+        fundTransferReportBills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public void fillFundTransferRequestReportBills() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if (user != null) {
+            jpql.append("and s.fromWebUser=:fromUser ");
+            params.put("fromUser", user);
+        }
+        jpql.append("order by s.createdAt desc");
+        fundTransferRequestReportBills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     /**
      * Navigates to the fund transfer bill cancellation page.
      *
@@ -7698,6 +7798,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferRequestsForMe(List<Bill> fundTransferRequestsForMe) {
         this.fundTransferRequestsForMe = fundTransferRequestsForMe;
+    }
+
+    public List<Bill> getFundTransferReportBills() {
+        return fundTransferReportBills;
+    }
+
+    public void setFundTransferReportBills(List<Bill> fundTransferReportBills) {
+        this.fundTransferReportBills = fundTransferReportBills;
+    }
+
+    public List<Bill> getFundTransferRequestReportBills() {
+        return fundTransferRequestReportBills;
+    }
+
+    public void setFundTransferRequestReportBills(List<Bill> fundTransferRequestReportBills) {
+        this.fundTransferRequestReportBills = fundTransferRequestReportBills;
     }
 
     public int getFundTransferRequestsForMeCount() {
