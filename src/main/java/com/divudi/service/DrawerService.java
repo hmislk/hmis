@@ -189,6 +189,7 @@ public class DrawerService {
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(user);
+        drawerEntry.setTransactionValue(payment.getPaidValue());
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {
@@ -571,6 +572,18 @@ public class DrawerService {
             save(drawer);
         }
         return drawer;
+    }
+
+    public Drawer findUsersDrawerWithoutCreate(WebUser webUser) {
+        if (webUser == null) {
+            return null;
+        }
+        HashMap m = new HashMap();
+        String jpql = "select d from Drawer d "
+                + " where d.retired=false "
+                + " and d.drawerUser=:user";
+        m.put("user", webUser);
+        return drawerFacade.findFirstByJpql(jpql, m);
     }
 
     /**

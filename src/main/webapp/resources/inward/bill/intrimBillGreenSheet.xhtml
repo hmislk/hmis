@@ -53,9 +53,20 @@
                             </td>
                             <td >
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.patient.person.address}" />
-                            </td>                           
+                            </td>
                         </tr>
-                        
+
+                        <h:panelGroup rendered="#{cc.attrs.patientEncounter.patient.person.nic ne null and !cc.attrs.patientEncounter.patient.person.nic.equals('')}">
+                            <tr >
+                                <td >
+                                    <h:outputLabel value="NIC No : " />
+                                </td>
+                                <td >
+                                    <h:outputLabel value="#{cc.attrs.patientEncounter.patient.person.nic}" />
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
                         <tr >
                             <td >
                                 <h:outputLabel value="BHT : " />

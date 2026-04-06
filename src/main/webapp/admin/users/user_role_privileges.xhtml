@@ -25,8 +25,13 @@
 
                         <h:panelGrid  columns="3">    
                             <p:outputLabel  value="User Role" ></p:outputLabel>
-                            <p:outputLabel  value=":" style="width: 50px; text-align: center" ></p:outputLabel>
-                            <p:outputLabel class="form-control w-100" value="#{userPrivilageController.webUserRole.name}"></p:outputLabel>
+                            <p:outputLabel  value=":" class="mx-3"></p:outputLabel>
+                            <p:outputLabel class="w-100" value="#{userPrivilageController.webUserRole.name}"></p:outputLabel>
+                            <p:outputLabel  value="Last Update" ></p:outputLabel>
+                            <p:outputLabel  value=":" class="mx-3"></p:outputLabel>
+                            <p:outputLabel class="w-100" value="#{userPrivilageController.webUserRole.lastUpdateAt}">
+                                <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
+                            </p:outputLabel>
                         </h:panelGrid>  
 
 
@@ -34,7 +39,7 @@
                             
                                 <p:commandButton 
                                     value="List User Role Privileges"
-                                    class="ui-button-success mx-1"
+                                    class="ui-button-success"
                                     ajax="false"
                                     icon="fa fa-list"
                                     action="#{userPrivilageController.fillUserRolePrivileges}">
@@ -50,6 +55,26 @@
                                     >  
                                 </p:commandButton> 
                         </div>
+                        
+                        <h:panelGroup id="warningPanel" rendered="#{not userPrivilageController.privilegesLoaded}">
+                            <p:panelGrid columns="1" style="margin-top: 20px;" styleClass="ui-panelgrid-blank">
+                                <p:messages />
+                                <p:outputPanel styleClass="ui-g ui-widget ui-state-error ui-corner-all" style="padding: 10px; margin: 10px 0;">
+                                    <div class="ui-g-12 ui-md-3">
+                                        <i class="fa fa-exclamation-triangle fa-4x" style="color: #d9534f;"></i>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-9">
+                                        <h:outputText value="Please click the 'List Privileges' button to display the available privileges for selected Role." />
+                                        <h:panelGrid columns="2" style="margin-top: 10px;">
+                                            <h:outputText value="Role:" />
+                                            <h:outputText value="#{userPrivilageController.webUserRole.name}" style="font-weight: bold;" />
+                                        </h:panelGrid>
+                                    </div>
+                                </p:outputPanel>
+                            </p:panelGrid>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{userPrivilageController.privilegesLoaded}">
 
                         <p:tree
                             id="tree"
@@ -65,6 +90,7 @@
                                 <h:outputText value="#{node}" />  
                             </p:treeNode>
                         </p:tree>
+                        </h:panelGroup>
                     </p:panel>
                 </h:form>
             </ui:define>

@@ -97,9 +97,15 @@
                                 action="#{reportController.processLabTestWiseCountReport()}" >
                             </p:commandButton>
 
+                            <p:commandButton
+                                value="To Print"
+                                styleClass="mx-2 ui-button-info"
+                                icon="pi pi-print"
+                                action="test_wise_count_report_view?faces-redirect=true"/>
                             <p:commandButton 
                                 icon="fa-solid fa-print"
                                 class="mx-2 ui-button-info"
+                                rendered="false"
                                 style="width: 150px"
                                 ajax="false" 
                                 value="Print">
@@ -112,7 +118,11 @@
                                 icon="fas fa-file-excel"
                                 ajax="false" 
                                 value="Excel">
-                                <p:dataExporter type="xlsx" target="tblExport"  fileName="lab_test_wise_count_report.xlsx" ></p:dataExporter>
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    target="tblExport"  
+                                    fileName="Test_wise_count_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
+                                    postProcessor="#{reportController.postProcessTestWiseCountReportExcel}"/>
                             </p:commandButton>
 
                             <p:commandButton 
@@ -120,13 +130,9 @@
                                 icon="fa-solid fa-file-pdf"
                                 style="width: 150px"
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter
-                                    type="pdf" 
-                                    target="tblExport"  
-                                    fileName="lab_test_wise_count_report" >
-                                </p:dataExporter>
-                            </p:commandButton>
+                                value="PDF"
+                                action="#{reportController.exportTestWiseCountReportToPDF}"/>
+                  
                         </h:panelGrid>
 
                         <h:panelGrid  columns="2" class="my-3">
@@ -175,6 +181,9 @@
                             </p:column>
                             <p:column headerText="Test Name" styleClass="wide-column">
                                 <h:outputText value="#{c.testName}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="Total" />
+                                </f:facet>
                             </p:column> 
                             <p:column headerText="Count"  width="3em" styleClass="text-end">
                                 <h:outputText value="#{c.count}" ></h:outputText>

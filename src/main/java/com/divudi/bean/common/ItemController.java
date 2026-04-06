@@ -1871,9 +1871,12 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            i.setAllowedForBillingPriority(true);
-            itemFacade.edit(i);
+            Item item = itemFacade.findWithoutCache(i.getId());
+                
+            item.setAllowedForBillingPriority(true);
+            itemFacade.editAndCommit(item);
         }
+        fillItemsWithInvestigationsAndServices();
         JsfUtil.addSuccessMessage("All Items Marked for Allowed Priority for Billing");
     }
 
@@ -1883,9 +1886,12 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            i.setAllowedForBillingPriority(false);
-            itemFacade.edit(i);
+            Item item = itemFacade.findWithoutCache(i.getId());
+                
+            item.setAllowedForBillingPriority(false);
+            itemFacade.editAndCommit(item);
         }
+        fillItemsWithInvestigationsAndServices();
         JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Priority for Billing");
     }
 
@@ -1898,14 +1904,17 @@ public class ItemController implements Serializable {
 
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
-                i.setAllowToSendSMS(true);
-                itemFacade.edit(i);
+                Item item = itemFacade.findWithoutCache(i.getId());
+                
+                item.setAllowToSendSMS(true);
+                itemFacade.editAndCommit(item);
                 updatedCount++;
             }
         }
         if (updatedCount == 0) {
             JsfUtil.addErrorMessage("No Investigation items selected.");
         } else {
+            fillItemsWithInvestigationsAndServices();
             JsfUtil.addSuccessMessage(updatedCount + " item(s) marked to allow report SMS.");
         }
     }
@@ -1919,15 +1928,17 @@ public class ItemController implements Serializable {
 
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
-                i.setAllowToSendSMS(false);
-                itemFacade.edit(i);
+                Item item = itemFacade.findWithoutCache(i.getId());
+                
+                item.setAllowToSendSMS(false);
+                itemFacade.editAndCommit(item);
                 updatedCount++;
-
             }
         }
         if (updatedCount == 0) {
             JsfUtil.addErrorMessage("No Investigation items selected.");
         } else {
+            fillItemsWithInvestigationsAndServices();
             JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
         }
     }
@@ -2354,6 +2365,20 @@ public class ItemController implements Serializable {
     public List<Item> completeMedicineByTypePriority(String query) {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
         Class[] classes = new Class[]{Vtm.class, Atm.class, Vmp.class, Amp.class, Vmpp.class, Ampp.class};
+        return completeItem(query, classes, dts, 0, true);
+    }
+
+    public List<Item> completeMedicineByTypeWithFilter(String query, boolean includeVtm, boolean includeAtm, boolean includeVmp, boolean includeAmp) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+        List<Class> classList = new ArrayList<>();
+        if (includeVtm) classList.add(Vtm.class);
+        if (includeAtm) classList.add(Atm.class);
+        if (includeVmp) classList.add(Vmp.class);
+        if (includeAmp) classList.add(Amp.class);
+        if (classList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Class[] classes = classList.toArray(new Class[0]);
         return completeItem(query, classes, dts, 0, true);
     }
 
@@ -3758,7 +3783,7 @@ public class ItemController implements Serializable {
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
-        items = getFacade().findByJpql(temSql, h, TemporalType.TIME);
+        items = getFacade().findByJpql(temSql, h, TemporalType.TIMESTAMP);
     }
 
     public List<Item> getInwardItems() {

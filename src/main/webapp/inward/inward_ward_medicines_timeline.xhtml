@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <style>
+                    .timeline-active {
+                        background-color: #28a745 !important;
+                        border-color: #1e7e34 !important;
+                        color: #fff !important;
+                    }
+                    .timeline-expired {
+                        background-color: #6c757d !important;
+                        border-color: #545b62 !important;
+                        color: #fff !important;
+                    }
+                    .timeline-omitted {
+                        background-color: #dc3545 !important;
+                        border-color: #bd2130 !important;
+                        color: #fff !important;
+                    }
+                </style>
+                <h:form id="formTimeline">
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-id-card"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{inpatientClinicalDataController.parentAdmission}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+                                <p:panel class="w-100 m-1 p-0">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Ward Medicines Timeline" />
+                                    </f:facet>
+
+                                    <div class="p-2 mb-2">
+                                        <span class="badge p-2 mr-2" style="background-color: #28a745; color: #fff;">Active</span>
+                                        <span class="badge p-2 mr-2" style="background-color: #6c757d; color: #fff;">Expired (Duration)</span>
+                                        <span class="badge p-2 mr-2" style="background-color: #dc3545; color: #fff;">Omitted</span>
+                                    </div>
+
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
+                                        <p:timeline id="wardTimeline"
+                                                    value="#{inpatientClinicalDataController.wardMedicineTimelineModel}"
+                                                    zoomable="true"
+                                                    moveable="true"
+                                                    stackEvents="true"
+                                                    showCurrentTime="true"
+                                                    style="width: 100%; min-height: 300px;">
+                                            <p:ajax event="select"
+                                                    listener="#{inpatientClinicalDataController.onTimelineSelect}"
+                                                    update="panelMedicineDetail"
+                                                    oncomplete="PF('dlgMedicineDetail').show()" />
+                                        </p:timeline>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" rendered="#{not inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
+                                        <p class="p-3 text-muted">No ward medicines recorded for this admission.</p>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InpatientClinicalAssessment')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to access the Medicine Timeline." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <p:dialog id="panelMedicineDetail"
+                             header="Prescription Details"
+                             widgetVar="dlgMedicineDetail"
+                             modal="true"
+                             resizable="false"
+                             closable="true"
+                             width="500">
+                        <div class="p-3">
+                            <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine != null and inpatientClinicalDataController.selectedTimelineMedicine.prescription != null}">
+                                <table class="table table-borderless mb-0">
+                                    <tr>
+                                        <td class="font-weight-bold" style="width: 40%;">Medicine:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.item.name}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Prescription:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.formattedPrescription}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Prescribed By:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedBy.name}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Prescribed At:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedTo != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Valid Until:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.prescribedTo}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration != null and inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration gt 0}">
+                                        <tr>
+                                            <td class="font-weight-bold">Duration:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.duration}" />
+                                                <h:outputText value=" #{inpatientClinicalDataController.selectedTimelineMedicine.prescription.durationUnit.name}"
+                                                             rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.durationUnit != null}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedAt != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Omitted At:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedBy != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Omitted By:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omittedBy.name}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{not empty inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}">
+                                        <tr>
+                                            <td class="font-weight-bold">Omission Reason:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </table>
+                            </h:panelGroup>
+                        </div>
+                    </p:dialog>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

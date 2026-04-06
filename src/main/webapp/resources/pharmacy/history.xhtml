@@ -10,6 +10,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="closeActionListener" method-signature="void actionListener()" required="false"/>
+        <cc:attribute name="updateOnClose" type="java.lang.String" required="false" default=""/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -42,6 +44,16 @@
                             class="ui-button-info"
                             icon="far fa-eye"
                             value="View Detail"/>
+                        <p:commandButton
+                            rendered="#{not empty cc.attrs.closeActionListener}"
+                            icon="pi pi-times"
+                            id="btnCloseHistory"
+                            title="Close"
+                            aria-label="Close"
+                            action="#{cc.attrs.closeActionListener}"
+                            update="#{cc.attrs.updateOnClose}"
+                            process="@this"
+                            class="ui-button-danger mx-1"/>
                     </div>
                 </div>
             </f:facet>
@@ -89,14 +101,22 @@
                                                         <td style="text-align: center;">
                                                             <h:outputText value="#{batchDto.batchNo}" />
                                                         </td>
-                                                        <td style="text-align: center;">
+                                                        <td style="text-align: center; background-color: #{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire ? '#f8d7da' : (commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) ge batchDto.dateOfExpire ? '#fff3cd' : '#d4edda')};">
                                                             <h:outputText value="#{batchDto.dateOfExpire}">
                                                                 <f:convertDateTime pattern="dd/MM/yyyy" />
                                                             </h:outputText>
-                                                            <!-- Expiry Status Indicator -->
+                                                            <br/>
+                                                            <!-- Expired -->
                                                             <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire}">
-                                                                <br/>
                                                                 <span class="badge badge-danger">Expired</span>
+                                                            </h:panelGroup>
+                                                            <!-- Expiring Soon (within 30 days) -->
+                                                            <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime le batchDto.dateOfExpire and commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) ge batchDto.dateOfExpire}">
+                                                                <span class="badge badge-warning">Expiring Soon</span>
+                                                            </h:panelGroup>
+                                                            <!-- Valid -->
+                                                            <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime le batchDto.dateOfExpire and commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) lt batchDto.dateOfExpire}">
+                                                                <span class="badge badge-success">Valid</span>
                                                             </h:panelGroup>
                                                         </td>
                                                         <td style="text-align: right;">
@@ -1510,7 +1530,7 @@
                                                     <td style="text-align: center; font-weight: bold;">
                                                         <h:outputText value="#{batchDto.batchNo}" />
                                                     </td>
-                                                    <td style="text-align: center;">
+                                                    <td style="text-align: center; background-color: #{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire ? '#f8d7da' : (commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) ge batchDto.dateOfExpire ? '#fff3cd' : '#d4edda')};">
                                                         <h:outputText value="#{batchDto.dateOfExpire}">
                                                             <f:convertDateTime pattern="dd/MM/yyyy" />
                                                         </h:outputText>

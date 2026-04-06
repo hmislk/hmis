@@ -13,13 +13,9 @@
             <ui:define name="subcontent">
 
                 <h:form >
-
-
-                    <p:panel
-                        header="Fund Transfer Received Bill"
-                        class="w-100 m-1"     >
+                    <p:panel class="m-1">
                         <f:facet name="header" >
-                            <h:outputLabel value="Float Transfer Receive Note" ></h:outputLabel>
+                            <h:outputText value="Float Transfer Receive Note" />
                             <p:commandButton
                                 rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                 value="Settings"
@@ -28,79 +24,70 @@
                                 type="button"
                                 onclick="PF('fundTransferReceiveConfigDialog').show();" />
                             <p:commandButton
-                                value="Cashier Index"
+                                value="Incoming Float Transfers"
+                                icon="fa fa-inbox"
                                 ajax="false"
-                                class="float-end m-1"
-                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" >
+                                class="float-end m-1 ui-button-info ui-button-outlined"
+                                action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                             </p:commandButton>
                             <p:commandButton
-                                value="To List Fund Transfers for me to Receive"
-                                icon=""
+                                value="Cashier Index"
+                                icon="fa fa-home"
                                 ajax="false"
-                                class="float-end m-1"
-                                action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
+                                class="float-end m-1 ui-button-secondary"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" >
                             </p:commandButton>
                         </f:facet>
 
                         <div class="row" >
                             <div class="col-3" >
-                                <p:panelGrid 
+                                <p:panelGrid
                                     class="w-100"
                                     layout="tabular"
-                                    columns="2" 
+                                    columns="2"
                                     columnClasses="text-start, text-end">
-                                    <h:outputText value="Transfer From" >
-                                    </h:outputText>
-                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.fromWebUser.webUserPerson.nameWithTitle}" >
-                                    </h:outputText>
+                                    <h:outputText class="fw-medium" value="Transfer From" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.fromWebUser.webUserPerson.nameWithTitle}" />
 
-                                    <h:outputText value="Transfer At" >
-                                    </h:outputText>
+                                    <h:outputText class="fw-medium" value="Transferred At" />
                                     <h:outputText value="#{financialTransactionController.currentBill.referenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </p:panelGrid>
                             </div>
                             <div class="col-3" >
-                                <p:panelGrid 
+                                <p:panelGrid
                                     layout="tabular"
-                                    columns="2"  
+                                    columns="2"
                                     class="w-100"
                                     columnClasses="text-start, text-end">
-                                    <h:outputText value="Received By" >
-                                    </h:outputText>
-                                    <h:outputText value="#{financialTransactionController.currentBill.creater.webUserPerson.nameWithTitle}" >
-                                    </h:outputText>
+                                    <h:outputText class="fw-medium" value="Received By" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.creater.webUserPerson.nameWithTitle}" />
 
-                                    <h:outputText value="Received At" >
+                                    <h:outputText class="fw-medium" value="Received At" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
-                                    <h:panelGroup >
-                                        <h:outputText 
-                                            value="#{financialTransactionController.currentBill.createdAt}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                        </h:outputText>
-                                    </h:panelGroup>
                                 </p:panelGrid>
                             </div>
                             <div class="col-6" >
-                                <p:dataTable 
+                                <p:dataTable
                                     class="w-100"
                                     id="tblPayments"
                                     value="#{financialTransactionController.currentBillPayments}" var="bp" >
                                     <p:column headerText="Payment Method" >
-                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                        <h:outputText value="#{bp.paymentMethod}" />
                                         <f:facet name="footer" >
-                                            <h:outputLabel value="Total" >
-                                            </h:outputLabel>
+                                            <h:outputLabel value="Total" />
                                         </f:facet>
                                     </p:column>
-                                    <p:column 
-                                        headerText="Value"
-                                        class="text-end">
-                                        <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                    <p:column headerText="Value" class="text-end" >
+                                        <h:outputText value="#{bp.absolutePaidValueTransient}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
                                         <f:facet name="footer" >
-                                            <h:outputLabel value="#{financialTransactionController.currentBill.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <h:outputLabel value="#{financialTransactionController.currentBill.absoluteNetTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
@@ -108,47 +95,47 @@
                             </div>
                         </div>
 
-                        <p:commandButton
-                            value="Print"
-                            ajax="false" >
-                            <p:printer target="panelPrint"/>
-                        </p:commandButton>
+                    </p:panel>
 
-                        <h:panelGroup id="panelPrint">
-                            <!-- POS Paper with header -->
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Paper', false)}">
-                                <prints:float_transfer_receive_pos bill="#{financialTransactionController.currentBill}"/>
-                            </h:panelGroup>
-
-                            <!-- POS Printed Paper (without header) -->
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Printed Paper', false)}">
-                                <prints:float_transfer_receive_pos_printed bill="#{financialTransactionController.currentBill}"/>
-                            </h:panelGroup>
-
-                            <!-- 5x5 Paper with header (default) -->
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Paper', true)}">
-                                <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>
-                            </h:panelGroup>
-
-                            <!-- 5x5 Printed Paper (without header) -->
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Printed Paper', false)}">
-                                <prints:float_transfer_receive_five_five_printed bill="#{financialTransactionController.currentBill}"/>
-                            </h:panelGroup>
-
-                            <!-- A4 Paper with header -->
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Paper', false)}">
-                                <prints:float_transfer_receive_a4 bill="#{financialTransactionController.currentBill}"/>
-                            </h:panelGroup>
-
-                            <!-- A4 Printed Paper (without header) -->
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Printed Paper', false)}">
-                                <prints:float_transfer_receive_a4_printed bill="#{financialTransactionController.currentBill}"/>
-                            </h:panelGroup>
+                    <h:panelGroup id="panelPrint">
+                        <!-- POS Paper with header -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Paper', false)}">
+                            <prints:float_transfer_receive_pos bill="#{financialTransactionController.currentBill}"/>
                         </h:panelGroup>
 
+                        <!-- POS Printed Paper (without header) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Printed Paper', false)}">
+                            <prints:float_transfer_receive_pos_printed bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
 
+                        <!-- 5x5 Paper with header (default) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Paper', true)}">
+                            <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
 
-                    </p:panel>
+                        <!-- 5x5 Printed Paper (without header) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Printed Paper', false)}">
+                            <prints:float_transfer_receive_five_five_printed bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- A4 Paper with header -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Paper', false)}">
+                            <prints:float_transfer_receive_a4 bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- A4 Printed Paper (without header) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Printed Paper', false)}">
+                            <prints:float_transfer_receive_a4_printed bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <p:commandButton
+                        value="Print"
+                        ajax="false"
+                        icon="pi pi-print"
+                        style="margin-top: 10px;">
+                        <p:printer target="panelPrint"/>
+                    </p:commandButton>
 
                     <!-- Fund Transfer Receive Bill Configuration Dialog -->
                     <p:dialog id="fundTransferReceiveConfigDialog"
