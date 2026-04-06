@@ -748,7 +748,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             return;
         }
 
-        workbook.setSheetName(0, "Collection Center Wise Summary Report");
+        workbook.setSheetName(0, "CC Wise Summary Report");
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForCollectionCenterWiseSummaryReport();
@@ -783,7 +783,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             pdf.add(hospitalName);
 
             // ── Report title ──────────────────────────────────────────────
-            com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("Laboratory Workload Summary Report", reportFont);
+            com.lowagie.text.Paragraph reportTitle = new com.lowagie.text.Paragraph("CC Wise Summary Report", reportFont);
             reportTitle.setAlignment(com.lowagie.text.Element.ALIGN_LEFT);
             reportTitle.setSpacingAfter(2f);
             pdf.add(reportTitle);
@@ -1785,7 +1785,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             return;
         }
 
-        workbook.setSheetName(0, "Collection Center Balance Report");
+        workbook.setSheetName(0, "CC Balance Report");
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForCollectionCenterBalanceReport();
