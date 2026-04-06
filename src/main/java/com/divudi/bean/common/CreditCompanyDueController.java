@@ -76,6 +76,8 @@ public class CreditCompanyDueController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
+    /** Date basis for inward due/access reports: "dischargeDate" (default) | "admissionDate" */
+    private String dateBasis = "dischargeDate";
     Admission patientEncounter;
     boolean withOutDueUpdate;
     Institution creditCompany;
@@ -1306,6 +1308,14 @@ public class CreditCompanyDueController implements Serializable {
         this.fromDate = fromDate;
     }
 
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
@@ -1343,6 +1353,9 @@ public class CreditCompanyDueController implements Serializable {
                     break;
                 case "OPD":
                     btas = billService.fetchBillTypeAtomicsForOnlyOpdBills();
+                    break;
+                case "PHARMACY":
+                    btas = billService.fetchBillTypeAtomicsPharmacySale();
                     break;
                 case "PACKAGE":
                     btas = billService.fetchBillTypeAtomicsForOnlyPackageBills();
@@ -1977,12 +1990,13 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardCashDue() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         HashMap m = new HashMap();
         String sql = " Select b from PatientEncounter b"
                 + " JOIN b.finalBill fb"
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td "
+                + " and " + dateField + " between :fd and :td "
                 + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) > 0.1 ";
 
         if (admissionType != null) {

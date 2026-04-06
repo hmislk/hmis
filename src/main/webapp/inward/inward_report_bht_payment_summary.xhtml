@@ -87,8 +87,16 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="50" />
-                            <p:spacer width="50" />
-                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Payment Method" for="pmMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="pmMenu" styleClass="w-100 form-control"
+                                             value="#{bhtPaymentSummaryReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />

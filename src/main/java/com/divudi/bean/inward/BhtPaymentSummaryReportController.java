@@ -57,6 +57,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
+    private PaymentMethod paymentMethod;
     private Institution institution;
     private Institution site;
     private Department department;
@@ -178,6 +179,12 @@ public class BhtPaymentSummaryReportController implements Serializable {
             params.put("dept", department);
         }
 
+        // --- payment method ---
+        if (paymentMethod != null) {
+            jpql.append(" and c.paymentMethod = :pm");
+            params.put("pm", paymentMethod);
+        }
+
         jpql.append(" order by c.bhtNo");
 
         return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -270,6 +277,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         dateBasis = "dischargeDate";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
+        paymentMethod = null;
         institution = null;
         site = null;
         department = null;
@@ -298,6 +306,9 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     public AdmissionType getAdmissionType() { return admissionType; }
     public void setAdmissionType(AdmissionType admissionType) { this.admissionType = admissionType; }
+
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public Institution getInstitution() { return institution; }
     public void setInstitution(Institution institution) { this.institution = institution; }

@@ -122,68 +122,6 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     }
 
-    public void saveSelectedCompanyPaymentScheme() {
-        if (paymentScheme == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Scheme");
-            return;
-        }
-        if (selectedCreditCompany == null) {
-            JsfUtil.addErrorMessage("Please select a CreditCompany.");
-            return;
-        }
-
-        if (margin > 100.0 || margin < 0.0) {
-            JsfUtil.addErrorMessage("Margin is Invalid.");
-            return;
-        }
-
-        // Create new PriceMatrix
-        PriceMatrix a = new PaymentSchemeDiscount();
-        a.setPaymentScheme(paymentScheme);
-        a.setCreditCompany(selectedCreditCompany);
-        a.setDiscountPercent(margin);
-        a.setPaymentMethod(PaymentMethod.Credit);
-        a.setCreatedAt(new Date());
-        a.setCreater(sessionController.getLoggedUser());
-        getFacade().create(a);
-
-        System.out.println("New PriceMatrix Saved Successfully (" + a.getId() + ")");
-        JsfUtil.addSuccessMessage("Saved Successfully");
-
-        // Reload PriceMatrix
-        fillCompanyPaymentSchemes();
-
-        // Clear Values
-        selectedCreditCompany = null;
-        margin = 0.0;
-        company = null;
-
-    }
-
-    public void fillCompanyPaymentSchemes() {
-        if (paymentScheme == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Scheme");
-            return;
-        }
-
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "select a from PaymentSchemeDiscount a "
-                + " where a.retired=false"
-                + " and a.paymentScheme=:pm "
-                + " and a.category is null "
-                + " and a.creditCompany is not null ";
-                
-        if (company != null) {
-            sql += " and a.creditCompany =:cmb";
-            hm.put("cmb", company);
-        }
-        sql += " order by a.paymentScheme.name, a.creditCompany.name";
-        
-        hm.put("pm", paymentScheme);
-        items = getFacade().findByJpql(sql, hm);
-    }
-
     public void saveSelectedSitePaymentScheme() {
         PriceMatrix a = new PaymentSchemeDiscount();
         saveSite(a);
@@ -1092,23 +1030,9 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void onEdit(PriceMatrix tmp) {
-        if (tmp.getPaymentScheme() == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Scheme");
-            return;
-        }
-        if (tmp.getCreditCompany() == null) {
-            JsfUtil.addErrorMessage("Please select a CreditCompany.");
-            return;
-        }
-
-        if (tmp.getDiscountPercent() > 100.0 || tmp.getDiscountPercent() < 0.0) {
-            JsfUtil.addErrorMessage("Margin is Invalid.");
-            return;
-        }
         getFacade().edit(tmp);
         JsfUtil.addSuccessMessage("Update Successfully");
         clearInstanceVars();
-
     }
 
     public Category getRoomLocation() {

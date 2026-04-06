@@ -437,6 +437,137 @@ requests.put(
 )
 ```
 
+---
+
+## Pharmacy Backfill Operations
+
+> ⚠️ **ADMINISTRATIVE / MAINTENANCE OPERATIONS — SYSTEM ADMINISTRATOR AUTHORIZATION REQUIRED**
+> These endpoints modify historical bill data and must only be executed with explicit authorisation from
+> a system administrator. Incorrect use can corrupt financial records. Always provide a meaningful
+> `auditComment` and a named `approvedBy` value so that every run is traceable in the audit trail.
+
+These endpoints reconstruct missing finance-detail records on historical pharmacy bills that were saved
+before the BIFD/BFD system was introduced or before certain bug-fixes were applied.
+
+### POST `/api/pharmacy/backfill_bfd`
+
+Backfills missing `BillFinanceDetail` (BFD) records for historical
+`PHARMACY_STOCK_ADJUSTMENT` and `PHARMACY_RETAIL_RATE_ADJUSTMENT` bills.
+
+**Authentication:** `Finance: <api_key>` header (same key used for all pharmacy APIs)
+
+**Request Body:**
+```json
+{
+  "billTypeAtomics": ["PHARMACY_STOCK_ADJUSTMENT", "PHARMACY_RETAIL_RATE_ADJUSTMENT"],
+  "departmentId": 485,
+  "fromDate": "2025-01-01",
+  "toDate": "2026-02-22",
+  "approvedBy": "Dr. Smith",
+  "auditComment": "Backfill BFDs missing before 2026-02-23 fix"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `fromDate` | Yes | Start date inclusive, format `yyyy-MM-dd` |
+| `toDate` | Yes | End date inclusive, format `yyyy-MM-dd` |
+| `auditComment` | Yes | Audit trail comment stored on every corrected bill |
+| `approvedBy` | Yes | Name of the authorising administrator |
+| `departmentId` | No | Limit scope to a specific department (null = all departments) |
+| `billTypeAtomics` | No | List of bill-type names to process (defaults to both adjustment types) |
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "backfilledBills": 12,
+    "skipped": 2,
+    "errors": []
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8080/api/pharmacy/backfill_bfd" \
+  -H "Finance: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "billTypeAtomics": ["PHARMACY_STOCK_ADJUSTMENT"],
+    "fromDate": "2025-01-01",
+    "toDate": "2026-02-22",
+    "approvedBy": "Dr. Smith",
+    "auditComment": "Backfill BFDs missing before 2026-02-23 fix"
+  }'
+```
+
+---
+
+### POST `/api/pharmacy/backfill_grn_bifd`
+
+Backfills missing `BillItemFinanceDetail` (BIFD) and `BillFinanceDetail` (BFD) records
+for historical Pharmacy GRN bills. GRN bills saved before the BIFD system was introduced
+have null `billItemFinanceDetails` on their bill items, causing blank columns (Purchase Rate,
+Line Net Value, Sale Rate, Cost Value) on GRN reprints. This endpoint reconstructs those
+records from the `PharmaceuticalBillItem` data that was correctly saved at GRN creation time.
+
+**Authentication:** `Finance: <api_key>` header
+
+**Request Body:**
+```json
+{
+  "fromDate": "2025-01-01",
+  "toDate": "2026-02-26",
+  "approvedBy": "Dr. Ariyaratne",
+  "auditComment": "Backfill BIFD for GRN bills missing finance details",
+  "departmentId": 485,
+  "billTypeAtomics": ["PHARMACY_GRN"]
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `fromDate` | Yes | Start date inclusive, format `yyyy-MM-dd` |
+| `toDate` | Yes | End date inclusive, format `yyyy-MM-dd` |
+| `auditComment` | Yes | Audit trail comment stored on every corrected bill |
+| `approvedBy` | Yes | Name of the authorising administrator |
+| `departmentId` | No | Limit scope to a specific department (null = all departments) |
+| `billTypeAtomics` | No | GRN bill-type names to process. Defaults to: `PHARMACY_GRN`, `PHARMACY_GRN_CANCELLED`, `PHARMACY_GRN_REFUND`, `PHARMACY_GRN_RETURN`, `PHARMACY_GRN_WHOLESALE`, `PHARMACY_DIRECT_PURCHASE`, `PHARMACY_DIRECT_PURCHASE_CANCELLED` |
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "totalBillsFound": 150,
+    "processedBills": 148,
+    "skippedBills": 2,
+    "processedItems": 620,
+    "skippedItems": 4,
+    "errors": []
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8080/api/pharmacy/backfill_grn_bifd" \
+  -H "Finance: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromDate": "2025-01-01",
+    "toDate": "2026-02-26",
+    "approvedBy": "Dr. Ariyaratne",
+    "auditComment": "Backfill BIFD for GRN bills missing finance details"
+  }'
+```
+
+---
+
 ## Related APIs
 
 - **Institution Management API** - `/api/institutions` - See `API_INSTITUTION_DEPARTMENT_MANAGEMENT.md`
