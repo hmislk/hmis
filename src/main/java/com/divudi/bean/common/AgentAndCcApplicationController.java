@@ -159,18 +159,26 @@ public class AgentAndCcApplicationController {
     }
 
     /**
-     * Reads the current CC balance directly from the database using JPQL,
-     * bypassing both the EclipseLink L1 (persistence context) and L2 (shared)
-     * caches. Using em.find() with BYPASS only skips the L2 cache — if the
-     * Institution entity is already in the current persistence context (L1),
-     * EclipseLink returns the stale cached copy. A JPQL query always hits the
-     * database, guaranteeing we read the latest committed balance.
+     * Reads the current CC balance directly from the database using a JPQL
+     * scalar query, which is immune to both the EclipseLink L1 (persistence
+     * context) and L2 (shared object) caches.
+     *
+     * Why scalar, not entity JPQL: entity JPQL queries (SELECT i FROM
+     * Institution i ...) go to the DB but then merge results with the L1
+     * UnitOfWork. If the Institution entity is already managed in L1 with a
+     * stale balance, EclipseLink returns the L1 copy's fields. A scalar query
+     * (SELECT i.ballance ...) returns a raw Double — L1 and L2 are entity
+     * identity maps and have no mechanism to cache or intercept a primitive
+     * value, so the DB value is always returned.
+     *
+     * noCache=true is passed for explicitness; for scalar results the BYPASS/
+     * REFRESH hints are redundant but document intent.
      */
     private double fetchCurrentBalance(Long ccId) {
         Map<String, Object> params = new HashMap<>();
         params.put("ccId", ccId);
         Double balance = institutionFacade.findDoubleByJpql(
-                "SELECT i.ballance FROM Institution i WHERE i.id = :ccId", params);
+                "SELECT i.ballance FROM Institution i WHERE i.id = :ccId", params, true);
         return balance != null ? balance : 0.0;
     }
 
