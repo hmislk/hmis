@@ -99,7 +99,7 @@
                                     <p:dataExporter 
                                         type="xlsx" 
                                         target="tblExport" 
-                                        fileName="itemized_sale_summary" 
+                                        fileName="collection_center_book_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}" 
                                         postProcessor="#{reportController.postProcessCollectionCenterBookReportExcel}"/>
                                 </p:commandButton>
                                 <p:commandButton 

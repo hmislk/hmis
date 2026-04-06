@@ -3297,10 +3297,10 @@ public class ReportsController implements Serializable {
     }
     
         public void exportCollectionCenterWiseInvoiceListReportToPDF() {
-//        if (bundle == null) {
-//            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-//            return;
-//        }
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty() ) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
         
         com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 6);
         FacesContext context = FacesContext.getCurrentInstance();
@@ -3417,13 +3417,13 @@ public class ReportsController implements Serializable {
             return;
         }
 
-        workbook.setSheetName(0, "Collection Center Book Report");
+        workbook.setSheetName(0, "Collection Center Wise Invoice List Report");
         sheet.shiftRows(0, sheet.getLastRowNum(), 7);
 
         Map<String, Object> filters = getFiltersForCollectionCenterWiseInvoiceListReport();
 
         if (filters != null && !filters.isEmpty()) {
-            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Collection Center Book Report", filters);
+            pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, "Collection Center Wise Invoice List Report", filters);
         }
     }
 
@@ -4299,7 +4299,7 @@ public class ReportsController implements Serializable {
             
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
             
-            document.add(new com.itextpdf.text.Paragraph("Test Wise Count Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Collection Center Book Wise Detail Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
             document.add(new com.itextpdf.text.Paragraph("Date: " + dateFormat.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
             document.add(new com.itextpdf.text.Paragraph(" "));
 
@@ -8709,7 +8709,7 @@ public void preProcessLaboratoryWorkloadSummaryReportPDF(Object document) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
             
             com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            document.add(new com.itextpdf.text.Paragraph("Collection Center Monthly Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Route Wise Monthly Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
             document.add(new com.itextpdf.text.Paragraph("Date: " + sdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
             document.add(new com.itextpdf.text.Paragraph(" "));
             
