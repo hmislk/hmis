@@ -186,6 +186,7 @@
                                         value="Float Transfer"
                                         icon="pi pi-directions"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
                                         action="#{financialTransactionController.navigateToFundTransferBill()}">
                                     </p:commandButton>
 
@@ -195,6 +196,7 @@
                                         title="#{financialTransactionController.fundTransferBillsToReceiveCount gt 0 ? financialTransactionController.fundTransferBillsToReceiveCount.toString().concat(' pending') : 'None pending'}"
                                         icon="pi pi-inbox"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('ReceiveFundTransfer')}"
                                         action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}">
                                     </p:commandButton>
 
@@ -203,6 +205,7 @@
                                         value="My Float Outs"
                                         icon="pi pi-sign-out"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('IssueFundTransfer')}"
                                         action="#{financialTransactionController.navigateToMyFundTransferBillsOut()}">
                                     </p:commandButton>
 
@@ -211,6 +214,7 @@
                                         value="Request Float Transfer"
                                         icon="fa fa-hand-holding-usd"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
                                         action="#{financialTransactionController.navigateToFundTransferRequestBill()}">
                                     </p:commandButton>
 
@@ -220,6 +224,7 @@
                                         title="#{financialTransactionController.fundTransferRequestsForMeCount gt 0 ? financialTransactionController.fundTransferRequestsForMeCount.toString().concat(' pending') : 'None pending'}"
                                         icon="pi pi-inbox"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('ProcessFundTransferRequest')}"
                                         action="#{financialTransactionController.navigateToFundTransferRequestsForMe()}">
                                     </p:commandButton>
 
@@ -228,6 +233,7 @@
                                         value="My Float Requests"
                                         icon="pi pi-list"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('RequestFundTransfer')}"
                                         action="#{financialTransactionController.navigateToMyFundTransferRequests()}">
                                     </p:commandButton>
 
@@ -427,6 +433,14 @@
                                         icon="pi pi-list"
                                         ajax="false"
                                         action="#{searchController.navigateToListSingleUserBills()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Float Transfer Report"
+                                        icon="fa fa-exchange-alt"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyFundTransferReport()}">
                                     </p:commandButton>
                                 </p:tab>
 
