@@ -23,10 +23,10 @@
                                 <h:outputText class="mx-4" value="Admit a Patient"/>
                             </div>
                             <div>
-                                <p:commandButton 
-                                    id="admt" 
-                                    action="#{admissionController.saveSelected}" 
-                                    ajax="false" 
+                                <p:commandButton
+                                    id="admt"
+                                    action="#{admissionController.checkBeforeAdmit}"
+                                    update="@form"
                                     class="ui-button-success mx-1"
                                     value="Admit">
                                 </p:commandButton>
@@ -522,6 +522,43 @@
                 </p:panel>
 
             </h:panelGroup>
+
+            <!-- Active Admission Warning Dialog -->
+            <p:dialog id="dlgActiveAdmission"
+                      widgetVar="dlgActiveAdmission"
+                      header="&#9888; Patient Already Admitted Warning"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:500px">
+                <div style="padding:12px">
+                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                        &#9888; WARNING: This patient already has an active admission.
+                    </p>
+                    <p>
+                        This patient is currently admitted and has not yet been discharged.
+                        Admitting the same patient again is <strong>highly unusual</strong> and may indicate a data-entry error.
+                    </p>
+                    <p style="font-weight:bold;">
+                        Are you sure you want to proceed with this new admission?
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel — Do Not Admit"
+                            icon="fa fa-times"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgActiveAdmission').hide(); return false;"/>
+                        <p:commandButton
+                            value="Yes, Proceed with Admission"
+                            icon="fa fa-exclamation-triangle"
+                            class="ui-button-danger"
+                            action="#{admissionController.saveSelected}"
+                            update="@form"
+                            onclick="PF('dlgActiveAdmission').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
             <p:panel rendered="#{admissionController.printPreview}">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">

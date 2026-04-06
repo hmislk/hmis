@@ -36,6 +36,15 @@
                         <f:ajax event="dateSelect" render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
 
+                    <h:outputLabel for="admType" value="Admission Type"/>
+                    <p:selectOneMenu class="w-100" id="admType"
+                                     value="#{mdInwardReportController.admissionType}">
+                        <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                        <f:selectItems value="#{admissionTypeController.items}"
+                                       var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
                     <h:outputLabel for="pm" value="Payment Method"/>
                     <p:selectOneMenu class="w-100" id="pm"
                                      value="#{mdInwardReportController.paymentMethod}">
@@ -54,7 +63,14 @@
                         </p:column>
                     </p:autoComplete>
 
-
+                    <h:outputLabel for="siteMenu" value="Site"/>
+                    <p:selectOneMenu class="w-100" id="siteMenu"
+                                     value="#{mdInwardReportController.site}"
+                                     filter="true">
+                        <f:selectItem itemLabel="All Sites" />
+                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
 
                     <p:outputLabel for="dept" value="Department" />
                     <p:autoComplete class="w-100"

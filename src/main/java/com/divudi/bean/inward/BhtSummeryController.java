@@ -1467,7 +1467,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
         creditCompanyAllocations = new ArrayList<>();
-        double remaining = (grantTotal - discount) - paidByPatient - paidByCompany;
+        double remaining = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
         List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(patientEncounter);
         if (eccs != null && !eccs.isEmpty()) {
             // Sort by institution name for a stable, deterministic split order
@@ -1482,7 +1482,7 @@ public class BhtSummeryController implements Serializable {
                 creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
                 remaining -= alloc;
             }
-        } else if (patientEncounter.getCreditCompany() != null) {
+        } else if (remaining > 0 && patientEncounter.getCreditCompany() != null) {
             creditCompanyAllocations.add(new CreditCompanyAllocation(patientEncounter.getCreditCompany(), remaining));
         }
     }
@@ -1492,7 +1492,7 @@ public class BhtSummeryController implements Serializable {
                 || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit) {
             return false;
         }
-        double expected = (grantTotal - discount) - paidByPatient - paidByCompany;
+        double expected = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
         if (expected > 0 && (creditCompanyAllocations == null || creditCompanyAllocations.isEmpty())) {
             JsfUtil.addErrorMessage("Please allocate the full credit due amount before settlement");
             return true;
@@ -1618,6 +1618,10 @@ public class BhtSummeryController implements Serializable {
         if (checkPatientItems()) {
             JsfUtil.addErrorMessage("Please Finalize Patient Timed Service");
             return;
+        }
+
+        if (!getPatientEncounter().isClinicallyDischarged()) {
+            JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
         }
 
         getPatientEncounter().setDateOfDischarge(date);
@@ -2931,6 +2935,10 @@ public class BhtSummeryController implements Serializable {
 
     public void setShowOrginalBill(boolean showOrginalBill) {
         this.showOrginalBill = showOrginalBill;
+    }
+
+    public String getChargeTypeLabel(com.divudi.core.data.inward.InwardChargeType type) {
+        return configOptionApplicationController.getInwardChargeTypeLabel(type);
     }
 
     public List<ChargeItemTotal> getChargeItemTotals() {

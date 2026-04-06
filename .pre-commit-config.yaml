@@ -1,0 +1,12 @@
+# Pre-commit hooks for HMIS project
+# Setup: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+# Docs: https://pre-commit.com
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: Detect secrets with gitleaks
+        description: Blocks commits that contain credentials, API keys, or passwords

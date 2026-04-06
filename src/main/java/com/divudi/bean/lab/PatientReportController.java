@@ -244,6 +244,47 @@ public class PatientReportController implements Serializable {
         return uploadFacade.findFirstByJpql(jpql, params);
     }
 
+    public void reloadPatientDetailsInReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return;
+        }
+
+        Patient pt = patientFacade.findWithoutCache(currentPatientReport.getPatientInvestigation().getPatient().getId());
+
+        currentPatientReport.setPatientName(pt.getPerson().getNameWithTitle());
+        currentPatientReport.setPatientAge(pt.getAgeOnBilledDate(currentPatientReport.getPatientInvestigation().getBillItem().getBill().getCreatedAt()));
+        currentPatientReport.setPatientGender(pt.getPerson().getSex().getLabel());
+        getFacade().edit(currentPatientReport);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addParientDetailsEditHistory(currentPtIx, currentPatientReport);
+        }
+
+        System.out.println("Successfully Update Patient Name, Age, Gender.");
+
+        Boolean updateDynamicLabel = false;
+
+        if (currentPatientReport.getPatientReportItemValues() != null && !currentPatientReport.getPatientReportItemValues().isEmpty()) {
+
+            for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+                if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.DynamicLabel) {
+                    priv.setStrValue(prBean.getPatientDynamicLabel(priv.getInvestigationItem(), pt));
+                    updateDynamicLabel = true;
+                }
+            }
+
+            if (updateDynamicLabel) {
+                savePatientReportItemValues();
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    labTestHistoryController.addReCalculateDynamicLabelHistory(currentPtIx, currentPatientReport);
+                }
+                System.out.println("Successfully Update DynamicLabel in Report");
+            }
+        }
+
+    }
+
     public String navigateToPrintPatientReport(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");
@@ -2270,7 +2311,7 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("First Approve report");
             return;
         }
-        
+
         String currentSMSReceipientNumber = currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber();
 
         if (currentSMSReceipientNumber != null && !currentSMSReceipientNumber.trim().isEmpty()) {
@@ -2286,7 +2327,7 @@ public class PatientReportController implements Serializable {
             Sms currentSMS = null;
 
             String ptMobile = currentSMSReceipientNumber.trim();
-            
+
             if (sms != null) {
 
                 if (!sms.getReceipientNumber().equalsIgnoreCase(ptMobile)) {
@@ -2297,7 +2338,7 @@ public class PatientReportController implements Serializable {
                 currentSMS = sms;
 
             } else {
-                
+
                 Sms e = new Sms();
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
@@ -2313,14 +2354,14 @@ public class PatientReportController implements Serializable {
                 e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                 e.setPending(true);
                 getSmsFacade().create(e);
-                
+
                 currentSMS = e;
 
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReportCreateSentManualSMSHistory(currentPtIx, currentPatientReport, e);
                 }
             }
-            
+
             Boolean sent = smsManager.sendSms(currentSMS);
 
             if (sent) {
@@ -2337,17 +2378,17 @@ public class PatientReportController implements Serializable {
                     labTestHistoryController.addReportSentManualSMSHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, currentSMS);
                 }
                 JsfUtil.addSuccessMessage("SMS Sent");
-                
+
             } else {
-                currentSMS.setSendingFailed(true);    
+                currentSMS.setSendingFailed(true);
                 smsFacade.edit(currentSMS);
-                                    
+
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addSentSMSFailureHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, currentSMS, currentSMS.getReceivedMessage());
                 }
-                
+
                 JsfUtil.addErrorMessage("SMS Sent Failed");
-            }     
+            }
         } else {
             JsfUtil.addErrorMessage("Parient Mobile Number is Missing");
         }

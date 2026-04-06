@@ -15,7 +15,6 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,6 +57,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
+    private PaymentMethod paymentMethod;
     private Institution institution;
     private Institution site;
     private Department department;
@@ -67,8 +67,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     private List<BhtPaymentSummaryDTO> reportRows;
 
-    /** All PaymentMethod values — drives the dynamic columns in XHTML. */
-    private final List<PaymentMethod> allPaymentMethods = Arrays.asList(PaymentMethod.values());
+    /** Payment methods that have at least one non-zero deposit in the current result set. */
+    private List<PaymentMethod> allPaymentMethods = new ArrayList<>();
 
     /** Column totals, keyed by PaymentMethod ordinal. */
     private Map<PaymentMethod, Double> columnTotals = new HashMap<>();
@@ -87,6 +87,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
+            allPaymentMethods = new ArrayList<>();
             return;
         }
 
@@ -94,12 +95,20 @@ public class BhtPaymentSummaryReportController implements Serializable {
             BhtPaymentSummaryDTO row = buildRow(enc);
             reportRows.add(row);
 
-            // accumulate column totals
-            for (PaymentMethod pm : allPaymentMethods) {
+            // accumulate column totals across all known methods
+            for (PaymentMethod pm : PaymentMethod.values()) {
                 columnTotals.merge(pm, row.getDepositForMethod(pm), Double::sum);
             }
             grandTotalDeposits += row.getTotalDeposits();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
+        }
+
+        // only show columns where at least one BHT had a non-zero deposit
+        allPaymentMethods = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            if (columnTotals.getOrDefault(pm, 0.0) != 0.0) {
+                allPaymentMethods.add(pm);
+            }
         }
     }
 
@@ -170,6 +179,12 @@ public class BhtPaymentSummaryReportController implements Serializable {
             params.put("dept", department);
         }
 
+        // --- payment method ---
+        if (paymentMethod != null) {
+            jpql.append(" and c.paymentMethod = :pm");
+            params.put("pm", paymentMethod);
+        }
+
         jpql.append(" order by c.bhtNo");
 
         return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -195,8 +210,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
         List<BillItem> creditItems = fetchCreditSettlementItems(enc);
         for (BillItem bi : creditItems) {
             String companyName = "";
-            if (bi.getBill() != null && bi.getBill().getCreditCompany() != null) {
-                companyName = bi.getBill().getCreditCompany().getName();
+            if (bi.getReferenceBill() != null && bi.getReferenceBill().getCreditCompany() != null) {
+                companyName = bi.getReferenceBill().getCreditCompany().getName();
             }
             row.addCreditSettlement(Math.abs(bi.getNetValue()), companyName);
         }
@@ -262,6 +277,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         dateBasis = "dischargeDate";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
+        paymentMethod = null;
         institution = null;
         site = null;
         department = null;
@@ -269,6 +285,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         columnTotals = new HashMap<>();
         grandTotalDeposits = 0;
         grandTotalCreditSettlement = 0;
+        allPaymentMethods = new ArrayList<>();
     }
 
     // -------------------------------------------------------------------------
@@ -289,6 +306,9 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     public AdmissionType getAdmissionType() { return admissionType; }
     public void setAdmissionType(AdmissionType admissionType) { this.admissionType = admissionType; }
+
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public Institution getInstitution() { return institution; }
     public void setInstitution(Institution institution) { this.institution = institution; }
