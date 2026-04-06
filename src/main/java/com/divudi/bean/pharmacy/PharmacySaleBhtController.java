@@ -2010,7 +2010,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (bi == null
                 || bi.getPharmaceuticalBillItem() == null
                 || bi.getPharmaceuticalBillItem().getStock() == null
-                || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
+                || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null
+                || bi.getItem() == null) {
             return;
         }
 
@@ -2053,12 +2054,15 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         long t2 = System.currentTimeMillis();
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(
-                bi,
-                estimatedValueBeforeAddingMarginToCalculateMatrix,
-                matrixDept,
-                paymentMethod
-        );
+        PriceMatrix priceMatrix = null;
+        if (bi.getItem() != null) {
+            priceMatrix = getPriceMatrixController().fetchInwardMargin(
+                    bi,
+                    estimatedValueBeforeAddingMarginToCalculateMatrix,
+                    matrixDept,
+                    paymentMethod
+            );
+        }
         System.out.println("[calculateRates] fetchInwardMargin: " + (System.currentTimeMillis() - t2) + "ms");
 
         if (priceMatrix != null) {
