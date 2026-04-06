@@ -94,14 +94,14 @@
                                 <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{shiftController.current.endingTime}" navigator="true" pattern="#{sessionController.applicationPreference.longTimeFormat}" timeOnly="true">                            
                                 </p:calendar>  
 
-                                <p:outputLabel value="Previous Shift"/>
-                                <p:selectOneMenu value="#{shiftController.current.previousShift}" filter="true" class="w-100 mx-4" style="width:100%">
+                                <p:outputLabel for="prevShift" value="Previous Shift"/>
+                                <p:selectOneMenu id="prevShift" value="#{shiftController.current.previousShift}" filter="true" class="w-100 mx-4" style="width:100%"  title="Select the previous shift">
                                     <f:selectItem itemLabel="Select Previous Shift" itemValue="#{null}" noSelectionOption="true" />
                                     <f:selectItems value="#{shiftController.availableShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
                                 </p:selectOneMenu>
 
-                                <p:outputLabel value="Next Shift"/>
-                                <p:selectOneMenu value="#{shiftController.current.nextShift}" filter="true" class="w-100 mx-4" style="width:100%">
+                                <p:outputLabel for="nextShift" value="Next Shift"/>
+                                <p:selectOneMenu id="nextShift" value="#{shiftController.current.nextShift}" filter="true" class="w-100 mx-4" style="width:100%"  title="Select the next shift">
                                     <f:selectItem itemLabel="Select Next Shift" itemValue="#{null}" noSelectionOption="true" />
                                     <f:selectItems value="#{shiftController.availableShifts}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
                                 </p:selectOneMenu>
