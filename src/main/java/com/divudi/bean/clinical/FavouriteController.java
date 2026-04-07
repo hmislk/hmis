@@ -100,7 +100,7 @@ public class FavouriteController implements Serializable {
         item = null;
         items = null;
         current = null;
-        return "/clinical/clinical_favourite_diagnosis";
+        return "/clinical/clinical_favourite_diagnosis?faces-redirect=true";
     }
 
     public String toAddFavItem() {
