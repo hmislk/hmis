@@ -52,7 +52,7 @@
                                         <f:ajax  event="itemSelect" execute="creditCom"  />
                                         <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
                                         <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
-                                        <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                        <p:column headerText="Current Balance" style="padding: 5px; width: 150px; text-align: right;">
                                             <p:outputLabel value="#{ix.ballance}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:outputLabel>
