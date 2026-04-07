@@ -9459,6 +9459,10 @@ public class SearchController implements Serializable {
         return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
     }
 
+    public String navigateToCombinedItemizedServiceSummary() {
+        return "/inward/inward_itemized_service_summary_dto.xhtml?faces-redirect=true";
+    }
+
     public boolean isOptimizedItemizedSaleSummaryEnabled() {
         return configOptionApplicationController.getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
     }
