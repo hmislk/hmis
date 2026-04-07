@@ -23,6 +23,10 @@ import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.dto.SurgeryCountSurgeryWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.AdmissionStatus;
+import static com.divudi.core.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+import static com.divudi.core.data.inward.AdmissionStatus.ANY_STATUS;
+import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
@@ -815,7 +819,6 @@ public class InwardReportController implements Serializable {
 
         jpql.append("WHERE pe.retired = :ret ")
                 .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
-                .append("AND pe.discharged = TRUE ")
                 .append("AND pe.paymentFinalized = FALSE ");
 
         params.put("ret", false);
@@ -875,6 +878,7 @@ public class InwardReportController implements Serializable {
             jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
         }
+        
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
@@ -884,7 +888,7 @@ public class InwardReportController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
             unsettledInvoicesList = new ArrayList<>();
-            return; 
+            return;
         }
 
         if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
@@ -933,7 +937,6 @@ public class InwardReportController implements Serializable {
         }
     }
 
-   
     private Map<Long, Double> batchFetchPaidAmounts(List<Long> encounterIds) {
         if (encounterIds == null || encounterIds.isEmpty()) {
             return Collections.emptyMap();

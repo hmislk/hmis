@@ -267,8 +267,8 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{inwardReportController.sponsor}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Sponsors"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                itemValue="#{cc.attrs}" ></f:selectItems>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="s" 
+                                                itemValue="#{s}" itemLabel="#{s.name}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <!--Discharge Type--> 
