@@ -30,7 +30,6 @@
                                         </p:commandButton>
                                     </h:panelGroup>
 
-
                                     <h:panelGroup class="mx-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion')}" >
                                         <h:panelGroup rendered="#{pettyCashBillSearch.bill.approveAt ne null}">
                                             <p:commandButton 
@@ -75,9 +74,7 @@
                             </div>
                         </f:facet>
 
-
                         <div class="row">
-
                             <div class="col-md-6">
                                 <p:panel>
                                     <f:facet name="header">
@@ -117,8 +114,6 @@
                                         <h:outputLabel value="Total Refuneded:" ></h:outputLabel>
                                         <h:outputLabel value="#{pettyCashBillController.totalOfRedundedBills}" ></h:outputLabel>
                                     </p:panelGrid>
-
-
                                 </p:panel>
                             </div>
 
