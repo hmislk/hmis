@@ -183,8 +183,12 @@
                                                                     inputStyleClass="form-control"
                                                                     itemLabel="#{pta.name}" 
                                                                     itemValue="#{pta}" 
+                                                                    maxResults="20"
                                                                     forceSelection="true" 
                                                                     value="#{pettyCashBillController.newPerson.area}" >
+                                                                    <p:column style="width: 100px; padding: 3px;">
+                                                            #{pta.name}
+                                                        </p:column>
                                                                 </p:autoComplete>
                                                             </div>
                                                         </div>
