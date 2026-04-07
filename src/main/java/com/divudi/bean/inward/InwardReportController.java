@@ -103,6 +103,7 @@ import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -137,6 +138,8 @@ public class InwardReportController implements Serializable {
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    InwardBeanController inwardBeanController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -790,7 +793,6 @@ public class InwardReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        // Use PatientEncounter instead of Admission
         jpql.append("SELECT new com.divudi.core.data.dto.IpUnsettledInvoiceDTO(")
                 .append("pe.id, ")
                 .append("pe.patient.phn, ")
@@ -820,14 +822,12 @@ public class InwardReportController implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        // Discharge date filter
         if (dischargeFromDate != null && dischargeToDate != null) {
             jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
             params.put("dfd", dischargeFromDate);
             params.put("dtd", dischargeToDate);
         }
 
-        // Invoice approved date filter
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
             jpql.append("AND pe.finalBill IS NOT NULL ")
                     .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
@@ -835,60 +835,42 @@ public class InwardReportController implements Serializable {
             params.put("iatd", invoiceApprovedToDate);
         }
 
-        // Institution filter
         if (institution != null) {
             jpql.append("AND pe.institution = :inst ");
             params.put("inst", institution);
         }
-
-        // Site filter
         if (site != null) {
             jpql.append("AND pe.department.site = :site ");
             params.put("site", site);
         }
-
-        // Department filter
         if (department != null) {
             jpql.append("AND pe.department = :dept ");
             params.put("dept", department);
         }
-
-        // Consultant filter
         if (consultant != null) {
             jpql.append("AND pe.referringConsultant = :cons ");
             params.put("cons", consultant);
         }
-
-        // Service Center filter (assuming this uses department)
         if (serviceCenter != null) {
             jpql.append("AND pe.department = :sc ");
             params.put("sc", serviceCenter);
         }
-
         if (sponsor != null) {
             jpql.append("AND pe.creditCompany = :sponsor ");
             params.put("sponsor", sponsor);
         }
-
-        // Admission Status filter (if PatientEncounter has admissionStatus)
         if (admissionStatus != null) {
             jpql.append("AND pe.admissionStatus = :as ");
             params.put("as", admissionStatus);
         }
-
-        // Admission Type filter
         if (admissionType != null) {
             jpql.append("AND pe.admissionType = :at ");
             params.put("at", admissionType);
         }
-
-        // Payment Method filter
         if (paymentMethod != null) {
             jpql.append("AND pe.paymentMethod = :pm ");
             params.put("pm", paymentMethod);
         }
-
-        // Room Category filter
         if (roomCategory != null) {
             jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
@@ -898,20 +880,87 @@ public class InwardReportController implements Serializable {
 
         try {
             unsettledInvoicesList = (List<IpUnsettledInvoiceDTO>) peFacade.findLightsByJpql(
-                    jpql.toString(),
-                    params,
-                    TemporalType.TIMESTAMP
-            );
-
+                    jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
             unsettledInvoicesList = new ArrayList<>();
+            return; 
         }
 
-        if (unsettledInvoicesList == null) {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
             unsettledInvoicesList = new ArrayList<>();
+            return;
         }
 
+        List<Long> encounterIds = unsettledInvoicesList.stream()
+                .filter(dto -> dto != null && dto.getAdmissionId() != null)
+                .map(IpUnsettledInvoiceDTO::getAdmissionId)
+                .collect(Collectors.toList());
+
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+
+        Map<Long, PatientEncounter> encounterById = (encounters == null)
+                ? Collections.emptyMap()
+                : encounters.stream().collect(
+                        Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        Map<Long, Double> paidByEncounterId = batchFetchPaidAmounts(encounterIds);
+
+        for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+            if (dto == null) {
+                continue;
+            }
+
+            PatientEncounter pe = encounterById.get(dto.getAdmissionId());
+            if (pe == null) {
+                dto.setNetTotal(0.0);
+                dto.setCreditPaidAmount(0.0);
+                continue;
+            }
+
+            double total = Math.max(0.0, inwardBeanController.calculateInwardTotal(pe));
+            double collected = paidByEncounterId.getOrDefault(dto.getAdmissionId(), 0.0);
+            collected = Math.min(collected, total); // cap at total
+
+            dto.setNetTotal(total);
+            dto.setCreditPaidAmount(collected);
+        }
+    }
+
+   
+    private Map<Long, Double> batchFetchPaidAmounts(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String sql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "  AND b.billType = :btp "
+                + "  AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("ids", encounterIds);
+
+        List<Object[]> rows = getBillFacade().findObjectsArrayByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> result = new HashMap<>(encounterIds.size());
+        if (rows != null) {
+            for (Object[] row : rows) {
+                Long id = ((Number) row[0]).longValue();
+                Double paid = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                result.put(id, Math.max(0.0, paid));
+            }
+        }
+        return result;
     }
 
     public void processSpecialtyDoctorWiseIncomeReport() {
@@ -3224,7 +3273,7 @@ public class InwardReportController implements Serializable {
             return null;
         }
     }
-    
+
     private static final int MAX_CHART_IMAGE_DATA_URL_LENGTH = 3000000;
 
     private String sanitizeChartImage(String image) {

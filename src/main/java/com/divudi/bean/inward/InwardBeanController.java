@@ -2500,6 +2500,59 @@ public class InwardBeanController implements Serializable {
 
         return count;
     }
+    
+    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
+        BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+        BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+    );
+    public double calculateInwardTotal(PatientEncounter patientEncounter) {
+        if (patientEncounter == null) {
+            return 0.0;
+        }
+
+        List<PatientEncounter> childPatientEncounters = fetchChildPatientEncounter(patientEncounter);
+        double total = 0.0;
+
+        // Base charges from interim bill summary.
+        total += getAdmissionCharge(patientEncounter, childPatientEncounters);
+        total += getRoomCharge(patientEncounter, childPatientEncounters);
+        total += getMoCharge(patientEncounter, childPatientEncounters);
+        total += getNursingCharge(patientEncounter, childPatientEncounters);
+        total += getMaintainCharge(patientEncounter, childPatientEncounters);
+        total += getMedicalCareIcuCharge(patientEncounter, childPatientEncounters);
+        total += getAdminCharge(patientEncounter, childPatientEncounters);
+        total += getLinenCharge(patientEncounter, childPatientEncounters);
+
+        total += calCostOfIssueByBill(patientEncounter, INWARD_MEDICINE_BILL_TYPES, childPatientEncounters);
+        total += calCostOfIssue(patientEncounter, BillType.StoreBhtPre, childPatientEncounters);
+        total += calculateProfessionalCharges(patientEncounter, childPatientEncounters, false);
+        total += calculateDoctorAndNurseCharges(patientEncounter, childPatientEncounters);
+
+        total += sumTotals(calServiceBillItemsTotalByInwardChargeTypeBulk(patientEncounter, childPatientEncounters));
+        total += sumTotals(getTimedItemFeeTotalByInwardChargeTypeBulk(patientEncounter, childPatientEncounters));
+        total += sumTotals(caltValueFromAdditionalChargeBulk(patientEncounter, childPatientEncounters));
+
+        return Math.max(0.0, total);
+    }
+
+    private double sumTotals(Map<InwardChargeType, Double> totals) {
+        double total = 0.0;
+        if (totals != null && !totals.isEmpty()) {
+            for (Double value : totals.values()) {
+                if (value != null) {
+                    total += value;
+                }
+            }
+        }
+        return total;
+    }
+    
 
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
