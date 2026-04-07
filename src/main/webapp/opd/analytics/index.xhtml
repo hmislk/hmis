@@ -117,6 +117,14 @@
                                                 value="Income Breakdown by Category"
                                                 action="#{searchController.navigateToIncomeBreakdownByCategoryOpd()}"/>
 
+                                            <p:commandButton
+                                                class="w-100 ui-button-info"
+                                                ajax="false"
+                                                icon="fa fa-fw fa-table"
+                                                value="Itemized Service Summary (OPD + Inward)"
+                                                action="#{searchController.navigateToCombinedItemizedServiceSummary()}"
+                                                title="Combined OPD and Inward itemized service summary report"/>
+
                                         </div>
                                     </p:tab>
 
