@@ -300,7 +300,7 @@ public class PettyCashBillController implements Serializable {
                     JsfUtil.addErrorMessage("Gender is Missing in New Person.");
                     return;
                 }
-                if (newPerson.getAddress() == null) {
+                if (newPerson.getArea()== null) {
                     JsfUtil.addErrorMessage("Address is Missing in New Person.");
                     return;
                 }
