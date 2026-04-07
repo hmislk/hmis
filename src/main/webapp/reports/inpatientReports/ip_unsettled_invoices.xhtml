@@ -228,7 +228,7 @@
                                 <h:outputText styleClass="fa fa-user-md mr-2"/>
                                 <p:outputLabel value="Consultant" class="m-3"/>
                             </h:panelGroup>
-                            
+
                             <p:autoComplete 
                                 forceSelection="true" 
                                 value="#{inwardReportController.consultant}" 
@@ -356,7 +356,9 @@
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
-                                             value="Print" />
+                                             value="Print" onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
+                            </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1"
                                              icon="fas fa-file-pdf"
@@ -365,7 +367,7 @@
 
                         </div>
 
-                        <p:panel header="Discharged Patients Without Active Final Invoice">
+                        <p:panel header="Discharged Patients Without Active Final Invoice" id='printPanel'>
 
                             <h:outputText value="Criteria:" style="font-weight: bold; font-size: 16px;" />
                             <!-- Summary Table -->
@@ -505,6 +507,21 @@
                             </div>
                         </p:panel>
                     </p:panel>
+                    <h:outputScript>
+                        function hidePaginatorBeforePrint() {
+                        let paginators = document.querySelectorAll('.ui-paginator');
+                        paginators.forEach(el => el.style.display = 'none');
+                        }
+
+                        function restorePaginatorAfterPrint() {
+                        let paginators = document.querySelectorAll('.ui-paginator');
+                        paginators.forEach(el => el.style.display = '');
+                        }
+
+                        window.onafterprint = function () {
+                        restorePaginatorAfterPrint();
+                        };
+                    </h:outputScript>
                 </h:form>
             </ui:define>
         </ui:composition>
