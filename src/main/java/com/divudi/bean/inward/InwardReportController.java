@@ -143,6 +143,7 @@ public class InwardReportController implements Serializable {
     Institution institution;
     Institution site;
     Department department;
+    private String dateBasis = "createdAt";
     Date fromDate;
     Date toDate;
     private Date fromYearStartDate;
@@ -1929,12 +1930,28 @@ public class InwardReportController implements Serializable {
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
         Map m = new HashMap();
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.createdAt";
         String sql = "select b from PatientEncounter b "
-                + " where b.dateOfAdmission between :fd and :td ";
+                + " where " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad";
             m.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.institution =:inst ";
+            m.put("inst", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and b.department =:dept ";
+            m.put("dept", department);
         }
 
         if (withoutCancelBHT) {
@@ -2026,11 +2043,12 @@ public class InwardReportController implements Serializable {
 
     public void fillDischargeBook() {
         Map m = new HashMap();
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.createdAt";
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 //                + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -2040,6 +2058,16 @@ public class InwardReportController implements Serializable {
         if (institution != null) {
             sql += " and b.creditCompany =:ins ";
             m.put("ins", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and b.department =:dept ";
+            m.put("dept", department);
         }
 
         if (paymentMethod != null) {
@@ -2224,12 +2252,13 @@ public class InwardReportController implements Serializable {
     public void fillDischargeBookPaymentFinalizedNoChanges() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 //                + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -2259,12 +2288,13 @@ public class InwardReportController implements Serializable {
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
         Date startTime = new Date();
 
+        String dateField = "admissionDate".equals(dateBasis) ? "b.dateOfAdmission" : "b.dateOfDischarge";
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
                 + " and b.discharged=true "
                 + " and b.paymentFinalized=true "
-                + " and b.dateOfDischarge between :fd and :td ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -3233,6 +3263,18 @@ public class InwardReportController implements Serializable {
 
     public void setDepartment(Department deptartment) {
         this.department = deptartment;
+    }
+
+    public void clearDepartment() {
+        this.department = null;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
     }
 
     public AdmissionType getAdmissionType() {

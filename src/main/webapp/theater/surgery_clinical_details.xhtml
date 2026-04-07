@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" styleClass="opdPanel">
+            <h:form id="form">
+
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-notes-medical fa-lg"/>
+                                <p:outputLabel value="Surgery Clinical Details" class="m-2"/>
+                                <p:outputLabel
+                                    value="#{surgeryBillController.surgeryBill.procedure.item.name}"
+                                    style="font-weight: bold;"
+                                    rendered="#{surgeryBillController.surgeryBill.procedure.item ne null}"/>
+                                <p:outputLabel value=" — BHT: " class="mx-1"
+                                               rendered="#{surgeryBillController.surgeryBill.patientEncounter ne null}"/>
+                                <p:outputLabel
+                                    value="#{surgeryBillController.surgeryBill.patientEncounter.bhtNo}"
+                                    style="font-weight: bold;"
+                                    rendered="#{surgeryBillController.surgeryBill.patientEncounter ne null}"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card"
+                                        class="ui-button-secondary"
+                                        value="Inpatient Dashboard"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                            target="#{admissionController.current}">
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <p:commandButton
+                                    value="Surgery WorkBench"
+                                    action="/theater/surgery_workbench?faces-redirect=true"
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <!-- Patient + Surgery summary -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <in:bhtDetail admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <!-- Left: Surgery timing + op notes -->
+                        <div class="col-md-6">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-clock"/>
+                                    <h:outputText value="Surgery Timing &amp; Notes" class="mx-2"/>
+                                </f:facet>
+
+                                <h:panelGrid columns="2" columnClasses="col-4, col-8" style="width:100%">
+                                    <h:outputLabel value="Surgery Name"/>
+                                    <h:outputLabel value="#{surgeryBillController.surgeryBill.procedure.item.name}"
+                                                   style="font-weight:bold;"/>
+
+                                    <h:outputLabel value="Start Time"/>
+                                    <p:calendar id="calFrom"
+                                                value="#{surgeryBillController.surgeryBill.procedure.fromTime}"
+                                                navigator="true"
+                                                showTime="true"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                class="my-1"/>
+
+                                    <h:outputLabel value="End Time"/>
+                                    <p:calendar id="calTo"
+                                                value="#{surgeryBillController.surgeryBill.procedure.toTime}"
+                                                navigator="true"
+                                                showTime="true"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                class="my-1"/>
+
+                                    <h:outputLabel value="Operative Notes"/>
+                                    <p:inputTextarea id="txtNotes"
+                                                     value="#{surgeryBillController.surgeryBill.procedure.comments}"
+                                                     rows="6"
+                                                     style="width:100%"
+                                                     autoResize="false"
+                                                     class="my-1"/>
+                                </h:panelGrid>
+
+                                <p:commandButton
+                                    value="Save Details"
+                                    icon="fa fa-save"
+                                    class="ui-button-success mt-2"
+                                    ajax="false"
+                                    action="#{surgeryBillController.saveSurgicalDetails()}"
+                                    disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}"/>
+                            </p:panel>
+                        </div>
+
+                        <!-- Right: Clinical staff roles -->
+                        <div class="col-md-6">
+                            <p:panel id="pStaffAdd">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-user-doctor"/>
+                                    <h:outputText value="Surgical Team" class="mx-2"/>
+                                </f:facet>
+
+                                <h:panelGrid columns="2" id="clinStaffPanel"
+                                             rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                                    <h:outputLabel value="Role"/>
+                                    <p:selectOneMenu id="cmbClinRole"
+                                        value="#{surgeryBillController.clinicalEncounterComponent.patientEncounterComponentType}"
+                                        class="my-1" style="width:300px">
+                                        <f:selectItem itemLabel="— Select Role —" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{enumController.patientEncounterComponentTypes}"
+                                                       var="ect"
+                                                       itemLabel="#{ect}"
+                                                       itemValue="#{ect}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:outputText value="Speciality"/>
+                                    <p:autoComplete forceSelection="true" id="cmbClinSpe"
+                                                    value="#{surgeryBillController.clinicalSpeciality}"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    var="sp"
+                                                    itemLabel="#{sp.name}"
+                                                    itemValue="#{sp}"
+                                                    size="40"
+                                                    class="my-1">
+                                        <f:ajax event="itemSelect" execute="cmbClinRole cmbClinSpe" render="cmbClinDoc"/>
+                                    </p:autoComplete>
+
+                                    <h:outputText value="Doctor / Staff"/>
+                                    <p:autoComplete forceSelection="true" id="cmbClinDoc"
+                                                    value="#{surgeryBillController.clinicalEncounterComponent.staff}"
+                                                    completeMethod="#{surgeryBillController.completeClinicalStaff}"
+                                                    var="st"
+                                                    itemLabel="#{st.person.nameWithTitle}"
+                                                    itemValue="#{st}"
+                                                    size="40"
+                                                    class="my-1">
+                                        <f:ajax event="itemSelect" execute="cmbClinRole cmbClinSpe cmbClinDoc" render="cmbClinDoc"/>
+                                    </p:autoComplete>
+
+                                    <h:outputLabel value="Notes"/>
+                                    <p:inputText
+                                        value="#{surgeryBillController.clinicalEncounterComponent.description}"
+                                        size="40"
+                                        class="my-1"/>
+                                </h:panelGrid>
+
+                                <p:commandButton
+                                    value="Add to Team"
+                                    icon="fa fa-plus"
+                                    class="ui-button-success mt-2"
+                                    ajax="false"
+                                    action="#{surgeryBillController.addClinicalStaff()}"
+                                    rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}"/>
+
+                                <p:dataTable value="#{surgeryBillController.clinicalEncounterComponents}" var="ec"
+                                             emptyMessage="No surgical team recorded yet."
+                                             class="mt-3">
+                                    <p:column headerText="Role">
+                                        <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                                    </p:column>
+                                    <p:column headerText="Name">
+                                        <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column headerText="Notes">
+                                        <h:outputLabel value="#{ec.description}"/>
+                                    </p:column>
+                                    <p:column headerText="Added By">
+                                        <h:outputLabel value="#{ec.creater.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Remove"
+                                              rendered="#{!surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}">
+                                        <p:commandButton
+                                            value="Remove"
+                                            icon="fa fa-times"
+                                            class="ui-button-danger"
+                                            ajax="false"
+                                            action="#{surgeryBillController.removeClinicalStaff(ec)}"
+                                            onclick="return confirm('Remove this team member?');"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+                        </div>
+
+                    </div>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

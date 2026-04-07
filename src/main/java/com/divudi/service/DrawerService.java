@@ -189,6 +189,7 @@ public class DrawerService {
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(user);
+        drawerEntry.setTransactionValue(payment.getPaidValue());
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {

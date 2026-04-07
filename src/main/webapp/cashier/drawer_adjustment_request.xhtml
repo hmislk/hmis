@@ -29,6 +29,18 @@
                             </div>
                         </f:facet>
 
+                        <p:messages id="pageMessages" showDetail="true" closable="true"/>
+
+                        <p:panel rendered="#{drawerAdjustmentController.hasPendingRequest}"
+                                 styleClass="ui-panel-warning mt-3">
+                            <f:facet name="header">
+                                <i class="pi pi-exclamation-triangle"></i>
+                                <h:outputLabel value=" Pending Request Exists" class="mx-2"/>
+                            </f:facet>
+                            <p:outputLabel value="You already have a pending drawer adjustment request. You cannot submit a new request until the existing one is approved or rejected."/>
+                        </p:panel>
+
+                        <p:panel rendered="#{!drawerAdjustmentController.hasPendingRequest}">
                         <div class="row mt-3">
                             <div class="col-md-6 offset-md-3">
                                 <p:panel>
@@ -124,6 +136,7 @@
                                 </p:panel>
                             </div>
                         </div>
+                        </p:panel>
                     </p:panel>
                 </h:form>
             </ui:define>

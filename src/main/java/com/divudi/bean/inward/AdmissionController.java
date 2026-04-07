@@ -56,6 +56,7 @@ import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -82,6 +83,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -497,6 +499,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 current.setClaimable(false);
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
+            if (current.getPaymentMethod() == PaymentMethod.Credit) {
+                current.setClaimable(true);
+            }
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient", false)) {
             if (current.getPatient() == null) {
                 return;
@@ -775,6 +782,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
+        return suggestions;
+    }
+
+    public List<PatientEncounterDto> completePatientPaymentFinalizedWithPhn(String query) {
+        List<PatientEncounterDto> suggestions;
+        String sql;
+        HashMap h = new HashMap();
+        if (query == null || query.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            String normalizedQuery = query.trim().toLowerCase();
+            sql = "select new com.divudi.core.data.dto.PatientEncounterDto(c.id, c.patient.person.name, c.bhtNo, c.patient.phn) "
+                    + " from PatientEncounter c "
+                    + " where c.retired=false "
+                    + " AND c.discharged = true "
+                    + " and c.paymentFinalized=true "
+                    + " and ((lower(c.bhtNo)) like :q "
+                    + " or (lower(c.patient.person.name)) like :q "
+                    + " or (lower(c.patient.phn)) like :q) "
+                    + " order by c.bhtNo";
+            h.put("q", "%" + normalizedQuery + "%");
+            suggestions = (List<PatientEncounterDto>) patientEncounterFacade.findLightsByJpql(sql, h, TemporalType.TIMESTAMP, 20);
+        }
         return suggestions;
     }
 
@@ -1343,6 +1373,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Show Claimable Field", true)) {
             return false;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Auto Mark Claimable for Credit Admissions", false)) {
+            return true;
+        }
         String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
                 "Inward Admission - Claimable Required For", "Credit");
         if ("None".equalsIgnoreCase(claimableRequiredFor)) {
@@ -1492,13 +1525,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
+            boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
             boolean claimableAllowed = isClaimableAllowed();
-            if (!claimableAllowed && getCurrent().isClaimable()) {
+            if (!autoMarkCredit && !claimableAllowed && getCurrent().isClaimable()) {
                 getCurrent().setClaimable(false);
                 JsfUtil.addErrorMessage("Claimable is not applicable for the selected payment method");
                 return true;
             }
-            if (claimableAllowed && !getCurrent().isClaimable()) {
+            if (!autoMarkCredit && claimableAllowed && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark the admission as Claimable");
                 return true;
             }
@@ -1855,6 +1890,39 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patientRoom = new PatientRoom();
     }
 
+    /**
+     * Checks whether the current patient already has an active (undischarged)
+     * admission.
+     *
+     * @return true if an active admission exists for the patient
+     */
+    private boolean isPatientAlreadyAdmitted() {
+        if (getCurrent().getPatient() == null) {
+            return false;
+        }
+        String jpql = "SELECT COUNT(a) FROM Admission a "
+                + "WHERE a.patient = :patient "
+                + "AND a.retired = false "
+                + "AND a.discharged = false";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("patient", getCurrent().getPatient());
+        long count = getFacade().findLongByJpql(jpql, params);
+        return count > 0;
+    }
+
+    /**
+     * Called by the "Admit" button (AJAX). If the patient already has an active
+     * (undischarged) admission, shows a warning dialog. Otherwise proceeds with
+     * the normal save.
+     */
+    public void checkBeforeAdmit() {
+        if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
+            PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
+        } else {
+            saveSelected();
+        }
+    }
+
     public void saveSelected() {
         if (admittingProcessStarted) {
             JsfUtil.addErrorMessage("Admittin process already started.");
@@ -2164,6 +2232,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrent(Admission current) {
         this.current = current;
+    }
+
+    /**
+     * Navigate to the inpatient profile page for the given admission ID. Used
+     * by the Admission Report page (Issue #19640) where only the ID is
+     * available in the DTO.
+     */
+    public String navigateToAdmissionProfileById(Long admissionId) {
+        if (admissionId == null) {
+            return "";
+        }
+        Admission admission = getFacade().find(admissionId);
+        if (admission == null) {
+            return "";
+        }
+        current = admission;
+        return navigateToAdmissionProfilePage();
     }
 
     private AdmissionFacade getFacade() {

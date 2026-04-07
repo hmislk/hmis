@@ -877,7 +877,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " and c.retired=false "
                     + " and ((c.deptId) like :q or"
                     + " (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
+                    + " or (c.creditCompany.name) like :q "
+                    + " or (c.patientEncounter.bhtNo) like :q ) "
                     + " order by c.creditCompany.name";
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -2752,13 +2753,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         // Create payments using PaymentService
+        // NOTE: paymentService.createPayment() already calls drawerService.updateDrawer() internally
+        // for each payment. Do NOT call drawerController.updateDrawerForOuts() again — it would
+        // create duplicate DrawerEntry records and double-deduct from the drawer. See issue #19796.
         List<Payment> cancelPayments = paymentService.createPayment(cancellationBatchBill, paymentMethodData);
 
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(cancelPayments);
         }
-
-        drawerController.updateDrawerForOuts(cancelPayments);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
 

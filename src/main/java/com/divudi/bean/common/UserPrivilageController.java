@@ -24,6 +24,7 @@ import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import com.divudi.service.AuditEventService;
 import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.facade.WebUserRoleFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -214,6 +215,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode inwardClinicalNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinical"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientClinicalAssessment, "Clinical Notes / Assessments"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientClinicalDischarge, "Clinical Discharge"), inwardClinicalNode);
 
         TreeNode additionalPrivilegesNode = new DefaultTreeNode(new PrivilegeHolder(null, "Additional Privileges"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdditionalPrivilages, "Additional Privilege Menu"), additionalPrivilegesNode);
@@ -866,6 +868,17 @@ public class UserPrivilageController implements Serializable {
         TreeNode drawerAdjustmentRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentRequestApproval, "Drawer Adjustment Approval"), requestNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentDirect, "Drawer Adjustment Direct (No Approval)"), requestNode);
 
+        // Float Transfer Privileges
+        TreeNode floatTransferNode = new DefaultTreeNode(new PrivilegeHolder(null, "Float Transfer"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.IssueFundTransfer, "Issue Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReceiveFundTransfer, "Receive Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.DeclineFundTransfer, "Decline Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.RequestFundTransfer, "Request Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ProcessFundTransferRequest, "Process Float Transfer Request"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CancelOwnFundTransfer, "Cancel Own Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CancelOthersFundTransfer, "Cancel Others Float Transfer"), floatTransferNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ViewFundTransferReports, "View Float Transfer Reports"), floatTransferNode);
+
         // Request Privileges
         TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
         TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);
@@ -896,7 +909,7 @@ public class UserPrivilageController implements Serializable {
 
     public void saveUserRolePrivileges() {
         if (webUserRole == null) {
-            JsfUtil.addErrorMessage("Please select a user");
+            JsfUtil.addErrorMessage("Please select a User Role");
             return;
         }
         saveWebUserRolePrivileges();
@@ -1144,9 +1157,20 @@ public class UserPrivilageController implements Serializable {
         }
         getRoleFacede().batchCreate(newWups);
         getRoleFacede().batchEdit(oldWups);
+        
+        //Save Last Edit Data
+        webUserRole.setLastUpdateAt(new Date());
+        webUserRole.setLastUpdater(sessionController.getLoggedUser());
+        webUserRoleFacade.edit(webUserRole);
+        System.out.println("Update Last Edit by " + webUserRole.getLastUpdater().getName() +" at " + webUserRole.getLastUpdateAt());
+        
+        
         fillUserRolePrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
+    
+    @EJB
+    WebUserRoleFacade webUserRoleFacade;
 
     private static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
         if (root == null || privilegesToCheck == null || privilegesToCheck.isEmpty()) {
@@ -1405,6 +1429,7 @@ public class UserPrivilageController implements Serializable {
         currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
+        privilegesLoaded = true;
     }
 
     public List<WebUserRolePrivilege> fetchUserPrivileges(WebUserRole role) {

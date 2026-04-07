@@ -118,6 +118,9 @@ public class ReportTemplateRowBundle implements Serializable {
     private double settledAmountBySponsorsTotal;
     private double totalBalance;
 
+    private double floatOutTotal;
+    private double floatInTotal;
+
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
     private boolean hasCashTransaction;
@@ -2284,6 +2287,26 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setTotalBalance(double totalBalance) {
         this.totalBalance = totalBalance;
+    }
+
+    public double getFloatOutTotal() {
+        return floatOutTotal;
+    }
+
+    public void setFloatOutTotal(double floatOutTotal) {
+        this.floatOutTotal = floatOutTotal;
+    }
+
+    public double getFloatInTotal() {
+        return floatInTotal;
+    }
+
+    public void setFloatInTotal(double floatInTotal) {
+        this.floatInTotal = floatInTotal;
+    }
+
+    public double getFloatNetTotal() {
+        return floatInTotal - floatOutTotal;
     }
 
     public void setTotal(Double total) {

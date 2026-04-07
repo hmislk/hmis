@@ -316,7 +316,7 @@
                                                 title="view Surgeries" 
                                                 class="ui-button-info" 
                                                 ajax="false" 
-                                                action="/theater/inward_bill_surgery_view?faces-redirect=true">
+                                                action="/theater/surgery_workbench?faces-redirect=true">
                                                 <f:setPropertyActionListener 
                                                     value="#{s}" 
                                                     target="#{surgeryBillController.surgeryBill}" />
@@ -325,16 +325,26 @@
                                     </div>
                                 </ui:repeat>
 
-                                <p:commandButton 
-                                    value="Add Surgeries" 
+                                <p:commandButton
+                                    value="Add Surgeries"
                                     icon="fa fa-clock"
                                     ajax="false"
+                                    rendered="#{not admissionController.current.paymentFinalized}"
                                     action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
-                                        />
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Manage Surgeries"
+                                    icon="fa fa-list"
+                                    ajax="false"
+                                    action="#{surgeryBillController.navigateToSurgeryListFromAdmissionProfile()}"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
                                 </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
@@ -411,6 +421,15 @@
                                     action="#{inpatientClinicalDataController.navigateToDischargeMedicinesFromAdmission(admissionController.current)}"
                                     icon="fa fa-prescription-bottle-alt"
                                     class="w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Clinical Discharge"
+                                    ajax="false"
+                                    action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
+                                    icon="fa fa-sign-out-alt"
+                                    title="Navigate to Clinical Discharge"
+                                    rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
+                                    styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Drug Chart" 

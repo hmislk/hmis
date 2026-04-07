@@ -8,6 +8,8 @@ public class WebUserLight {
     private String roleName;
     private String code;
     private String staffNameWithTitle;
+    private String institutionName;
+    private String departmentName;
 
     public WebUserLight() {
     }
@@ -29,6 +31,12 @@ public class WebUserLight {
         this.id = id;
         this.code = code;
         this.staffNameWithTitle = staffNameWithTitle;
+    }
+
+    public WebUserLight(String userName, String name, Long id, String code, String staffNameWithTitle, String institutionName, String departmentName) {
+        this(userName, name, id, code, staffNameWithTitle);
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
     }
 
     public String getUserName() {
@@ -77,5 +85,21 @@ public class WebUserLight {
 
     public void setStaffNameWithTitle(String staffNameWithTitle) {
         this.staffNameWithTitle = staffNameWithTitle;
+    }
+
+    public String getInstitutionName() {
+        return institutionName;
+    }
+
+    public void setInstitutionName(String institutionName) {
+        this.institutionName = institutionName;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
     }
 }

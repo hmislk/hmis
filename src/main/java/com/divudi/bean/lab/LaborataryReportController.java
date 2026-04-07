@@ -1732,6 +1732,7 @@ public class LaborataryReportController implements Serializable {
         List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+        otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED);
 
         return otherbillTypeAtomics;
     }

@@ -78,35 +78,36 @@
                                         <p:autoComplete widgetVar="aIx" id="acIx"
                                                         forceSelection="true"
                                                         placeholder="Type BHT No, Company or Patient Name"
-                                                        value="#{cashRecieveBillController.currentBillItem.patientEncounter}"
-                                                        completeMethod="#{admissionController.completeBhtCredit}"
-                                                        var="ix" itemLabel="#{ix.bhtNo}"
+                                                        value="#{cashRecieveBillController.selectedBill}"
+                                                        completeMethod="#{billController.completeInwardCreditCompanyPaymentBill}"
+                                                        var="ix" itemLabel="#{ix.deptId}"
                                                         itemValue="#{ix}" class="w-100"
                                                         inputStyleClass="w-100"
                                                         required="true"
-                                                        requiredMessage="Please select a BHT">
+                                                        requiredMessage="Please select a credit bill">
+                                            <p:column headerText="Bill No">
+                                                <h:outputLabel value="#{ix.deptId}"/>
+                                            </p:column>
+                                            <p:column headerText="BHT No">
+                                                <h:outputLabel value="#{ix.patientEncounter.bhtNo}"/>
+                                            </p:column>
                                             <p:column headerText="Patient Name">
                                                 <h:outputLabel value="#{ix.patient.person.name}"/>
                                             </p:column>
-                                            <p:column headerText="Credit Company Name">
+                                            <p:column headerText="Credit Company">
                                                 <h:outputLabel value="#{ix.creditCompany.name}"/>
                                             </p:column>
-                                            <p:column headerText="BHT Number">
-                                                <h:outputLabel value="#{ix.bhtNo}">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Credit Amount" class="text-end">
-                                                <h:outputLabel value="#{ix.creditUsedAmount}">
+                                            <p:column headerText="Bill Amount" class="text-end">
+                                                <h:outputLabel value="#{ix.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Paid Amount" class="text-end">
-                                                <h:outputLabel value="#{ix.creditPaidAmount}">
+                                            <p:column headerText="Outstanding" class="text-end">
+                                                <h:outputLabel value="#{ix.netTotal - ix.paidAmount}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render="valPaying valToPay" listener="#{cashRecieveBillController.selectBhtListener()}"/>
+                                            <f:ajax execute="@this" event="itemSelect" render="valPaying valToPay" listener="#{cashRecieveBillController.selectInwardCCBillBhtListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
@@ -222,6 +223,9 @@
                                              paginator="true" rows="5" paginatorPosition="bottom" paginatorAlwaysVisible="true"
                                              emptyMessage="No bills selected" style="margin-bottom:0">
 
+                                    <p:column headerText="Bill No">
+                                        <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                                    </p:column>
                                     <p:column >
                                         <f:facet name="header">
                                             <h:outputLabel value="BHT No"/>
@@ -232,7 +236,7 @@
                                         <p:outputLabel value="#{b.patientEncounter.patient.person.name}"/>
                                     </p:column>
                                     <p:column headerText="Credit Company">
-                                        <p:outputLabel value="#{b.patientEncounter.creditCompany.name}" />
+                                        <p:outputLabel value="#{b.referenceBill.creditCompany.name}" />
                                     </p:column>
                                     <p:column headerText="Net Total">
                                         <h:outputLabel value="#{b.netValue}">
@@ -262,6 +266,34 @@
                     </p:commandButton>
                     <bi:insRecieve_custom billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
                 </p:panel>
+
+                <h:panelGroup id="dlgCreditCompanySelectorWrapper">
+                    <p:dialog id="dlgCreditCompanySelector" modal="true" widgetVar="wvDlgCreditCompanySelector"
+                              header="Select Credit Company" draggable="false" closable="false" resizable="false"
+                              style="width:500px;">
+                        <p:dataTable value="#{cashRecieveBillController.bhtCreditCompanies}" var="ecc" emptyMessage="No companies found">
+                            <p:column headerText="Company Name">
+                                <h:outputText value="#{ecc.institution.name}"/>
+                            </p:column>
+                            <p:column headerText="Credit Limit" styleClass="text-end">
+                                <h:outputText value="#{ecc.creditLimit}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Policy No">
+                                <h:outputText value="#{ecc.policyNo}"/>
+                            </p:column>
+                            <p:column>
+                                <p:commandButton value="Select" icon="fa fa-check" class="ui-button-success"
+                                                ajax="true"
+                                                action="#{cashRecieveBillController.selectBhtCreditCompany(ecc)}"
+                                                process="@this"
+                                                update="dlgCreditCompanySelectorWrapper valToPay valPaying"
+                                                oncomplete="PF('wvDlgCreditCompanySelector').hide();"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:dialog>
+                </h:panelGroup>
 
                 <p:dialog modal="true" widgetVar="statusDialog" header="Processing" draggable="false" closable="false" resizable="false">
                     <p:graphicImage name="/resources/images/loading.gif" />
