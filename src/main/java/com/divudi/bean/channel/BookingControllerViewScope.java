@@ -6652,17 +6652,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
 //            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+
+            // check discountable for each fee
             if (priceMatrix != null) {
-                if (f.getFeeType() == FeeType.OwnInstitution) {
+                if (f.isDiscountAllowed()) {
                     d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
                     bf.setFeeDiscount(d);
-                } else if (f.getFeeType() == FeeType.Staff) {
-                    bf.setFeeDiscount(0.0);
                 } else {
                     bf.setFeeDiscount(0.0);
                 }
 
-                bf.setFeeGrossValue(bf.getFeeGrossValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                 tmpDiscount += d;
             }
@@ -6748,16 +6747,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
 //            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
                 if (priceMatrix != null) {
-                    if (f.getFeeType() == FeeType.OwnInstitution) {
+                    if (f.isDiscountAllowed()) {
                         d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
                         bf.setFeeDiscount(d);
-                    } else if (f.getFeeType() == FeeType.Staff) {
-                        bf.setFeeDiscount(0.0);
                     } else {
                         bf.setFeeDiscount(0.0);
                     }
 
-                    bf.setFeeGrossValue(bf.getFeeGrossValue());
                     bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                     tmpDiscount += d;
                 }

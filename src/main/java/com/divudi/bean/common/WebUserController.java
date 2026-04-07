@@ -582,7 +582,11 @@ public class WebUserController implements Serializable {
 
         getCurrent().setLoginPage(loginPage);
 
-        getCurrent().setSite(site);
+        if (site != null) {
+            getCurrent().setSite(site);
+        } else {
+            getCurrent().setSite(sessionController.getLoggedSite());
+        }
 
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
@@ -595,19 +599,22 @@ public class WebUserController implements Serializable {
             if (getStaff().getWorkingDepartment() != null) {
                 getCurrent().setInstitution(getStaff().getWorkingDepartment().getInstitution());
                 getCurrent().setDepartment(getStaff().getWorkingDepartment());
+            } else {
+                getCurrent().setInstitution(sessionController.getInstitution());
+                getCurrent().setDepartment(sessionController.getDepartment());
             }
 
         } else {
-            getCurrent().setInstitution(getInstitution());
-            getCurrent().setDepartment(getDepartment());
+            getCurrent().setInstitution(getInstitution() != null ? getInstitution() : sessionController.getInstitution());
+            getCurrent().setDepartment(getDepartment() != null ? getDepartment() : sessionController.getDepartment());
             if (!createOnlyUser) {
                 Staff staff = new Staff();
                 //Save Staff
                 staff.setPerson(getCurrent().getWebUserPerson());
                 staff.setCreatedAt(Calendar.getInstance().getTime());
-                staff.setDepartment(department);
-                staff.setWorkingDepartment(department);
-                staff.setInstitution(institution);
+                staff.setDepartment(getCurrent().getDepartment());
+                staff.setWorkingDepartment(getCurrent().getDepartment());
+                staff.setInstitution(getCurrent().getInstitution());
                 staff.setSpeciality(speciality);
                 staff.setCode(getCurrent().getCode());
                 getStaffFacade().create(staff);
@@ -740,12 +747,15 @@ public class WebUserController implements Serializable {
                 + "wu.webUserPerson.name, "
                 + "wu.id, "
                 + "wu.code, "
-                + "wu.staff.person.name, "
-                + "wu.institution.name, "
-                + "wu.department.name) "
+                + "COALESCE(sp.name, ''), "
+                + "COALESCE(i.name, ''), "
+                + "COALESCE(d.name, '')) "
                 + "from WebUser wu "
+                + "left join wu.staff s "
+                + "left join s.person sp "
+                + "left join wu.institution i "
+                + "left join wu.department d "
                 + "where wu.retired=:ret "
-                + "and wu.staff is not null "
                 + "order by wu.name";
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
@@ -759,12 +769,15 @@ public class WebUserController implements Serializable {
                 + "wu.webUserPerson.name, "
                 + "wu.id, "
                 + "wu.code, "
-                + "wu.staff.person.name, "
-                + "wu.institution.name, "
-                + "wu.department.name) "
+                + "COALESCE(sp.name, ''), "
+                + "COALESCE(i.name, ''), "
+                + "COALESCE(d.name, '')) "
                 + "from WebUser wu "
+                + "left join wu.staff s "
+                + "left join s.person sp "
+                + "left join wu.institution i "
+                + "left join wu.department d "
                 + "where wu.retired=:ret "
-                + "and wu.staff is not null "
                 + "order by wu.name";
         m.put("ret", true);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
