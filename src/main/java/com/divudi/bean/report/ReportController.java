@@ -2178,7 +2178,181 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
+    
+    public String getSiteIdsString(){
+        String siteName = "";
+        for (String element : siteIds){
+            siteName += element;
+            siteName += ",";
+        }
+        return siteName;
+    }
+    
+      // Filters for test count report
+    public Map<String, Object> getFiltersForTestCountReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
 
+        filters.put("From Date", sdf.format(getFromDate()));
+        filters.put("To Date", sdf.format(getToDate()));
+        filters.put("Analyzer", machine != null ? machine.getName() : "All");
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", siteIds != null && !siteIds.isEmpty() ? getSiteIdsString() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        return filters;
+    }
+    
+    // pdf exporting method for test count report
+ public void exportTestCountReportToPDF() {
+    if (reportList == null || reportList.isEmpty()) {
+        JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+        return;
+    }
+
+    com.itextpdf.text.Font headerFont      = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 9);
+    com.itextpdf.text.Font categoryFont    = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8);
+    com.itextpdf.text.Font bodyFont        = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8);
+    com.itextpdf.text.Font footerFont      = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 9);
+
+    FacesContext context = FacesContext.getCurrentInstance();
+    ExternalContext externalContext = context.getExternalContext();
+    HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+    response.reset();
+
+    String dates = CommonFunctions.dateRangeForFileName(
+            fromDate, toDate,
+            sessionController.getApplicationPreference().getLongDateFormat());
+    response.setContentType("application/pdf");
+    if (dates != null && !dates.isEmpty()) {
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Test_counts_report_" + dates + ".pdf");
+    } else {
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Test_counts_report.pdf");
+    }
+
+    SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+    String institutionName = sessionController.getInstitution() != null
+            ? sessionController.getInstitution().getName() : "";
+
+    try (OutputStream out = response.getOutputStream()) {
+        com.itextpdf.text.Document document =
+                new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+        com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+        document.open();
+
+        // ── Title block ──────────────────────────────────────────────────────
+        if (institutionName != null && !institutionName.isEmpty()) {
+            document.add(new com.itextpdf.text.Paragraph(institutionName,
+                    com.itextpdf.text.FontFactory.getFont(
+                            com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+        }
+        document.add(new com.itextpdf.text.Paragraph("Test Counts Report",
+                com.itextpdf.text.FontFactory.getFont(
+                        com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+        document.add(new com.itextpdf.text.Paragraph(
+                "Date: " + sdf.format(new Date()),
+                com.itextpdf.text.FontFactory.getFont(
+                        com.itextpdf.text.FontFactory.HELVETICA, 12)));
+        document.add(new com.itextpdf.text.Paragraph(" "));
+
+        // ── Optional filter info table ────────────────────────────────────────
+        Map<String, Object> filters = getFiltersForTestCountReport();
+        com.itextpdf.text.pdf.PdfPTable infoTable =
+                pharmacyController.createInfoTablePdfExport(sdf, filters);
+        if (infoTable != null) {
+            document.add(infoTable);
+        }
+        document.add(new com.itextpdf.text.Paragraph(" "));
+
+        // ── Main table: 2 columns (Test Name | Test Count) ───────────────────
+        com.itextpdf.text.pdf.PdfPTable table =
+                new com.itextpdf.text.pdf.PdfPTable(2);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{5f, 2f});
+
+        // Column headers
+        com.itextpdf.text.pdf.PdfPCell nameHeader =
+                new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase("Test Name", headerFont));
+        nameHeader.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+        table.addCell(nameHeader);
+
+        com.itextpdf.text.pdf.PdfPCell countHeader =
+                new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase("Test Count", headerFont));
+        countHeader.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+        countHeader.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+        table.addCell(countHeader);
+
+        // ── Rows grouped by category (mirrors p:subTable) ────────────────────
+        for (CategoryCount catReportObj : reportList) {
+            // Cast to your actual category-report class
+            // Replace "CategoryReport" with the real class name in your project
+            CategoryCount catReport = (CategoryCount) catReportObj;
+
+            // Sub-table header row: "Total for <Category> : <total>"
+            String subHeader = "Total for " + catReport.getCategory()
+                    + " : " + catReport.getTotal();
+            com.itextpdf.text.pdf.PdfPCell categoryCell =
+                    new com.itextpdf.text.pdf.PdfPCell(
+                            new com.itextpdf.text.Phrase(subHeader, categoryFont));
+            categoryCell.setColspan(2);
+            categoryCell.setBackgroundColor(new com.itextpdf.text.BaseColor(220, 220, 220));
+            categoryCell.setPadding(4f);
+            table.addCell(categoryCell);
+
+            // Item rows within this category
+            if (catReport.getItems() != null) {
+                for (Object itemObj : catReport.getItems()) {
+                    // Replace "CategoryReportItem" with the real class name
+                    ItemCount item = (ItemCount) itemObj;
+
+                    com.itextpdf.text.pdf.PdfPCell nameCell =
+                            new com.itextpdf.text.pdf.PdfPCell(
+                                    new com.itextpdf.text.Phrase(
+                                            item.getTestName() != null ? item.getTestName() : "-",
+                                            bodyFont));
+                    nameCell.setPaddingLeft(8f);   // indent under category header
+                    table.addCell(nameCell);
+
+                    com.itextpdf.text.pdf.PdfPCell countCell =
+                            new com.itextpdf.text.pdf.PdfPCell(
+                                    new com.itextpdf.text.Phrase(
+                                            String.valueOf(item.getTestCount()), bodyFont));
+                    countCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+                    table.addCell(countCell);
+                }
+            }
+        }
+
+        // ── Footer row: Grand Total (mirrors <f:facet name="footer">) ─────────
+        com.itextpdf.text.pdf.PdfPCell grandTotalLabelCell =
+                new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase("Grand Total:", footerFont));
+        grandTotalLabelCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+        grandTotalLabelCell.setPadding(4f);
+        table.addCell(grandTotalLabelCell);
+
+        com.itextpdf.text.pdf.PdfPCell grandTotalValueCell =
+                new com.itextpdf.text.pdf.PdfPCell(
+                        new com.itextpdf.text.Phrase(
+                                String.valueOf(totalCount), footerFont));
+        grandTotalValueCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+        grandTotalValueCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+        grandTotalValueCell.setPadding(4f);
+        table.addCell(grandTotalValueCell);
+
+        document.add(table);
+        document.close();
+        context.responseComplete();
+
+    } catch (Exception e) {
+        Logger.getLogger(ReportController.class.getName())
+                .log(Level.SEVERE, "Error exporting Test Wise Count Report to PDF", e);
+    }
+}
+     
     private void calculateTotalTestCount() {
         totalCount = 0L;
         if (reportList != null) {
@@ -4373,14 +4547,68 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         table.addCell(cell);
     }
+    
+    private int insertMetaDataAtTop(Workbook workbook, Sheet sheet, String title, Map<String, Object> filters) {
+        int metaRowCount = 1 + (filters != null ? filters.size() : 0) + 1; // title + filters + blank spacer
+
+        // Shift all existing rows down to make room
+        sheet.shiftRows(0, Math.max(sheet.getLastRowNum(), 0), metaRowCount);
+
+        int rowIndex = 0;
+
+        // --- Title Row ---
+        CellStyle titleStyle = workbook.createCellStyle();
+        Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(title);
+        titleCell.setCellStyle(titleStyle);
+
+        // --- Filter Summary Rows ---
+        if (filters != null && !filters.isEmpty()) {
+            CellStyle labelStyle = workbook.createCellStyle();
+            Font labelFont = workbook.createFont();
+            labelFont.setBold(true);
+            labelStyle.setFont(labelFont);
+
+            for (Map.Entry<String, Object> entry : filters.entrySet()) {
+                Row filterRow = sheet.createRow(rowIndex++);
+
+                Cell labelCell = filterRow.createCell(0);
+                labelCell.setCellValue(entry.getKey() + ":");
+                labelCell.setCellStyle(labelStyle);
+
+                Cell valueCell = filterRow.createCell(1);
+                valueCell.setCellValue(entry.getValue() != null ? entry.getValue().toString() : "");
+            }
+        }
+
+        // --- Blank Spacer Row ---
+        sheet.createRow(rowIndex++);
+
+        return rowIndex;
+    }
 
     public void downloadLabTestCount() {
-        Workbook workbook = exportToExcel(reportList, "Test Count");
+        Workbook workbook = exportToExcel(reportList, "Test Count Report");
+        
+        Map<String, Object> filters = getFiltersForTestCountReport();
+        
+        Sheet sheet = workbook.getSheetAt(0);
+        insertMetaDataAtTop(workbook, sheet, "Lab Test Count Report", filters);
+        
         FacesContext fc = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
         response.reset();
+        
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        
         response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=Test_count_report_" + dates + ".xlsx");
 
         try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
