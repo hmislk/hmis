@@ -598,7 +598,7 @@ public class AnthropicApiService implements Serializable {
 
             switch (method.toUpperCase()) {
                 case "GET": {
-                    StringBuilder urlBuilder = new StringBuilder(base).append("?type=").append(type);
+                    StringBuilder urlBuilder = new StringBuilder(base).append("?type=").append(URLEncoder.encode(type, StandardCharsets.UTF_8));
                     if (query != null && !query.isEmpty()) urlBuilder.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
                     if (page != null && !page.isEmpty()) urlBuilder.append("&page=").append(page);
                     if (size != null && !size.isEmpty()) urlBuilder.append("&size=").append(size);
@@ -607,7 +607,7 @@ public class AnthropicApiService implements Serializable {
                     break;
                 }
                 case "POST": {
-                    url = base + "?type=" + type;
+                    url = base + "?type=" + URLEncoder.encode(type, StandardCharsets.UTF_8);
                     httpMethod = "POST";
                     javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
                     if (name != null) bodyBuilder.add("name", name);
