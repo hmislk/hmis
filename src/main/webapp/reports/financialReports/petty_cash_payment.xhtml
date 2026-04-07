@@ -205,27 +205,24 @@
                                 <p:outputLabel value=" : &emsp;" />
                                 <h:outputLabel value="#{reportController.institution.name}"  />
                             </f:facet>
-                            <p:column headerText="S" width="2em">
+                            <p:column headerText="#" width="2em">
                                 <h:outputText value="#{rowIndex+1}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Cashier"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
-                            <p:column headerText="Bill No" width="">
+                            <p:column headerText="Cashier">
+                                <h:outputText value="#{pc.creater.webUserPerson.nameWithTitle}" ></h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Bill No" width="10em;">
                                 <h:outputText value="#{pc.deptId}" ></h:outputText>
                                 <p:badge value="Cancelled - #{pc.cancelledBill.deptId}" severity="danger" rendered="#{pc.cancelledBill ne null}" />
-                                <p:badge value="Refunded - #{pc.refundedBill.deptId}" severity="warning" rendered="#{pc.refundedBill ne null}" />
                             </p:column>
-                            <p:column headerText="Bill Date" >
+                            <p:column headerText="Bill Date" width="10em;">
                                 <h:outputText value="#{pc.billDate}" >
                                     <f:convertDateTime pattern="yyyy MM dd hh:mm a" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Document No" >
+                            <p:column headerText="Document No" width="7em;">
                                 <h:outputText value="#{pc.invoiceNumber}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Date" >
-                                <h:outputText value="#{pc.billDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                </h:outputText>
                             </p:column>
                             <p:column headerText="For Whom" >
                                 <h:outputText value="#{pc.staff.person.name}" rendered="#{pc.staff ne null}" ></h:outputText>
@@ -237,13 +234,12 @@
                             <p:column headerText="Purpose" >
                                 <h:outputText value="#{pc.comments}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Status" >
+                            <p:column headerText="Status" width="7em;" >
                                 <p:badge 
                                     value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" 
-                                         severity="#{pc.approveUser != null ? 'success': 'danger'}" />
-<!--                                <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>-->
+                                    severity="#{pc.approveUser != null ? 'success': 'danger'}" />
                             </p:column>
-                            <p:column headerText="Amount" style="text-align: right"  >
+                            <p:column headerText="Amount" style="text-align: right" width="6em;" >
                                 <h:outputText value="#{0-pc.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -254,13 +250,7 @@
                                 </f:facet>
                             </p:column>
 
-
-
                         </p:dataTable>
-
-                        <p:spacer height="5"></p:spacer>
-
-
 
                     </p:panel>
 

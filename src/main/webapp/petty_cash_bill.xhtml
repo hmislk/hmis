@@ -24,172 +24,198 @@
                                 action="#{pettyCashBillController.prepareNewBill()}" >
                             </p:commandButton>
                         </div>
-
                     </f:facet>
 
-                    <div class="d-flex justify-content-end my-2">
-
-                    </div>
-
                     <div class="row">
-                        <div class="col-5">
+                        <div class="col-7">
                             <p:panel header="Details of Preson">
-                                <p:tabView id="tvPt" style="min-height: 250px;"  >
-                                    <p:ajax event="tabChange"  process="@this" listener="#{pettyCashBillController.onTabChange}" />
-                                    <p:tab id="tabStaff" title="Staff" >
-                                        <p:autoComplete   
-                                            id="cmbDoc1" 
-                                            value="#{pettyCashBillController.current.staff}" 
-                                            completeMethod="#{staffController.completeStaffWithoutDoctors}" 
-                                            forceSelection="true"
-                                            var="ix" 
-                                            itemLabel="#{ix.person.name}" 
-                                            itemValue="#{ix}" 
-                                            size="20"
-                                            inputStyleClass="form-control"
-                                            style="width: 400px;">
-                                            <p:ajax event="itemSelect" process="acPt"/>
-                                            <p:column style="width: 150px; padding: 3px;">
-                                                #{ix.code}
-                                            </p:column>
-                                            <p:column style="width: 250px; padding: 3px;">
-                                                #{ix.person.nameWithTitle}
-                                            </p:column>
-                                        </p:autoComplete>
-                                    </p:tab> 
-                                    <p:tab id="tabDepartment" title="Department" >
-                                        <p:autoComplete   
-                                            id="cmbDept1" 
-                                            value="#{pettyCashBillController.current.toDepartment}" 
-                                            completeMethod="#{departmentController.completeDept}" 
-                                            forceSelection="true"
-                                            var="w" 
-                                            itemLabel="#{w.name}" 
-                                            itemValue="#{w}"
-                                            size="20"
-                                            inputStyleClass="form-control"
-                                            style="width: 400px;">
-                                            <p:column headerText="Department Name">
-                                                #{w.name}
-                                            </p:column>
-                                            <p:column headerText="Institution Name">
-                                                #{w.institution.name}
-                                            </p:column>
-                                        </p:autoComplete>
-                                    </p:tab> 
-                                    <p:tab id="tabSearchPerson" title="Search Person">
-                                        <p:autoComplete 
-                                            widgetVar="aPt" 
-                                            id="acPt" 
-                                            forceSelection="true"
-                                            value="#{pettyCashBillController.current.person}" 
-                                            completeMethod="#{personController.completePerson}" 
-                                            var="apt" 
-                                            itemLabel="#{apt.name}" 
-                                            itemValue="#{apt}" 
-                                            size="30"  
-                                            inputStyleClass="form-control"
-                                            style="width: 400px;">
-                                            <p:column style="width: 400px; padding: 3px;">
-                                                #{apt.name}
-                                            </p:column>
-                                            <p:ajax event="itemSelect" process="acPt" update="panSearch"/>
-                                        </p:autoComplete>   
 
-                                        <p:panelGrid id="panSearch" columns="2" >
-                                            <h:outputLabel  rendered="#{pettyCashBillController.current.person!=null}" value="Name" />
-                                            <h:outputLabel rendered="#{pettyCashBillController.current.person!=null}" value="#{pettyCashBillController.current.person.name}" ></h:outputLabel>
-                                            <h:outputLabel  rendered="#{pettyCashBillController.current.person!=null}" value="Sex" />
-                                            <h:outputLabel rendered="#{pettyCashBillController.current.person!=null}" value="#{pettyCashBillController.current.person.sex}" ></h:outputLabel>
-                                            <h:outputLabel  rendered="#{pettyCashBillController.current.person!=null}" value="Adress" />
-                                            <h:outputLabel rendered="#{pettyCashBillController.current.person!=null}" value="#{pettyCashBillController.current.person.address}" ></h:outputLabel>
-                                        </p:panelGrid>
-
-
-                                    </p:tab>
-                                    <p:tab id="tabNew" title="New Person"  >
-                                        <div class="row">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Title"/>
-                                            </div>
-                                            <div class="col-5">
-                                                <p:selectOneMenu  
-                                                    id="cmbTitle" 
-                                                    class="w-100"
-                                                    value="#{pettyCashBillController.newPerson.title}"  >
-                                                    <f:selectItem itemLabel="Select Title"/>
-                                                    <f:selectItems value="#{pettyCashBillController.title}"/>
-                                                </p:selectOneMenu>
-                                            </div>
+                                <div class="mb-2">
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Petty-Cash Type" class="mt-2"/>
                                         </div>
-                                        <div class="row my-1">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Name"/>
-                                            </div>
-                                            <div class="col-5">
-                                                <p:inputText 
-                                                    class="w-100"
-                                                    autocomplete="off"  
-                                                    id="txtNewPtName" 
-                                                    value="#{pettyCashBillController.newPerson.name}">
-                                                </p:inputText>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Sex"/>
-                                            </div>
-                                            <div class="col-5">
-                                                <p:selectOneMenu 
-                                                    id="txtNewSex"  
-                                                    class="w-100"
-                                                    value="#{pettyCashBillController.newPerson.sex}" >
-                                                    <f:selectItem itemLabel="Select Sex"/>
-                                                    <f:selectItem itemLabel="Male" itemValue="Male"/>
-                                                    <f:selectItem itemLabel="Female" itemValue="Female"/>
-                                                    <f:selectItem itemLabel="Unknown" itemValue="Unknown"/>
-                                                    <f:selectItem itemLabel="Other" itemValue="Other"/>
-                                                </p:selectOneMenu>
-                                            </div>
-                                        </div>
-                                        <div class="row my-1">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Address"/>
-                                            </div>
-                                            <div class="col-5">
-                                                <p:autoComplete 
-                                                    id="acNewPtArea" 
-                                                    completeMethod="#{areaController.completeArea}" 
-                                                    var="pta" 
-                                                    class="w-100"
-                                                    inputStyleClass="form-control"
-                                                    itemLabel="#{pta.name}" 
-                                                    itemValue="#{pta}" 
-                                                    forceSelection="true" 
-                                                    value="#{pettyCashBillController.newPerson.area}" >
-                                                </p:autoComplete>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Phone"/>
-                                            </div>
-                                            <div class="col-5">
-                                                <p:inputText  
-                                                    id="txtNewPtPhone" 
-                                                    autocomplete="off" 
-                                                    maxlength="11" 
-                                                    class="w-100"
-                                                    value="#{pettyCashBillController.newPerson.phone}">
-                                                </p:inputText>
-                                            </div>
+                                        <div class="col-md-3">
+                                            <p:selectOneMenu   
+                                                id="type" 
+                                                style="width: 13em;" 
+                                                value="#{pettyCashBillController.currentBillType}">
+                                                <f:selectItem itemLabel="Select a Type"/>
+                                                <f:selectItems 
+                                                    value="#{enumController.pettyCashBillTypes}"
+                                                    var="p"
+                                                    itemLabel="#{p.label}"
+                                                    itemValue="#{p}"/>
+                                                <p:ajax process="@this"
+                                                        update="details"
+                                                        event="change"/>
+                                            </p:selectOneMenu>
                                         </div>
 
-                                    </p:tab>
-                                </p:tabView>
+                                        <div class="col-md-7">
+                                            <h:panelGroup id="details" >
+                                                <h:panelGroup rendered="#{pettyCashBillController.currentBillType eq 'STAFF'}">
+                                                    <p:autoComplete   
+                                                        id="cmbDoc1" 
+                                                        value="#{pettyCashBillController.current.staff}" 
+                                                        completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                                        forceSelection="true"
+                                                        var="ix" 
+                                                        placeholder="Please Select the Staff"
+                                                        itemLabel="#{ix.person.nameWithTitle}" 
+                                                        itemValue="#{ix}" 
+                                                        size="20"
+                                                        inputStyleClass="form-control"
+                                                        style="width: 400px;">
+                                                        <p:ajax event="itemSelect" process="acPt"/>
+                                                        <p:column style="width: 150px; padding: 3px;">
+                                                            #{ix.code}
+                                                        </p:column>
+                                                        <p:column style="width: 250px; padding: 3px;">
+                                                            #{ix.person.nameWithTitle}
+                                                        </p:column>
+                                                    </p:autoComplete>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{pettyCashBillController.currentBillType eq 'DEPARTMENT'}">
+                                                    <p:autoComplete   
+                                                        id="cmbDept1" 
+                                                        value="#{pettyCashBillController.current.toDepartment}" 
+                                                        completeMethod="#{departmentController.completeDept}" 
+                                                        forceSelection="true"
+                                                        var="w" 
+                                                        placeholder="Please Select the Department"
+                                                        itemLabel="#{w.name}" 
+                                                        itemValue="#{w}"
+                                                        size="20"
+                                                        maxResults="20"
+                                                        inputStyleClass="form-control"
+                                                        style="width: 400px;">
+                                                        <p:column headerText="Department Name" style="width: 350px; padding: 3px;">
+                                                            #{w.name}
+                                                        </p:column>
+                                                        <p:column headerText="Institution Name" style="width: 600px; padding: 3px;">
+                                                            #{w.institution.name}
+                                                        </p:column>
+                                                    </p:autoComplete>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{pettyCashBillController.currentBillType eq 'PERSON'}">
+                                                    <p:autoComplete 
+                                                        widgetVar="aPt" 
+                                                        id="acPt" 
+                                                        forceSelection="true"
+                                                        value="#{pettyCashBillController.current.person}" 
+                                                        completeMethod="#{personController.completePerson}" 
+                                                        var="apt" 
+                                                        placeholder="Please Select the Person"
+                                                        itemLabel="#{apt.nameWithTitle}" 
+                                                        itemValue="#{apt}" 
+                                                        size="30"  
+                                                        inputStyleClass="form-control"
+                                                        style="width: 400px;">
+                                                        <p:column style="width: 100px; padding: 3px;">
+                                                            #{apt.id}
+                                                        </p:column>
+                                                        <p:column style="width: 600px; padding: 3px;">
+                                                            #{apt.nameWithTitle}
+                                                        </p:column>
+                                                        <p:ajax event="itemSelect" process="acPt"/>
+                                                    </p:autoComplete>   
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{pettyCashBillController.currentBillType eq 'NEWPERSON'}">
+                                                    <p:panel header="Add New Person" class="w-100" >
+                                                        <div class="row">
+                                                            <div class="col-5">
+                                                                <p:outputLabel value="Title"/>
+                                                            </div>
+                                                            <div class="col-7">
+                                                                <p:selectOneMenu  
+                                                                    id="cmbTitle" 
+                                                                    class="w-100"
+                                                                    value="#{pettyCashBillController.newPerson.title}"  >
+                                                                    <f:selectItem itemLabel="Select Title"/>
+                                                                    <f:selectItems value="#{pettyCashBillController.title}"/>
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row my-1">
+                                                            <div class="col-5">
+                                                                <p:outputLabel value="Name"/>
+                                                            </div>
+                                                            <div class="col-7">
+                                                                <p:inputText 
+                                                                    class="w-100"
+                                                                    autocomplete="off"  
+                                                                    id="txtNewPtName" 
+                                                                    value="#{pettyCashBillController.newPerson.name}">
+                                                                </p:inputText>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-5">
+                                                                <p:outputLabel value="Gender"/>
+                                                            </div>
+                                                            <div class="col-7">
+                                                                <p:selectOneMenu 
+                                                                    id="txtNewSex"  
+                                                                    class="w-100"
+                                                                    value="#{pettyCashBillController.newPerson.sex}" >
+                                                                    <f:selectItem itemLabel="Select Sex"/>
+                                                                    <f:selectItem itemLabel="Male" itemValue="Male"/>
+                                                                    <f:selectItem itemLabel="Female" itemValue="Female"/>
+                                                                    <f:selectItem itemLabel="Unknown" itemValue="Unknown"/>
+                                                                    <f:selectItem itemLabel="Other" itemValue="Other"/>
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row my-1">
+                                                            <div class="col-5">
+                                                                <p:outputLabel value="Address"/>
+                                                            </div>
+                                                            <div class="col-7">
+                                                                <p:autoComplete 
+                                                                    id="acNewPtArea" 
+                                                                    completeMethod="#{areaController.completeArea}" 
+                                                                    var="pta" 
+                                                                    class="w-100"
+                                                                    inputStyleClass="form-control"
+                                                                    itemLabel="#{pta.name}" 
+                                                                    itemValue="#{pta}" 
+                                                                    maxResults="20"
+                                                                    forceSelection="true" 
+                                                                    value="#{pettyCashBillController.newPerson.area}" >
+                                                                    <p:column style="width: 100px; padding: 3px;">
+                                                            #{pta.name}
+                                                        </p:column>
+                                                                </p:autoComplete>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-5">
+                                                                <p:outputLabel value="Phone"/>
+                                                            </div>
+                                                            <div class="col-7">
+                                                                <p:inputText  
+                                                                    id="txtNewPtPhone" 
+                                                                    autocomplete="off" 
+                                                                    maxlength="11" 
+                                                                    class="w-100"
+                                                                    value="#{pettyCashBillController.newPerson.phone}">
+                                                                </p:inputText>
+                                                            </div>
+                                                        </div>
+
+                                                    </p:panel>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
                             </p:panel>
                         </div>
-                        <div class="col-7">
+                        <div class="col-5">
                             <p:panel header="">
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
@@ -207,24 +233,27 @@
                                 </f:facet>
 
                                 <div class="my-2">
-
-
                                     <div class="row">
                                         <div class="col-3"><p:outputLabel value="Payment Method" /></div>
                                         <div class="col-9">
                                             <p:selectOneMenu   
                                                 id="cmbPs" 
+                                                style="width: 15em;"
                                                 value="#{pettyCashBillController.current.paymentMethod}">
                                                 <f:selectItems 
                                                     value="#{enumController.paymentMethodsForPettyCashBilling}"
                                                     var="p"
                                                     itemLabel="#{p.label}"
-                                                    itemValue="#{p}"/>
-                                                <p:ajax process="@this"
-                                                        update="cash creditCard cheque slip eWallet"
-                                                        event="change"
-                                                        listener="#{pettyCashBillController.listnerForPaymentMethodChange()}"/>
-                                            </p:selectOneMenu></div>
+                                                    itemValue="#{p}">
+                                                </f:selectItems>
+                                                <p:ajax 
+                                                    process="@this"
+                                                    update="cash creditCard cheque slip eWallet"
+                                                    event="change"
+                                                    listener="#{pettyCashBillController.listnerForPaymentMethodChange()}">
+                                                </p:ajax>
+                                            </p:selectOneMenu>
+                                        </div>
                                     </div>
                                         <!--<p:inputText value="#{pettyCashBillController.comment}" id="comment"/>-->
 
@@ -260,40 +289,44 @@
                                     </div>
                                 </div>
 
-                                <div>
-
-                                    <div class="row">
-                                        <div class="col-3"><p:outputLabel value="Amount" /></div>
-                                        <div class="col-9">
-                                            <p:inputText 
-                                                class="w-100" 
-                                                autocomplete="off" 
-                                                onfocus="this.select()"
-                                                value="#{pettyCashBillController.current.netTotal}"/>
-                                        </div>
+                                <div class="row">
+                                    <div class="col-3"><p:outputLabel value="Amount" /></div>
+                                    <div class="col-9">
+                                        <p:inputText 
+                                            class="w-100" 
+                                            autocomplete="off" 
+                                            onfocus="this.select()"
+                                            value="#{pettyCashBillController.current.netTotal}">
+                                        </p:inputText>
                                     </div>
+                                </div>
 
-                                    <div class="row my-1">
-                                        <div class="col-3"><p:outputLabel value="Petty Cash Voucher No"/></div>
-                                        <div class="col-9">
+                                <div class="row my-3">
+                                    <div class="col-3"><p:outputLabel value="Petty Cash Voucher No" class="mt-2"/></div>
+                                    <div class="col-9">
+                                        <div class="d-flex gap-4">
                                             <p:inputText 
-                                                class="w-100" 
-                                                autocomplete="off"  
-                                                onfocus="this.select()"
-                                                value="#{pettyCashBillController.current.intInvoiceNumber}" />
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-3"><p:outputLabel value="Description"/></div>
-                                        <div class="col-9">
-                                            <p:inputTextarea 
-                                                class=" w-100" 
-                                                value="#{pettyCashBillController.current.comments}"/>
+                                                onfocus="this.select()" 
+                                                value="#{pettyCashBillController.financialYear}" 
+                                                class="text-center" 
+                                                readonly="true"
+                                                style="width: 5em;">
+                                            </p:inputText>
+                                            <p:outputLabel value="-" class="mt-2"/>
+                                            <p:inputText class="w-100" onfocus="this.select()" value="#{pettyCashBillController.invoiceNo}" />
                                         </div>
                                     </div>
                                 </div>
 
+                                <div class="row">
+                                    <div class="col-3"><p:outputLabel value="Description"/></div>
+                                    <div class="col-9">
+                                        <p:inputTextarea 
+                                            class=" w-100" 
+                                            value="#{pettyCashBillController.current.comments}">
+                                        </p:inputTextarea>
+                                    </div>
+                                </div>
                             </p:panel>
                         </div>
                     </div>
@@ -332,6 +365,7 @@
                     </div>
 
                     <h:panelGroup   id="gpBillPreview">
+
                         <!-- POS/5.5 inch Format (Default) -->
                         <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
                             <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
