@@ -2420,7 +2420,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
                 m.put("inv", invoiceNumber);
             }
-            jpql += " order by ah.id ";
+            jpql += " order by ah.bill.createdAt, ah.bill.id, ah.id ";
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
