@@ -16,16 +16,18 @@
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h:outputLabel value="Reprint" ></h:outputLabel>
+                                    <h:outputLabel value="Petty Cash Re-Print" ></h:outputLabel>
                                 </div>
                                 <div>
                                     <h:panelGroup class="mx-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion') eq false}">
                                         <p:commandButton  
                                             ajax="false" 
                                             class="ui-button-danger" 
-                                            icon="fas fa-ban" value="Cancel" 
+                                            icon="fas fa-ban" 
+                                            value="To Cancel" 
                                             action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" 
-                                            disabled="#{pettyCashBillSearch.bill.cancelled}"/> 
+                                            disabled="#{pettyCashBillSearch.bill.cancelled}"> 
+                                        </p:commandButton>
                                     </h:panelGroup>
 
 
@@ -35,7 +37,8 @@
                                                 class="mx-1 ui-button-danger" 
                                                 icon="fas fa-ban" 
                                                 ajax="false" 
-                                                value="Cancel" action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" 
+                                                value="Cancel" 
+                                                action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" 
                                                 disabled="#{pettyCashBillSearch.bill.cancelled}">                           
                                             </p:commandButton>
                                         </h:panelGroup>
@@ -59,99 +62,91 @@
                                             disabled="#{pettyCashBillSearch.bill.approveAt ne null}">                           
                                         </p:commandButton>
                                     </h:panelGroup>
-                                    <h:panelGroup class="mx-1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Disable Petty Cash Return')}" >
-                                        <p:commandButton  
-                                            class="mx-1 ui-button-warning" 
-                                            icon="fas fa-arrow-rotate-left" 
-                                            ajax="false"
-                                            action="#{pettyCashBillController.navigateToPettyCashReturn()}"
-                                            value="To Return">                           
-                                        </p:commandButton>
-                                    </h:panelGroup>
 
+
+                                    <p:commandButton  
+                                        class="mx-1 ui-button-warning" 
+                                        ajax="false"
+                                        icon="fas fa-arrow-left" 
+                                        action="/petty_cash_bill_search_own?faces-redirect=true"
+                                        value="Back to Search">                           
+                                    </p:commandButton>
                                 </div>
                             </div>
-
-                            <hr/>
-
                         </f:facet>
 
 
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText value="&#xf007;" styleClass="fa mr-2"></h:outputText>
-                                    <h:outputLabel value="Person Details" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Person Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                    <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>
-                                    <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
-                                    
-                                     <h:outputLabel value="Total Refuneded:" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillController.totalOfRedundedBills}" ></h:outputLabel>
-                                    
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
+                        <div class="row">
 
-                    </p:panel>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText value="&#xf007;" styleClass="fa mr-2"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Paid To :" ></h:outputLabel>
+                                        <h:panelGroup rendered="#{pettyCashBillSearch.bill.staff ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Staff" severity="warning" style="width: 120px;" ></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="Staff - #{pettyCashBillSearch.bill.staff.person.nameWithTitle}"></h:outputLabel>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pettyCashBillSearch.bill.person ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Person" severity="info"  style="width: 120px;"></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pettyCashBillSearch.bill.toDepartment ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Department" severity="success" style="width: 120px;"></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="#{pettyCashBillSearch.bill.toDepartment.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
 
-                    <h:panelGroup>
-                        <div class="w-100 row">
-                            <div class="col-6">
-                                <div>
-                                    <p:commandButton 
-                                        value="Print" 
-                                        class="ui-button-info m-1"
-                                        icon="fa fa-print"
-                                        ajax="false">
-                                        <p:printer target="gpBillPreview" />
-                                    </p:commandButton> 
+                                        <h:outputLabel value="Total Refuneded:" ></h:outputLabel>
+                                        <h:outputLabel value="#{pettyCashBillController.totalOfRedundedBills}" ></h:outputLabel>
+                                    </p:panelGrid>
+
+
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <h:outputLabel value="Preview" class="mt-2"></h:outputLabel>
+                                            <p:commandButton 
+                                                value="Print" 
+                                                class="ui-button-info"
+                                                icon="fa fa-print"
+                                                ajax="false">
+                                                <p:printer target="gpBillPreview" />
+                                            </p:commandButton> 
+                                        </div>
+
+                                    </f:facet>
+
                                     <h:panelGroup id="gpBillPreview">
                                         <bi:petty bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="true"/>
                                     </h:panelGroup>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mx-5">
-                                    <h:panelGroup>
-                                        <ui:repeat value="#{pettyCashBillController.billList}" var="b">
-                                            <div>
-                                                <p:commandButton 
-                                                    value="Print" 
-                                                    class="ui-button-info m-1"
-                                                    icon="fa fa-print"
-                                                    ajax="false">
-                                                    <p:printer target="gpBillPreviewReturn" />
-                                                </p:commandButton> 
-                                                <h:panelGroup id="gpBillPreviewReturn">
-                                                    <bi:petty_return bill="#{b}" dup="true"/>
-                                                </h:panelGroup>
-                                            </div>
-                                        </ui:repeat>
 
-                                    </h:panelGroup>
-                                </div>
+                                </p:panel>
                             </div>
                         </div>
 
-                    </h:panelGroup>
-
+                    </p:panel>
 
                 </h:form>
             </ui:define>
