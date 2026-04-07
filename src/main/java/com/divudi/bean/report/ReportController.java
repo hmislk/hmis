@@ -2178,15 +2178,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
-    
-    public String getSiteIdsString(){
-        String siteName = "";
-        for (String element : siteIds){
-            siteName += element;
-            siteName += ",";
-        }
-        return siteName;
-    }
+
     
       // Filters for test count report
     public Map<String, Object> getFiltersForTestCountReport() {
@@ -2197,7 +2189,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         filters.put("To Date", sdf.format(getToDate()));
         filters.put("Analyzer", machine != null ? machine.getName() : "All");
         filters.put("Institution", institution != null ? institution.getName() : "All");
-        filters.put("Site", siteIds != null && !siteIds.isEmpty() ? getSiteIdsString() : "All");
         filters.put("Department", department != null ? department.getName() : "All");
         return filters;
     }
@@ -4594,6 +4585,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public void downloadLabTestCount() {
+        if (reportList == null || reportList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
         Workbook workbook = exportToExcel(reportList, "Test Count Report");
         
         Map<String, Object> filters = getFiltersForTestCountReport();
@@ -4608,7 +4604,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
         
         response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-Disposition", "attachment; filename=Test_count_report_" + dates + ".xlsx");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Test_count_report_" + dates + ".xlsx");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Test_count_report.xlsx");
+        }
 
         try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
