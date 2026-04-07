@@ -3599,224 +3599,109 @@ public class SearchController implements Serializable {
     }
 
     /**
-     * DTO-based version of createPharmacyTableRe() for improved performance.
-     * Uses PharmacyCashierPreBillSearchDTO to avoid loading full entity graphs.
-     *
-     * This method creates a lightweight query that fetches only the required
-     * fields for display in pharmacy_search_sale_pre_bill.xhtml without loading
-     * entire entity relationships.
+     * DTO-based search for pharmacy sale pre-bills awaiting cashier settlement.
+     * Uses PharmacyCashierPreBillSearchDTO with a single optimised JPQL query
+     * to avoid loading full entity graphs and eliminate the N+1 query problem.
+     * Used by pharmacy_search_sale_pre_bill.xhtml
      */
     public void createPharmacyTableReDto() {
         cashierPreBillSearchDtos = null;
-
-        // Set parameters first
         Map<String, Object> params = new HashMap<>();
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO("
+                + "b.id, "                                           // 1  id
+                + "b.deptId, "                                       // 2  deptId
+                + "b.department.name, "                              // 3  departmentName
+                + "b.createdAt, "                                    // 4  createdAt
+                + "COALESCE(creatorPerson.name, ''), "               // 5  creatorName
+                + "b.refunded, "                                     // 6  refunded
+                + "refBill.createdAt, "                              // 7  refundedBillCreatedAt
+                + "COALESCE(refCreatorPerson.name, ''), "            // 8  refundedBillCreatorName
+                + "COALESCE(refBill.comments, ''), "                 // 9  refundedBillComments
+                + "b.retired, "                                      // 10 retired
+                + "b.retiredAt, "                                    // 11 retiredAt
+                + "b.cancelled, "                                    // 12 cancelled
+                + "canBill.createdAt, "                              // 13 cancelledBillCreatedAt
+                + "COALESCE(canCreatorPerson.name, ''), "            // 14 cancelledBillCreatorName
+                + "COALESCE(canBill.comments, ''), "                 // 15 cancelledBillComments
+                + "b.total, "                                        // 16 total
+                + "b.discount, "                                     // 17 discount
+                + "b.netTotal, "                                     // 18 netTotal
+                + "b.paymentMethod, "                                // 19 paymentMethod
+                + "COALESCE(scheme.name, ''), "                      // 20 paymentSchemeName
+                + "COALESCE(patientPerson.name, ''), "               // 21 patientName
+                + "COALESCE(toStaffPerson.name, ''), "               // 22 toStaffName
+                + "COALESCE(toDept.name, ''), "                      // 23 toDepartmentName
+                + "COALESCE(toInst.name, ''), "                      // 24 toInstitutionName
+                + "paymentBill.id, "                                 // 25 referenceBillId
+                + "COALESCE(paymentBill.deptId, ''), "               // 26 referenceBillDeptId
+                + "paymentBill.createdAt, "                          // 27 referenceBillCreatedAt
+                + "COALESCE(refBillCreatorPerson.name, ''), "        // 28 referenceBillCreatorName
+                + "paymentBill.cancelled, "                          // 29 referenceBillCancelled
+                + "refBillCanBill.createdAt, "                       // 30 referenceBillCancelledBillCreatedAt
+                + "COALESCE(refBillCanCreatorPerson.name, ''), "     // 31 referenceBillCancelledBillCreatorName
+                + "paymentBill.refunded, "                           // 32 referenceBillRefunded
+                + "refBillRefBill.createdAt, "                       // 33 referenceBillRefundedBillCreatedAt
+                + "COALESCE(refBillRefCreatorPerson.name, '')) "     // 34 referenceBillRefundedBillCreatorName
+                + "FROM PreBill b "
+                + "LEFT JOIN b.patient p "
+                + "LEFT JOIN p.person patientPerson "
+                + "LEFT JOIN b.creater creator "
+                + "LEFT JOIN creator.webUserPerson creatorPerson "
+                + "LEFT JOIN b.refundedBill refBill "
+                + "LEFT JOIN refBill.creater refCreator "
+                + "LEFT JOIN refCreator.webUserPerson refCreatorPerson "
+                + "LEFT JOIN b.cancelledBill canBill "
+                + "LEFT JOIN canBill.creater canCreator "
+                + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
+                + "LEFT JOIN b.paymentScheme scheme "
+                + "LEFT JOIN b.toStaff toStaff "
+                + "LEFT JOIN toStaff.person toStaffPerson "
+                + "LEFT JOIN b.toDepartment toDept "
+                + "LEFT JOIN b.toInstitution toInst "
+                + "LEFT JOIN b.referenceBill paymentBill "
+                + "LEFT JOIN paymentBill.creater refBillCreator "
+                + "LEFT JOIN refBillCreator.webUserPerson refBillCreatorPerson "
+                + "LEFT JOIN paymentBill.cancelledBill refBillCanBill "
+                + "LEFT JOIN refBillCanBill.creater refBillCanCreator "
+                + "LEFT JOIN refBillCanCreator.webUserPerson refBillCanCreatorPerson "
+                + "LEFT JOIN paymentBill.refundedBill refBillRefBill "
+                + "LEFT JOIN refBillRefBill.creater refBillRefCreator "
+                + "LEFT JOIN refBillRefCreator.webUserPerson refBillRefCreatorPerson "
+                + "WHERE b.billTypeAtomic = :billTypeAtomic "
+                + "AND b.institution = :ins "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND (b.retired = false OR b.retired IS NULL) ";
+
+        jpql = checkSearchKeywordForSearch(jpql, params);
+
+        if (paymentMethod != null) {
+            jpql += " AND b.paymentMethod = :paymentMethod ";
+            params.put("paymentMethod", paymentMethod);
+        }
+
+        jpql += " ORDER BY b.createdAt DESC";
+
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-        params.put("insId", getSessionController().getInstitution().getId());
+        params.put("ins", getSessionController().getInstitution());
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
-        params.put("deptid", getSessionController().getDepartment().getId());
 
-        // STEP 1: Try minimal query - just IDs
-        try {
-            String jpql1 = "SELECT b.id FROM PreBill b "
-                    + "WHERE b.billTypeAtomic = :billTypeAtomic "
-                    + "AND b.institution.id = :insId "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                    + "AND (b.retired = false OR b.retired IS NULL) "
-                    + "AND b.department.id = :deptid "
-                    + "ORDER BY b.createdAt DESC";
-
-            List<Long> ids = (List<Long>) getBillFacade().findLightsByJpql(jpql1, params, TemporalType.TIMESTAMP);
-
-            if (ids.isEmpty()) {
-                cashierPreBillSearchDtos = new ArrayList<>();
-                return;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            cashierPreBillSearchDtos = new ArrayList<>();
-            return;
-        }
-
-        // STEP 2: Try with simplified DTO (basic fields only - no JOINs)
-        try {
-            System.out.println("DEBUG STEP 2: Trying simplified DTO (basic fields, no JOINs)");
-            String jpql2 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO("
-                    + "b.id, b.deptId, b.department.name, b.createdAt, "
-                    + "b.refunded, b.cancelled, "
-                    + "b.total, b.discount, b.netTotal, "
-                    + "b.paymentMethod, "
-                    + "'') "
-                    + // patientName - empty for now
-                    "FROM PreBill b "
-                    + "WHERE b.billTypeAtomic = :billTypeAtomic "
-                    + "AND b.institution.id = :insId "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                    + "AND (b.retired = false OR b.retired IS NULL) "
-                    + "AND b.department.id = :deptid "
-                    + "ORDER BY b.createdAt DESC";
-
-            cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
-                    .findLightsByJpql(jpql2, params, TemporalType.TIMESTAMP);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            cashierPreBillSearchDtos = new ArrayList<>();
-            return;
-        }
-
-        // STEP 3: Try adding patient name with LEFT JOIN
-        try {
-            String jpql3 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO("
-                    + "b.id, b.deptId, b.department.name, b.createdAt, "
-                    + "b.refunded, b.cancelled, "
-                    + "b.total, b.discount, b.netTotal, "
-                    + "b.paymentMethod, "
-                    + "COALESCE(patientPerson.name, '')) "
-                    + "FROM PreBill b "
-                    + "LEFT JOIN b.patient p "
-                    + "LEFT JOIN p.person patientPerson "
-                    + "WHERE b.billTypeAtomic = :billTypeAtomic "
-                    + "AND b.institution.id = :insId "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                    + "AND (b.retired = false OR b.retired IS NULL) "
-                    + "AND b.department.id = :deptid "
-                    + "ORDER BY b.createdAt DESC";
-
-            cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
-                    .findLightsByJpql(jpql3, params, TemporalType.TIMESTAMP);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-
-        // STEP 4: Try using full DTO constructor with all needed fields (except reference bill fields)
-        try {
-            String jpql4 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO("
-                    + "b.id, "
-                    + // 1
-                    "b.deptId, "
-                    + // 2
-                    "b.department.name, "
-                    + // 3
-                    "b.createdAt, "
-                    + // 4
-                    "COALESCE(creatorPerson.name, ''), "
-                    + // 5 - creatorName
-                    "b.refunded, "
-                    + // 6
-                    "refBill.createdAt, "
-                    + // 7 - refundedBillCreatedAt
-                    "COALESCE(refCreatorPerson.name, ''), "
-                    + // 8 - refundedBillCreatorName
-                    "COALESCE(refBill.comments, ''), "
-                    + // 9 - refundedBillComments
-                    "b.retired, "
-                    + // 10
-                    "b.retiredAt, "
-                    + // 11
-                    "b.cancelled, "
-                    + // 12
-                    "canBill.createdAt, "
-                    + // 13 - cancelledBillCreatedAt
-                    "COALESCE(canCreatorPerson.name, ''), "
-                    + // 14 - cancelledBillCreatorName
-                    "COALESCE(canBill.comments, ''), "
-                    + // 15 - cancelledBillComments
-                    "b.total, "
-                    + // 16
-                    "b.discount, "
-                    + // 17
-                    "b.netTotal, "
-                    + // 18
-                    "b.paymentMethod, "
-                    + // 19
-                    "COALESCE(scheme.name, ''), "
-                    + // 20 - paymentSchemeName
-                    "COALESCE(patientPerson.name, ''), "
-                    + // 21 - patientName
-                    "COALESCE(toStaffPerson.name, ''), "
-                    + // 22 - toStaffName
-                    "COALESCE(toDept.name, ''), "
-                    + // 23 - toDepartmentName
-                    "COALESCE(toInst.name, ''), "
-                    + // 24 - toInstitutionName
-                    "paymentBill.id, "
-                    + // 25 - referenceBillId (for status check)
-                    "'', "
-                    + // 26 - referenceBillDeptId (not displayed)
-                    "paymentBill.createdAt, "
-                    + // 27 - referenceBillCreatedAt (not displayed)
-                    "'', "
-                    + // 28 - referenceBillCreatorName (not displayed)
-                    "false, "
-                    + // 29 - referenceBillCancelled (not displayed)
-                    "paymentBill.createdAt, "
-                    + // 30 - referenceBillCancelledBillCreatedAt (not displayed)
-                    "'', "
-                    + // 31 - referenceBillCancelledBillCreatorName (not displayed)
-                    "false, "
-                    + // 32 - referenceBillRefunded (not displayed)
-                    "paymentBill.createdAt, "
-                    + // 33 - referenceBillRefundedBillCreatedAt (not displayed)
-                    "'') "
-                    + // 34 - referenceBillRefundedBillCreatorName (not displayed)
-                    "FROM PreBill b "
-                    + "LEFT JOIN b.patient p "
-                    + "LEFT JOIN p.person patientPerson "
-                    + "LEFT JOIN b.creater creator "
-                    + "LEFT JOIN creator.webUserPerson creatorPerson "
-                    + "LEFT JOIN b.refundedBill refBill "
-                    + "LEFT JOIN refBill.creater refCreator "
-                    + "LEFT JOIN refCreator.webUserPerson refCreatorPerson "
-                    + "LEFT JOIN b.cancelledBill canBill "
-                    + "LEFT JOIN canBill.creater canCreator "
-                    + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
-                    + "LEFT JOIN b.paymentScheme scheme "
-                    + "LEFT JOIN b.toStaff toStaff "
-                    + "LEFT JOIN toStaff.person toStaffPerson "
-                    + "LEFT JOIN b.toDepartment toDept "
-                    + "LEFT JOIN b.toInstitution toInst "
-                    + "LEFT JOIN b.referenceBill paymentBill "
-                    + "WHERE b.billTypeAtomic = :billTypeAtomic "
-                    + "AND b.institution.id = :insId "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                    + "AND (b.retired = false OR b.retired IS NULL) "
-                    + "AND b.department.id = :deptid ";
-
-            jpql4 = checkSearchKeywordForSearch(jpql4, params);
-
-            if (paymentMethod != null) {
-                jpql4 += " AND b.paymentMethod = :paymentMethod ";
-                params.put("paymentMethod", paymentMethod);
-            }
-
-            jpql4 += " ORDER BY b.createdAt DESC";
-
-            cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
-                    .findLightsByJpql(jpql4, params, TemporalType.TIMESTAMP);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Keep the data from step 3
-            return;
-        }
-
+        cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
+                .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void clearSearchKeywords() {
         searchKeyword = null;
     }
 
-    // DELETED: populateReferenceBillFields() method - no longer needed
-    // All data now fetched in single optimized query using LEFT JOINs
-    // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
     private String checkSearchKeywordForSearch(String jpql4, Map<String, Object> params) {
 
         if (searchKeyword == null) {
+            if (getSessionController().getDepartment() != null) {
+                jpql4 += " AND b.department.name = :deptName ";
+                params.put("deptName", getSessionController().getDepartment().getName());
+            }
             return jpql4;
         }
 
@@ -3849,6 +3734,9 @@ public class SearchController implements Serializable {
         if (searchKeyword.getDepartment() != null && !searchKeyword.getDepartment().isEmpty()) {
             jpql4 += " AND LOWER(b.department.name) like :deptName ";
             params.put("deptName", "%" + searchKeyword.getDepartment().toLowerCase() + "%");
+        } else if (getSessionController().getDepartment() != null) {
+            jpql4 += " AND b.department.name = :deptName ";
+            params.put("deptName", getSessionController().getDepartment().getName());
         }
 
         if (searchKeyword.getTotal() != null && !searchKeyword.getTotal().isEmpty()) {
@@ -9457,6 +9345,10 @@ public class SearchController implements Serializable {
 
     public String navigateToIncomeBreakdownByCategoryOpd() {
         return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
+    }
+
+    public String navigateToCombinedItemizedServiceSummary() {
+        return "/inward/inward_itemized_service_summary_dto.xhtml?faces-redirect=true";
     }
 
     public boolean isOptimizedItemizedSaleSummaryEnabled() {

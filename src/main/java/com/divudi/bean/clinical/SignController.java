@@ -53,7 +53,7 @@ public class SignController implements Serializable {
     String selectText = "";
 
     public String navigateToManageSigns(){
-        return "/emr/admin/signs";
+        return "/emr/admin/signs?faces-redirect=true";
     }
 
 
