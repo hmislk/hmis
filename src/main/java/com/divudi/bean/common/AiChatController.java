@@ -230,7 +230,9 @@ public class AiChatController implements Serializable {
                         pendingAttachmentBase64,
                         pendingAttachmentMimeType,
                         githubToken,
-                        githubBranch
+                        githubBranch,
+                        hmisApiBaseUrl,
+                        userHmisApiKey
                 );
 
                 AiMessage assistantMsg = new AiMessage();
