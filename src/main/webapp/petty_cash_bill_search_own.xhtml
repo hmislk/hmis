@@ -23,7 +23,7 @@
                                     action="/payments/pay_index?faces-redirect=true" 
                                     ajax="false"/>     
                             </h:panelGroup>
-                            
+
                         </f:facet>
 
                         <div class="row">
@@ -75,7 +75,7 @@
                                     completeMethod="#{staffController.completeStaffWithoutDoctors}" 
                                     forceSelection="true"
                                     var="ix" 
-                                    itemLabel="#{ix.person.name}" 
+                                    itemLabel="#{ix.person.nameWithTitle}" 
                                     itemValue="#{ix}" 
                                     size="20"
                                     inputStyleClass="form-control"
@@ -101,10 +101,19 @@
                             <div class="col-md-10">
                                 <p:dataTable 
                                     id="tblBills" 
+                                    rowIndexVar="i"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="15"
                                     value="#{searchController.bills}" 
+                                    rowsPerPageTemplate="15,30,50,{ShowAll|'All'}"
                                     var="bill"  >
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="#" style="padding: 8px;" width="2em;" class="text-center" >
+                                        #{i+1}
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" style="padding: 8px;" width="11em;" >
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
@@ -115,12 +124,13 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
                                         </p:commandLink>
-
                                     </p:column>
-                                    <p:column headerText="Invoice No" >
+
+                                    <p:column headerText="Invoice No" style="padding: 8px;"  width="8em;">
                                         <h:outputLabel  value="#{bill.invoiceNumber}"  />
                                     </p:column>
-                                    <p:column headerText="Billed At"  >
+
+                                    <p:column headerText="Billed At" style="padding: 8px;" width="13em;" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -131,49 +141,53 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>  
-                                    <p:column headerText="Billed By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Billed By" style="padding: 8px;" width="12em;" >
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.nameWithTitle}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
-                                    <p:column headerText="Paid To(Staff)"  >
 
-                                        <h:outputLabel value="#{bill.staff.person.name}" ></h:outputLabel>
-                                    </p:column>  
-                                    <p:column headerText="Paid To(Person)"  >
-                                        <h:outputLabel value="#{bill.person.name}" />
-                                    </p:column> 
-                                    <p:column headerText="Net Value" >
-                                        <h:outputLabel value="#{bill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>   
-                                    <p:column headerText="Bill Type" >
-                                        <p:badge value="Iou Issue" severity="success" styleClass="mr-2" rendered="#{bill.billType eq 'IouIssue'}"></p:badge>
-                                        <p:badge value="Petty Issue" severity="info" styleClass="mr-2" rendered="#{bill.billType eq 'PettyCash'}"></p:badge>
-                                    </p:column>  
-                                    <p:column headerText="Comments" >
+                                    <p:column headerText="Paid To" style="padding: 8px;" width="28em;"  >
+                                        <h:panelGroup rendered="#{bill.staff ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Staff" severity="warning" style="width: 120px;" ></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="Staff - #{bill.staff.person.nameWithTitle}"></h:outputLabel>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bill.person ne null}">
+                                            <div class="d-flex gap-2">
+                                            <p:badge value="Person" severity="info"  style="width: 120px;"></p:badge>
+                                            <h:outputLabel value="-"></h:outputLabel>
+                                            <h:outputLabel value="#{bill.person.nameWithTitle}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bill.toDepartment ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Department" severity="success" style="width: 120px;"></p:badge>
+                                            <h:outputLabel value="-"></h:outputLabel>
+                                            <h:outputLabel value="#{bill.toDepartment.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Comments" style="padding: 8px;" width="14em;" >
                                         <h:outputLabel  rendered="#{bill.comments ne null}" value="#{bill.comments}" >
                                         </h:outputLabel>
                                     </p:column>
+
+                                    <p:column headerText="Net Value" style="padding: 8px;" width="8em;" class="text-end" >
+                                        <h:outputLabel value="#{bill.netTotal}" class="text-end" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
                                 </p:dataTable>
                             </div>
                         </div>
