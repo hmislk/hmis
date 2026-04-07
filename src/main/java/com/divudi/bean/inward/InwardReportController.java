@@ -862,10 +862,6 @@ public class InwardReportController implements Serializable {
             jpql.append("AND pe.creditCompany = :sponsor ");
             params.put("sponsor", sponsor);
         }
-        if (admissionStatus != null) {
-            jpql.append("AND pe.admissionStatus = :as ");
-            params.put("as", admissionStatus);
-        }
         if (admissionType != null) {
             jpql.append("AND pe.admissionType = :at ");
             params.put("at", admissionType);
@@ -878,7 +874,23 @@ public class InwardReportController implements Serializable {
             jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
         }
-        
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("  and pe.discharged=:dis ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("  and pe.discharged=:dis  ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                    break;
+                default:
+                    break;
+            }
+
+        }
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
