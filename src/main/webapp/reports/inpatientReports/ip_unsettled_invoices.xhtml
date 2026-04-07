@@ -228,11 +228,21 @@
                                 <h:outputText styleClass="fa fa-user-md mr-2"/>
                                 <p:outputLabel value="Consultant" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.consultant}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Consultants"/>
-                                <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-
-                            </p:selectOneMenu>
+                            
+                            <p:autoComplete 
+                                forceSelection="true" 
+                                value="#{inwardReportController.consultant}" 
+                                requiredMessage="Please select referring consultant"
+                                completeMethod="#{consultantController.completeConsultant}" 
+                                var="mysp"
+                                itemLabel="#{mysp.person.nameWithTitle}" 
+                                itemValue="#{mysp}"
+                                styleClass="form-control w-100"
+                                class="w-100" 
+                                placeholder="Consultant"
+                                maxResults="15"
+                                inputStyleClass="w-100">
+                            </p:autoComplete>
 
                             <!-- Service Centre -->
                             <h:panelGroup>
