@@ -2922,11 +2922,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     }
 
-    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+    private boolean savePreBillFinallyForRetailSaleForCashier(Patient pt) {
         WebUser loggedUser = getSessionController().getLoggedUser();
         if (loggedUser == null) {
             JsfUtil.addErrorMessage("Session expired. Please log in again.");
-            return;
+            return false;
         }
 
         getPreBill().setDepartment(loggedUser.getDepartment());
@@ -3004,6 +3004,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         } else {
             getBillFacade().edit(getPreBill());
         }
+        return true;
     }
 
     private void saveSaleBill() {
@@ -3728,7 +3729,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             getPreBill().setBillItems(null);
             getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-            savePreBillFinallyForRetailSaleForCashier(pt);
+            if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+                billSettlingStarted = false;
+                return null;
+            }
             // Use locked stocks for settlement instead of re-validating
             savePreBillItemsFinallyWithLockedStocks(tmpBillItems, stockValidation.getLockedStocks());
             setPrintBill(getPreBill());
@@ -3959,7 +3963,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return;
+        }
         savePreBillItemsFinally(tmpBillItems);
         // Create BFD for pre-bill at creation time so F15 stock movement report can track it
         if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {

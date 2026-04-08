@@ -2161,11 +2161,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+    private boolean savePreBillFinallyForRetailSaleForCashier(Patient pt) {
         WebUser loggedUser = getSessionController().getLoggedUser();
         if (loggedUser == null) {
             JsfUtil.addErrorMessage("Session expired. Please log in again.");
-            return;
+            return false;
         }
 
         getPreBill().setDepartment(loggedUser.getDepartment());
@@ -2243,6 +2243,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         } else {
             getBillFacade().edit(getPreBill());
         }
+        return true;
     }
 
     private void saveSaleBill() {
@@ -2792,7 +2793,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return null;
+        }
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
@@ -2997,7 +3001,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return;
+        }
         savePreBillItemsFinally(tmpBillItems);
         Long id = getPreBill().getId();
         if (id == null) {
