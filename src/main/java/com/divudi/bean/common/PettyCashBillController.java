@@ -22,12 +22,16 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PettyCashType;
+import com.divudi.core.data.RequestStatus;
+import com.divudi.core.data.RequestType;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.PaymentService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -222,6 +226,32 @@ public class PettyCashBillController implements Serializable {
         return s;
     }
 
+    private void saveFreBill() {
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_PRE);
+
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_PRE);
+        getCurrent().setBillType(BillType.PettyCash);
+
+        getCurrent().setDepartment(getSessionController().getDepartment());
+        getCurrent().setInstitution(getSessionController().getInstitution());
+
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+
+        getBillFacade().create(getCurrent());
+    }
+
     private void saveBill() {
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_ISSUE);
@@ -230,7 +260,7 @@ public class PettyCashBillController implements Serializable {
         getCurrent().setDeptId(deptId);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
         getCurrent().setBillType(BillType.PettyCash);
-        
+
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
 
@@ -258,7 +288,7 @@ public class PettyCashBillController implements Serializable {
         JsfUtil.addSuccessMessage("Approved");
     }
 
-    public void settleBill() {
+    public void settlePreBill() {
         if (currentBillType == null) {
             JsfUtil.addErrorMessage("Petty-Cash Type is Missing.");
             return;
@@ -300,7 +330,7 @@ public class PettyCashBillController implements Serializable {
                     JsfUtil.addErrorMessage("Gender is Missing in New Person.");
                     return;
                 }
-                if (newPerson.getArea()== null) {
+                if (newPerson.getArea() == null) {
                     JsfUtil.addErrorMessage("Address is Missing in New Person.");
                     return;
                 }
@@ -335,23 +365,23 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage("Invoice Number Already Exist");
             return;
         }
-        
+
         Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
-        
+
         System.out.println("loggedUserDrawer = " + loggedUserDrawer);
-        
-        if(loggedUserDrawer == null ){
+
+        if (loggedUserDrawer == null) {
             JsfUtil.addErrorMessage("Your Drawer have a Error.");
             return;
         }
         System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
-        
-        if(loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0) ){
+
+        if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
             JsfUtil.addErrorMessage("There is no cash in your drawer.");
             return;
         }
-        
-        if(loggedUserDrawer.getCashInHandValue() < getCurrent().getNetTotal()){
+
+        if (loggedUserDrawer.getCashInHandValue() < getCurrent().getNetTotal()) {
             JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
             return;
         }
@@ -360,9 +390,8 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
             return;
         }
-        
-        
-        if(currentBillType == PettyCashType.NEWPERSON){
+
+        if (currentBillType == PettyCashType.NEWPERSON) {
             personFacade.create(newPerson);
             System.out.println("New Person ID = " + newPerson.getId());
             getCurrent().setPerson(newPerson);
@@ -370,16 +399,39 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setInvoiceNumber(getFullyInvoiceNo(financialYear, invoiceNo));
-        saveBill();
+        //saveBill();
+        saveFreBill();
 
         saveBillItem();
-        List<Payment> payments = createPaymentForPettyCashBill(getCurrent(), getCurrent().getPaymentMethod());
-        drawerController.updateDrawerForOuts(payments);
+        
+        Request newlyRequest = new Request();
+
+        newlyRequest.setBill(getCurrent());
+        newlyRequest.setRequester(sessionController.getLoggedUser());
+        newlyRequest.setRequestAt(new Date());
+        newlyRequest.setRequestType(RequestType.PETTYCASH_APROVEL);
+        newlyRequest.setStatus(RequestStatus.PENDING);
+        newlyRequest.setInstitution(sessionController.getInstitution());
+        newlyRequest.setDepartment(sessionController.getDepartment());
+
+        String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.PETTYCASH_APROVEL);
+        newlyRequest.setRequestNo(reqNo);
+
+        requestService.save(newlyRequest, sessionController.getLoggedUser());
+        
+        getCurrent().setCurrentRequest(newlyRequest);
+        billFacade.edit(current);
+
+        //List<Payment> payments = createPaymentForPettyCashBill(getCurrent(), getCurrent().getPaymentMethod());
+        //drawerController.updateDrawerForOuts(payments);
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }
-    
+
+    @Inject
+    RequestService requestService;
+
     public String settleReturnBill() {
         if (comment == null || comment.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
