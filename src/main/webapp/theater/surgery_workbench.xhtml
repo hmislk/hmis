@@ -293,7 +293,7 @@
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        value="Add Medicines (Theatre)"
+                                        value="Direct Issue Medicines"
                                         ajax="false"
                                         action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                         actionListener="#{pharmacySaleBhtController.resetAll()}"
@@ -301,8 +301,8 @@
                                         class="w-100"
                                         rendered="#{surgeryBillController.surgeryBill.id ne null}">
                                         <f:setPropertyActionListener
-                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
-                                            target="#{pharmacySaleBhtController.patientEncounter}"/>
+                                            value="#{surgeryBillController.surgeryBill}"
+                                            target="#{pharmacySaleBhtController.batchBill}"/>
                                     </p:commandButton>
 
                                     <p:commandButton
