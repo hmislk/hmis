@@ -3694,6 +3694,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (!stockValidation.isValid()) {
             // Display comprehensive error messages showing ALL stock shortfalls
             JsfUtil.addErrorMessage(stockValidation.getFormattedErrorMessage());
+            stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Stock validation failed");
             billSettlingStarted = false;
             return null;
         }
@@ -3708,6 +3709,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 if (patientRequiredForPharmacySale) {
                     if (!hasValidName) {
                         JsfUtil.addErrorMessage("Please Select a Patient");
+                        stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Patient not selected");
                         billSettlingStarted = false;
                         return null;
                     } else {
@@ -3720,6 +3722,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 }
             } else if (patientRequiredForPharmacySale) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
+                stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Patient not selected");
                 billSettlingStarted = false;
                 return null;
             }
@@ -3735,6 +3738,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
             if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+                getPreBill().setBillItems(tmpBillItems);
+                stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Session expired during settlement");
                 billSettlingStarted = false;
                 return null;
             }
