@@ -13,7 +13,26 @@
 
             <ui:define name="content">
                 <h:form id="form">
-                    <p:panel header="Admissions">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fa fa-search"/>
+                                    <h:outputLabel value="Admissions" class="mx-2"/>
+                                </div>
+                                <div>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Nursing WorkBench"
+                                            icon="fa fa-stethoscope"
+                                            title="Nursing WorkBench"
+                                            class="ui-button-operating-theatre me-2"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"/>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <p:outputLabel value="From Date"></p:outputLabel>
@@ -233,12 +252,21 @@
                                         </p:column>
                                         <p:column headerText="Actions" >
                                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 ajax="false"
                                                 class="m-1"
                                                 icon="fa fa-fw fa-bed"
+                                                title="Inpatient Dashboard"
                                                 action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1 ui-button-operating-theatre"
+                                                icon="fa fa-stethoscope"
+                                                title="Nursing WorkBench"
+                                                rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                                                action="#{nursingWorkBenchController.navigateToNursingWorkBenchWithAdmission(a.id)}">
                                             </p:commandButton>
 
                                             <p:commandButton 

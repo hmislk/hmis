@@ -67,8 +67,13 @@ public class DrawerAdjustmentController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation">
     public String navigateToRequestAdjustment() {
+        WebUser loggedUser = sessionController.getLoggedUser();
+        if (requestService.hasPendingDrawerAdjustmentRequest(loggedUser)) {
+            JsfUtil.addErrorMessage("You already have a pending drawer adjustment request. Please wait for it to be approved or rejected before submitting a new one.");
+            return "";
+        }
         makeNull();
-        targetDrawerUser = sessionController.getLoggedUser();
+        targetDrawerUser = loggedUser;
         return "/cashier/drawer_adjustment_request?faces-redirect=true";
     }
 
@@ -84,6 +89,10 @@ public class DrawerAdjustmentController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Cashier Self-Request">
     public String submitAdjustmentRequest() {
+        if (requestService.hasPendingDrawerAdjustmentRequest(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("You already have a pending drawer adjustment request. Please wait for it to be approved or rejected before submitting a new one.");
+            return "";
+        }
         if (!validateInput(true)) {
             return "";
         }
@@ -190,6 +199,47 @@ public class DrawerAdjustmentController implements Serializable {
         paymentMethod = null;
         adjustmentDelta = null;
         reason = null;
+    }
+
+    public boolean isHasPendingRequest() {
+        return requestService.hasPendingDrawerAdjustmentRequest(sessionController.getLoggedUser());
+    }
+
+    public Double getCurrentBalance() {
+        WebUser user = targetDrawerUser != null ? targetDrawerUser : sessionController.getLoggedUser();
+        if (user == null || paymentMethod == null) {
+            return null;
+        }
+        Drawer drawer = drawerService.findUsersDrawerWithoutCreate(user);
+        if (drawer == null) {
+            return null;
+        }
+        switch (paymentMethod) {
+            case Cash: return drawer.getCashInHandValue();
+            case Card: return drawer.getCardInHandValue();
+            case Cheque: return drawer.getChequeInHandValue();
+            case Slip: return drawer.getSlipInHandValue();
+            case ewallet: return drawer.getEwalletInHandValue();
+            case Credit: return drawer.getCreditInHandValue();
+            case Staff: return drawer.getStaffInHandValue();
+            case Staff_Welfare: return drawer.getStaffWelfareInHandValue();
+            case Voucher: return drawer.getVoucherInHandValue();
+            case IOU: return drawer.getIouInHandValue();
+            case Agent: return drawer.getAgentInHandValue();
+            case PatientDeposit: return drawer.getPatientDepositInHandValue();
+            case PatientPoints: return drawer.getPatientPointsInHandValue();
+            case OnlineSettlement: return drawer.getOnlineSettlementInHandValue();
+            case None: return drawer.getNoneInHandValue();
+            default: return null;
+        }
+    }
+
+    public Double getBalanceAfterAdjustment() {
+        Double current = getCurrentBalance();
+        if (current == null || adjustmentDelta == null) {
+            return null;
+        }
+        return current + adjustmentDelta;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Getters & Setters">

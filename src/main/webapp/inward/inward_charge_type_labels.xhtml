@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="chargeTypeLabelForm">
+                    <p:panel styleClass="panel-header-right">
+                        <f:facet name="header">
+                            <h:outputText value="Inward Charge Type Labels" style="float: left;"/>
+                            <p:commandButton
+                                value="Save All"
+                                icon="pi pi-save"
+                                styleClass="ui-button-success"
+                                style="float: right;"
+                                process="chargeTypeLabelForm"
+                                update="chargeTypeLabelForm"
+                                action="#{inwardChargeTypeLabelController.saveAll()}">
+                                <p:confirm header="Confirm Save" message="Save all custom charge type labels?" icon="pi pi-info-circle"/>
+                            </p:commandButton>
+                        </f:facet>
+
+                        <p:messages id="msgs" autoUpdate="true" closable="true"/>
+
+                        <p:dataTable
+                            id="labelsTable"
+                            value="#{inwardChargeTypeLabelController.chargeTypes}"
+                            var="chargeType"
+                            paginator="true"
+                            rows="25"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="25,50,100">
+
+                            <p:column
+                                headerText="Enum Name"
+                                sortBy="#{chargeType.name()}"
+                                filterBy="#{chargeType.name()}"
+                                style="width: 25%; padding: 7px;">
+                                <h:outputText value="#{chargeType.name()}" style="font-family: monospace; color: #666;"/>
+                            </p:column>
+
+                            <p:column
+                                headerText="Default Label"
+                                sortBy="#{chargeType.label}"
+                                filterBy="#{chargeType.label}"
+                                style="width: 30%; padding: 7px;">
+                                <h:outputText value="#{chargeType.label}"/>
+                            </p:column>
+
+                            <p:column
+                                headerText="Custom Label"
+                                style="width: 35%; padding: 7px;">
+                                <p:inputText
+                                    style="width: 100%;"
+                                    value="#{inwardChargeTypeLabelController.labelMap[chargeType.name()]}"
+                                    placeholder="Leave blank to use default"/>
+                            </p:column>
+
+                            <p:column
+                                headerText="Save"
+                                style="width: 10%; padding: 7px; text-align: center;">
+                                <p:commandButton
+                                    icon="pi pi-save"
+                                    styleClass="ui-button-success"
+                                    title="Save this label"
+                                    process="chargeTypeLabelForm"
+                                    update="labelsTable msgs"
+                                    action="#{inwardChargeTypeLabelController.saveOne(chargeType)}"/>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"/>
+                    </p:confirmDialog>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

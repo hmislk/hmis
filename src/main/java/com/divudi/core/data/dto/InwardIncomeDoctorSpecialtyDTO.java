@@ -20,12 +20,6 @@ public class InwardIncomeDoctorSpecialtyDTO {
     
     private Double docFee;
     private Double hosFee;
-    
-    private Long billId;
-    private Double billTotal;
-    
-    private Double docFeeTotal;
-    private Double hosFeeTotal;
     private Double totalCharge;
     
     
@@ -33,29 +27,25 @@ public class InwardIncomeDoctorSpecialtyDTO {
     public InwardIncomeDoctorSpecialtyDTO(){
         this.docFee = 0.0;
         this.hosFee = 0.0;
-        this.billTotal = 0.0;
+        this.totalCharge = 0.0;
     }
     
     // constructor for doctor wise
-    public InwardIncomeDoctorSpecialtyDTO(Long staffId, Title doctorTitle, String doctorName, String specialtyName, Double docFee, Double hosFee, Long billId, Double billTotal) {
+    public InwardIncomeDoctorSpecialtyDTO(Long staffId, Title doctorTitle, String doctorName, String specialtyName, Double docFee, Double hosFee) {
         this.staffId = staffId;
         this.doctorTitle = (doctorTitle != null ? doctorTitle : Title.Dr);
         this.doctorName = doctorName;
         this.specialtyName = specialtyName;
         this.docFee = docFee;
         this.hosFee = hosFee;
-        this.billId = billId;
-        this.billTotal = billTotal;
     }
     
     // constructor for speciality wise
-    public InwardIncomeDoctorSpecialtyDTO(Long staffId, String specialtyName, Double docFee, Double hosFee, Long billId, Double billTotal) {
+    public InwardIncomeDoctorSpecialtyDTO(Long staffId, String specialtyName, Double docFee, Double hosFee) {
         this.staffId = staffId;
         this.specialtyName = specialtyName;
         this.docFee = docFee;
         this.hosFee = hosFee;
-        this.billId = billId;
-        this.billTotal = billTotal;
     }
     
     public InwardIncomeDoctorSpecialtyDTO(Long staffId, Double docFee, Double hosFee) {
@@ -110,38 +100,6 @@ public class InwardIncomeDoctorSpecialtyDTO {
 
     public void setHosFee(Double hosFee) {
         this.hosFee = hosFee;
-    }
-
-    public Double getBillTotal() {
-        return billTotal;
-    }
-
-    public void setBillTotal(Double billTotal) {
-        this.billTotal = billTotal;
-    }
-    
-    public Long getBillId() {
-        return billId;
-    }
-
-    public void setBillId(Long billId) {
-        this.billId = billId;
-    }
-    
-    public Double getDocFeeTotal() {
-        return docFeeTotal;
-    }
-
-    public void setDocFeeTotal(Double docFeeTotal) {
-        this.docFeeTotal = docFeeTotal;
-    }
-
-    public Double getHosFeeTotal() {
-        return hosFeeTotal;
-    }
-
-    public void setHosFeeTotal(Double hosFeeTotal) {
-        this.hosFeeTotal = hosFeeTotal;
     }
 
     public Double getTotalCharge() {

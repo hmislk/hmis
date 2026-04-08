@@ -68,13 +68,31 @@
                                                     <h:outputText value="#{u.code}"/>
                                                 </p:column>
 
-                                                <p:column 
-                                                    headerText="Staff Name" 
+                                                <p:column
+                                                    headerText="Staff Name"
                                                     style="padding: 10px;"
-                                                    sortBy="#{u.staffNameWithTitle}" 
+                                                    sortBy="#{u.staffNameWithTitle}"
                                                     filterBy="#{u.staffNameWithTitle}"
                                                     filterMatchMode="contains">
                                                     <h:outputText value="#{u.staffNameWithTitle}"/>
+                                                </p:column>
+
+                                                <p:column
+                                                    headerText="Institution"
+                                                    style="padding: 10px;"
+                                                    sortBy="#{u.institutionName}"
+                                                    filterBy="#{u.institutionName}"
+                                                    filterMatchMode="contains">
+                                                    <h:outputText value="#{u.institutionName}"/>
+                                                </p:column>
+
+                                                <p:column
+                                                    headerText="Department"
+                                                    style="padding: 10px;"
+                                                    sortBy="#{u.departmentName}"
+                                                    filterBy="#{u.departmentName}"
+                                                    filterMatchMode="contains">
+                                                    <h:outputText value="#{u.departmentName}"/>
                                                 </p:column>
                                             </p:dataTable>
                                         </ui:insert>
@@ -222,7 +240,7 @@
                                             immediate="true"  
                                             disabled="#{webUserController.selected == null}" 
                                             icon="pi pi-folder-open" 
-                                            value="Manage Drawer" 
+                                            value="View Drawers" 
                                             class="m-1" 
                                             action="#{webUserController.toManageDrawers()}" 
                                             ajax="false">

@@ -50,7 +50,7 @@ public class VocabularyController implements Serializable {
 
     public String navigateToManageVocabularies(){
         getItems();
-        return "/emr/admin/vocabularies";
+        return "/emr/admin/vocabularies?faces-redirect=true";
     }
 
     // Method to generate the Excel file and initiate the download

@@ -1,13 +1,21 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.channel.SessionInstance;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,6 +25,8 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -44,6 +54,9 @@ public class ExcelController {
 
     @Inject
     SessionController sessionController;
+
+    @Inject
+    WebUserController webUserController;
 
     /**
      * Creates a new instance of ExcelController
@@ -4054,6 +4067,619 @@ public class ExcelController {
     }
 
 
+    // Excel export: wht report/ ReportTemplateRow
+    public StreamedContent createExcelForReportTemplateRows(ReportTemplateRowBundle bundle, Map<String, Object> filters, String fileName) throws IOException {
+        if (bundle == null) {
+            return null;
+        }
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String safeName = WorkbookUtil.createSafeSheetName(bundle.getName());
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Create cell styles for headers
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setBold(true);
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        CellStyle centerSmallStyle = workbook.createCellStyle();
+        centerSmallStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 10);
+        centerSmallStyle.setFont(smallFont);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow++);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+        // Row 1: Report Title
+        Row titleRow = dataSheet.createRow(currentRow++);
+        Cell titleCell = titleRow.createCell(0);
+        if (bundle.getName() != null) {
+            titleCell.setCellValue(bundle.getName());
+        } else {
+            titleCell.setCellValue("Report");
+        }
+        titleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7));
+
+        // Row 2: Search Criteria
+        if (filters != null && !filters.isEmpty()) {
+            currentRow = addMetaDataToExcelSheet(workbook, dataSheet, currentRow, filters);
+        } else {
+            Row criteriaRow = dataSheet.createRow(currentRow++);
+            Cell criteriaCell = criteriaRow.createCell(0);
+            criteriaCell.setCellValue("Search Criteria: N/A");
+            criteriaCell.setCellStyle(centerSmallStyle);
+            dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 7));
+            currentRow++;
+        }
+
+        if (bundle.getBundleType() == null) {
+            JsfUtil.addErrorMessage("Unknown report type. Cannot export to Excel.");
+            workbook.close();
+            return null;
+        }
+
+        switch (bundle.getBundleType()) {
+            case "whtIndividualReceipts":
+                addDataToWhtIndividualReceipts(dataSheet, currentRow, bundle);
+                break;
+            case "whtMonthlySummary":
+            case "whtConsultantSummary":
+                addDataToWhtSummary(dataSheet, currentRow, bundle);
+                break;
+            case "opdProfessionalFeePayments":
+                addDataToOpdProfessionalFeePayments(dataSheet, currentRow, bundle);
+                break;
+            case "channelIncomeScanning":
+                addDataToChannelScanningIncomeReport(dataSheet, currentRow, bundle);
+                break;
+            default:
+                JsfUtil.addErrorMessage("Unsupported Report Type: " + bundle.getBundleType());
+                workbook.close();
+                return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        excelSc = DefaultStreamedContent.builder()
+                .name(((fileName != null && !fileName.isEmpty()) ? fileName : "Report") + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
+    }
+
+    // Excel export: wht_individualReceipts
+    private void addDataToWhtIndividualReceipts(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+             Row noDataRow = dataSheet.createRow(startRow++);
+             Cell noDataCell = noDataRow.createCell(0);
+             noDataCell.setCellValue("No Data for " + bundle.getName());
+             dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 7));
+             return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+        int colIndex = 0;
+
+        if (webUserController.hasPrivilege("Developers")) {
+             headerRow.createCell(colIndex++).setCellValue("ID");
+             headerRow.createCell(colIndex++).setCellValue("Type");
+        }
+        headerRow.createCell(colIndex++).setCellValue("Date");
+        headerRow.createCell(colIndex++).setCellValue("Time");
+        headerRow.createCell(colIndex++).setCellValue("Receipt No");
+        headerRow.createCell(colIndex++).setCellValue("Cashier");
+        headerRow.createCell(colIndex++).setCellValue("Speciality");
+        headerRow.createCell(colIndex++).setCellValue("Staff");
+        headerRow.createCell(colIndex++).setCellValue("Gross");
+        headerRow.createCell(colIndex++).setCellValue("WHT");
+        headerRow.createCell(colIndex++).setCellValue("Value");
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+            int cellIndex = 0;
+            Bill bill = row.getBill();
+
+            if (bill == null) {
+                excelRow.createCell(cellIndex++).setCellValue("");
+                continue;
+            }
+            if (webUserController.hasPrivilege("Developers")) {
+                excelRow.createCell(cellIndex++).setCellValue(bill.getId() != null ? String.valueOf(bill.getId()) : "");
+                excelRow.createCell(cellIndex++).setCellValue(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().toString() : "");
+            }
+            excelRow.createCell(cellIndex++).setCellValue(bill.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(bill.getBillDate()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getBillTime() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(bill.getBillTime()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null  ? bill.getStaff().getPerson().getName() : "");
+            excelRow.createCell(cellIndex++).setCellValue(bill.getTotal());
+            excelRow.createCell(cellIndex++).setCellValue(bill.getTax());
+            excelRow.createCell(cellIndex++).setCellValue(bill.getNetTotal());
+        }
+
+        Row totalRow = dataSheet.createRow(startRow++);
+        int totalCellIndex;
+        if (webUserController.hasPrivilege("Developers")) {
+            totalCellIndex = 8;
+        } else {
+            totalCellIndex = 6;
+        }
+        totalRow.createCell(totalCellIndex++).setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
+        totalRow.createCell(totalCellIndex++).setCellValue(bundle.getTax() != null ? bundle.getTax() : 0.0);
+        totalRow.createCell(totalCellIndex++).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
 
 
+        return;
+    }
+
+    private void addDataToWhtSummary(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }   
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + bundle.getName());
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+            return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+
+        if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtMonthlySummary")) {
+            headerRow.createCell(0).setCellValue("Month");
+        } else if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtConsultantSummary")) {
+            headerRow.createCell(0).setCellValue("Consultant Name");
+        } else {
+            headerRow.createCell(0).setCellValue("Unknown Type");
+        }
+        headerRow.createCell(1).setCellValue("Total Amount");
+        headerRow.createCell(2).setCellValue("Holding Tax");
+        headerRow.createCell(3).setCellValue("Net Amount");
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+
+            if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtMonthlySummary")) {
+                excelRow.createCell(0).setCellValue(row.getDate() != null ? new SimpleDateFormat("yyyy MMMM").format(row.getDate()) : "");
+            } else if (bundle.getBundleType() != null && bundle.getBundleType().equals("whtConsultantSummary")) {
+                excelRow.createCell(0).setCellValue(row.getStaff() != null && row.getStaff().getPerson() != null && row.getStaff().getPerson().getNameWithTitle() != null ? row.getStaff().getPerson().getNameWithTitle() : "");
+            }
+            excelRow.createCell(1).setCellValue(row.getGrossTotal() != null ? row.getGrossTotal() : 0.0);
+            excelRow.createCell(2).setCellValue(row.getTax() != null ? row.getTax() : 0.0);
+            excelRow.createCell(3).setCellValue(row.getTotal() != null ? row.getTotal() : 0.0);
+        }
+
+        Row totalRow = dataSheet.createRow(startRow++);
+        totalRow.createCell(0).setCellValue("");
+        totalRow.createCell(1).setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
+        totalRow.createCell(2).setCellValue(bundle.getTax() != null ? bundle.getTax() : 0.0);
+        totalRow.createCell(3).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+
+        return;
+    }
+
+    // OPD Professional Fee Payments (opdProfessionalFeePayments)
+    private void addDataToOpdProfessionalFeePayments(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + bundle.getName());
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+            return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+        headerRow.createCell(0).setCellValue("Paid Date");
+        headerRow.createCell(1).setCellValue("Payment No");
+        headerRow.createCell(2).setCellValue("Billed Date");
+        headerRow.createCell(3).setCellValue("Bill");
+        headerRow.createCell(4).setCellValue("Patient");
+        headerRow.createCell(5).setCellValue("Professional");
+        headerRow.createCell(6).setCellValue("Fee Value");
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+            int colIndex = 0;
+
+            if (row.getBillFee() == null) {
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                excelRow.createCell(colIndex++).setCellValue("");
+                continue;
+            }
+
+            Bill b = row.getBillFee() != null ? row.getBillFee().getBill() : null;
+            Bill rbi = row.getBillFee() != null && row.getBillFee().getBillItem() != null && row.getBillFee().getBillItem().getReferanceBillItem() != null ? row.getBillFee().getBillItem().getReferanceBillItem().getBill() : null;
+
+            excelRow.createCell(colIndex++).setCellValue(b != null && b.getBillDate() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(b.getBillDate()) : "");
+            
+            String payNo = "";
+            if (b != null && b.getDeptId() != null) {
+                payNo += b.getDeptId();
+            }
+            if (b != null && b.getBillTypeAtomic() != null) {
+                if (!payNo.isEmpty()) {
+                    payNo += " ";
+                }
+                payNo += b.getBillTypeAtomic().toString();
+            }
+            excelRow.createCell(colIndex++).setCellValue(!payNo.isEmpty() ? payNo : "");
+            excelRow.createCell(colIndex++).setCellValue(rbi != null && rbi.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(rbi.getCreatedAt()) : "");
+            
+            if (rbi != null && rbi.getDeptId() != null) {
+                excelRow.createCell(colIndex++).setCellValue((row.getBillFee().getBillItem() != null && row.getBillFee().getBillItem().getBill() != null && row.getBillFee().getBillItem().getBill() .isCancelled()) ? (rbi.getDeptId() + " (Cancelled)") : rbi.getDeptId());
+            } else {
+                excelRow.createCell(colIndex++).setCellValue("");
+            }
+
+            if (row.getBillFee().getReferenceBillFee() != null && row.getBillFee().getReferenceBillFee().getBill() != null && row.getBillFee().getReferenceBillFee().getBill().getPatient()  != null) {
+                excelRow.createCell(colIndex++).setCellValue(row.getBillFee().getReferenceBillFee().getBill().getPatient().getPerson() != null && row.getBillFee().getReferenceBillFee().getBill().getPatient().getPerson().getNameWithTitle() != null ? row.getBillFee().getReferenceBillFee().getBill().getPatient().getPerson().getNameWithTitle() : "");
+            } else {
+                excelRow.createCell(colIndex++).setCellValue(row.getBillFee().getPatient() != null && row.getBillFee().getPatient().getPerson() != null && row.getBillFee().getPatient().getPerson().getNameWithTitle() != null ? row.getBillFee().getPatient().getPerson().getNameWithTitle() : "");
+            }
+            excelRow.createCell(colIndex++).setCellValue(b != null && b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getName() != null ? b.getToStaff().getPerson().getName() : "");
+            excelRow.createCell(colIndex++).setCellValue(row.getBillFee().getFeeValue());
+        }
+
+        Row totalRow = dataSheet.createRow(startRow++);
+        totalRow.createCell(6).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+
+         return;
+
+    }
+
+    // Filter info to excel
+    public int addMetaDataToExcelSheet(XSSFWorkbook wb, XSSFSheet sheet, int rowIndex, Map<String, Object> filters) {
+        if (wb == null || sheet == null) {
+            return rowIndex;
+        }
+        if (rowIndex < 0) {
+            return 0;
+        }
+        
+        // Bold style for labels
+        CellStyle headerStyle = wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+        headerFont.setFontHeightInPoints((short) 14);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font metaFontBold = wb.createFont();
+        metaFontBold.setBold(true);
+        CellStyle metaStyleBold = wb.createCellStyle();
+        metaStyleBold.setFont(metaFontBold);
+        
+        int pairCounter = 0;
+        Row row = sheet.createRow(rowIndex++);
+
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+
+            // LABEL CELL
+            Cell labelCell = row.createCell(pairCounter * 3);
+            labelCell.setCellValue(entry.getKey());
+            labelCell.setCellStyle(metaStyleBold);
+
+            // VALUE CELL
+            Cell valueCell = row.createCell(pairCounter * 3 + 1);
+            Object value = entry.getValue();
+
+            valueCell.setCellValue((value != null) ? value.toString() : "");
+
+            pairCounter++;
+
+            // Start new row after 3 pairs
+            if (pairCounter == 3) {
+                pairCounter = 0;
+                row = sheet.createRow(rowIndex++);
+            }
+        }
+
+        // blank row after metadata
+        rowIndex++;
+
+        return rowIndex;
+    }
+
+    // Channel Scanning Income Report
+    private void addDataToChannelScanningIncomeReport(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }   
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + bundle.getName());
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+            return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+
+        int headerColIndex = 0;
+
+        // PaymentsMethod Column boolean values
+        boolean hasCash             = false;
+        boolean hasCard             = false;
+        boolean hasCredit           = false;
+        boolean hasStaffWelfare     = false;
+        boolean hasVoucher          = false;
+        boolean hasIou              = false;
+        boolean hasAgent            = false;
+        boolean hasCheque           = false;
+        boolean hasSlip             = false;
+        boolean hasEWallet          = false;
+        boolean hasPatientDeposit   = false;
+        boolean hasPatientPoints    = false;
+        boolean hasOnlineSettlement = false;
+
+        headerRow.createCell(headerColIndex++).setCellValue("Serial No");
+        headerRow.createCell(headerColIndex++).setCellValue("Bill Id");
+        headerRow.createCell(headerColIndex++).setCellValue("Created At");
+        headerRow.createCell(headerColIndex++).setCellValue("Bill No");
+        headerRow.createCell(headerColIndex++).setCellValue("Patient");
+        headerRow.createCell(headerColIndex++).setCellValue("Doctor");
+        headerRow.createCell(headerColIndex++).setCellValue("Session");
+        headerRow.createCell(headerColIndex++).setCellValue("Item");
+        headerRow.createCell(headerColIndex++).setCellValue("Cashier");
+        headerRow.createCell(headerColIndex++).setCellValue("Hospital Fee");
+        headerRow.createCell(headerColIndex++).setCellValue("Doctor Fee");
+        headerRow.createCell(headerColIndex++).setCellValue("Gross Total");
+
+        // Dynamic headers mirroring rendered conditions
+        if (bundle.isHasCashTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Cash");
+            hasCash = true;
+        }
+        if (bundle.isHasCardTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Card");
+            hasCard = true;
+        }
+        if (bundle.isHasCreditTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Credit");
+            hasCredit = true;
+        }
+        if (bundle.isHasStaffWelfareTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Staff Welfare");
+            hasStaffWelfare = true;
+        }
+        if (bundle.isHasVoucherTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Voucher");
+            hasVoucher = true;
+        }
+        if (bundle.isHasIouTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("IOU");
+            hasIou = true;
+        }
+        if (bundle.isHasAgentTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Agent");
+            hasAgent = true;
+        }
+        if (bundle.isHasChequeTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Cheque");
+            hasCheque = true;
+        }
+        if (bundle.isHasSlipTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Slip");
+            hasSlip = true;
+        }
+        if (bundle.isHasEWalletTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("eWallet");
+            hasEWallet = true;
+        }
+        if (bundle.isHasPatientDepositTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Patient Deposit");
+            hasPatientDeposit = true;
+        }
+        if (bundle.isHasPatientPointsTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Patient Points");
+            hasPatientPoints = true;
+        }
+        if (bundle.isHasOnlineSettlementTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Online Settlement");
+            hasOnlineSettlement = true;
+        }
+
+        int serialNo = 1;
+        int colIndex = 0;
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+            colIndex = 0;
+            Bill b = row.getBill();
+
+            excelRow.createCell(colIndex++).setCellValue(serialNo++);
+            if (b != null) { 
+                excelRow.createCell(colIndex++).setCellValue(b.getId() != null ? b.getId() : null);
+                excelRow.createCell(colIndex++).setCellValue(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(b.getCreatedAt()) : "");
+
+                String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+                if (b.isCancelled()) {
+                    billDept += " (Cancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId() + ")") : ")" );
+                }
+                if (b.isRefunded()) {
+                    billDept += " (Refunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId() + ")") : ")" );
+                }
+                if (b instanceof RefundBill) {
+                    billDept += " (Refund Bill)";
+                }
+                if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    billDept += " (Cancel Bill)";
+                }
+                excelRow.createCell(colIndex++).setCellValue(billDept);
+
+                excelRow.createCell(colIndex++).setCellValue((b.getPatient() != null && b.getPatient().getPerson() != null) ? b.getPatient().getPerson().getNameWithTitle() : "");
+                excelRow.createCell(colIndex++).setCellValue((b.getSingleBillItem() != null && b.getSingleBillItem().getItem() != null && b.getSingleBillItem().getItem().getStaff() != null && b.getSingleBillItem().getItem().getStaff().getPerson() != null) ? b.getSingleBillItem().getItem().getStaff().getPerson().getNameWithTitle() : "");
+
+                SessionInstance si = b.getSingleBillSession() != null ? b.getSingleBillSession().getSessionInstance() : null;
+                String sessionName = "";
+                if (si != null) {
+                    sessionName += si.getName();
+                    if (si.getSessionDate() != null) {
+                        sessionName += " " + new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(si.getSessionDate());
+                    }
+                    if (si.getSessionTime() != null) {
+                        sessionName += " " + new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(si.getSessionTime());
+                    }
+                }
+                excelRow.createCell(colIndex++).setCellValue(sessionName);
+
+                String itemNames = "";
+                if (b.getBillItems() != null && !b.getBillItems().isEmpty()) {
+                    for (BillItem bi : b.getBillItems()) {
+                        if (bi.getItem() != null && !(bi.getItem() instanceof ServiceSession)) {
+                            itemNames += bi.getItem().getName() + "/ ";
+                        }
+                    }
+                }
+                excelRow.createCell(colIndex++).setCellValue(itemNames);
+
+                excelRow.createCell(colIndex++).setCellValue(b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "");
+                excelRow.createCell(colIndex++).setCellValue(b.getHospitalFee());
+                excelRow.createCell(colIndex++).setCellValue(b.getStaffFee());
+                excelRow.createCell(colIndex++).setCellValue(b.getTotal());
+            } else {
+                for (int i = 0; i < 11; i++) {
+                    excelRow.createCell(colIndex++).setCellValue("");
+                }
+            }
+
+            if (hasCash) {
+                excelRow.createCell(colIndex++).setCellValue(row.getCashValue());
+            }
+            if (hasCard) {
+                excelRow.createCell(colIndex++).setCellValue(row.getCardValue());
+            }
+            if (hasCredit) {
+                excelRow.createCell(colIndex++).setCellValue(row.getCreditValue());
+            }
+            if (hasStaffWelfare) {
+                excelRow.createCell(colIndex++).setCellValue(row.getStaffWelfareValue());
+            }
+            if (hasVoucher) {
+                excelRow.createCell(colIndex++).setCellValue(row.getVoucherValue());
+            }
+            if (hasIou) {
+                excelRow.createCell(colIndex++).setCellValue(row.getIouValue());
+            }
+            if (hasAgent) {
+                excelRow.createCell(colIndex++).setCellValue(row.getAgentValue());
+            }
+            if (hasCheque) {
+                excelRow.createCell(colIndex++).setCellValue(row.getChequeValue());
+            }
+            if (hasSlip) {
+                excelRow.createCell(colIndex++).setCellValue(row.getSlipValue());
+            }
+            if (hasEWallet) {
+                excelRow.createCell(colIndex++).setCellValue(row.getEwalletValue());
+            }
+            if (hasPatientDeposit) {
+                excelRow.createCell(colIndex++).setCellValue(row.getPatientDepositValue());
+            }
+            if (hasPatientPoints) {
+                excelRow.createCell(colIndex++).setCellValue(row.getPatientPointsValue());
+            }
+            if (hasOnlineSettlement) {
+                excelRow.createCell(colIndex++).setCellValue(row.getOnlineSettlementValue());
+            }
+        }
+
+        // Footer Row
+        Row footerRow = dataSheet.createRow(startRow++);
+        int footerColIndex = 9;
+
+        footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong2() != null ? bundle.getLong2() : 0);
+        footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong3() != null ? bundle.getLong3() : 0);
+        footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong1() != null ? bundle.getLong1() : 0);
+
+        // Dynamic footer cells mirroring rendered conditions
+        if (hasCash) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCashValue());
+        }
+        if (hasCard) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCardValue());
+        }
+        if (hasCredit) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCreditValue());
+        }
+        if (hasStaffWelfare) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getStaffWelfareValue());
+        }
+        if (hasVoucher) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getVoucherValue());
+        }
+        if (hasIou) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getIouValue());
+        }
+        if (hasAgent) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getAgentValue());
+        }
+        if (hasCheque) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getChequeValue());
+        }
+        if (hasSlip) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getSlipValue());
+        }
+        if (hasEWallet) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getEwalletValue());
+        }
+        if (hasPatientDeposit) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getPatientDepositValue());
+        }
+        if (hasPatientPoints) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getPatientPointsValue());
+        }
+        if (hasOnlineSettlement) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getOnlineSettlementValue());
+        }
+
+        return;
+    }
 }

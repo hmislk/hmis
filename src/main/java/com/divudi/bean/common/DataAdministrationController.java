@@ -7,8 +7,11 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -330,6 +333,11 @@ public class DataAdministrationController implements Serializable {
     private String auditDatabaseSuggestedSql;
     private String mainDatabaseExecutionFeedback;
     private String auditDatabaseExecutionFeedback;
+
+    // Wiki DDL version tracking
+    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
+    private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
+    private String wikiDdlVersion;
 
     Date fromDate;
     Date toDate;
@@ -2251,31 +2259,52 @@ public class DataAdministrationController implements Serializable {
         JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
     }
 
-    public void checkMissingFields1() {
+    public void checkMissingFieldsForced() {
         suggestedSql = "";
+        mainDatabaseSuggestedSql = "";
+        auditDatabaseSuggestedSql = "";
+        mainDatabaseErrors = "";
+        auditDatabaseErrors = "";
         errors = "";
-        StringBuilder allErrors = new StringBuilder();
+        if (runOnMainDatabase) {
+            checkMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
 
-        for (Class<?> entityClass : findEntityClassNames()) {
-            String entityName = entityClass.getSimpleName();
-            try {
-                itemFacade.executeQueryFirstResult(entityClass, "SELECT e FROM " + entityName + " e");
-            } catch (PersistenceException pe) {
-                Throwable cause = pe.getCause();
-                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
-                    cause = cause.getCause();
-                }
-                if (cause != null) {
-                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(getExceptionMessage(cause));
-                    if (matcher.find()) {
-                        String missingColumn = matcher.group(1);
-                        errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
+    public String fetchWikiDdlVersion() {
+        java.net.HttpURLConnection conn = null;
+        try {
+            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
+            conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(10000);
+            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
+            int status = conn.getResponseCode();
+            if (status == 200) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+                    String line;
+                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}:\\d{2})");
+                    while ((line = reader.readLine()) != null) {
+                        Matcher m = versionPattern.matcher(line);
+                        if (m.find()) {
+                            return m.group(1).trim();
+                        }
                     }
                 }
-            } catch (Exception e) {
-                // Handle other exceptions as needed
+            }
+        } catch (Exception e) {
+            // Network or parse failure — return null so caller falls back to legacy
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
             }
         }
+        return null;
     }
 
     public void checkMissingFields() {
@@ -2287,13 +2316,60 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseErrors = "";
         errors = "";
 
-        // Check both databases if enabled
+        // Check wiki DDL version first
+        wikiDdlVersion = fetchWikiDdlVersion();
+        if (wikiDdlVersion != null) {
+            String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+            if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
+                errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
+                return;
+            }
+        }
+
+        // Version mismatch or wiki unreachable — run legacy check
         if (runOnMainDatabase) {
             checkMissingFieldsForDatabase(itemFacade, "Main Database");
         }
         if (runOnAuditDatabase) {
             checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
         }
+    }
+
+    public void markSchemaAsCurrent() {
+        if (wikiDdlVersion == null) {
+            wikiDdlVersion = fetchWikiDdlVersion();
+        }
+        if (wikiDdlVersion == null) {
+            JsfUtil.addErrorMessage("Could not reach wiki to determine current DDL version.");
+            return;
+        }
+        configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, wikiDdlVersion);
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Schema version " + wikiDdlVersion + " saved. Migration banner cleared.");
+    }
+
+    private void markSchemaAsCurrentSilently(boolean executionPerformed) {
+        if (!executionPerformed) {
+            return;
+        }
+        try {
+            String version = fetchWikiDdlVersion();
+            if (version != null) {
+                configOptionApplicationController.saveShortTextOption(CONFIG_KEY_DDL_VERSION, version);
+                databaseMigrationService.markMigrationComplete();
+                wikiDdlVersion = version;
+            }
+        } catch (Exception e) {
+            // Schema operations succeeded; version tracking is secondary — swallow silently
+        }
+    }
+
+    public String getStoredDdlVersion() {
+        return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+    }
+
+    public String getWikiDdlVersion() {
+        return wikiDdlVersion;
     }
 
     private void checkMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2542,12 +2618,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             createTablesOnDatabase(itemFacade, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
+            executionPerformed = true;
         }
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
@@ -2644,12 +2724,16 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseExecutionFeedback = "";
 
         // Run on both databases if enabled
+        boolean executionPerformed = false;
         if (runOnMainDatabase) {
             runSqlOnDatabase(itemFacade, suggestedSql, "Main Database");
+            executionPerformed = true;
         }
         if (runOnAuditDatabase) {
             runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
+            executionPerformed = true;
         }
+        markSchemaAsCurrentSilently(executionPerformed);
     }
 
     private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {
@@ -4785,6 +4869,167 @@ public class DataAdministrationController implements Serializable {
             this.missingFields = missingFields;
         }
 
+    }
+
+    public void dischargeOldDuplicateEncounters() {
+        try {
+            String t = patientEncounterFacade.getTableName();
+            String pr = patientRoomFacade.getTableName();
+            // Group by the actual room (roomFacilityCharge_id in patientroom), not by the
+            // PatientRoom assignment ID. Multiple PatientRoom records can point to the same
+            // physical room, so grouping by currentPatientRoom_id only catches duplicates
+            // within the same assignment, not across different admissions to the same room.
+            String sql = "UPDATE " + t + " pe "
+                    + "JOIN " + pr + " prm ON pe.currentPatientRoom_id = prm.id "
+                    + "JOIN ( "
+                    + "  SELECT MAX(pe2.id) AS keep_id, prm2.roomFacilityCharge_id "
+                    + "  FROM " + t + " pe2 "
+                    + "  JOIN " + pr + " prm2 ON pe2.currentPatientRoom_id = prm2.id "
+                    + "  WHERE pe2.discharged = 0 AND pe2.paymentFinalized = 0 AND pe2.currentPatientRoom_id IS NOT NULL "
+                    + "  GROUP BY prm2.roomFacilityCharge_id "
+                    + ") latest ON prm.roomFacilityCharge_id = latest.roomFacilityCharge_id "
+                    + "SET pe.discharged = 1 "
+                    + "WHERE pe.discharged = 0 AND pe.paymentFinalized = 0 "
+                    + "AND pe.id != latest.keep_id "
+                    + "AND pe.currentPatientRoom_id IS NOT NULL";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Old duplicate undischarged encounters have been discharged, keeping the latest per room.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    private int staleEncounterDays = 60;
+
+    public void dischargeStaleEncounters() {
+        if (staleEncounterDays <= 0) {
+            JsfUtil.addErrorMessage("Please enter a value greater than 0 days.");
+            return;
+        }
+        try {
+            String t = patientEncounterFacade.getTableName();
+            String sql = "UPDATE " + t + " "
+                    + "SET discharged = 1 "
+                    + "WHERE discharged = 0 AND paymentFinalized = 0 "
+                    + "AND createdAt < DATE_SUB(NOW(), INTERVAL " + staleEncounterDays + " DAY)";
+            patientEncounterFacade.executeNativeSql(sql);
+            JsfUtil.addSuccessMessage("Done. Undischarged encounters older than " + staleEncounterDays + " days have been marked as discharged.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error: " + getExceptionMessage(e));
+        }
+    }
+
+    public int getStaleEncounterDays() {
+        return staleEncounterDays;
+    }
+
+    public void setStaleEncounterDays(int staleEncounterDays) {
+        this.staleEncounterDays = staleEncounterDays;
+    }
+
+    /**
+     * One-time migration: creates INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY
+     * bills for old admissions that were settled before per-company billing was
+     * introduced. Skips any encounter that already has such a bill.
+     * Closes #19571
+     */
+    public void migrateInwardCreditCompanyBills() {
+        executionFeedback = "";
+        StringBuilder result = new StringBuilder();
+        int created = 0;
+        int skipped = 0;
+
+        try {
+            // Find finalized credit admissions that have no per-company bill yet
+            String jpql = "Select pe From PatientEncounter pe "
+                    + " where pe.retired = false "
+                    + " and pe.paymentFinalized = true "
+                    + " and pe.paymentMethod = :pm "
+                    + " and pe.creditCompany is not null "
+                    + " and pe.finalBill is not null "
+                    + " and pe.id not in ("
+                    + "   Select b.patientEncounter.id From Bill b "
+                    + "   where b.retired = false "
+                    + "   and b.billTypeAtomic = :bta "
+                    + " )";
+            Map<String, Object> params = new HashMap<>();
+            params.put("pm", PaymentMethod.Credit);
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+            List<PatientEncounter> encounters = patientEncounterFacade.findByJpql(jpql, params);
+            result.append("Found ").append(encounters.size()).append(" encounter(s) to migrate.\n\n");
+
+            for (PatientEncounter pe : encounters) {
+                try {
+                    if (pe.getCreditCompany() == null || pe.getFinalBill() == null) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double netTotal = Math.abs(pe.getCreditUsedAmount());
+                    if (netTotal < 0.01 && pe.getFinalBill().getNetTotal() != 0) {
+                        netTotal = Math.abs(pe.getFinalBill().getNetTotal());
+                    }
+                    if (netTotal < 0.01) {
+                        skipped++;
+                        continue;
+                    }
+
+                    double paidAmount = Math.abs(pe.getCreditPaidAmount());
+
+                    Bill ccBill = new BilledBill();
+                    ccBill.setGrantTotal(netTotal);
+                    ccBill.setTotal(netTotal);
+                    ccBill.setNetTotal(netTotal);
+                    ccBill.setPaidAmount(paidAmount);
+                    ccBill.setInstitution(pe.getFinalBill().getInstitution());
+                    ccBill.setCreditCompany(pe.getCreditCompany());
+                    ccBill.setPaymentMethod(PaymentMethod.Credit);
+                    ccBill.setBillType(BillType.InwardFinalBillCCPayment);
+                    ccBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+
+                    ccBill.setDeptId(billNumberGenerator.departmentBillNumberGenerator(
+                            pe.getFinalBill().getDepartment(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+                    ccBill.setInsId(billNumberGenerator.institutionBillNumberGenerator(
+                            pe.getFinalBill().getInstitution(), BillType.InwardFinalBillCCPayment,
+                            BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+
+                    Date billDate = pe.getDateOfDischarge() != null ? pe.getDateOfDischarge()
+                            : (pe.getFinalBill() != null && pe.getFinalBill().getCreatedAt() != null
+                                    ? pe.getFinalBill().getCreatedAt() : pe.getCreatedAt());
+                    ccBill.setBillDate(billDate);
+                    ccBill.setBillTime(billDate);
+                    ccBill.setCreatedAt(new Date()); // audit timestamp — when the migration ran
+                    ccBill.setCreater(sessionController.getLoggedUser());
+
+                    ccBill.setPatientEncounter(pe);
+                    ccBill.setPatient(pe.getPatient());
+                    ccBill.setReferenceBill(pe.getFinalBill());
+
+                    billFacade.create(ccBill);
+                    created++;
+
+                    if (created % 50 == 0) {
+                        result.append("Created ").append(created).append(" bills so far...\n");
+                    }
+                } catch (Exception ex) {
+                    result.append("Error for encounter ID ").append(pe.getId())
+                            .append(": ").append(ex.getMessage()).append("\n");
+                    skipped++;
+                }
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Bills created: ").append(created).append("\n");
+            result.append("Skipped: ").append(skipped).append("\n");
+            executionFeedback = result.toString();
+            JsfUtil.addSuccessMessage("Migration complete. Created: " + created + ", Skipped: " + skipped);
+
+        } catch (Exception e) {
+            executionFeedback = "Error: " + getExceptionMessage(e);
+            JsfUtil.addErrorMessage(executionFeedback);
+        }
     }
 
 }

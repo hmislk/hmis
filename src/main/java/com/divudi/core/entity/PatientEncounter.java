@@ -102,6 +102,19 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     Date timeOfDischarge;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dateOfDischarge;
+
+    // Clinical discharge — set on the parent admission when doctor confirms clinical clearance
+    Boolean clinicallyDischarged = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date clinicalDischargeDateTime;
+    @ManyToOne
+    private WebUser clinicalDischargedBy;
+
+    // Room discharge mirror — set on the parent admission when the last room is vacated
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date roomDischargeDateTime;
+    @ManyToOne
+    private WebUser roomDischargedBy;
     double creditLimit;
     double creditUsedAmount;
     private double creditPaidAmount;
@@ -159,6 +172,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private Integer respiratoryRate = null;
     private Integer pfr = null;
     private Double saturation = null;
+    private Double temperature = null;
     @ManyToOne
     private Institution workplace;
     @ManyToOne
@@ -304,6 +318,18 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     }
     @Lob
     String comments;
+    @Lob
+    private String planOfAction;
+
+    // Clinical discharge content fields — used on the child ClinicalDischarge record
+    @ManyToOne
+    private ClinicalEntity dischargeCondition;
+    @Lob
+    private String followUpPlan;
+    @Lob
+    private String activityInstructions;
+    @Lob
+    private String dietInstructions;
     @Transient
     List<ClinicalFindingValue> diagnosis;
     @ManyToOne
@@ -801,6 +827,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
         this.comments = comments;
     }
 
+    public String getPlanOfAction() {
+        return planOfAction;
+    }
+
+    public void setPlanOfAction(String planOfAction) {
+        this.planOfAction = planOfAction;
+    }
+
     public double getCreditPaidAmount() {
         return creditPaidAmount;
     }
@@ -833,6 +867,82 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setPrintingDischargeTime(Date printingDischargeTime) {
         this.printingDischargeTime = printingDischargeTime;
+    }
+
+    public Boolean getClinicallyDischarged() {
+        return clinicallyDischarged;
+    }
+
+    public boolean isClinicallyDischarged() {
+        return Boolean.TRUE.equals(clinicallyDischarged);
+    }
+
+    public void setClinicallyDischarged(Boolean clinicallyDischarged) {
+        this.clinicallyDischarged = clinicallyDischarged;
+    }
+
+    public Date getClinicalDischargeDateTime() {
+        return clinicalDischargeDateTime;
+    }
+
+    public void setClinicalDischargeDateTime(Date clinicalDischargeDateTime) {
+        this.clinicalDischargeDateTime = clinicalDischargeDateTime;
+    }
+
+    public WebUser getClinicalDischargedBy() {
+        return clinicalDischargedBy;
+    }
+
+    public void setClinicalDischargedBy(WebUser clinicalDischargedBy) {
+        this.clinicalDischargedBy = clinicalDischargedBy;
+    }
+
+    public Date getRoomDischargeDateTime() {
+        return roomDischargeDateTime;
+    }
+
+    public void setRoomDischargeDateTime(Date roomDischargeDateTime) {
+        this.roomDischargeDateTime = roomDischargeDateTime;
+    }
+
+    public WebUser getRoomDischargedBy() {
+        return roomDischargedBy;
+    }
+
+    public void setRoomDischargedBy(WebUser roomDischargedBy) {
+        this.roomDischargedBy = roomDischargedBy;
+    }
+
+    public ClinicalEntity getDischargeCondition() {
+        return dischargeCondition;
+    }
+
+    public void setDischargeCondition(ClinicalEntity dischargeCondition) {
+        this.dischargeCondition = dischargeCondition;
+    }
+
+    public String getFollowUpPlan() {
+        return followUpPlan;
+    }
+
+    public void setFollowUpPlan(String followUpPlan) {
+        this.followUpPlan = followUpPlan;
+    }
+
+    public String getActivityInstructions() {
+        return activityInstructions;
+    }
+
+    public void setActivityInstructions(String activityInstructions) {
+        this.activityInstructions = activityInstructions;
+    }
+
+    public String getDietInstructions() {
+        return dietInstructions;
+    }
+
+    public void setDietInstructions(String dietInstructions) {
+        this.dietInstructions = dietInstructions;
     }
 
     public Bill getFinalBill() {
@@ -1025,6 +1135,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setSaturation(Double saturation) {
         this.saturation = saturation;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
     }
 
     public Item getGuardianRelationshipToPatient() {

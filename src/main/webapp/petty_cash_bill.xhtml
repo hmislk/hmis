@@ -194,13 +194,14 @@
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
                                         <h:outputLabel value="Payment Details" class="mt-2"/>
-                                        <p:commandButton  
+                                        <p:commandButton
                                             value="Settle"
                                             class="ui-button-success "
                                             icon="fa fa-check"
-                                            action="#{pettyCashBillController.settleBill()}" 
-                                            ajax="false"  
-                                            style="width: 150px; ">
+                                            action="#{pettyCashBillController.settleBill()}"
+                                            ajax="false"
+                                            style="width: 150px; "
+                                            onclick="return confirm('Are you sure you want to settle this petty cash bill?');">
                                         </p:commandButton>
                                     </div>
                                 </f:facet>
@@ -211,11 +212,14 @@
                                     <div class="row">
                                         <div class="col-3"><p:outputLabel value="Payment Method" /></div>
                                         <div class="col-9">
-                                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">
-                                                <f:selectItems value="#{enumController.paymentMethodsForPettyCashBilling}"
-                                                               var="p"
-                                                               itemLabel="#{p.label}"
-                                                               itemValue="#{p}"/>
+                                            <p:selectOneMenu   
+                                                id="cmbPs" 
+                                                value="#{pettyCashBillController.current.paymentMethod}">
+                                                <f:selectItems 
+                                                    value="#{enumController.paymentMethodsForPettyCashBilling}"
+                                                    var="p"
+                                                    itemLabel="#{p.label}"
+                                                    itemValue="#{p}"/>
                                                 <p:ajax process="@this"
                                                         update="cash creditCard cheque slip eWallet"
                                                         event="change"
@@ -260,17 +264,33 @@
 
                                     <div class="row">
                                         <div class="col-3"><p:outputLabel value="Amount" /></div>
-                                        <div class="col-9"><p:inputText class="w-100" autocomplete="off" value="#{pettyCashBillController.current.netTotal}"/></div>
+                                        <div class="col-9">
+                                            <p:inputText 
+                                                class="w-100" 
+                                                autocomplete="off" 
+                                                onfocus="this.select()"
+                                                value="#{pettyCashBillController.current.netTotal}"/>
+                                        </div>
                                     </div>
 
                                     <div class="row my-1">
                                         <div class="col-3"><p:outputLabel value="Petty Cash Voucher No"/></div>
-                                        <div class="col-9"><p:inputText class="w-100" autocomplete="off"  value="#{pettyCashBillController.current.intInvoiceNumber}" /></div>
+                                        <div class="col-9">
+                                            <p:inputText 
+                                                class="w-100" 
+                                                autocomplete="off"  
+                                                onfocus="this.select()"
+                                                value="#{pettyCashBillController.current.intInvoiceNumber}" />
+                                        </div>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-3"><p:outputLabel value="Description"/></div>
-                                        <div class="col-9"><p:inputTextarea class=" w-100" value="#{pettyCashBillController.current.comments}"/></div>
+                                        <div class="col-9">
+                                            <p:inputTextarea 
+                                                class=" w-100" 
+                                                value="#{pettyCashBillController.current.comments}"/>
+                                        </div>
                                     </div>
                                 </div>
 
