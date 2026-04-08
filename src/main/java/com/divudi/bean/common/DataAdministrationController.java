@@ -2259,30 +2259,18 @@ public class DataAdministrationController implements Serializable {
         JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
     }
 
-    public void checkMissingFields1() {
+    public void checkMissingFieldsForced() {
         suggestedSql = "";
+        mainDatabaseSuggestedSql = "";
+        auditDatabaseSuggestedSql = "";
+        mainDatabaseErrors = "";
+        auditDatabaseErrors = "";
         errors = "";
-        StringBuilder allErrors = new StringBuilder();
-
-        for (Class<?> entityClass : findEntityClassNames()) {
-            String entityName = entityClass.getSimpleName();
-            try {
-                itemFacade.executeQueryFirstResult(entityClass, "SELECT e FROM " + entityName + " e");
-            } catch (PersistenceException pe) {
-                Throwable cause = pe.getCause();
-                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
-                    cause = cause.getCause();
-                }
-                if (cause != null) {
-                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(getExceptionMessage(cause));
-                    if (matcher.find()) {
-                        String missingColumn = matcher.group(1);
-                        errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
-                    }
-                }
-            } catch (Exception e) {
-                // Handle other exceptions as needed
-            }
+        if (runOnMainDatabase) {
+            checkMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
         }
     }
 
