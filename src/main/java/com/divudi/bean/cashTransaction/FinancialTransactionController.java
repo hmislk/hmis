@@ -2518,6 +2518,29 @@ public class FinancialTransactionController implements Serializable {
         return Math.max(0.0, request.getNetTotal() - getFulfilledAmountForRequest(request));
     }
 
+    /**
+     * Returns true only when the requester has physically accepted the float
+     * transfer (i.e. a FundTransferReceivedBill exists that is linked back to
+     * a FundTransferBill that itself was created in response to this request).
+     * A forwardReferenceBill on the request means B has *issued* the transfer;
+     * it does NOT mean A has *accepted* it.
+     */
+    public boolean isFloatRequestAccepted(Bill request) {
+        if (request == null || request.getId() == null) {
+            return false;
+        }
+        String jpql = "select count(r) from Bill r "
+                + "where r.referenceBill.backwardReferenceBill = :req "
+                + "and r.billTypeAtomic = :btype "
+                + "and (r.cancelled = false or r.cancelled is null) "
+                + "and r.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("req", request);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+        Long count = billFacade.findLongByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return count != null && count > 0;
+    }
+
     private void prepareToAddNewFundDepositBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.DepositFundBill);
