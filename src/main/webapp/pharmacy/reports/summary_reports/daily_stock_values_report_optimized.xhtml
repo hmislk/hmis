@@ -760,17 +760,20 @@
                                                         <td colspan="5">
                                                             <h:outputText value="Closing Stock Value"/>
                                                         </td>
-                                                        <td class="text-end">
+                                                        <td class="text-end"
+                                                            style="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockCostRateMismatch ? 'background-color:#ffdddd;color:#cc0000;font-weight:bold;' : ''}">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtCostRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
+                                                        <td class="text-end"
+                                                            style="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockPurchaseRateMismatch ? 'background-color:#ffdddd;color:#cc0000;font-weight:bold;' : ''}">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtPurchaseRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
+                                                        <td class="text-end"
+                                                            style="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockRetailRateMismatch ? 'background-color:#ffdddd;color:#cc0000;font-weight:bold;' : ''}">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>

@@ -1121,9 +1121,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
     public void loadSessionInstances() {
         sessionInstancesFiltered = new ArrayList<>();
-        if (sessionInstanceFilter == null || sessionInstanceFilter.trim().equals("")) {
-            return;
-        }
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret");
 
         // Initializing the parameters map
@@ -1170,20 +1167,21 @@ public class BookingControllerViewScopeMonth implements Serializable {
         if (sessionInstanceFilter != null && !sessionInstanceFilter.trim().isEmpty()) {
             String[] filterKeywords = sessionInstanceFilter.trim().toLowerCase().split("\\s+");
             List<String> filterConditions = new ArrayList<>();
-            for (String keyword : filterKeywords) {
-                filterConditions.add("(lower(i.originatingSession.name) like :keyword"
-                        + " or lower(i.originatingSession.staff.person.name) like :keyword"
-                        + " or lower(i.originatingSession.staff.speciality.name) like :keyword)");
+            for (int i = 0; i < filterKeywords.length; i++) {
+                String keyword = filterKeywords[i];
+                filterConditions.add("(lower(i.originatingSession.name) like :keyword" + i
+                        + " or lower(i.originatingSession.staff.person.name) like :keyword" + i
+                        + " or lower(i.originatingSession.staff.speciality.name) like :keyword" + i + ")");
+                params.put("keyword" + i, "%" + keyword.trim().toLowerCase() + "%");
             }
             jpql.append(" and (").append(String.join(" or ", filterConditions)).append(")");
-            params.put("keyword", "%" + sessionInstanceFilter.trim().toLowerCase() + "%");
+            // params.put("keyword", "%" + sessionInstanceFilter.trim().toLowerCase() + "%");
         }
 
         // Adding sorting to JPQL with custom order
         jpql.append(" order by case when i.completed = true then 1 else 0 end, i.completed asc, i.started desc, i.sessionDate asc, i.startingTime asc");
 
         Long numberOfSessionToLoad = configOptionApplicationController.getLongValueByKey("Maximum Number of Sessions to Load during channel booking by dates page.", 30L);
-
         sessionInstancesFiltered = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE, numberOfSessionToLoad.intValue());
 
         // Select the first item if the filtered list is not empty
@@ -5193,17 +5191,16 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
 
 //            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+
+            // check discountable for each fee
             if (priceMatrix != null) {
-                if (f.getFeeType() == FeeType.OwnInstitution) {
+                if (f.isDiscountAllowed()) {
                     d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
                     bf.setFeeDiscount(d);
-                } else if (f.getFeeType() == FeeType.Staff) {
-                    bf.setFeeDiscount(0.0);
                 } else {
                     bf.setFeeDiscount(0.0);
                 }
 
-                bf.setFeeGrossValue(bf.getFeeGrossValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                 tmpDiscount += d;
             }
@@ -7144,12 +7141,28 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     public void calculateSelectedBillSessionTotal() {
-        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstance().getOriginatingSession().getCategory());
+        SessionInstance session = getSelectedSessionInstance() != null ? getSelectedSessionInstance() : getBillSession() != null ? getBillSession().getSessionInstance() : null;
+        if (session == null) {
+            return;
+        }
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, session.getOriginatingSession().getCategory());
         feeTotalForSelectedBill = 0.0;
         feeDiscountForSelectedBill = 0.0;
         feeNetTotalForSelectedBill = 0.0;
         if (paymentSchemeDiscount != null) {
             for (ItemFee itmf : getSelectedItemFees()) {
+                if (paymentMethod != null) {
+                    if (paymentMethod != PaymentMethod.Agent) {
+                        if (itmf.getFeeType() == FeeType.OtherInstitution) {
+                            continue;
+                        }
+                    }
+                    if (paymentMethod != PaymentMethod.OnCall) {
+                        if (itmf.getFeeType() == FeeType.OwnInstitution && itmf.getName().equalsIgnoreCase("On-Call Fee")) {
+                            continue;
+                        }
+                    }
+                }
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
                     if (itmf.isDiscountAllowed()) {
@@ -7164,6 +7177,18 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         } else {
             for (ItemFee itmf : getSelectedItemFees()) {
+                if (paymentMethod != null) {
+                    if (paymentMethod != PaymentMethod.Agent) {
+                        if (itmf.getFeeType() == FeeType.OtherInstitution) {
+                            continue;
+                        }
+                    }
+                    if (paymentMethod != PaymentMethod.OnCall) {
+                        if (itmf.getFeeType() == FeeType.OwnInstitution && itmf.getName().equalsIgnoreCase("On-Call Fee")) {
+                            continue;
+                        }
+                    }
+                }
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
                 } else {
