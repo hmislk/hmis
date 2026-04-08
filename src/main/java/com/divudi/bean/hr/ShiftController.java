@@ -247,6 +247,9 @@ public class ShiftController implements Serializable {
 
     public void setCurrentRoster(Roster currentRoster) {
         this.currentRoster = currentRoster;
+        if (current != null && current.getId() == null) {
+            current.setRoster(currentRoster);
+        }
     }
 
     public RosterFacade getRosterFacade() {

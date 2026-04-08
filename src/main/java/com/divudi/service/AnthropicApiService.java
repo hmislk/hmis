@@ -71,7 +71,9 @@ public class AnthropicApiService implements Serializable {
             String attachmentBase64,
             String attachmentMimeType,
             String githubToken,
-            String githubBranch) {
+            String githubBranch,
+            String hmisBaseUrl,
+            String hmisApiKey) {
 
         try {
             List<JsonObject> messages = new ArrayList<>();
@@ -180,7 +182,7 @@ public class AnthropicApiService implements Serializable {
                                     ? block.getJsonObject("input")
                                     : Json.createObjectBuilder().build();
 
-                            String result = executeToolCall(toolName, toolInput, githubToken, githubBranch);
+                            String result = executeToolCall(toolName, toolInput, githubToken, githubBranch, hmisBaseUrl, hmisApiKey);
                             LOG.log(Level.INFO, "Tool {0} returned {1} chars", new Object[]{toolName, result.length()});
 
                             toolResultsBuilder.add(Json.createObjectBuilder()
@@ -218,8 +220,25 @@ public class AnthropicApiService implements Serializable {
     }
 
     /**
-     * Backward-compatible overload — no GitHub token or branch supplied.
-     * Tools are still available; GitHub tools use unauthenticated access (60 req/hr).
+     * Backward-compatible overload — GitHub token/branch supplied, no HMIS base URL or key.
+     */
+    public AnthropicResponse sendMessage(
+            String apiKey,
+            String model,
+            int maxTokens,
+            String systemPrompt,
+            List<AiMessage> conversationHistory,
+            String userMessage,
+            String attachmentBase64,
+            String attachmentMimeType,
+            String githubToken,
+            String githubBranch) {
+        return sendMessage(apiKey, model, maxTokens, systemPrompt, conversationHistory,
+                userMessage, attachmentBase64, attachmentMimeType, githubToken, githubBranch, "", "");
+    }
+
+    /**
+     * Backward-compatible overload — no GitHub token, branch, or HMIS credentials supplied.
      */
     public AnthropicResponse sendMessage(
             String apiKey,
@@ -231,7 +250,7 @@ public class AnthropicApiService implements Serializable {
             String attachmentBase64,
             String attachmentMimeType) {
         return sendMessage(apiKey, model, maxTokens, systemPrompt, conversationHistory,
-                userMessage, attachmentBase64, attachmentMimeType, "", "development");
+                userMessage, attachmentBase64, attachmentMimeType, "", "development", "", "");
     }
 
     // -------------------------------------------------------------------------
@@ -289,10 +308,52 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("keyword")))
                 .build();
 
+        JsonObject clinicalMetadataTool = Json.createObjectBuilder()
+                .add("name", "manage_clinical_metadata")
+                .add("description",
+                        "Create, list, update, or delete EMR clinical metadata entries (symptoms, signs, diagnoses, "
+                        + "procedures, plans, vocabularies, and clinical entities such as race, religion, blood_group, "
+                        + "civil_status, employment, relationship). "
+                        + "Use this when the user wants to add, search, modify, or remove clinical master data.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("POST").add("PUT").add("DELETE"))
+                                        .add("description", "HTTP method: GET=list, POST=create, PUT=update, DELETE=soft-delete"))
+                                .add("type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Metadata type: symptom, sign, diagnosis, procedure, plan, vocabulary, race, religion, blood_group, civil_status, employment, relationship. Required for GET and POST."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Record ID as a string. Required for PUT and DELETE."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name of the entry. Required for POST; optional for PUT."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code for the entry (optional)."))
+                                .add("description", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Description of the entry (optional)."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Text filter for GET (optional)."))
+                                .add("page", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Page number for GET, default 0 (optional)."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Page size for GET, default 20 (optional).")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
+                .add(clinicalMetadataTool)
                 .build();
     }
 
@@ -300,7 +361,8 @@ public class AnthropicApiService implements Serializable {
     // Tool execution
     // -------------------------------------------------------------------------
 
-    private String executeToolCall(String toolName, JsonObject toolInput, String githubToken, String githubBranch) {
+    private String executeToolCall(String toolName, JsonObject toolInput, String githubToken, String githubBranch,
+            String hmisBaseUrl, String hmisApiKey) {
         try {
             switch (toolName) {
                 case "search_github_code": {
@@ -322,6 +384,19 @@ public class AnthropicApiService implements Serializable {
                 case "search_config_options": {
                     String keyword = toolInput.getString("keyword", "");
                     return searchConfigOptions(keyword);
+                }
+                case "manage_clinical_metadata": {
+                    String method = toolInput.getString("method", "GET");
+                    String type   = toolInput.containsKey("type") ? toolInput.getString("type", "") : "";
+                    String id     = toolInput.containsKey("id")   ? toolInput.getString("id", "")   : "";
+                    String name   = toolInput.containsKey("name") ? toolInput.getString("name", "") : null;
+                    String code   = toolInput.containsKey("code") ? toolInput.getString("code", "") : null;
+                    String desc   = toolInput.containsKey("description") ? toolInput.getString("description", "") : null;
+                    String query  = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String page   = toolInput.containsKey("page")  ? toolInput.getString("page", "0") : "0";
+                    String size   = toolInput.containsKey("size")  ? toolInput.getString("size", "20") : "20";
+                    return callClinicalMetadataApi(method, type, id, name, code, desc, query, page, size,
+                            hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -502,6 +577,92 @@ public class AnthropicApiService implements Serializable {
         return value;
     }
 
+    private String callClinicalMetadataApi(String method, String type, String id,
+            String name, String code, String desc, String query, String page, String size,
+            String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call clinical metadata API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/clinical/metadata";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "GET": {
+                    StringBuilder urlBuilder = new StringBuilder(base).append("?type=").append(URLEncoder.encode(type, StandardCharsets.UTF_8));
+                    if (query != null && !query.isEmpty()) urlBuilder.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                    if (page != null && !page.isEmpty()) urlBuilder.append("&page=").append(page);
+                    if (size != null && !size.isEmpty()) urlBuilder.append("&size=").append(size);
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "POST": {
+                    url = base + "?type=" + URLEncoder.encode(type, StandardCharsets.UTF_8);
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (name != null) bodyBuilder.add("name", name);
+                    if (code != null && !code.isEmpty()) bodyBuilder.add("code", code);
+                    if (desc != null && !desc.isEmpty()) bodyBuilder.add("description", desc);
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for PUT.";
+                    if (type == null || type.trim().isEmpty()) return "Error: type is required for PUT.";
+                    url = base + "/" + id.trim() + "?type=" + URLEncoder.encode(type.trim(), StandardCharsets.UTF_8);
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (name != null && !name.isEmpty()) bodyBuilder.add("name", name);
+                    if (code != null && !code.isEmpty()) bodyBuilder.add("code", code);
+                    if (desc != null && !desc.isEmpty()) bodyBuilder.add("description", desc);
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "DELETE": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for DELETE.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Clinical metadata API call interrupted.";
+        } catch (Exception e) {
+            return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Message building helpers
     // -------------------------------------------------------------------------
@@ -600,7 +761,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have three tools to ground your answers in the actual codebase and live configuration:\n\n");
+        sb.append("You have four tools to ground your answers in the actual codebase, live configuration, and clinical master data:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -611,6 +772,11 @@ public class AnthropicApiService implements Serializable {
         sb.append("Searches live application configuration options by keyword and returns the key name, type, and current value. ");
         sb.append("Use this to find config keys that control a behaviour the user is asking about. ");
         sb.append("You can then use POST /config/setBoolean, /config/setInteger, or /config/setLongText to change a value if the user asks.\n\n");
+        sb.append("### manage_clinical_metadata\n");
+        sb.append("Directly create, list, update, or delete EMR clinical metadata entries (symptoms, signs, diagnoses, procedures, plans, vocabularies, ")
+          .append("race, religion, blood_group, civil_status, employment, relationship). ")
+          .append("Use this when the user wants to add or manage clinical master data without navigating the UI. ")
+          .append("Always confirm with the user before creating or deleting entries.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -862,6 +1028,20 @@ public class AnthropicApiService implements Serializable {
                 });
 
         // ── Clinical ──────────────────────────────────────────────────────────
+        appendModule(sb, "Clinical - Metadata", "/clinical/metadata",
+                "Manage EMR clinical master data. Required param: type. "
+                + "Types: symptom, sign, diagnosis, procedure, plan, vocabulary, "
+                + "race, religion, blood_group, civil_status, employment, relationship. "
+                + "POST returns success/already_exists (with id)/error. "
+                + "PUT and DELETE use /{id} and work across all types.",
+                null,
+                new String[][]{
+                    {"GET",    "/clinical/metadata?type=X",    "List entries of the given type. Supports query, page, size"},
+                    {"POST",   "/clinical/metadata?type=X",    "Create a new entry. Body: {name, code, description}. Returns already_exists with id if duplicate name"},
+                    {"PUT",    "/clinical/metadata/{id}",      "Update an entry by ID. Body: {name, code, description} (all optional)"},
+                    {"DELETE", "/clinical/metadata/{id}",      "Soft-delete an entry by ID"}
+                });
+
         appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
                 "Manage clinician favourite medicine templates. "
                 + "/validate (bulk entity validation) is live. "
