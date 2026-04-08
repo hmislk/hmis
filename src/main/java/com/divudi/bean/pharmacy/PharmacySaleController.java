@@ -17,6 +17,7 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -2160,15 +2161,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
-        if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
+    private boolean savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        WebUser loggedUser = getSessionController().getLoggedUser();
+        if (loggedUser == null) {
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return false;
         }
-        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setDepartment(loggedUser.getDepartment());
+        getPreBill().setInstitution(loggedUser.getDepartment().getInstitution());
 
         getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getPreBill().setCreater(getSessionController().getLoggedUser());
+        getPreBill().setCreater(loggedUser);
 
         getPreBill().setPatient(pt);
 //        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
@@ -2192,8 +2196,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
-        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setFromDepartment(loggedUser.getDepartment());
+        getPreBill().setFromInstitution(loggedUser.getDepartment().getInstitution());
         getPreBill().setPaymentMethod(getPaymentMethod());
         getPreBill().setPaymentScheme(getPaymentScheme());
 
@@ -2234,6 +2238,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        } else {
+            getBillFacade().edit(getPreBill());
+        }
+        return true;
     }
 
     private void saveSaleBill() {
@@ -2614,6 +2624,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public String settlePreBillAndNavigateToPrint() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return null;
+        }
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return null;
@@ -2783,7 +2798,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return null;
+        }
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
@@ -2821,6 +2839,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public void settlePreBill() {
         configOptionFacade.flush();
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return;
+        }
 
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
@@ -2988,7 +3011,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return;
+        }
         savePreBillItemsFinally(tmpBillItems);
         Long id = getPreBill().getId();
         if (id == null) {
