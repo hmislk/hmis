@@ -149,7 +149,8 @@ public class ShiftController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = null;
+        current = new Shift();
+        current.setRoster(getCurrentRoster());
     }
 
     private void recreateModel() {
@@ -207,8 +208,10 @@ public class ShiftController implements Serializable {
     }
 
     public void setCurrentRoster(Roster currentRoster) {
-        current = null;
         this.currentRoster = currentRoster;
+        if (current != null && current.getId() == null) {
+            current.setRoster(currentRoster);
+        }
     }
 
     public RosterFacade getRosterFacade() {
