@@ -3190,6 +3190,18 @@ public class FinancialTransactionController implements Serializable {
             return null;
         }
 
+        // Guard: outgoing pending handover — block until recipient accepts (unconditional, #19824)
+        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
+            return null;
+        }
+
+        // Guard: incoming pending handover — block until this user accepts (unconditional, #19824)
+        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
+            return null;
+        }
+
         // Validate pending transactions before allowing shift end
         fillFundTransferBillsForMeToReceive();
 
@@ -5125,6 +5137,18 @@ public class FinancialTransactionController implements Serializable {
 
         if (fundTransferBillTocollect) {
             JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
+            return "";
+        }
+
+        // Guard: outgoing pending handover — unconditional, must be accepted before shift closes (#19824)
+        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
+            return "";
+        }
+
+        // Guard: incoming pending handover — unconditional, must be accepted before shift closes (#19824)
+        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
             return "";
         }
 
