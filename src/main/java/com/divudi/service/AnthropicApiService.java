@@ -618,7 +618,8 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "PUT": {
                     if (id == null || id.trim().isEmpty()) return "Error: id is required for PUT.";
-                    url = base + "/" + id.trim();
+                    if (type == null || type.trim().isEmpty()) return "Error: type is required for PUT.";
+                    url = base + "/" + id.trim() + "?type=" + URLEncoder.encode(type.trim(), StandardCharsets.UTF_8);
                     httpMethod = "PUT";
                     javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
                     if (name != null && !name.isEmpty()) bodyBuilder.add("name", name);
