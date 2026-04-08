@@ -137,10 +137,6 @@ public class ProcedureController implements Serializable {
     }
 
     public void saveSelected() {
-        if (current==null){
-            JsfUtil.addErrorMessage("Nothing to save");
-        }
-        
         if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
             JsfUtil.addErrorMessage("Please enter a Procedure Name before saving.");
             return;
