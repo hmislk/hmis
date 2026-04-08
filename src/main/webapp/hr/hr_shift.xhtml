@@ -155,19 +155,19 @@
                                                            var="myItem"
                                                            itemValue="#{myItem}"
                                                            itemLabel="#{myItem.name}" />
-                                            <p:ajax update="gpDetail messages"
-                                                    process="lstRosterSelect" />
+                                            <p:ajax update="gpDetail lstSelect messages"
+                                                    process="@this" />
                                         </p:selectOneMenu>
                                     </div>
 
                                     <div style="flex: 0 0 auto;">
-                                        <p:commandButton id="btnFill"
-                                                         styleClass="ui-button-success"
-                                                         icon="fas fa-plus"
-                                                         process="btnFill lstRosterSelect"
-                                                         update="lstSelect gpDetail messages"
-                                                         value="Fill"
-                                                         action="#{shiftController.createShiftList()}" />
+                                       <p:commandButton id="btnFill"
+                                                        styleClass="ui-button-success"
+                                                        icon="fas fa-plus"
+                                                        process="btnFill lstRosterSelect"
+                                                        update="lstSelect gpDetail messages"
+                                                        value="Fill"
+                                                        action="#{shiftController.createShiftList()}" />
                                     </div>
                                 </div>
 
@@ -213,7 +213,7 @@
                                     <p:outputLabel for="roster" value="Roster" />
                                     <p:selectOneMenu id="roster"
                                                      filter="true"
-                                                     value="#{shiftController.currentRoster}"
+                                                     value="#{shiftController.current.roster}"
                                                      styleClass="full-width">
                                         <f:selectItem itemLabel="Select Roster" />
                                         <f:selectItems value="#{rosterController.items}"
@@ -221,9 +221,9 @@
                                                        itemLabel="#{d.name}"
                                                        itemValue="#{d}" />
                                         <f:ajax event="change"
-                                                execute="@this"
-                                                render="gpDetail"
-                                                listener="#{shiftController.createShiftList()}" />
+                                            execute="@this"
+                                            render="gpDetail lstSelect"
+                                            listener="#{shiftController.createShiftList()}" />
                                     </p:selectOneMenu>
 
                                     <p:outputLabel for="shiftName" value="Name" />
