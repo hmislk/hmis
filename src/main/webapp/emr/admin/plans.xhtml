@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
         <h:form >
-            <p:growl/>
+            <p:growl id="growlMsg" life="4000"/>
             <p:focus id="selectFocus" context="gpSelect"/>
             <p:focus id="detailFocus" context="gpDetail"/>
             <p:panel header="Manage Plans">
@@ -64,13 +64,23 @@
                                 <div class="form-group row">
                                     <label for="txtName" class="col-sm-2 col-form-label">Name</label>
                                     <div class="col-sm-10">
-                                        <p:inputText autocomplete="off" id="txtName" value="#{planController.current.name}" styleClass="form-control"></p:inputText>
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            id="txtName" 
+                                            value="#{planController.current.name}" 
+                                            styleClass="form-control" 
+                                           ></p:inputText>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="txtCode" class="col-sm-2 col-form-label">Code</label>
                                     <div class="col-sm-10">
-                                        <p:inputText autocomplete="off" id="txtCode" value="#{planController.current.code}" styleClass="form-control"></p:inputText>
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            id="txtCode" 
+                                            value="#{planController.current.code}" 
+                                            styleClass="form-control" 
+                                            ></p:inputText>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -84,8 +94,8 @@
                                         <p:commandButton id="btnSave" 
                                                          value="Save"
                                                          process="gpDetail" 
-                                                         update="lstSelect selectFocus" 
-                                                         action="#{planController.saveSelected()}" >
+                                                         update="growlMsg lstSelect selectFocus gpDetail" 
+                                                         action="#{planController.saveSelected()}">
                                         </p:commandButton>
                                     </div>
                                 </div>
