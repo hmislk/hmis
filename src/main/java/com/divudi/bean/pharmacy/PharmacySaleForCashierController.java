@@ -3495,6 +3495,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public String settlePreBillAndNavigateToPrint() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return null;
+        }
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return null;
@@ -3795,6 +3800,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
     public void settlePreBill() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return;
+        }
 
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
