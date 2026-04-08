@@ -32,7 +32,8 @@ Always fetch first — automated tools may have pushed fixes not yet local.
 
 ```bash
 gh pr view $0 --comments
-gh api repos/hmislk/hmis/pulls/<number>/comments
+pr_number=$(gh pr view $0 --json number --jq '.number')
+gh api repos/hmislk/hmis/pulls/$pr_number/comments
 ```
 
 List all review comments. Group them by file/topic.
@@ -64,7 +65,7 @@ Wait for user confirmation before making any changes.
 
 Apply all confirmed fixes. Group into one or a few logical commits:
 
-```
+```text
 Fix CodeRabbit review comments (#<issue>)
 
 Closes #<issue>

@@ -11,8 +11,8 @@ git fetch origin
 → discuss with user (SOS)
 → batch-fix valid comments
 → check persistence.xml
-→ verify CI is green
 → push
+→ verify CI is green
 → reply to each comment individually
 → re-request review
 → merge → delete branch (GitHub UI)
