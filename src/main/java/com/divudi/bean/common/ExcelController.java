@@ -1,9 +1,13 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.channel.SessionInstance;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -4150,6 +4154,9 @@ public class ExcelController {
             case "opdProfessionalFeePayments":
                 addDataToOpdProfessionalFeePayments(dataSheet, currentRow, bundle);
                 break;
+            case "channelIncomeScanning":
+                addDataToChannelScanningIncomeReport(dataSheet, currentRow, bundle);
+                break;
             default:
                 JsfUtil.addErrorMessage("Unsupported Report Type: " + bundle.getBundleType());
                 workbook.close();
@@ -4418,5 +4425,261 @@ public class ExcelController {
         rowIndex++;
 
         return rowIndex;
+    }
+
+    // Channel Scanning Income Report
+    private void addDataToChannelScanningIncomeReport(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle bundle) {
+        if (bundle == null) {
+            return;
+        }   
+
+        if (bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + bundle.getName());
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+            return;
+        }
+
+        Row headerRow = dataSheet.createRow(startRow++);
+
+        int headerColIndex = 0;
+
+        // PaymentsMethod Column boolean values
+        boolean hasCash             = false;
+        boolean hasCard             = false;
+        boolean hasCredit           = false;
+        boolean hasStaffWelfare     = false;
+        boolean hasVoucher          = false;
+        boolean hasIou              = false;
+        boolean hasAgent            = false;
+        boolean hasCheque           = false;
+        boolean hasSlip             = false;
+        boolean hasEWallet          = false;
+        boolean hasPatientDeposit   = false;
+        boolean hasPatientPoints    = false;
+        boolean hasOnlineSettlement = false;
+
+        headerRow.createCell(headerColIndex++).setCellValue("Serial No");
+        headerRow.createCell(headerColIndex++).setCellValue("Bill Id");
+        headerRow.createCell(headerColIndex++).setCellValue("Created At");
+        headerRow.createCell(headerColIndex++).setCellValue("Bill No");
+        headerRow.createCell(headerColIndex++).setCellValue("Patient");
+        headerRow.createCell(headerColIndex++).setCellValue("Doctor");
+        headerRow.createCell(headerColIndex++).setCellValue("Session");
+        headerRow.createCell(headerColIndex++).setCellValue("Item");
+        headerRow.createCell(headerColIndex++).setCellValue("Cashier");
+        headerRow.createCell(headerColIndex++).setCellValue("Hospital Fee");
+        headerRow.createCell(headerColIndex++).setCellValue("Doctor Fee");
+        headerRow.createCell(headerColIndex++).setCellValue("Gross Total");
+
+        // Dynamic headers mirroring rendered conditions
+        if (bundle.isHasCashTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Cash");
+            hasCash = true;
+        }
+        if (bundle.isHasCardTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Card");
+            hasCard = true;
+        }
+        if (bundle.isHasCreditTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Credit");
+            hasCredit = true;
+        }
+        if (bundle.isHasStaffWelfareTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Staff Welfare");
+            hasStaffWelfare = true;
+        }
+        if (bundle.isHasVoucherTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Voucher");
+            hasVoucher = true;
+        }
+        if (bundle.isHasIouTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("IOU");
+            hasIou = true;
+        }
+        if (bundle.isHasAgentTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Agent");
+            hasAgent = true;
+        }
+        if (bundle.isHasChequeTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Cheque");
+            hasCheque = true;
+        }
+        if (bundle.isHasSlipTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Slip");
+            hasSlip = true;
+        }
+        if (bundle.isHasEWalletTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("eWallet");
+            hasEWallet = true;
+        }
+        if (bundle.isHasPatientDepositTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Patient Deposit");
+            hasPatientDeposit = true;
+        }
+        if (bundle.isHasPatientPointsTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Patient Points");
+            hasPatientPoints = true;
+        }
+        if (bundle.isHasOnlineSettlementTransaction()) {
+            headerRow.createCell(headerColIndex++).setCellValue("Online Settlement");
+            hasOnlineSettlement = true;
+        }
+
+        int serialNo = 1;
+        int colIndex = 0;
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            Row excelRow = dataSheet.createRow(startRow++);
+            colIndex = 0;
+            Bill b = row.getBill();
+
+            excelRow.createCell(colIndex++).setCellValue(serialNo++);
+            if (b != null) { 
+                excelRow.createCell(colIndex++).setCellValue(b.getId() != null ? b.getId() : null);
+                excelRow.createCell(colIndex++).setCellValue(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(b.getCreatedAt()) : "");
+
+                String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+                if (b.isCancelled()) {
+                    billDept += " (Cancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId() + ")") : ")" );
+                }
+                if (b.isRefunded()) {
+                    billDept += " (Refunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId() + ")") : ")" );
+                }
+                if (b instanceof RefundBill) {
+                    billDept += " (Refund Bill)";
+                }
+                if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    billDept += " (Cancel Bill)";
+                }
+                excelRow.createCell(colIndex++).setCellValue(billDept);
+
+                excelRow.createCell(colIndex++).setCellValue((b.getPatient() != null && b.getPatient().getPerson() != null) ? b.getPatient().getPerson().getNameWithTitle() : "");
+                excelRow.createCell(colIndex++).setCellValue((b.getSingleBillItem() != null && b.getSingleBillItem().getItem() != null && b.getSingleBillItem().getItem().getStaff() != null && b.getSingleBillItem().getItem().getStaff().getPerson() != null) ? b.getSingleBillItem().getItem().getStaff().getPerson().getNameWithTitle() : "");
+
+                SessionInstance si = b.getSingleBillSession() != null ? b.getSingleBillSession().getSessionInstance() : null;
+                String sessionName = "";
+                if (si != null) {
+                    sessionName += si.getName();
+                    if (si.getSessionDate() != null) {
+                        sessionName += " " + new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(si.getSessionDate());
+                    }
+                    if (si.getSessionTime() != null) {
+                        sessionName += " " + new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(si.getSessionTime());
+                    }
+                }
+                excelRow.createCell(colIndex++).setCellValue(sessionName);
+
+                String itemNames = "";
+                if (b.getBillItems() != null && !b.getBillItems().isEmpty()) {
+                    for (BillItem bi : b.getBillItems()) {
+                        if (bi.getItem() != null && !(bi.getItem() instanceof ServiceSession)) {
+                            itemNames += bi.getItem().getName() + "/ ";
+                        }
+                    }
+                }
+                excelRow.createCell(colIndex++).setCellValue(itemNames);
+
+                excelRow.createCell(colIndex++).setCellValue(b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "");
+                excelRow.createCell(colIndex++).setCellValue(b.getHospitalFee());
+                excelRow.createCell(colIndex++).setCellValue(b.getStaffFee());
+                excelRow.createCell(colIndex++).setCellValue(b.getTotal());
+            } else {
+                for (int i = 0; i < 11; i++) {
+                    excelRow.createCell(colIndex++).setCellValue("");
+                }
+            }
+
+            if (hasCash) {
+                excelRow.createCell(colIndex++).setCellValue(row.getCashValue());
+            }
+            if (hasCard) {
+                excelRow.createCell(colIndex++).setCellValue(row.getCardValue());
+            }
+            if (hasCredit) {
+                excelRow.createCell(colIndex++).setCellValue(row.getCreditValue());
+            }
+            if (hasStaffWelfare) {
+                excelRow.createCell(colIndex++).setCellValue(row.getStaffWelfareValue());
+            }
+            if (hasVoucher) {
+                excelRow.createCell(colIndex++).setCellValue(row.getVoucherValue());
+            }
+            if (hasIou) {
+                excelRow.createCell(colIndex++).setCellValue(row.getIouValue());
+            }
+            if (hasAgent) {
+                excelRow.createCell(colIndex++).setCellValue(row.getAgentValue());
+            }
+            if (hasCheque) {
+                excelRow.createCell(colIndex++).setCellValue(row.getChequeValue());
+            }
+            if (hasSlip) {
+                excelRow.createCell(colIndex++).setCellValue(row.getSlipValue());
+            }
+            if (hasEWallet) {
+                excelRow.createCell(colIndex++).setCellValue(row.getEwalletValue());
+            }
+            if (hasPatientDeposit) {
+                excelRow.createCell(colIndex++).setCellValue(row.getPatientDepositValue());
+            }
+            if (hasPatientPoints) {
+                excelRow.createCell(colIndex++).setCellValue(row.getPatientPointsValue());
+            }
+            if (hasOnlineSettlement) {
+                excelRow.createCell(colIndex++).setCellValue(row.getOnlineSettlementValue());
+            }
+        }
+
+        // Footer Row
+        Row footerRow = dataSheet.createRow(startRow++);
+        int footerColIndex = 9;
+
+        footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong2() != null ? bundle.getLong2() : 0);
+        footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong3() != null ? bundle.getLong3() : 0);
+        footerRow.createCell(footerColIndex++).setCellValue(bundle.getLong1() != null ? bundle.getLong1() : 0);
+
+        // Dynamic footer cells mirroring rendered conditions
+        if (hasCash) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCashValue());
+        }
+        if (hasCard) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCardValue());
+        }
+        if (hasCredit) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getCreditValue());
+        }
+        if (hasStaffWelfare) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getStaffWelfareValue());
+        }
+        if (hasVoucher) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getVoucherValue());
+        }
+        if (hasIou) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getIouValue());
+        }
+        if (hasAgent) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getAgentValue());
+        }
+        if (hasCheque) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getChequeValue());
+        }
+        if (hasSlip) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getSlipValue());
+        }
+        if (hasEWallet) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getEwalletValue());
+        }
+        if (hasPatientDeposit) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getPatientDepositValue());
+        }
+        if (hasPatientPoints) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getPatientPointsValue());
+        }
+        if (hasOnlineSettlement) {
+            footerRow.createCell(footerColIndex++).setCellValue(bundle.getOnlineSettlementValue());
+        }
+
+        return;
     }
 }

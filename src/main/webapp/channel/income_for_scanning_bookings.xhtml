@@ -61,7 +61,7 @@
                                 value="#{channelReportController.reportStatus}"
                                 >
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
-                                <f:selectItem itemLabel="Summery View" itemValue="Summery" />
+                                <f:selectItem itemLabel="Summary View" itemValue="Summery" />
 
 
                             </p:selectOneMenu>
@@ -70,15 +70,14 @@
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.fetchScanningSessionForIncome()}" ajax="false" ></p:commandButton>
 
-                            <p:commandButton
-                                id="btnPdf"
-                                class="m-1 ui-button-info"
-                                ajax="false"
-                                rendered="true"
+                            <p:commandButton 
+                                value="Export as PDF" 
+                                ajax="false" 
                                 icon="fas fa-file-pdf"
-                                value="Export as PDF">
-                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Scanning_Income_Report"/>
+                                class="m-1 ui-button-info">
+                                <p:fileDownload value="#{channelReportController.channelScanningIncomeReportAsPdf}" />
                             </p:commandButton>
+                            
 
                             <p:commandButton
                                 id="btnPrint"
@@ -89,13 +88,14 @@
                                 action="channel_scanning_income_print?faces-redirect=true">
                             </p:commandButton>
 
-                            <p:commandButton
-                                id="btnExcel"
-                                class="m-1 ui-button-success"
-                                icon="fas fa-file-excel"
-                                ajax="false" value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Scanning_Income_Report"/>
+                            <p:commandButton 
+                                value="Export to Excel" 
+                                ajax="false" 
+                                icon="fas fa-file-pdf"
+                                class="m-1 ui-button-success">
+                                <p:fileDownload value="#{channelReportController.channelScanningIncomeReportAsExcel}" />
                             </p:commandButton>
+
                         </h:panelGrid>
 
                         <style>
@@ -207,10 +207,10 @@
 
                             <p:column width="9em" headerText="Item" style=" text-align: center;">
                                 <ui:repeat value="#{row.bill.billItems}" var="i">
-
-                                    <p:outputLabel value="#{i.item.name}/ " />
-                                    <br/>
-
+                                    <h:panelGroup rendered="#{i.item.clazz ne 'ServiceSession'}" >
+                                        <p:outputLabel value="#{i.item.name}/ " />
+                                        <br/>
+                                    </h:panelGroup>
                                 </ui:repeat>
                             </p:column>
 
@@ -416,7 +416,7 @@
 
                             <p:column class="text-end" headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" width="4em"
                                       filterBy="#{row.onlineSettlementValue}"
-                                      rendered="#{channelReportController.dataBundle.hasOnCallTransaction}">
+                                      rendered="#{channelReportController.dataBundle.hasOnlineSettlementTransaction}">
                                 <h:outputText value="#{row.onlineSettlementValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
