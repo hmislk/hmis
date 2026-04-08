@@ -247,8 +247,11 @@ public class ShiftController implements Serializable {
 
     public void setCurrentRoster(Roster currentRoster) {
         this.currentRoster = currentRoster;
-        if (current != null && current.getId() == null) {
+
+        if (current != null) {
             current.setRoster(currentRoster);
+            current.setPreviousShift(null);
+            current.setNextShift(null);
         }
     }
 
@@ -269,13 +272,28 @@ public class ShiftController implements Serializable {
     }
 
     public void createShiftList() {
+        if (current != null && current.getRoster() != null) {
+            currentRoster = current.getRoster();
+        }
+
+        if (currentRoster == null) {
+            shiftList = null;
+            return;
+        }
+
         String jpql = "Select s "
                 + " From Shift s "
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
         HashMap m = new HashMap();
-        m.put("rs", getCurrentRoster());
+        m.put("rs", currentRoster);
         shiftList = getFacade().findByJpql(jpql, m);
+
+        if (current != null) {
+            current.setPreviousShift(null);
+            current.setNextShift(null);
+        }
+
         JsfUtil.addSuccessMessage("Listed");
     }
 

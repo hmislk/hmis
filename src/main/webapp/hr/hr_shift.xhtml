@@ -223,9 +223,10 @@
                                                        var="d"
                                                        itemLabel="#{d.name}"
                                                        itemValue="#{d}" />
-                                        <f:ajax event="change"
+                                        <f:ajax 
+                                            event="change"
                                             execute="@this"
-                                            render="gpDetail lstSelect"
+                                            render="gpDetail lstSelect btnDelete messages"
                                             listener="#{shiftController.createShiftList()}" />
                                     </p:selectOneMenu>
 
@@ -348,10 +349,12 @@
                                     <h:outputText value="#{shiftController.current.id}" styleClass="muted-value" />
 
                                     <p:outputLabel value="Previous Shift Id" />
-                                    <h:outputText value="#{shiftController.current.previousShift.id}" styleClass="muted-value" />
+                                    <h:outputText value="#{empty shiftController.current.previousShift ? '-' : shiftController.current.previousShift.id}"
+              styleClass="muted-value" />
 
                                     <p:outputLabel value="Next Shift Id" />
-                                    <h:outputText value="#{shiftController.current.nextShift.id}" styleClass="muted-value" />
+                                    <h:outputText value="#{empty shiftController.current.nextShift ? '-' : shiftController.current.nextShift.id}"
+              styleClass="muted-value" />
                                 </h:panelGrid>
 
                                 <div class="footer-actions">
@@ -414,11 +417,11 @@
 
                                 <p:outputLabel value="Previous Shift" />
                                 <h:outputLabel value=":" />
-                                <h:outputLabel value="#{shiftController.current.previousShift}" />
+                                <h:outputLabel value="#{empty shiftController.current.previousShift ? '-' : shiftController.current.previousShift}" />
 
                                 <p:outputLabel value="Next Shift" />
                                 <h:outputLabel value=":" />
-                                <h:outputLabel value="#{shiftController.current.nextShift}" />
+                                <h:outputLabel value="#{empty shiftController.current.nextShift ? '-' : shiftController.current.nextShift}" />
 
                                 <h:outputLabel value="Leave Hour Full" />
                                 <h:outputLabel value=":" />
@@ -454,15 +457,15 @@
 
                                 <p:outputLabel value="Previous Shift Id" />
                                 <h:outputLabel value=":" />
-                                <p:outputLabel value="#{shiftController.current.previousShift.id}" />
+                                <p:outputLabel value="#{empty shiftController.current.previousShift ? '-' : shiftController.current.previousShift.id}" />
 
                                 <p:outputLabel value="Next Shift Id" />
                                 <h:outputLabel value=":" />
-                                <p:outputLabel value="#{shiftController.current.nextShift.id}" />
+                                <p:outputLabel value="#{empty shiftController.current.nextShift ? '-' : shiftController.current.nextShift.id}" />
 
                                 <p:outputLabel value="Creator" />
                                 <h:outputLabel value=":" />
-                                <p:outputLabel value="#{shiftController.current.creater.webUserPerson.name}" />
+                                <p:outputLabel value="#{empty shiftController.current.creater or empty shiftController.current.creater.webUserPerson ? '-' : shiftController.current.creater.webUserPerson.name}" />
 
                                 <p:outputLabel value="Created At" />
                                 <h:outputLabel value=":" />
