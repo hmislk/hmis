@@ -540,12 +540,14 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             }
             var s = dailyStockBalanceReport.getPharmacySalesByAdmissionTypeAndDiscountSchemeBundle().getSummaryRow();
             CellStyle totalGreen = makeSolidStyle(workbook, green, numFmt, true, false);
-            rowNum = writeTotalRow(sheet, rowNum, "Total Sales",
-                    new double[]{s.getGrossTotal(), s.getDiscount(), s.getServiceCharge(), s.getNetTotal(),
-                                 s.getValueOfStocksAtCostRate().doubleValue(),
-                                 s.getValueOfStocksAtPurchaseRate().doubleValue(),
-                                 s.getValueOfStocksAtRetailSaleRate().doubleValue()},
-                    totalGreen);
+            if (s != null) {
+                rowNum = writeTotalRow(sheet, rowNum, "Total Sales",
+                        new double[]{s.getGrossTotal(), s.getDiscount(), s.getServiceCharge(), s.getNetTotal(),
+                                     s.getValueOfStocksAtCostRate().doubleValue(),
+                                     s.getValueOfStocksAtPurchaseRate().doubleValue(),
+                                     s.getValueOfStocksAtRetailSaleRate().doubleValue()},
+                        totalGreen);
+            }
         }
         rowNum++; // blank row
 
@@ -570,12 +572,14 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             }
             var s = dailyStockBalanceReport.getPharmacyPurchaseByBillTypeBundle().getSummaryRow();
             CellStyle totalOrange = makeSolidStyle(workbook, orange, numFmt, true, false);
-            rowNum = writeTotalRow(sheet, rowNum, "Total Purchases",
-                    new double[]{s.getGrossTotal(), 0, 0, 0,
-                                 s.getValueOfStocksAtCostRate().doubleValue(),
-                                 s.getValueOfStocksAtPurchaseRate().doubleValue(),
-                                 s.getValueOfStocksAtRetailSaleRate().doubleValue()},
-                    totalOrange);
+            if (s != null) {
+                rowNum = writeTotalRow(sheet, rowNum, "Total Purchases",
+                        new double[]{s.getGrossTotal(), 0, 0, s.getNetTotal(),
+                                     s.getValueOfStocksAtCostRate().doubleValue(),
+                                     s.getValueOfStocksAtPurchaseRate().doubleValue(),
+                                     s.getValueOfStocksAtRetailSaleRate().doubleValue()},
+                        totalOrange);
+            }
         }
         rowNum++; // blank row
 
@@ -600,12 +604,14 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             }
             var s = dailyStockBalanceReport.getPharmacyTransferByBillTypeBundle().getSummaryRow();
             CellStyle totalCyan = makeSolidStyle(workbook, cyan, numFmt, true, false);
-            rowNum = writeTotalRow(sheet, rowNum, "Total Transfers",
-                    new double[]{s.getGrossTotal(), 0, 0, 0,
-                                 s.getValueOfStocksAtCostRate().doubleValue(),
-                                 s.getValueOfStocksAtPurchaseRate().doubleValue(),
-                                 s.getValueOfStocksAtRetailSaleRate().doubleValue()},
-                    totalCyan);
+            if (s != null) {
+                rowNum = writeTotalRow(sheet, rowNum, "Total Transfers",
+                        new double[]{s.getGrossTotal(), 0, 0, s.getNetTotal(),
+                                     s.getValueOfStocksAtCostRate().doubleValue(),
+                                     s.getValueOfStocksAtPurchaseRate().doubleValue(),
+                                     s.getValueOfStocksAtRetailSaleRate().doubleValue()},
+                        totalCyan);
+            }
         }
         rowNum++; // blank row
 
@@ -630,12 +636,14 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             }
             var s = dailyStockBalanceReport.getPharmacyAdjustmentsByBillTypeBundle().getSummaryRow();
             CellStyle totalRed = makeSolidStyle(workbook, red, numFmt, true, false);
-            rowNum = writeTotalRow(sheet, rowNum, "Total Adjustments",
-                    new double[]{s.getGrossTotal(), 0, 0, 0,
-                                 s.getValueOfStocksAtCostRate().doubleValue(),
-                                 s.getValueOfStocksAtPurchaseRate().doubleValue(),
-                                 s.getValueOfStocksAtRetailSaleRate().doubleValue()},
-                    totalRed);
+            if (s != null) {
+                rowNum = writeTotalRow(sheet, rowNum, "Total Adjustments",
+                        new double[]{s.getGrossTotal(), 0, 0, s.getNetTotal(),
+                                     s.getValueOfStocksAtCostRate().doubleValue(),
+                                     s.getValueOfStocksAtPurchaseRate().doubleValue(),
+                                     s.getValueOfStocksAtRetailSaleRate().doubleValue()},
+                        totalRed);
+            }
         }
         rowNum++; // blank row
 
