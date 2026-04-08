@@ -4,6 +4,7 @@ import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
+import static com.divudi.core.data.RequestType.PETTYCASH_APROVEL;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
@@ -212,22 +213,20 @@ public class RequestController implements Serializable {
                     return "";
                 }
                 break;
+            case PETTYCASH_CANCELLATION:
+                if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to review Petty Cash Cancellation requests.");
+                    return "";
+                }
+                break;
+            case PETTYCASH_APROVEL:
+                break;
             default:
                 JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
         }
 
-        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
-            bills = new ArrayList<>();
-            if (currentRequest.getStatus() == RequestStatus.PENDING) {
-                currentRequest.setReviewedBy(sessionController.getLoggedUser());
-                currentRequest.setReviewedAt(new Date());
-                currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
-                requestService.save(currentRequest, sessionController.getLoggedUser());
-            }
-            comment = null;
-            return "/cashier/drawer_adjustment_approve?faces-redirect=true";
-        }
+        
 
         //Update Review Status
         if (currentRequest.getStatus() == RequestStatus.PENDING) {
@@ -235,6 +234,12 @@ public class RequestController implements Serializable {
             currentRequest.setReviewedAt(new Date());
             currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
             requestService.save(currentRequest, sessionController.getLoggedUser());
+        }
+        
+        if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
+            bills = new ArrayList<>();
+            comment = null;
+            return "/cashier/drawer_adjustment_approve?faces-redirect=true";
         }
 
         bills = new ArrayList<>();
@@ -260,6 +265,11 @@ public class RequestController implements Serializable {
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
+                break;
+            case PETTY_CASH_PRE:
+                bills.add(currentRequest.getBill());
+                
+                navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
                 break;
             default:
                 navigation = "";
