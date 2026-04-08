@@ -296,6 +296,8 @@ public class FinancialTransactionController implements Serializable {
     private Date myFloatRequestsFromDate;
     private Date myFloatRequestsToDate;
     boolean floatRequestStarted = false;
+    // Cache for accepted-status per request bill ID — keyed by bill ID, populated in fillMyFundTransferRequests()
+    private Map<Long, Boolean> floatRequestAcceptedCache = new HashMap<>();
 
     // Float Transfer Report Properties
     private List<Bill> fundTransferReportBills;
@@ -2493,6 +2495,15 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getMyFloatRequestsFromDate());
         params.put("td", getMyFloatRequestsToDate());
         myFundTransferRequestsOut = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        // Pre-compute accepted status once per load — avoids N×2 JPQL queries in the XHTML
+        floatRequestAcceptedCache = new HashMap<>();
+        if (myFundTransferRequestsOut != null) {
+            for (Bill req : myFundTransferRequestsOut) {
+                if (req.getForwardReferenceBill() != null && !req.isCancelled()) {
+                    floatRequestAcceptedCache.put(req.getId(), isFloatRequestAccepted(req));
+                }
+            }
+        }
     }
 
     public double getFulfilledAmountForRequest(Bill request) {
@@ -2520,25 +2531,42 @@ public class FinancialTransactionController implements Serializable {
 
     /**
      * Returns true only when the requester has physically accepted the float
-     * transfer (i.e. a FundTransferReceivedBill exists that is linked back to
-     * a FundTransferBill that itself was created in response to this request).
+     * transfer by checking that a FUND_TRANSFER_RECEIVED_BILL exists whose
+     * referenceBill is exactly the forwardReferenceBill of the request (i.e.
+     * the terminal issued transfer has been received). This avoids false
+     * positives from intermediate partial received bills in multi-transfer
+     * scenarios.
      * A forwardReferenceBill on the request means B has *issued* the transfer;
      * it does NOT mean A has *accepted* it.
      */
     public boolean isFloatRequestAccepted(Bill request) {
-        if (request == null || request.getId() == null) {
+        if (request == null || request.getId() == null || request.getForwardReferenceBill() == null) {
             return false;
         }
         String jpql = "select count(r) from Bill r "
-                + "where r.referenceBill.backwardReferenceBill = :req "
+                + "where r.referenceBill = :issuedBill "
                 + "and r.billTypeAtomic = :btype "
                 + "and (r.cancelled = false or r.cancelled is null) "
                 + "and r.retired = false";
         Map<String, Object> params = new HashMap<>();
-        params.put("req", request);
+        params.put("issuedBill", request.getForwardReferenceBill());
         params.put("btype", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         Long count = billFacade.findLongByJpql(jpql, params, TemporalType.TIMESTAMP);
         return count != null && count > 0;
+    }
+
+    /**
+     * Returns the precomputed accepted status for a request bill from the cache
+     * populated during fillMyFundTransferRequests(). Falls back to a live query
+     * if the cache does not contain the entry (e.g. when called from outside
+     * the My Float Requests page).
+     */
+    public boolean isFloatRequestAcceptedCached(Bill request) {
+        if (request == null || request.getId() == null) {
+            return false;
+        }
+        Boolean cached = floatRequestAcceptedCache.get(request.getId());
+        return cached != null ? cached : isFloatRequestAccepted(request);
     }
 
     private void prepareToAddNewFundDepositBill() {
