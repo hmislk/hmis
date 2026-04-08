@@ -62,6 +62,10 @@
 ### When Developing a REST API
 - [REST API Development Guide](developer_docs/api/rest-api-development-guide.md) - **All 4 registration steps required**: `ApplicationConfig` + `CapabilityStatementResource` + `AnthropicApiService.buildSystemPrompt` (module listing) + `AnthropicApiService.buildToolsArray`/`executeToolCall` (tool handler). Skipping any step means the API is invisible to the AI chat or undiscoverable via `/api/capabilities`.
 
+### When Reviewing a PR
+- [PR Review Workflow](developer_docs/git/pr-review-workflow.md) - Full checklist for handling CodeRabbit/Codex comments: fetch → investigate → discuss → batch-fix → persistence check → push → reply → re-request review → cleanup
+- Use `/review-pr <pr-url>` skill to automate investigation and fix steps
+
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
 
