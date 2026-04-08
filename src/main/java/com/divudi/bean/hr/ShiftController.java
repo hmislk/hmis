@@ -196,8 +196,8 @@ public class ShiftController implements Serializable {
     }
 
     public void delete() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing Seleced");
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
             return;
         } else {
             current.setRetired(true);

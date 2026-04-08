@@ -172,22 +172,25 @@
                                 </div>
 
                                 <div class="action-row">
-                                    <p:commandButton id="btnAdd"
-                                                     styleClass="ui-button-success"
-                                                     icon="fas fa-plus"
-                                                     process="btnAdd"
-                                                     update="gpDetail"
-                                                     value="Add"
-                                                     action="#{shiftController.prepareAdd()}" />
+                                    <p:commandButton 
+                                        id="btnAdd"
+                                        styleClass="ui-button-success"
+                                        icon="fas fa-plus"
+                                        process="@this"
+                                        update="gpDetail lstSelect btnDelete messages"
+                                        value="Add"
+                                        action="#{shiftController.prepareAdd()}" />
 
-                                    <p:commandButton id="btnDelete"
-                                                     styleClass="ui-button-danger"
-                                                     icon="fas fa-trash"
-                                                     process="btnDelete"
-                                                     update="gpDetail lstSelect messages"
-                                                     onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
-                                                     action="#{shiftController.delete()}"
-                                                     value="Delete" />
+                                    <p:commandButton 
+                                        id="btnDelete"
+                                        styleClass="ui-button-danger"
+                                        icon="fas fa-trash"
+                                        process="btnDelete"
+                                        update="gpDetail lstSelect btnDelete messages"
+                                        onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                                        action="#{shiftController.delete()}"
+                                        value="Delete"
+                                        disabled="#{empty shiftController.current or empty shiftController.current.id}" />
                                 </div>
 
                                 <p:outputLabel for="lstSelect" value="Available Shifts" />
@@ -199,7 +202,7 @@
                                                    var="myItem"
                                                    itemValue="#{myItem}"
                                                    itemLabel="#{myItem.name}" />
-                                    <p:ajax update="gpDetail" process="@this" />
+                                    <p:ajax update="gpDetail btnDelete" process="@this" />
                                 </p:selectOneListbox>
 
                             </p:panel>
