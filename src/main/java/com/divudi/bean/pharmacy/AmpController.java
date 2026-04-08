@@ -474,6 +474,19 @@ public class AmpController implements Serializable {
         return suggestions;
     }
 
+    public List<Amp> completeAmpAny(String qry) {
+        List<Amp> suggestions;
+        if (qry == null || qry.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            String jpql = "SELECT c FROM Amp c WHERE c.retired = false AND LOWER(c.name) LIKE :query ORDER BY c.name";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("query", "%" + qry.trim().toLowerCase() + "%");
+            suggestions = getFacade().findByJpqlWithoutCache(jpql, parameters);
+        }
+        return suggestions;
+    }
+
     public List<Amp> completeAmpWithRetired(String qry) {
         List<Amp> a = null;
         Map m = new HashMap();

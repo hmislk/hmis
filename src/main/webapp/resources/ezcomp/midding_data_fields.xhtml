@@ -85,6 +85,13 @@
                                 value="Check Missing Fields"
                                 class="w-25"
                                 />
+                            <p:commandButton
+                                ajax="false"
+                                action="#{dataAdministrationController.checkMissingFieldsForced()}"
+                                value="Force Check (Bypass Wiki)"
+                                styleClass="ui-button-warning w-25 ml-2"
+                                title="Bypasses the wiki version shortcut and always scans all tables"
+                                />
                         </f:facet>
 
                         <p:outputLabel value="Database Selection" />
