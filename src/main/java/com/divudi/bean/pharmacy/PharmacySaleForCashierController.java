@@ -18,6 +18,7 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -2921,15 +2922,18 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     }
 
-    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
-        if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
+    private boolean savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        WebUser loggedUser = getSessionController().getLoggedUser();
+        if (loggedUser == null) {
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return false;
         }
-        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setDepartment(loggedUser.getDepartment());
+        getPreBill().setInstitution(loggedUser.getDepartment().getInstitution());
 
         getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getPreBill().setCreater(getSessionController().getLoggedUser());
+        getPreBill().setCreater(loggedUser);
 
         getPreBill().setPatient(pt);
 //        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
@@ -2953,8 +2957,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
-        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setFromDepartment(loggedUser.getDepartment());
+        getPreBill().setFromInstitution(loggedUser.getDepartment().getInstitution());
         getPreBill().setPaymentMethod(getPaymentMethod());
         getPreBill().setPaymentScheme(getPaymentScheme());
 
@@ -2995,7 +2999,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
-        getBillFacade().edit(getPreBill());
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        } else {
+            getBillFacade().edit(getPreBill());
+        }
+        return true;
     }
 
     private void saveSaleBill() {
@@ -3486,6 +3495,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public String settlePreBillAndNavigateToPrint() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return null;
+        }
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return null;
@@ -3680,6 +3694,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (!stockValidation.isValid()) {
             // Display comprehensive error messages showing ALL stock shortfalls
             JsfUtil.addErrorMessage(stockValidation.getFormattedErrorMessage());
+            stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Stock validation failed");
             billSettlingStarted = false;
             return null;
         }
@@ -3694,6 +3709,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 if (patientRequiredForPharmacySale) {
                     if (!hasValidName) {
                         JsfUtil.addErrorMessage("Please Select a Patient");
+                        stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Patient not selected");
                         billSettlingStarted = false;
                         return null;
                     } else {
@@ -3706,6 +3722,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 }
             } else if (patientRequiredForPharmacySale) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
+                stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Patient not selected");
                 billSettlingStarted = false;
                 return null;
             }
@@ -3720,7 +3737,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             getPreBill().setBillItems(null);
             getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-            savePreBillFinallyForRetailSaleForCashier(pt);
+            if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+                getPreBill().setBillItems(tmpBillItems);
+                stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Session expired during settlement");
+                billSettlingStarted = false;
+                return null;
+            }
             // Use locked stocks for settlement instead of re-validating
             savePreBillItemsFinallyWithLockedStocks(tmpBillItems, stockValidation.getLockedStocks());
             setPrintBill(getPreBill());
@@ -3783,6 +3805,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
     public void settlePreBill() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return;
+        }
 
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
@@ -3951,7 +3978,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return;
+        }
         savePreBillItemsFinally(tmpBillItems);
         // Create BFD for pre-bill at creation time so F15 stock movement report can track it
         if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
