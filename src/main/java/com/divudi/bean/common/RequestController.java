@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.PettyCashType;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
 import static com.divudi.core.data.RequestType.PETTYCASH_APROVEL;
@@ -85,6 +86,7 @@ public class RequestController implements Serializable {
     private RequestStatus status;
 
     private PatientEncounter patientEncounter;
+    private PettyCashType pettyCashPayeeType;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -268,7 +270,7 @@ public class RequestController implements Serializable {
                 break;
             case PETTY_CASH_PRE:
                 bills.add(currentRequest.getBill());
-                
+                pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
                 navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
                 break;
             default:
@@ -708,6 +710,36 @@ public class RequestController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public PettyCashType getPettyCashPayeeType() {
+        return pettyCashPayeeType;
+    }
+
+    public void setPettyCashPayeeType(PettyCashType pettyCashPayeeType) {
+        this.pettyCashPayeeType = pettyCashPayeeType;
+    }
+
+    private PettyCashType resolvePettyCashPayeeType(Bill bill) {
+        if (bill.getStaff() != null) {
+            return PettyCashType.STAFF;
+        }
+        if (bill.getToDepartment() != null) {
+            return PettyCashType.DEPARTMENT;
+        }
+        if (bill.getPerson()!= null) {
+            return PettyCashType.PERSON;
+        }
+        return PettyCashType.NEWPERSON;
+    }
+
+    public void savePettyCashBillDetails() {
+        if (currentRequest == null || currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found.");
+            return;
+        }
+        billFacade.edit(currentRequest.getBill());
+        JsfUtil.addSuccessMessage("Bill details saved successfully.");
     }
 
     @FacesConverter(forClass = Request.class)

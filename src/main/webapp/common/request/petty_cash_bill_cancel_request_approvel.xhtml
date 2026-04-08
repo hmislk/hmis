@@ -102,13 +102,105 @@
                                         </p:panel>
                                     </div>
                                     <div class="col-4">
-                                        <p:panel id="payment">
+                                        <p:panel id="pettyCashDetails">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa fa-money-bill-wave" />
+                                                <h:outputText value="Petty Cash Details" class="mx-4"></h:outputText>
+                                            </f:facet>
+
+                                            <div class="card border-warning p-3">
+                                                <div class="row mb-2">
+                                                    <div class="col-4"><h:outputLabel value="Payee Type"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <p:inputText value="#{requestController.pettyCashPayeeType}" readonly="true" class="w-100"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-4"><h:outputLabel value="Payee"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <h:panelGroup id="payeeArea">
+                                                            <h:panelGroup rendered="#{requestController.pettyCashPayeeType eq 'STAFF'}">
+                                                                <p:inputText value="#{requestController.currentRequest.bill.staff.person.nameWithTitle}" readonly="true" class="w-100"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{requestController.pettyCashPayeeType eq 'DEPARTMENT'}">
+                                                                <p:inputText value="#{requestController.currentRequest.bill.toDepartment.name}" readonly="true" class="w-100"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{requestController.pettyCashPayeeType eq 'PERSON'}">
+                                                                <p:inputText value="#{requestController.currentRequest.bill.person.nameWithTitle}" readonly="true" class="w-100"/>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3">
+                                                <div class="row mb-2">
+                                                    <div class="col-4"><h:outputLabel value="Voucher No"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <p:inputText
+                                                            class="w-100"
+                                                            value="#{requestController.currentRequest.bill.invoiceNumber}"
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-4"><h:outputLabel value="Bill Date"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <p:inputText value="#{requestController.currentRequest.bill.createdAt}" readonly="true" class="w-100">
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-2">
+                                                    <div class="col-4"><h:outputLabel value="Payment Method"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <p:selectOneMenu
+                                                            class="w-100"
+                                                            value="#{requestController.currentRequest.bill.paymentMethod}"
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                            <f:selectItems
+                                                                value="#{enumController.paymentMethodsForPettyCashBilling}"
+                                                                var="pm"
+                                                                itemLabel="#{pm.label}"
+                                                                itemValue="#{pm}">
+                                                            </f:selectItems>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-4"><h:outputLabel value="Amount"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <p:inputText
+                                                            class="w-100"
+                                                            onfocus="this.select()"
+                                                            value="#{requestController.currentRequest.bill.netTotal}"
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </p:inputText>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-2">
+                                                    <div class="col-4"><h:outputLabel value="Description"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <p:inputTextarea
+                                                            class="w-100"
+                                                            rows="3"
+                                                            value="#{requestController.currentRequest.bill.comments}"
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                        </p:inputTextarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </p:panel>
+                                        <p:panel id="requestDetails" class="mt-3">
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                                <h:outputText styleClass="fa fa-info-circle" />
                                                 <h:outputText value="Request Details" class="mx-4"></h:outputText>
                                             </f:facet>
 
-                                            <div style="line-height: 3">
+                                            <div style="line-height: 2.5">
                                                 <div class="row">
                                                     <div class="col-3"><h:outputLabel value="Request No" ></h:outputLabel></div>
                                                     <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
@@ -186,9 +278,7 @@
 
                                             <div class="d-flex justify-content-center">
                                                 <h:panelGroup id="printingView">
-
                                                     <request:petty_cash_request request="#{requestController.currentRequest}" />                        
-                                                   
                                                 </h:panelGroup>
 
                                             </div>

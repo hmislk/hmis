@@ -289,106 +289,8 @@ public class PettyCashBillController implements Serializable {
     }
 
     public void settlePreBill() {
-        if (currentBillType == null) {
-            JsfUtil.addErrorMessage("Petty-Cash Type is Missing.");
-            return;
-        }
-
-        switch (currentBillType) {
-            case STAFF:
-                if (current.getStaff() == null) {
-                    JsfUtil.addErrorMessage("Staff is Missing.");
-                    return;
-                }
-                break;
-            case DEPARTMENT:
-                if (current.getToDepartment() == null) {
-                    JsfUtil.addErrorMessage("Department is Missing.");
-                    return;
-                }
-                break;
-            case PERSON:
-                if (current.getPerson() == null) {
-                    JsfUtil.addErrorMessage("Person is Missing.");
-                    return;
-                }
-                break;
-            case NEWPERSON:
-                if (newPerson == null) {
-                    JsfUtil.addErrorMessage("Error in New Person.");
-                    return;
-                }
-                if (newPerson.getTitle() == null) {
-                    JsfUtil.addErrorMessage("Title is Missing in New Person.");
-                    return;
-                }
-                if (newPerson.getName() == null || newPerson.getName().trim().isEmpty()) {
-                    JsfUtil.addErrorMessage("Name is Missing in New Person.");
-                    return;
-                }
-                if (newPerson.getSex() == null) {
-                    JsfUtil.addErrorMessage("Gender is Missing in New Person.");
-                    return;
-                }
-                if (newPerson.getArea() == null) {
-                    JsfUtil.addErrorMessage("Address is Missing in New Person.");
-                    return;
-                }
-                if (newPerson.getPhone() == null) {
-                    JsfUtil.addErrorMessage("Mobile is Missing in New Person.");
-                    return;
-                }
-                break;
-        }
-
-        if (getCurrent().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select the PaymentMethod");
-            return;
-        }
-
-        if (getCurrent().getNetTotal() < 1) {
-            JsfUtil.addErrorMessage("Type Amount");
-            return;
-        }
-
-        if (financialYear == null || financialYear.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Financial Year is Missing");
-            return;
-        }
-
-        if (invoiceNo == null) {
-            JsfUtil.addErrorMessage("Invoice No is Missing.");
-            return;
-        }
-
-        if (checkInvoiceNo()) {
-            JsfUtil.addErrorMessage("Invoice Number Already Exist");
-            return;
-        }
-
-        Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
-
-        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
-
-        if (loggedUserDrawer == null) {
-            JsfUtil.addErrorMessage("Your Drawer have a Error.");
-            return;
-        }
-        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
-
-        if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
-            JsfUtil.addErrorMessage("There is no cash in your drawer.");
-            return;
-        }
-
-        if (loggedUserDrawer.getCashInHandValue() < getCurrent().getNetTotal()) {
-            JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
-            return;
-        }
-
-        if (current != null && current.getId() != null) {
-            JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
-            return;
+        if(errorCheck()){
+            return ;
         }
 
         if (currentBillType == PettyCashType.NEWPERSON) {
@@ -555,6 +457,121 @@ public class PettyCashBillController implements Serializable {
         getBillFacade().create(rb);
         return rb;
 
+    }
+    
+    public boolean errorCheck(){
+        if (currentBillType == null) {
+            JsfUtil.addErrorMessage("Petty-Cash Type is Missing.");
+            return true;
+        }
+
+        switch (currentBillType) {
+            case STAFF:
+                if (current.getStaff() == null) {
+                    JsfUtil.addErrorMessage("Staff is Missing.");
+                    return true;
+                }
+                current.setToDepartment(null);
+                current.setPerson(null);
+                break;
+            case DEPARTMENT:
+                if (current.getToDepartment() == null) {
+                    JsfUtil.addErrorMessage("Department is Missing.");
+                    return true;
+                }
+                current.setStaff(null);
+                current.setPerson(null);
+                break;
+            case PERSON:
+                if (current.getPerson() == null) {
+                    JsfUtil.addErrorMessage("Person is Missing.");
+                    return true;
+                }
+                current.setToDepartment(null);
+                current.setStaff(null);
+                break;
+            case NEWPERSON:
+                if (newPerson == null) {
+                    JsfUtil.addErrorMessage("Error in New Person.");
+                    return true;
+                }
+                if (newPerson.getTitle() == null) {
+                    JsfUtil.addErrorMessage("Title is Missing in New Person.");
+                    return true;
+                }
+                if (newPerson.getName() == null || newPerson.getName().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Name is Missing in New Person.");
+                    return true;
+                }
+                if (newPerson.getSex() == null) {
+                    JsfUtil.addErrorMessage("Gender is Missing in New Person.");
+                    return true;
+                }
+                if (newPerson.getArea() == null) {
+                    JsfUtil.addErrorMessage("Address is Missing in New Person.");
+                    return true;
+                }
+                if (newPerson.getPhone() == null) {
+                    JsfUtil.addErrorMessage("Mobile is Missing in New Person.");
+                    return true;
+                }
+                current.setToDepartment(null);
+                current.setStaff(null);
+                current.setPerson(null);
+                break;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return true;
+        }
+
+        if (getCurrent().getNetTotal() < 1) {
+            JsfUtil.addErrorMessage("Type Amount");
+            return true;
+        }
+
+        if (financialYear == null || financialYear.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Financial Year is Missing");
+            return true;
+        }
+
+        if (invoiceNo == null) {
+            JsfUtil.addErrorMessage("Invoice No is Missing.");
+            return true;
+        }
+
+        if (checkInvoiceNo()) {
+            JsfUtil.addErrorMessage("Invoice Number Already Exist");
+            return true;
+        }
+
+        Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
+
+        if (loggedUserDrawer == null) {
+            JsfUtil.addErrorMessage("Your Drawer have a Error.");
+            return true;
+        }
+        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
+
+        if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
+            JsfUtil.addErrorMessage("There is no cash in your drawer.");
+            return true;
+        }
+
+        if (loggedUserDrawer.getCashInHandValue() < getCurrent().getNetTotal()) {
+            JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
+            return true;
+        }
+
+        if (current != null && current.getId() != null) {
+            JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
+            return true;
+        }
+        
+        return false;
     }
 
     @Deprecated
