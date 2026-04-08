@@ -59,6 +59,9 @@
 ### When Adding a New Privilege
 - [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
 
+### When Developing a REST API
+- [REST API Development Guide](developer_docs/api/rest-api-development-guide.md) - **All 4 registration steps required**: `ApplicationConfig` + `CapabilityStatementResource` + `AnthropicApiService.buildSystemPrompt` (module listing) + `AnthropicApiService.buildToolsArray`/`executeToolCall` (tool handler). Skipping any step means the API is invisible to the AI chat or undiscoverable via `/api/capabilities`.
+
 ### When Reviewing a PR
 - [PR Review Workflow](developer_docs/git/pr-review-workflow.md) - Full checklist for handling CodeRabbit/Codex comments: fetch → investigate → discuss → batch-fix → persistence check → push → reply → re-request review → cleanup
 - Use `/review-pr <pr-url>` skill to automate investigation and fix steps
