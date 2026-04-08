@@ -177,9 +177,8 @@
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Comments" style="padding: 8px;" width="14em;" >
-                                        <h:outputLabel  rendered="#{bill.comments ne null}" value="#{bill.comments}" >
-                                        </h:outputLabel>
+                                    <p:column headerText="Status" style="padding: 8px;" width="10em;" >
+                                        <h:outputLabel value="#{bill.currentRequest.status.label}" />
                                     </p:column>
 
                                     <p:column headerText="Net Value" style="padding: 8px;" width="8em;" class="text-end" >
