@@ -9,7 +9,8 @@ public enum RequestCategory {
     CANCELLATION("Cancellation"),
     REFUND("Refund"),
     EDIT("Edit"),
-    ADJUSTMENT("Adjustment");
+    ADJUSTMENT("Adjustment"),
+    APROVEL("Aprovel");
 
     private final String label;
 
