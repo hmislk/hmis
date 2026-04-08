@@ -11,7 +11,7 @@
 
             
             <p:panel header="Manage Procedures">
-                <p:growl id="msg"/>
+                <p:growl id="msg" life="4000"/>
                 <p:focus id="selectFocus" context="gpSelect"/>
                 <p:focus id="detailFocus" context="gpDetail"/>
                 <div class="container-fluid">
@@ -88,7 +88,7 @@
                                             id="btnSave" 
                                             value="Save"
                                             process="gpDetail" 
-                                            update="lstSelect selectFocus msg" 
+                                            update="msg lstSelect selectFocus gpDetail" 
                                             action="#{procedureController.saveSelected()}" >
                                         </p:commandButton>
                                     </div>

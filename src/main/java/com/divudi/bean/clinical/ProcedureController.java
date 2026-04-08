@@ -140,15 +140,25 @@ public class ProcedureController implements Serializable {
         if (current==null){
             JsfUtil.addErrorMessage("Nothing to save");
         }
+        
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Procedure Name before saving.");
+            return;
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Procedure Code before saving.");
+            return;
+        }
+        
         current.setSymanticType(SymanticType.Therapeutic_Procedure);
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         getItems();
