@@ -6,6 +6,7 @@
 package com.divudi.ws.clinical;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.ApiKeyType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Vocabulary;
@@ -110,7 +111,7 @@ public class ClinicalMetadataApi {
         } else {
             jpql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t order by c.name";
         }
-        List<ClinicalEntity> entities = clinicalEntityFacade.findByJpql(jpql, params, size);
+        List<ClinicalEntity> entities = clinicalEntityFacade.findByJpql(jpql, params, offset, offset + size - 1);
         List<Map<String, Object>> result = new ArrayList<>();
         for (ClinicalEntity e : entities) {
             result.add(toMap(e, typeLabel));
@@ -127,7 +128,7 @@ public class ClinicalMetadataApi {
         } else {
             jpql = "select v from Vocabulary v where v.retired=false order by v.name";
         }
-        List<Vocabulary> vocabs = vocabularyFacade.findByJpql(jpql, params, size);
+        List<Vocabulary> vocabs = vocabularyFacade.findByJpql(jpql, params, offset, offset + size - 1);
         List<Map<String, Object>> result = new ArrayList<>();
         for (Vocabulary v : vocabs) {
             result.add(toMap(v));
@@ -258,6 +259,11 @@ public class ClinicalMetadataApi {
                 return errorResponse("Not a valid key", 401);
             }
 
+            String typeStr = param("type");
+            if (typeStr == null || typeStr.trim().isEmpty()) {
+                return errorResponse("type parameter is required", 400);
+            }
+
             Map<String, String> body;
             try {
                 body = gson.fromJson(requestBody, Map.class);
@@ -268,7 +274,29 @@ public class ClinicalMetadataApi {
                 return errorResponse("Request body is required", 400);
             }
 
-            // Try ClinicalEntity first, then Vocabulary
+            if ("vocabulary".equalsIgnoreCase(typeStr)) {
+                Vocabulary vocab = vocabularyFacade.find(id);
+                if (vocab == null || vocab.isRetired()) {
+                    return errorResponse("Record not found with id: " + id, 404);
+                }
+                if (body.containsKey("name") && body.get("name") != null) {
+                    vocab.setName(body.get("name").trim());
+                }
+                if (body.containsKey("code")) {
+                    vocab.setCode(body.get("code"));
+                }
+                if (body.containsKey("description")) {
+                    vocab.setDescription(body.get("description"));
+                }
+                vocabularyFacade.edit(vocab);
+                return successResponse(toMap(vocab));
+            }
+
+            SymanticType st = resolveSymanticType(typeStr);
+            if (st == null) {
+                return errorResponse("Unknown type: " + typeStr, 400);
+            }
+
             ClinicalEntity ce = clinicalEntityFacade.find(id);
             if (ce != null && !ce.isRetired()) {
                 if (body.containsKey("name") && body.get("name") != null) {
@@ -282,21 +310,6 @@ public class ClinicalMetadataApi {
                 }
                 clinicalEntityFacade.edit(ce);
                 return successResponse(toMap(ce, typeLabel(ce.getSymanticType())));
-            }
-
-            Vocabulary vocab = vocabularyFacade.find(id);
-            if (vocab != null && !vocab.isRetired()) {
-                if (body.containsKey("name") && body.get("name") != null) {
-                    vocab.setName(body.get("name").trim());
-                }
-                if (body.containsKey("code")) {
-                    vocab.setCode(body.get("code"));
-                }
-                if (body.containsKey("description")) {
-                    vocab.setDescription(body.get("description"));
-                }
-                vocabularyFacade.edit(vocab);
-                return successResponse(toMap(vocab));
             }
 
             return errorResponse("Record not found with id: " + id, 404);
@@ -426,9 +439,10 @@ public class ClinicalMetadataApi {
         if (key == null || key.trim().isEmpty()) return null;
         ApiKey apiKey = apiKeyController.findApiKey(key);
         if (apiKey == null) return null;
+        if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
+        if (apiKey.getKeyType() == ApiKeyType.Config) return new WebUser();
         WebUser user = apiKey.getWebUser();
         if (user == null || user.isRetired() || !user.isActivated()) return null;
-        if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
         return user;
     }
 
