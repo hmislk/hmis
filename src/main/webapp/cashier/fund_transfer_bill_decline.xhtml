@@ -107,6 +107,7 @@
                                             action="#{financialTransactionController.declineFundTransferBill()}"
                                             ajax="false"
                                             styleClass="ui-button-danger"
+                                            rendered="#{webUserController.hasPrivilege('DeclineFundTransfer')}"
                                             onclick="if (!confirm('Are you sure you want to decline this float transfer? This action cannot be undone.')) return false;" />
                                     </div>
                                 </p:panel>

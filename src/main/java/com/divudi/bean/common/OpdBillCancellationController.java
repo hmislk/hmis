@@ -822,7 +822,10 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         // Update batch bill balance for credit payment method
         updateBatchBillFinancialFieldsForIndividualCancellation(bill, cancellationBill);
 
-        drawerController.updateDrawerForOuts(ps);
+        // NOTE: Do NOT call drawerController.updateDrawerForOuts(ps) here.
+        // paymentService.createPayment() already calls drawerService.updateDrawer() internally
+        // for each payment. A second call would create duplicate DrawerEntry records and
+        // double-deduct from the drawer balance. See issue #19796.
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {

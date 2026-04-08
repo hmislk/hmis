@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <p:panel class="m-1">
+                        <f:facet name="header">
+                            <i class="fa fa-exchange-alt mt-2"/>
+                            <p:outputLabel value="Float Transfer Report" class="mx-2 mt-2"/>
+                        </f:facet>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <p:outputLabel value="From Date" for="fromDate" class="fw-bold"/>
+                                <p:datePicker
+                                    id="fromDate"
+                                    showTime="true"
+                                    value="#{financialTransactionController.fromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"/>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="To Date" for="toDate" class="fw-bold"/>
+                                <p:datePicker
+                                    id="toDate"
+                                    showTime="true"
+                                    value="#{financialTransactionController.toDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"/>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="From User (optional)" for="acUser" class="fw-bold"/>
+                                <p:autoComplete
+                                    id="acUser"
+                                    completeMethod="#{webUserController.completeUser}"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    value="#{financialTransactionController.user}"
+                                    var="u"
+                                    scrollHeight="350"
+                                    itemLabel="#{u.webUserPerson.nameWithTitle}"
+                                    itemValue="#{u}">
+                                    <p:column headerText="Username">
+                                        <h:outputText value="#{u.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{u.webUserPerson.nameWithTitle}"/>
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <p:commandButton
+                                    value="Search"
+                                    icon="pi pi-search"
+                                    class="ui-button-primary me-2"
+                                    update="tblTransfers tblRequests"
+                                    action="#{financialTransactionController.fillFundTransferReport()}"/>
+                            </div>
+                        </div>
+
+                        <p:tabView>
+
+                            <p:tab title="Float Transfers">
+                                <p:dataTable
+                                    id="tblTransfers"
+                                    value="#{financialTransactionController.fundTransferReportBills}"
+                                    var="bp"
+                                    rowKey="#{bp.id}"
+                                    emptyMessage="No float transfers found for the selected criteria"
+                                    paginator="true"
+                                    rows="20"
+                                    paginatorPosition="bottom">
+
+                                    <p:column headerText="Bill No">
+                                        <h:outputText value="#{bp.deptId}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Date/Time" width="10em">
+                                        <h:outputText value="#{bp.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="From">
+                                        <h:outputText value="#{bp.fromWebUser.webUserPerson.nameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column headerText="To">
+                                        <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Amount" styleClass="text-end" width="8em">
+                                        <h:outputText value="#{bp.absoluteNetTotalTransient}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Status" width="10em" styleClass="text-center">
+                                        <h:panelGroup rendered="#{bp.referenceBill ne null}">
+                                            <p:badge value="Accepted" severity="success"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bp.referenceBill eq null and not bp.cancelled}">
+                                            <p:badge value="Pending" severity="info"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bp.cancelled and bp.cancelledBill ne null and bp.cancelledBill.billTypeAtomic ne null and bp.cancelledBill.billTypeAtomic.name() eq 'FUND_TRANSFER_BILL_DECLINED'}">
+                                            <p:badge value="Declined" severity="danger"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bp.cancelled and (bp.cancelledBill eq null or bp.cancelledBill.billTypeAtomic eq null or bp.cancelledBill.billTypeAtomic.name() ne 'FUND_TRANSFER_BILL_DECLINED')}">
+                                            <p:badge value="Cancelled" severity="warning"/>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Comments">
+                                        <h:outputText value="#{bp.comments}"/>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:tab>
+
+                            <p:tab title="Float Requests">
+                                <p:dataTable
+                                    id="tblRequests"
+                                    value="#{financialTransactionController.fundTransferRequestReportBills}"
+                                    var="rq"
+                                    rowKey="#{rq.id}"
+                                    emptyMessage="No float requests found for the selected criteria"
+                                    paginator="true"
+                                    rows="20"
+                                    paginatorPosition="bottom">
+
+                                    <p:column headerText="Bill No">
+                                        <h:outputText value="#{rq.deptId}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Date/Time" width="10em">
+                                        <h:outputText value="#{rq.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Requested By">
+                                        <h:outputText value="#{rq.fromWebUser.webUserPerson.nameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Requested From">
+                                        <h:outputText value="#{rq.toWebUser.webUserPerson.nameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Requested Amount" styleClass="text-end" width="9em">
+                                        <h:outputText value="#{rq.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Status" width="10em" styleClass="text-center">
+                                        <h:panelGroup rendered="#{rq.forwardReferenceBill ne null}">
+                                            <p:badge value="Fulfilled" severity="success"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{rq.forwardReferenceBill eq null and not rq.cancelled}">
+                                            <p:badge value="Pending" severity="info"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{rq.cancelled}">
+                                            <p:badge value="Cancelled" severity="warning"/>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Comments">
+                                        <h:outputText value="#{rq.comments}"/>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:tab>
+
+                        </p:tabView>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
