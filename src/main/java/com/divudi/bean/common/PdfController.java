@@ -3129,7 +3129,7 @@ public class PdfController {
             table.addCell(new Cell().add(new Paragraph(String.valueOf(serialNo++)).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize))); 
             if (b != null) { 
                 table.addCell(new Cell().add(new Paragraph(String.valueOf(b.getId() != null ? b.getId() : "")).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                table.addCell(new Cell().add(new Paragraph(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(b.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(b.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
 
                 String billDept = b.getDeptId() != null ? b.getDeptId() : "";
                 if (b.isCancelled()) {

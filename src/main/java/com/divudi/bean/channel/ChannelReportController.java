@@ -5021,7 +5021,7 @@ public class ChannelReportController implements Serializable {
     // Excel Export: Channel Scanning Income Report
     public StreamedContent getChannelScanningIncomeReportAsExcel() {
         if (dataBundle == null || dataBundle.getReportTemplateRows() == null || dataBundle.getReportTemplateRows().isEmpty()) {
-            JsfUtil.addErrorMessage("Please generate the OPD Professional Fee Payments report before exporting.");
+            JsfUtil.addErrorMessage("Please generate the Channel Scanning Income Report before exporting.");
             return null;
         }
 
@@ -5040,7 +5040,7 @@ public class ChannelReportController implements Serializable {
         } catch (IOException e) {
             logger.error("getChannelScanningIncomeReportAsExcel: Error creating downloadingExcel via excelController.createExcelForReportTemplateRows", e);
             downloadingExcel = null;
-            JsfUtil.addErrorMessage("Failed to generate Channel Scanning Income Report PDF file. Please try again.");
+            JsfUtil.addErrorMessage("Failed to generate Channel Scanning Income Report Excel file. Please try again.");
         }
         return downloadingExcel;
     }

@@ -4537,7 +4537,7 @@ public class ExcelController {
             excelRow.createCell(colIndex++).setCellValue(serialNo++);
             if (b != null) { 
                 excelRow.createCell(colIndex++).setCellValue(b.getId() != null ? b.getId() : null);
-                excelRow.createCell(colIndex++).setCellValue(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(b.getCreatedAt()) : "");
+                excelRow.createCell(colIndex++).setCellValue(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(b.getCreatedAt()) : "");
 
                 String billDept = b.getDeptId() != null ? b.getDeptId() : "";
                 if (b.isCancelled()) {
