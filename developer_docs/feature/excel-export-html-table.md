@@ -92,7 +92,7 @@ Apache POI is already a project dependency; no `pom.xml` changes are needed.
 
 ## Excel file structure
 
-```
+```text
 Row 0   : Institution name                  (title, 14pt bold, centered, full-width merged)
 Row 1   : Report title                      (centered, full-width merged)
 Row 2   : Printed By / timestamp            (centered, full-width merged)

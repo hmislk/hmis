@@ -14,6 +14,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -519,14 +520,24 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 sheet.autoSizeColumn(i);
             }
 
-            // --- Write response ---
+            // --- Buffer to byte array before touching the response ---
+            byte[] fileBytes;
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                workbook.write(bos);
+                fileBytes = bos.toByteArray();
+            }
+
+            // --- Write response atomically ---
             String filename = "CC_Debtor_Grouped_"
                     + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
             response.setContentType(
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            response.setContentLength(fileBytes.length);
             try (OutputStream out = response.getOutputStream()) {
-                workbook.write(out);
+                out.write(fileBytes);
+                out.flush();
             }
             facesContext.responseComplete();
 
