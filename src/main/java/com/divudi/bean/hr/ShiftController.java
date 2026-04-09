@@ -52,7 +52,8 @@ public class ShiftController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getName().trim().isEmpty() && getCurrent().getName().isEmpty()) {
+        String name = getCurrent().getName();
+        if (name == null || name.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Name");
             return true;
         }
@@ -199,17 +200,23 @@ public class ShiftController implements Serializable {
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
-        } else {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            getCurrentRoster().getShiftList().remove(getCurrent());
-            getRosterFacade().edit(getCurrentRoster());
-            JsfUtil.addSuccessMessage("Deleted Successfully");
         }
-        createShiftList();
+
+        Shift toDelete = current;
+
+        toDelete.setRetired(true);
+        toDelete.setRetiredAt(new Date());
+        toDelete.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(toDelete);
+
+        if (getCurrentRoster() != null && getCurrentRoster().getShiftList() != null) {
+            getCurrentRoster().getShiftList().remove(toDelete);
+            getRosterFacade().edit(getCurrentRoster());
+        }
+
+        JsfUtil.addSuccessMessage("Deleted Successfully");
         current = null;
+        createShiftList();
     }
 
     public Shift getCurrent() {
@@ -275,26 +282,14 @@ public class ShiftController implements Serializable {
         if (current != null && current.getRoster() != null) {
             currentRoster = current.getRoster();
         }
-
         if (currentRoster == null) {
             shiftList = null;
             return;
         }
-
-        String jpql = "Select s "
-                + " From Shift s "
-                + " where s.retired=false "
-                + " and s.roster=:rs ";
+        String jpql = "Select s From Shift s where s.retired=false and s.roster=:rs";
         HashMap m = new HashMap();
         m.put("rs", currentRoster);
         shiftList = getFacade().findByJpql(jpql, m);
-
-        if (current != null) {
-            current.setPreviousShift(null);
-            current.setNextShift(null);
-        }
-
-        JsfUtil.addSuccessMessage("Listed");
     }
 
     public void createShiftListReport() {

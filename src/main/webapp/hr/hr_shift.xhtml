@@ -148,14 +148,15 @@
                                     <div style="flex: 1 1 220px;">
                                         <p:outputLabel for="lstRosterSelect" value="Roster" />
                                         <p:selectOneMenu id="lstRosterSelect"
-                                                         filter="true"
-                                                         value="#{shiftController.currentRoster}"
-                                                         styleClass="full-width">
+                                                        filter="true"
+                                                        value="#{shiftController.currentRoster}"
+                                                        styleClass="full-width">
                                             <f:selectItems value="#{rosterController.items}"
-                                                           var="myItem"
-                                                           itemValue="#{myItem}"
-                                                           itemLabel="#{myItem.name}" />
-                                            <p:ajax update="gpDetail lstSelect messages"
+                                                        var="myItem"
+                                                        itemValue="#{myItem}"
+                                                        itemLabel="#{myItem.name}" />
+                                            <p:ajax listener="#{shiftController.createShiftList()}"
+                                                    update="gpDetail lstSelect messages"
                                                     process="@this" />
                                         </p:selectOneMenu>
                                     </div>
@@ -185,7 +186,7 @@
                                         id="btnDelete"
                                         styleClass="ui-button-danger"
                                         icon="fas fa-trash"
-                                        process="btnDelete"
+                                        process="lstSelect btnDelete"
                                         update="gpDetail lstSelect btnDelete messages"
                                         onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
                                         action="#{shiftController.delete()}"
@@ -358,13 +359,13 @@
                                 </h:panelGrid>
 
                                 <div class="footer-actions">
-                                    <p:commandButton ajax="false"
-                                                     id="btnSave"
-                                                     value="Save"
-                                                     process="btnSave gpDetail"
-                                                     update="lstSelect"
-                                                     styleClass="ui-button-warning"
-                                                     action="#{shiftController.saveSelected}" />
+                                    <p:commandButton 
+                                        id="btnSave"
+                                        value="Save"
+                                        process="btnSave gpDetail"
+                                        update="lstSelect gpDetail messages"
+                                        styleClass="ui-button-warning"
+                                        action="#{shiftController.saveSelected}" />
                                 </div>
 
                             </p:panel>
