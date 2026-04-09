@@ -16,6 +16,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,6 +54,8 @@ public class InwardChargeTypeDetailController implements Serializable {
     private PatientItemFacade patientItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
 
@@ -124,6 +127,9 @@ public class InwardChargeTypeDetailController implements Serializable {
 
         // --- BillFee rows (InwardProfessional — ProfessionalCharge, DoctorAndNurses) ---
         rows.addAll(fetchProfessionalFeeRows());
+
+        // --- Admission Fee rows (derived from PatientEncounter.admissionType.admissionFee) ---
+        rows.addAll(fetchAdmissionFeeRows());
 
         // --- Sort: BHT No (natural string sort), then sortTime ascending ---
         rows.sort(Comparator
@@ -222,12 +228,13 @@ public class InwardChargeTypeDetailController implements Serializable {
         switch (cm) {
             case BILL_FEE:
             case PATIENT_ROOM:
+            case ADMISSION_FEE:
                 return new ArrayList<>();
             case PHARMACY_BILL:
                 return fetchPharmacyBillItemRows();
             case STORE_BILL:
                 return fetchStoreBillItemRows();
-            default: // BILL_ITEM and ADMISSION_FEE
+            default: // BILL_ITEM
                 return fetchInwardBillItemRows();
         }
     }
@@ -390,6 +397,49 @@ public class InwardChargeTypeDetailController implements Serializable {
             row.setDiscount(disc);
             row.setNetValue(gross - disc);
             row.setSortTime(bf.getFeeAt());
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    /**
+     * Fetches admission fee rows for ADMISSION_FEE charge types.
+     * The fee is derived from PatientEncounter.admissionType.admissionFee —
+     * it is not stored as a BillItem.
+     */
+    private List<InwardChargeTypeDetailRowDto> fetchAdmissionFeeRows() {
+        if (selectedChargeType.getCalculationMethod() != CalculationMethod.ADMISSION_FEE) {
+            return new ArrayList<>();
+        }
+        StringBuilder jpql = new StringBuilder(
+                "select enc from PatientEncounter enc where enc.retired = false");
+        Map<String, Object> params = new HashMap<>();
+        appendEncounterFilters(jpql, params, "enc");
+
+        List<PatientEncounter> encounters = patientEncounterFacade.findByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
+        if (encounters == null) {
+            return rows;
+        }
+        for (PatientEncounter enc : encounters) {
+            double fee = (enc.getAdmissionType() != null)
+                    ? enc.getAdmissionType().getAdmissionFee() : 0.0;
+            if (fee == 0.0) {
+                continue;
+            }
+            InwardChargeTypeDetailRowDto row = new InwardChargeTypeDetailRowDto();
+            row.setBhtNo(enc.getBhtNo());
+            row.setPatientName(enc.getPatient() != null && enc.getPatient().getPerson() != null
+                    ? enc.getPatient().getPerson().getNameWithTitle() : "");
+            row.setDateOfAdmission(enc.getDateOfAdmission());
+            row.setDateOfDischarge(enc.getDateOfDischarge());
+            row.setItemName(getChargeTypeLabel(selectedChargeType));
+            row.setGrossValue(fee);
+            row.setDiscount(0.0);
+            row.setNetValue(fee);
+            row.setSortTime(enc.getDateOfAdmission());
             rows.add(row);
         }
         return rows;
