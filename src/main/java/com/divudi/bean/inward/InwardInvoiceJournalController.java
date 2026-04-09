@@ -226,12 +226,14 @@ public class InwardInvoiceJournalController implements Serializable {
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
                 + " and bi.bill.cancelled = false"
+                + " and bi.bill.billTypeAtomic != :originalFinalBillType"
                 + " and bi.bill.patientEncounter in :encs"
                 + " and bi.inwardChargeType is not null"
                 + " group by bi.bill.patientEncounter.id, bi.inwardChargeType";
 
         Map<String, Object> params = new HashMap<>();
         params.put("encs", encounters);
+        params.put("originalFinalBillType", BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
         if (rows != null) {

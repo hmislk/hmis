@@ -47,6 +47,9 @@
 ### When Working with Database
 - [MySQL Developer Guide](developer_docs/database/mysql-developer-guide.md) - Credentials and debugging
 
+### When Adding Excel Export to a Report
+- [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`
+
 ### When Creating User Documentation
 - [Wiki Publishing Workflow](developer_docs/github/wiki-publishing.md) - Sibling folder approach
 - [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
@@ -55,6 +58,7 @@
 
 ### When Working on Inward / Inpatient Module
 - [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
+- [Inward CC Settlement Tracking](developer_docs/billing/inward-cc-settlement-tracking.md) - Data model, settlement paths, cancellation flows, and debtor report pattern for inpatient credit company payments
 
 ### When Adding a New Privilege
 - [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
