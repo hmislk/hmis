@@ -166,7 +166,11 @@
                                 icon="fas fa-file-excel"
                                 ajax="false" 
                                 value="Excel">
-                                <p:dataExporter type="xlsx" target="tblData"  fileName="collection_center_recipt_report" ></p:dataExporter>
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    target="tblData"  
+                                    fileName="collection_center_recipt_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
+                                    postProcessor="#{reportController.postProcessCollectionCenterReciptReportExcel}"></p:dataExporter>
                             </p:commandButton>
 
                             <p:commandButton 

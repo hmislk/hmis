@@ -55,6 +55,7 @@
 
 ### When Working on Inward / Inpatient Module
 - [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
+- [Inward CC Settlement Tracking](developer_docs/billing/inward-cc-settlement-tracking.md) - Data model, settlement paths, cancellation flows, and debtor report pattern for inpatient credit company payments
 
 ### When Adding a New Privilege
 - [Privilege System Guide](developer_docs/security/privilege-system.md) - **All 3 steps required**: enum value + `getCategory()` case + `UserPrivilageController` tree node. Adding only the enum is NOT sufficient — the privilege will be invisible in the admin UI. This was missed for `InpatientClinicalDischarge` (PR #19658, issue #19677).
