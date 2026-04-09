@@ -11,13 +11,16 @@
     <h:body>
         <ui:composition template="/channel/channel_reports.xhtml">
             <ui:define name="subContent">
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form class="w-100">
                     <p:panel header="Channel Income" class="w-100">
 
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="5" styleClass="w-100 form-grid"
-                                             columnClasses="label-icon-column, input-column">
+                                <h:panelGrid columns="5" 
+                                             class="ui-fluid"
+                                             style="width: 100%; table-layout: fixed;"
+                                             columnClasses="fp-col-label1, fp-col-input1, fp-col-space1, fp-col-label3, fp-col-input3">
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf073;"
                                                       styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
@@ -165,6 +168,14 @@
                                     <p:dataExporter type="pdf" target="tbl" fileName="Channel_income_report"/>
                                 </p:commandButton>
 
+                                <p:commandButton 
+                                    value="Export as PDF" 
+                                    ajax="false" 
+                                    icon="fas fa-file-pdf"
+                                    class="m-1 ui-button-info">
+                                    <p:fileDownload value="#{searchController.channelIncomeReportAsPdf}" />
+                                </p:commandButton>
+
                                 <p:commandButton
                                     id="btnPrint"
                                     class="m-1 ui-button-primary"
@@ -179,7 +190,7 @@
                                     class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" exportFooter="true" target="tbl" fileName="Channel_income_report"/>
+                                    <p:dataExporter type="xlsx" exportFooter="true" target="tbl" fileName="#{searchController.channelIncomeReportFileName}" postProcessor="#{searchController.postProcessChannelIncomeReportExcel}"/>
                                 </p:commandButton>
                             </div>
                         </div>
@@ -200,6 +211,7 @@
                             paginator="true"
                             scrollable="true"
                             scrollHeight="800px"
+                            scrollWidth="100%"
                             rows="10"
                             rowIndexVar="n"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -213,7 +225,7 @@
                                 <h:outputText value="#{n+1}"/>
                             </p:column>
 
-                            <p:column>
+                            <p:column width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Date &amp; Time"/>
                                 </f:facet>
@@ -249,14 +261,14 @@
 
                             </p:column>
 
-                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" width="10em"  style="white-space: normal !important; word-wrap: break-word !important;">
                                 <f:facet name="header">
                                     <h:outputText value="Bill Type"/>
                                 </f:facet>
                                 <h:outputText value="#{row.bill.billTypeAtomic}"/>
                             </p:column>
 
-                            <p:column width="7em">
+                            <p:column width="6em"  style="white-space: normal !important; word-wrap: break-word !important;">
                                 <f:facet name="header">
                                     <h:outputText value="Bill Type"/>
                                 </f:facet>
@@ -271,7 +283,7 @@
                                                                             }"/>
                             </p:column>
 
-                            <p:column>
+                            <p:column width="6em">
                                 <f:facet name="header">
                                     <h:outputText value="Patient"/>
                                 </f:facet>
@@ -301,7 +313,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column style="text-align: center;" width="5em">
+                            <p:column style="text-align: center;" width="4em">
                                 <f:facet name="header">
                                     <h:outputText value="Payment Method"/>
                                 </f:facet>
@@ -310,52 +322,49 @@
 
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Hospital Fee"/>
                                 </f:facet>
-                                <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
+                                <h:outputText value="#{row.bill.hospitalFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalHosValue"
-                                                  value="#{searchController.bundle.hospitalTotal}">
+                                    <h:outputText value="#{searchController.bundle.hospitalTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Staff Fee"/>
                                 </f:facet>
-                                <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
+                                <h:outputText value="#{row.bill.staffFee}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalStaffValue"
-                                                  value="#{searchController.bundle.staffTotal}">
+                                    <h:outputText value="#{searchController.bundle.staffTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Gross Total"/>
                                 </f:facet>
-                                <h:outputText styleClass="grossValue" value="#{row.bill.total}">
+                                <h:outputText value="#{row.bill.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalGrossValue"
-                                                  value="#{searchController.bundle.grossTotal}">
+                                    <h:outputText value="#{searchController.bundle.grossTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                            <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}" width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Discount"/>
                                 </f:facet>
@@ -369,42 +378,44 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                            <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}" width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Net Total"/>
                                 </f:facet>
-                                <h:outputText styleClass="netValue" value="#{row.bill.netTotal}">
+                                <h:outputText value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalNetValue" value="#{searchController.bundle.total}">
+                                    <h:outputText value="#{searchController.bundle.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <p:column class="text-end" sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"
-                                      rendered="#{searchController.bundle.hasCashTransaction}">
+                                      rendered="#{searchController.bundle.hasCashTransaction}"
+                                      width="5em">
                                 <f:facet name="header">
                                     <h:outputText value="Cash"/>
                                 </f:facet>
-                                <h:outputText styleClass="cashValue" value="#{row.cashValue}">
+                                <h:outputText value="#{row.cashValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalCashValue" value="#{searchController.bundle.cashValue}">
+                                    <h:outputText value="#{searchController.bundle.cashValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <p:column class="text-end" headerText="Card" sortBy="#{row.cardValue}"
-                                      filterBy="#{row.cardValue}" rendered="#{searchController.bundle.hasCardTransaction}">
-                                <h:outputText styleClass="cardValue" value="#{row.cardValue}">
+                                      filterBy="#{row.cardValue}" rendered="#{searchController.bundle.hasCardTransaction}"
+                                      width="5em">
+                                <h:outputText value="#{row.cardValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalCardValue" value="#{searchController.bundle.cardValue}">
+                                    <h:outputText value="#{searchController.bundle.cardValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -412,7 +423,8 @@
 
                             <p:column class="text-end" headerText="Credit" sortBy="#{row.creditValue}"
                                       filterBy="#{row.creditValue}"
-                                      rendered="#{searchController.bundle.hasCreditTransaction}">
+                                      rendered="#{searchController.bundle.hasCreditTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.creditValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -426,7 +438,8 @@
                             <!-- Continuing from Credit -->
                             <p:column class="text-end" headerText="Staff Welfare" sortBy="#{row.staffWelfareValue}"
                                       filterBy="#{row.staffWelfareValue}"
-                                      rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                      rendered="#{searchController.bundle.hasStaffWelfareTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.staffWelfareValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -439,7 +452,8 @@
 
                             <p:column class="text-end" headerText="Voucher" sortBy="#{row.voucherValue}"
                                       filterBy="#{row.voucherValue}"
-                                      rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                      rendered="#{searchController.bundle.hasVoucherTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.voucherValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -451,7 +465,8 @@
                             </p:column>
 
                             <p:column class="text-end" headerText="IOU" sortBy="#{row.iouValue}" filterBy="#{row.iouValue}"
-                                      rendered="#{searchController.bundle.hasIouTransaction}">
+                                      rendered="#{searchController.bundle.hasIouTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.iouValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -464,12 +479,13 @@
 
                             <p:column class="text-end" headerText="Agent" sortBy="#{row.agentValue}"
                                       filterBy="#{row.agentValue}"
-                                      rendered="#{searchController.bundle.hasAgentTransaction}">
+                                      rendered="#{searchController.bundle.hasAgentTransaction}"
+                                      width="5em">
                                 <h:outputText styleClass="agentValue" value="#{row.agentValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalAgentValue" value="0.00">
+                                    <h:outputText value="#{searchController.bundle.agentValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -477,7 +493,8 @@
 
                             <p:column class="text-end" headerText="Cheque" sortBy="#{row.chequeValue}"
                                       filterBy="#{row.chequeValue}"
-                                      rendered="#{searchController.bundle.hasChequeTransaction}">
+                                      rendered="#{searchController.bundle.hasChequeTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.chequeValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -489,7 +506,8 @@
                             </p:column>
 
                             <p:column class="text-end" headerText="Slip" sortBy="#{row.slipValue}"
-                                      filterBy="#{row.slipValue}" rendered="#{searchController.bundle.hasSlipTransaction}">
+                                      filterBy="#{row.slipValue}" rendered="#{searchController.bundle.hasSlipTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.slipValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -502,7 +520,8 @@
 
                             <p:column class="text-end" headerText="eWallet" sortBy="#{row.ewalletValue}"
                                       filterBy="#{row.ewalletValue}"
-                                      rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                      rendered="#{searchController.bundle.hasEWalletTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.ewalletValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -515,7 +534,8 @@
 
                             <p:column class="text-end" headerText="Patient Deposit" sortBy="#{row.patientDepositValue}"
                                       filterBy="#{row.patientDepositValue}"
-                                      rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                      rendered="#{searchController.bundle.hasPatientDepositTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.patientDepositValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -528,7 +548,8 @@
 
                             <p:column class="text-end" headerText="Patient Points" sortBy="#{row.patientPointsValue}"
                                       filterBy="#{row.patientPointsValue}"
-                                      rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                      rendered="#{searchController.bundle.hasPatientPointsTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.patientPointsValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -541,7 +562,8 @@
 
                             <p:column class="text-end" headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}"
                                       filterBy="#{row.onlineSettlementValue}"
-                                      rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                      rendered="#{searchController.bundle.hasOnlineSettlementTransaction}"
+                                      width="5em">
                                 <h:outputText value="#{row.onlineSettlementValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -552,12 +574,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:ajax event="filter" oncomplete="updateTotals();"/>
-                            <p:ajax event="page" oncomplete="updateTotals();"/>
+                            <!-- <p:ajax event="filter" oncomplete="updateTotals();"/>
+                            <p:ajax event="page" oncomplete="updateTotals();"/> -->
 
                         </p:dataTable>
 
-                        <script>
+                        <!-- <script>
                             function calculateTotals(selector, targeter) {
                                 const values = Array.from(document.querySelectorAll(selector));
                                 const totalValue = values
@@ -592,7 +614,7 @@
 
                             setTimeout(updateTotals, 100);
 
-                        </script>
+                        </script> -->
 
                     </p:panel>
                 </h:form>
