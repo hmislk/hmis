@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
@@ -258,13 +259,38 @@ public class SecurityController implements Serializable {
             long billId = Long.parseLong(parts[0]);
             long expiryEpoch = Long.parseLong(parts[1]);
             String expectedSig = computeHmacSha256(parts[0] + "." + parts[1], hmacKey);
-            if (expectedSig == null || !expectedSig.equals(parts[2])) {
+            if (expectedSig == null) {
+                return null;
+            }
+            // Use constant-time comparison to prevent timing side-channel attacks
+            byte[] expectedBytes = Base64.getUrlDecoder().decode(expectedSig);
+            byte[] providedBytes = Base64.getUrlDecoder().decode(parts[2]);
+            if (!MessageDigest.isEqual(expectedBytes, providedBytes)) {
                 return null;
             }
             return new long[]{billId, expiryEpoch};
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | IllegalArgumentException e) {
             return null;
         }
+    }
+
+    /**
+     * Returns the HMAC signing key from ApplicationPreference, generating and
+     * persisting a new 32-character random key if none exists yet.
+     * Use this in preference to inline get-or-generate logic to keep key
+     * management centralised.
+     *
+     * @param sessionController the caller's session controller
+     * @return the signing key; never null or empty
+     */
+    public String obtainHmacSigningKey(SessionController sessionController) {
+        String key = sessionController.getApplicationPreference().getEncrptionKey();
+        if (key == null || key.trim().isEmpty()) {
+            key = generateRandomKey(32);
+            sessionController.getApplicationPreference().setEncrptionKey(key);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        return key;
     }
 
     private String computeHmacSha256(String data, String key) {

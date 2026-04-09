@@ -277,13 +277,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String hmacKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if (hmacKey == null || hmacKey.trim().isEmpty()) {
-            hmacKey = securityController.generateRandomKey(32);
-            sessionController.getApplicationPreference().setEncrptionKey(hmacKey);
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-        String token = securityController.createBillToken(bill.getId(), c.getTime(), hmacKey);
+        String token = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
         String encodedToken;
         try {
             encodedToken = URLEncoder.encode(token, "UTF-8");
@@ -353,13 +347,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String hmacKey2 = sessionController.getApplicationPreference().getEncrptionKey();
-        if (hmacKey2 == null || hmacKey2.trim().isEmpty()) {
-            hmacKey2 = securityController.generateRandomKey(32);
-            sessionController.getApplicationPreference().setEncrptionKey(hmacKey2);
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), hmacKey2);
+        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
         String encodedToken2;
         try {
             encodedToken2 = URLEncoder.encode(token2, "UTF-8");
