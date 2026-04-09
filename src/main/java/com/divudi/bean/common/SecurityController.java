@@ -8,6 +8,13 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Date;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import org.jasypt.util.password.BasicPasswordEncryptor;
@@ -198,6 +205,76 @@ public class SecurityController implements Serializable {
         try {
             return en.decrypt(word);
         } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Creates a tamper-proof, self-expiring HMAC-SHA256 token for bill
+     * notification URLs. Replaces the legacy jasypt encrypt/decrypt pair that
+     * used a hardcoded key.
+     *
+     * Token format: "hmac.{billId}.{expiryEpochMs}.{base64url_signature}"
+     *
+     * @param billId   the bill database ID to embed
+     * @param expiry   when the link should stop working
+     * @param hmacKey  the signing key (from ApplicationPreference.encrptionKey)
+     * @return the URL-safe token string, or null if hmacKey is blank
+     */
+    public String createBillToken(long billId, Date expiry, String hmacKey) {
+        if (hmacKey == null || hmacKey.trim().isEmpty()) {
+            return null;
+        }
+        long expiryEpoch = expiry.getTime();
+        String payload = billId + "." + expiryEpoch;
+        String signature = computeHmacSha256(payload, hmacKey);
+        if (signature == null) {
+            return null;
+        }
+        return "hmac." + payload + "." + signature;
+    }
+
+    /**
+     * Verifies and decodes an HMAC bill token produced by
+     * {@link #createBillToken}.
+     *
+     * @param token    the raw token string (already URL-decoded)
+     * @param hmacKey  the signing key (from ApplicationPreference.encrptionKey)
+     * @return long[]{billId, expiryEpochMs} if the signature is valid, or null
+     *         if the token is missing, malformed, or tampered
+     */
+    public long[] decodeBillToken(String token, String hmacKey) {
+        if (token == null || hmacKey == null || hmacKey.trim().isEmpty()) {
+            return null;
+        }
+        if (!token.startsWith("hmac.")) {
+            return null;
+        }
+        String[] parts = token.substring(5).split("\\.", 3);
+        if (parts.length != 3) {
+            return null;
+        }
+        try {
+            long billId = Long.parseLong(parts[0]);
+            long expiryEpoch = Long.parseLong(parts[1]);
+            String expectedSig = computeHmacSha256(parts[0] + "." + parts[1], hmacKey);
+            if (expectedSig == null || !expectedSig.equals(parts[2])) {
+                return null;
+            }
+            return new long[]{billId, expiryEpoch};
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String computeHmacSha256(String data, String key) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKey);
+            byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(rawHmac);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             return null;
         }
     }

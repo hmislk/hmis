@@ -277,20 +277,20 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
+        String hmacKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (hmacKey == null || hmacKey.trim().isEmpty()) {
+            hmacKey = securityController.generateRandomKey(32);
+            sessionController.getApplicationPreference().setEncrptionKey(hmacKey);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
+        String token = securityController.createBillToken(bill.getId(), c.getTime(), hmacKey);
+        String encodedToken;
         try {
-            ed = URLEncoder.encode(ed, "UTF-8");
+            encodedToken = URLEncoder.encode(token, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken = token;
         }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -353,20 +353,20 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
+        String hmacKey2 = sessionController.getApplicationPreference().getEncrptionKey();
+        if (hmacKey2 == null || hmacKey2.trim().isEmpty()) {
+            hmacKey2 = securityController.generateRandomKey(32);
+            sessionController.getApplicationPreference().setEncrptionKey(hmacKey2);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
+        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), hmacKey2);
+        String encodedToken2;
         try {
-            ed = URLEncoder.encode(ed, "UTF-8");
+            encodedToken2 = URLEncoder.encode(token2, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken2 = token2;
         }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken2;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
