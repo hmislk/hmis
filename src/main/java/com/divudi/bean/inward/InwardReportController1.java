@@ -8,6 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -2938,10 +2939,8 @@ public class InwardReportController1 implements Serializable {
             sql += " and b.patientEncounter.paymentMethod=:pm ";
             hm.put("pm", paymentMethod);
         }
-        if (outstandingOnly) {
-            sql += " and (abs(b.netTotal) - abs(b.paidAmount)) > :minVal ";
-            hm.put("minVal", 0.01);
-        }
+        // Note: outstandingOnly filter is applied in Java after recalculating settled amounts
+        // dynamically, so it reflects the true outstanding balance including any cancellations.
 
         sql += " order by b.creditCompany.name, b.billDate ";
 
@@ -2949,15 +2948,41 @@ public class InwardReportController1 implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 
-        bills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> allBills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        // Recalculate settled amounts per CC commitment bill dynamically from BillItems.
+        // This includes both RECEIVED (positive netValue) and CANCELLATION (negative netValue)
+        // bill types, so cancellations are naturally subtracted without relying on the stored
+        // paidAmount/settledAmountBySponsor fields which may be stale after a cancellation.
+        List<BillTypeAtomic> settlementTypes =
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
 
         debtorBillTotal = 0;
         debtorPaidTotal = 0;
         debtorOutstandingTotal = 0;
-        for (Bill b : bills) {
+        bills = new ArrayList<>();
+
+        for (Bill b : allBills) {
+            String settledSql = "Select sum(bi.netValue) from BillItem bi "
+                    + " where bi.retired=false "
+                    + " and bi.referenceBill=:bill "
+                    + " and bi.bill.billTypeAtomic in :types";
+            HashMap<String, Object> settledParams = new HashMap<>();
+            settledParams.put("bill", b);
+            settledParams.put("types", settlementTypes);
+            double settled = BillItemFacade.findDoubleByJpql(settledSql, settledParams);
+            b.setPaidAmount(settled);
+            b.setSettledAmountBySponsor(settled);
+
+            double outstanding = b.getNetTotal() - settled;
+            if (outstandingOnly && outstanding <= 0.01) {
+                continue;
+            }
+
+            bills.add(b);
             debtorBillTotal += b.getNetTotal();
-            debtorPaidTotal += b.getPaidAmount();
-            debtorOutstandingTotal += (b.getNetTotal() - b.getPaidAmount());
+            debtorPaidTotal += settled;
+            debtorOutstandingTotal += outstanding;
         }
     }
 
