@@ -313,16 +313,17 @@ public class InwardChargeTypeBreakdownController implements Serializable {
 
     private void buildFromBillItems() {
         // --- Service / outside-charge BillItems ---
-        // Use OR so that:
-        //   InwardBill items  (item-based):  bi.item.inwardChargeType = :ct
-        //   InwardOutSideBill items (direct): bi.inwardChargeType = :ct
+        // LEFT JOIN bi.item so that InwardOutSideBill items (bi.item = null) are
+        // not dropped by implicit inner-join semantics when the OR clause navigates
+        // through i.inwardChargeType.
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
+                + " left join bi.item i"
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billType in :btps"
-                + " and (bi.inwardChargeType = :ct or bi.item.inwardChargeType = :ct)");
+                + " and (bi.inwardChargeType = :ct or i.inwardChargeType = :ct)");
 
         Map<String, Object> params = new HashMap<>();
         List<BillType> btps = new ArrayList<>();
@@ -338,9 +339,12 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         }
 
         // --- PatientItems (timed services) for the same charge type ---
+        // pi.billItem is null guards against double-counting if a PatientItem is
+        // ever linked back to a BillItem in the future.
         StringBuilder jpql2 = new StringBuilder(
                 "select pi from PatientItem pi join pi.patientEncounter enc"
                 + " where pi.retired = false"
+                + " and pi.billItem is null"
                 + " and type(pi.item) = TimedItem"
                 + " and pi.item.inwardChargeType = :ct");
         Map<String, Object> params2 = new HashMap<>();
