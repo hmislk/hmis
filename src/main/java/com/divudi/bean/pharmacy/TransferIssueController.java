@@ -558,6 +558,10 @@ public class TransferIssueController implements Serializable {
     }
 
     public void settleDirectIssue() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -727,6 +731,10 @@ public class TransferIssueController implements Serializable {
     }
 
     public void settle() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
