@@ -1524,7 +1524,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String emailToken = getSecurityController().createBillToken(currentPatientReport.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String emailToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         String encodedEmailToken;
         try {
             encodedEmailToken = URLEncoder.encode(emailToken, "UTF-8");
@@ -1616,7 +1616,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String cancelToken = getSecurityController().createBillToken(currentPatientReport.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String cancelToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         String encodedCancelToken;
         try {
             encodedCancelToken = URLEncoder.encode(cancelToken, "UTF-8");
@@ -1754,7 +1754,7 @@ public class PatientReportController implements Serializable {
     public String generateQrCodeLink(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String qrToken = getSecurityController().createBillToken(currentPatientReport.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String qrToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         String encodedQrToken;
         try {
             encodedQrToken = URLEncoder.encode(qrToken, "UTF-8");
@@ -1811,8 +1811,8 @@ public class PatientReportController implements Serializable {
 
                 // Construct the URL
                 String qrDetailsToken = "";
-                if (currentPatientReport != null) {
-                    String rawToken = getSecurityController().createBillToken(currentPatientReport.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+                if (r != null) {
+                    String rawToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
                     try {
                         qrDetailsToken = URLEncoder.encode(rawToken, "UTF-8");
                     } catch (UnsupportedEncodingException ex) {
