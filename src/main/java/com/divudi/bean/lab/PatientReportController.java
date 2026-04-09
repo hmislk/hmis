@@ -370,34 +370,54 @@ public class PatientReportController implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
-        if (encryptedExpiary != null) {
-            Date expiaryDate;
-            try {
-                String ed = encryptedExpiary;
-                ed = securityController.decrypt(ed);
-                if (ed == null) {
+        if (encryptedPatientReportId.startsWith("hmac.")) {
+            // New HMAC-SHA256 path — token embeds both report ID and expiry
+            String hmacKey = sessionController.getApplicationPreference().getEncrptionKey();
+            if (hmacKey == null || hmacKey.trim().isEmpty()) {
+                return;
+            }
+            long[] decoded = securityController.decodeBillToken(encryptedPatientReportId, hmacKey);
+            if (decoded == null) {
+                return;
+            }
+            if (new Date().getTime() > decoded[1]) {
+                return; // link expired
+            }
+            currentPatientReport = getFacade().find(decoded[0]);
+        } else {
+            // TODO: Remove this legacy block after 2026-07-09.
+            // Backward compatibility for links sent before HMAC migration (issue #19863).
+            // All link generators in this class now emit HMAC tokens, so no new legacy
+            // links are created. Old links had a 1-month TTL so none will be valid after
+            // that date.
+            if (encryptedExpiary != null) {
+                Date expiaryDate;
+                try {
+                    String ed = securityController.decrypt(encryptedExpiary);
+                    if (ed == null) {
+                        return;
+                    }
+                    expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
+                } catch (ParseException ex) {
                     return;
                 }
-                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
-            } catch (ParseException ex) {
+                if (expiaryDate.before(new Date())) {
+                    return;
+                }
+            }
+            String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+            Long id = 0L;
+            try {
+                id = Long.parseLong(idStr);
+            } catch (Exception e) {
                 return;
             }
-            if (expiaryDate.before(new Date())) {
+            PatientReport pr = getFacade().find(id);
+            if (pr == null) {
                 return;
             }
+            currentPatientReport = pr;
         }
-        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
-        Long id = 0l;
-        try {
-            id = Long.parseLong(idStr);
-        } catch (Exception e) {
-            return;
-        }
-        PatientReport pr = getFacade().find(id);
-        if (pr == null) {
-            return;
-        }
-        currentPatientReport = pr;
     }
 
     public void preparePatientReportByIdForRequestsWithoutExpiary() {
@@ -1504,21 +1524,14 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
+        String emailToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String encodedEmailToken;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
+            encodedEmailToken = URLEncoder.encode(emailToken, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
+            encodedEmailToken = emailToken;
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + encodedEmailToken;
         b += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -1603,21 +1616,14 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
+        String cancelToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String encodedCancelToken;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
+            encodedCancelToken = URLEncoder.encode(cancelToken, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
+            encodedCancelToken = cancelToken;
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + encodedCancelToken;
         b += "<p>"
                 + "The report before reversing approval is attached. The current report can be viewed at following link"
                 + "<br/>"
@@ -1748,37 +1754,20 @@ public class PatientReportController implements Serializable {
     public String generateQrCodeLink(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
+        String qrToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String encodedQrToken;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
+            encodedQrToken = URLEncoder.encode(qrToken, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
+            encodedQrToken = qrToken;
         }
-        String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
-        return url;
+        return CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + encodedQrToken;
     }
 
     public String generateQrCodeDetails(PatientReport r) {
         if (r != null) {
             Calendar c = Calendar.getInstance();
             c.add(Calendar.MONTH, 1);
-
-            // Ensure currentPatientReport is not null
-            if (currentPatientReport != null) {
-                String temId = currentPatientReport.getId() + "";
-                temId = getSecurityController().encrypt(temId);
-                try {
-                    temId = URLEncoder.encode(temId, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    // Handle the exception
-                }
-            }
 
             // Ensure all chained method calls do not result in null
             if (r.getPatientInvestigation() != null
@@ -1821,26 +1810,16 @@ public class PatientReportController implements Serializable {
                 }
 
                 // Construct the URL
-                String temId = ""; // Initialize temId
-                if (currentPatientReport != null) {
-                    temId = currentPatientReport.getId() + "";
-                    temId = getSecurityController().encrypt(temId);
+                String qrDetailsToken = "";
+                if (r != null) {
+                    String rawToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
                     try {
-                        temId = URLEncoder.encode(temId, "UTF-8");
+                        qrDetailsToken = URLEncoder.encode(rawToken, "UTF-8");
                     } catch (UnsupportedEncodingException ex) {
-                        // Handle the exception
+                        qrDetailsToken = rawToken;
                     }
                 }
-
-                String ed = CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-                ed = getSecurityController().encrypt(ed);
-                try {
-                    ed = URLEncoder.encode(ed, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    // Handle the exception
-                }
-
-                String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+                String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?id=" + qrDetailsToken;
 
                 // Create the QR code contents using the variables and URL
                 String qrCodeContents = "Patient Name: " + patientName + "\n"
