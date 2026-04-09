@@ -73,6 +73,27 @@
                                             class="ui-button-success"
                                             ajax="false" />
                                         <p:commandButton
+                                            value="BHT Deposit and Credit Settlement Detail"
+                                            icon="fa fa-fw fa-list-alt"
+                                            action="inward_report_bht_payment_detail?faces-redirect=true"
+                                            actionListener="#{bhtPaymentDetailReportController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
+                                            value="BHT Deposit Summary"
+                                            icon="fa fa-fw fa-coins"
+                                            action="inward_report_bht_deposit_summary?faces-redirect=true"
+                                            actionListener="#{bhtDepositSummaryReportController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
+                                            value="BHT Deposit Detail"
+                                            icon="fa fa-fw fa-receipt"
+                                            action="inward_report_bht_deposit_detail?faces-redirect=true"
+                                            actionListener="#{bhtDepositDetailReportController.makeNull()}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton
                                             value="Inpatient Invoice Journal"
                                             icon="fa fa-fw fa-book"
                                             action="inward_report_invoice_journal?faces-redirect=true"
