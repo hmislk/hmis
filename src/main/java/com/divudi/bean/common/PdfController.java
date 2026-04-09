@@ -3490,19 +3490,19 @@ public class PdfController {
                     table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
                 }
             } else if (includeBTA && includeDiscount){
-                for (int i = 0; i < 13; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } else if (includeBTA){
-                for (int i = 0; i < 11; i++) {
-                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
-                }
-            } else if (includeDiscount){
                 for (int i = 0; i < 12; i++) {
                     table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
                 }
-            } else {
+            } else if (includeBTA){
                 for (int i = 0; i < 10; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            } else if (includeDiscount){
+                for (int i = 0; i < 11; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            } else {
+                for (int i = 0; i < 9; i++) {
                     table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
                 }
             } 
