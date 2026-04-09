@@ -23481,7 +23481,7 @@ public class SearchController implements Serializable {
             return;
         }
         if (!(document instanceof XSSFWorkbook)) {
-            logger.error("postProcessChannelIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            logger.error("postProcessChannelIncomeReportExcel:Expected document to be an instance of XSSFWorkbook, but got: {}", document.getClass().getName());
             return;
         }
         XSSFWorkbook workbook = (XSSFWorkbook) document;
@@ -23534,7 +23534,7 @@ public class SearchController implements Serializable {
     private String getChannelIncomeBookingTypeAsString() {
         String bt = "";
 
-        if (bookingType == null || !bookingType.isEmpty()) {
+        if (bookingType == null || bookingType.isEmpty()) {
             bt = "All Bills";
             return bt;
         }

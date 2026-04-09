@@ -3537,7 +3537,11 @@ public class PdfController {
             }
         } 
 
-        table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        if (includeBTA) {
+            table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        } else {
+            table.addCell(new Cell(1, 7).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
         table.addCell(new Cell().add(new Paragraph(bundle.getHospitalTotal() != null ? String.format("%,.2f", bundle.getHospitalTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         table.addCell(new Cell().add(new Paragraph(bundle.getStaffTotal() != null ? String.format("%,.2f", bundle.getStaffTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
         table.addCell(new Cell().add(new Paragraph(bundle.getGrossTotal() != null ? String.format("%,.2f", bundle.getGrossTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
