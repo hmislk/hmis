@@ -23477,7 +23477,7 @@ public class SearchController implements Serializable {
     // PostProcessor for channel_income excel export
     public void postProcessChannelIncomeReportExcel(Object document) {
         if (document == null) {
-            logger.error("postProcessChannelIncomeReportExcel: Document is null in postProcessBillWiseItemMovementReportExcel");
+            logger.error("postProcessChannelIncomeReportExcel: Document is null in postProcessChannelIncomeReportExcel");
             return;
         }
         if (!(document instanceof XSSFWorkbook)) {
