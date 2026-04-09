@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
         <h:form >
-            <p:growl/>
+            <p:growl id="growlMsg"/>
             <p:focus id="selectFocus" context="gpSelect"/>
             <p:focus id="detailFocus" context="gpDetail"/>
             <p:panel header="Manage Investigations">
@@ -84,7 +84,7 @@
                                         <p:commandButton id="btnSave" 
                                                          value="Save"
                                                          process="gpDetail" 
-                                                         update="lstSelect selectFocus" 
+                                                         update="growlMsg lstSelect selectFocus gpDetail" 
                                                          action="#{investigationController.saveSelected()}" >
                                         </p:commandButton>
                                     </div>
