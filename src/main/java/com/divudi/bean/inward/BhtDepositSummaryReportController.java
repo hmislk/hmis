@@ -74,6 +74,9 @@ public class BhtDepositSummaryReportController implements Serializable {
             row.setAdmissionType(enc.getAdmissionType());
 
             List<Payment> deposits = fetchDepositPayments(enc);
+            if (deposits == null || deposits.isEmpty()) {
+                continue;
+            }
             for (Payment p : deposits) {
                 row.addDeposit(p.getPaymentMethod(), Math.abs(p.getPaidValue()));
             }

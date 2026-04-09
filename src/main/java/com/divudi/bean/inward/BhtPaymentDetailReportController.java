@@ -138,7 +138,9 @@ public class BhtPaymentDetailReportController implements Serializable {
                 "select distinct c from PatientEncounter c where c.retired = false");
 
         if (fromDate != null && toDate != null) {
-            if ("admissionDate".equals(dateBasis)) {
+            boolean useAdmissionDate = "admissionDate".equals(dateBasis)
+                    || admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+            if (useAdmissionDate) {
                 jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
             } else {
                 jpql.append(" and c.dateOfDischarge between :fromDate and :toDate");
