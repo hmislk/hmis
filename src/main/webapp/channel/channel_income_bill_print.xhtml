@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
                 <h:form>
                     <p:panel header="Channel Income Report Print View" styleClass="w-100">
                         <f:facet name="header">
@@ -39,83 +39,15 @@
                         </f:facet>
 
                         <style>
-
-                            @media screen {
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm !important;
-                                    zoom: 2.0;
-                                }
-
-                                table {
-                                    border-collapse: collapse;
-                                    width: 100%;
-                                    font-size: 12px !important;
-                                    margin-top: 1mm !important;
-                                }
-
-                                th, td {
-                                    border: 1px solid #000;
-                                    padding: 2px !important;
-                                    margin: 2px !important;
-                                    text-align: left;
-                                    margin-left: 10mm !important;
-                                }
-
-                                .header {
-                                    font-size: 16px !important;
-                                }
-
-                                tfoot {
-                                    font-weight: 700 !important;
-                                    font-size: 11px !important;
-                                }
-                            }
-
-                            @media print {
-                                @page {
-                                    @bottom-right {
-                                        content: "Page " counter(page) " of " counter(pages);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 10pt;
-                                    }
-                                    size: A4 landscape !important;
-                                }
-
-                                body {
-                                    counter-reset: page;
-                                }
-
-                                .paper {
-                                    position: static !important;
-                                    width: 297mm !important;
-                                }
-
-                                .header {
-                                    line-height: 1.1;
-                                    margin: 0mm !important;
-                                    font-size: 13px !important;
-                                }
-
-                                table {
-                                    border-collapse: collapse;
-                                    width: 99.9%;
-                                    font-size: 10px !important;
-                                    margin-top: 1mm !important;
-                                }
-
-                                th, td {
-                                    border: 1px solid #000;
-                                    padding: 1px !important;
-                                    margin: 1px !important;
-                                    text-align: left;
-                                    margin-left: 10mm !important;
-                                }
-
-                                tfoot {
-                                    font-weight: 700 !important;
-                                    font-size: 11px !important;
-                                }
+                            @media screen, print {
+                                .table .col-serial { width: 2%; }
+                                .table .col-datetime { width: 4%; }
+                                .table .col-billno { width: 7%; }
+                                .table .col-billtype { width: 8%; }
+                                .table .col-patient { width: 8%; }
+                                .table .col-cashier { width: 4%; }
+                                .table .col-fee { width: 4%; }
+                                .table .col-total { width: 4%; }
                             }
                         </style>
 
@@ -147,60 +79,60 @@
                                 </div>
 
                                 <div>
-                                    <table style="width: 100%; border-collapse: collapse;">
+                                    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 7pt!important;" class="table">
                                         <thead>
                                             <tr>
-                                                <th style="text-align: center;">Serial</th>
-                                                <th style="text-align: center;">Date / Time</th>
-                                                <th style="text-align: center;">Bill No</th>
-                                                <th style="text-align: center;">Bill Type</th>
-                                                <th style="text-align: center;">Patient</th>
-                                                <th style="text-align: center;">Cashier</th>
-                                                <th style="text-align: center;">Hospital Fee</th>
-                                                <th style="text-align: center;">Staff Fee</th>
-                                                <th style="text-align: center;">Gross Total</th>
+                                                <th style="text-align: center;" class="col-serial">Serial</th>
+                                                <th style="text-align: center;" class="col-datetime">Date / Time</th>
+                                                <th style="text-align: center;" class="col-billno">Bill No</th>
+                                                <th style="text-align: center;" class="col-billtype">Bill Type</th>
+                                                <th style="text-align: center;" class="col-patient">Patient</th>
+                                                <th style="text-align: center;" class="col-cashier">Cashier</th>
+                                                <th style="text-align: center;" class="col-fee">Hospital Fee</th>
+                                                <th style="text-align: center;" class="col-fee">Staff Fee</th>
+                                                <th style="text-align: center;" class="col-total">Gross Total</th>
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
-                                                    <th style="text-align: center;">Discount</th>
-                                                    <th style="text-align: center;">Net Total</th>
+                                                    <th style="text-align: center;" class="col-total">Discount</th>
+                                                    <th style="text-align: center;" class="col-total">Net Total</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
-                                                    <th style="text-align: center;">Cash</th>
+                                                    <th style="text-align: center;" class="col-fee">Cash</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
-                                                    <th style="text-align: center;">Card</th>
+                                                    <th style="text-align: center;" class="col-fee">Card</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
-                                                    <th style="text-align: center;">Credit</th>
+                                                    <th style="text-align: center;" class="col-fee">Credit</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
-                                                    <th style="text-align: center;">Staff Welfare</th>
+                                                    <th style="text-align: center;" class="col-fee">Staff Welfare</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
-                                                    <th style="text-align: center;">Voucher</th>
+                                                    <th style="text-align: center;" class="col-fee">Voucher</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
-                                                    <th style="text-align: center;">IOU</th>
+                                                    <th style="text-align: center;" class="col-fee">IOU</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
-                                                    <th style="text-align: center;">Agent</th>
+                                                    <th style="text-align: center;" class="col-fee">Agent</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
-                                                    <th style="text-align: center;">Cheque</th>
+                                                    <th style="text-align: center;" class="col-fee">Cheque</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
-                                                    <th style="text-align: center;">Slip</th>
+                                                    <th style="text-align: center;" class="col-fee">Slip</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
-                                                    <th style="text-align: center;">eWallet</th>
+                                                    <th style="text-align: center;" class="col-fee">eWallet</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
-                                                    <th style="text-align: center;">Patient Deposit</th>
+                                                    <th style="text-align: center;" class="col-fee">Patient Deposit</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
-                                                    <th style="text-align: center;">Patient Points</th>
+                                                    <th style="text-align: center;" class="col-fee">Patient Points</th>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
-                                                    <th style="text-align: center;">Online Settlement</th>
+                                                    <th style="text-align: center;" class="col-fee">Online Settlement</th>
                                                 </h:panelGroup>
 
                                             </tr>
