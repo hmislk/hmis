@@ -193,6 +193,7 @@ public class BhtPaymentDetailReportController implements Serializable {
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " where p.retired = false"
+                + " and p.cancelled = false"
                 + " and p.bill.retired = false"
                 + " and p.bill.cancelled = false"
                 + " and p.bill.billTypeAtomic = :bta"
