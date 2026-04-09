@@ -1518,10 +1518,18 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             System.out.println("=== convertStockDtoToEntity END - Total time: " + totalTime + "ms ===");
             return result;
         } catch (Exception e) {
-            long endTime = System.currentTimeMillis();
-            System.out.println("convertStockDtoToEntity: Exception occurred - " + e.getMessage());
-            System.out.println("=== convertStockDtoToEntity END (EXCEPTION) - Total time: " + (endTime - startTime) + "ms ===");
-            return null;
+            logger.log(Level.WARNING,
+                    "convertStockDtoToEntity: getReference failed for Stock ID {0}, retrying with find(). Error: {1}",
+                    new Object[]{stockDto.getId(), e.getMessage()});
+            try {
+                Stock result = stockFacade.find(stockDto.getId());
+                return result;
+            } catch (Exception e2) {
+                logger.log(Level.SEVERE,
+                        "convertStockDtoToEntity: find() also failed for Stock ID {0}. Error: {1}",
+                        new Object[]{stockDto.getId(), e2.getMessage()});
+                return null;
+            }
         }
     }
 
@@ -2290,15 +2298,16 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
         // Convert StockDTO to Stock entity if not already set
         long beforeStockConvert = System.currentTimeMillis();
         if (billItem.getPharmaceuticalBillItem().getStock() == null) {
-            System.out.println("calculateBillItem: Converting stockDto to entity...");
             Stock stockEntity = convertStockDtoToEntity(stockDto);
             if (stockEntity != null) {
                 getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
+            } else {
+                JsfUtil.addErrorMessage("Unable to load stock information. The server may be busy — please try again.");
+                logger.log(Level.WARNING,
+                        "calculateBillItem: convertStockDtoToEntity returned null for StockDTO ID {0}",
+                        stockDto.getId());
+                return;
             }
-            long afterStockConvert = System.currentTimeMillis();
-            System.out.println("calculateBillItem: Stock conversion took " + (afterStockConvert - beforeStockConvert) + "ms");
-        } else {
-            System.out.println("calculateBillItem: Stock already set, skipping conversion");
         }
 
         if (getQty() == null) {
@@ -2641,10 +2650,22 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
         // Convert StockDTO to Stock entity for persistence
         Stock stockEntity = convertStockDtoToEntity(stockDto);
-        if (stockEntity != null) {
-            billItem.getPharmaceuticalBillItem().setStock(stockEntity);
-            billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
-            billItem.setItem(stockEntity.getItemBatch().getItem());
+        if (stockEntity == null) {
+            errorMessage = "Unable to process stock. Please try again.";
+            JsfUtil.addErrorMessage("Unable to process stock information. The server may be busy — please try again.");
+            logger.log(Level.SEVERE,
+                    "addBillItemSingleItem: convertStockDtoToEntity returned null for StockDTO ID {0}. Item not added to bill.",
+                    stockDto.getId());
+            return 0.0;
+        }
+        billItem.getPharmaceuticalBillItem().setStock(stockEntity);
+        // Use DTO-based references to avoid triggering Stock proxy resolution,
+        // which can throw EclipseLink ConcurrencyException under concurrent load
+        if (stockDto.getItemBatchId() != null) {
+            billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchFacade.getReference(stockDto.getItemBatchId()));
+        }
+        if (stockDto.getItemId() != null) {
+            billItem.setItem(itemFacade.getReference(stockDto.getItemId()));
         }
 
         calculateBillItem();
