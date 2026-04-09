@@ -2992,8 +2992,7 @@ public class InwardReportController1 implements Serializable {
         String sql = "Select b from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
-                + " and b.bill.cancelled=false "
-                + " and b.bill.billTypeAtomic=:bta "
+                + " and b.bill.billTypeAtomic in :btas "
                 + " and " + dateField + " between :frm and :to ";
 
         if (institution != null) {
@@ -3023,7 +3022,10 @@ public class InwardReportController1 implements Serializable {
 
         sql += " order by b.referenceBill.creditCompany.name, b.bill.createdAt ";
 
-        hm.put("bta", BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        hm.put("btas", btas);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 
@@ -3033,12 +3035,12 @@ public class InwardReportController1 implements Serializable {
 
     public Double totalInwardCreditCompanyPayments() {
         HashMap hm = new HashMap();
+        String dateField = resolveDateField(dateBasis, "b.bill.createdAt", "b.patientEncounter");
         String sql = "Select sum(b.netValue) from BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.retired=false "
-                + " and b.bill.cancelled=false "
-                + " and b.bill.billTypeAtomic=:bta "
-                + " and b.bill.createdAt between :frm and :to ";
+                + " and b.bill.billTypeAtomic in :btas "
+                + " and " + dateField + " between :frm and :to ";
 
         if (institution != null) {
             sql += " and b.referenceBill.creditCompany=:cc ";
@@ -3065,7 +3067,10 @@ public class InwardReportController1 implements Serializable {
             hm.put("pm", paymentMethod);
         }
 
-        hm.put("bta", BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        hm.put("btas", btas);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 

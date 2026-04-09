@@ -143,6 +143,51 @@ for (Bill b : allBills) {
 
 ---
 
+## Payment Transaction Report Pattern (Issue #19770)
+
+### Problem
+
+`InwardReportController1.inwardCreditCompanyPayments()` fetched bill items using
+`b.bill.billTypeAtomic = INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED` and `b.bill.cancelled = false`.
+This caused cancelled payments to remain visible in the report because relying on the `cancelled` flag
+alone is fragile (see billing cancellation query pattern in memory).
+
+Additionally, `totalInwardCreditCompanyPayments()` hardcoded `b.bill.createdAt` for the date range
+regardless of the `dateBasis` selected by the user (`createdAt`, `dischargeDate`, `admissionDate`),
+making the total inconsistent with the list when a non-default date basis was used.
+
+### Fix
+
+Both methods now:
+1. Query `b.bill.billTypeAtomic in :btas` with both `INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED`
+   and `INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION`
+2. Drop the `b.bill.cancelled = false` filter
+3. Use `resolveDateField(dateBasis, ...)` for the date range in both the list and the total
+
+Cancellation bill items carry **negative** `netValue` (set by `invertValue()` in `cancelBillItems()`),
+so they naturally offset the matching received items in any SUM. The list shows both rows —
+the positive payment and the negative cancellation — which preserves the full audit trail.
+
+### Cross-Period Cancellation Behaviour
+
+This is expected and correct: if a payment is billed on day N and cancelled on day N+1, the
+day-N report shows a positive row and the day-(N+1) report shows a negative row. The total for
+each period is accurate as a ledger. Running totals over the full date range always net to zero
+for fully cancelled transactions.
+
+```java
+// Pattern used in inwardCreditCompanyPayments() and totalInwardCreditCompanyPayments()
+List<BillTypeAtomic> btas = new ArrayList<>();
+btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+hm.put("btas", btas);
+
+String dateField = resolveDateField(dateBasis, "b.bill.createdAt", "b.patientEncounter");
+// use dateField for both list and total queries — never hardcode b.bill.createdAt
+```
+
+---
+
 ## Related Files
 
 | File | Role |
@@ -152,14 +197,16 @@ for (Bill b : allBills) {
 | `bean/common/CreditCompanyBillSearch.java` | Cancellation logic |
 | `bean/common/BillBeanController.java` | `updateInwardDipositList()` — updates main final bill |
 | `ejb/CreditBean.java` | `getSettledAmountByCompany()` — authoritative settlement calculation |
-| `bean/inward/InwardReportController1.java` | Debtor report controller |
+| `bean/inward/InwardReportController1.java` | Payment + debtor report controller |
 | `webapp/credit/credit_compnay_bill_payment_inward.xhtml` | Path 1 settlement UI |
 | `webapp/credit/credit_compnay_bill_inward_all.xhtml` | Path 2 settlement UI |
 | `webapp/credit/inward_credit_company_debtor_report.xhtml` | Debtor report UI |
+| `webapp/credit/inward_credit_company_payment_report.xhtml` | Payment transaction report UI |
 
 ---
 
 ## Related Issues
 
+- **#19770** — Payment report not reflecting cancelled CC payments → RECEIVED+CANCELLATION types, drop `cancelled=false`, align total date field with dateBasis
 - **#19771** — Debtor report not reflecting cancelled CC payments → report fix + Path 2 `referenceBill` fix
 - **#19772** — BHT credit settlement report not reflecting cancelled CC payments → signed netValue fix in `BhtPaymentSummaryReportController`
