@@ -2,15 +2,19 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.InwardChargeTypeDetailRowDto;
 import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientItem;
+import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import java.io.Serializable;
@@ -47,6 +51,8 @@ public class InwardChargeTypeDetailController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PatientItemFacade patientItemFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
 
@@ -110,11 +116,14 @@ public class InwardChargeTypeDetailController implements Serializable {
 
         List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
 
-        // --- BillItems from InwardFinalBill bills ---
+        // --- BillItems (InwardBill, InwardOutSideBill, pharmacy, store) ---
         rows.addAll(fetchBillItemRows());
 
-        // --- PatientItems (TimedItems) ---
+        // --- PatientItems (TimedItems — timed services only) ---
         rows.addAll(fetchTimedItemRows());
+
+        // --- BillFee rows (InwardProfessional — ProfessionalCharge, DoctorAndNurses) ---
+        rows.addAll(fetchProfessionalFeeRows());
 
         // --- Sort: BHT No (natural string sort), then sortTime ascending ---
         rows.sort(Comparator
@@ -168,6 +177,12 @@ public class InwardChargeTypeDetailController implements Serializable {
                     params.put("dis", true);
                     params.put("pf",  true);
                     break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append(" and ").append(encAlias).append(".discharged = :dis");
+                    jpql.append(" and ").append(encAlias).append(".paymentFinalized = :pf");
+                    params.put("dis", true);
+                    params.put("pf",  false);
+                    break;
                 default:
                     break;
             }
@@ -195,11 +210,87 @@ public class InwardChargeTypeDetailController implements Serializable {
     }
 
     /**
-     * Fetches BillItems for InwardFinalBill bills whose PatientEncounter matches
-     * the current filter criteria, without materialising the encounter list first.
+     * Dispatches to the correct BillItem fetch method based on the
+     * CalculationMethod of the selected charge type.
+     *
+     * BILL_FEE and PATIENT_ROOM charge types are handled by their own dedicated
+     * fetch methods (fetchProfessionalFeeRows and fetchTimedItemRows respectively)
+     * so this method returns an empty list for those cases.
      */
     private List<InwardChargeTypeDetailRowDto> fetchBillItemRows() {
+        CalculationMethod cm = selectedChargeType.getCalculationMethod();
+        switch (cm) {
+            case BILL_FEE:
+            case PATIENT_ROOM:
+                return new ArrayList<>();
+            case PHARMACY_BILL:
+                return fetchPharmacyBillItemRows();
+            case STORE_BILL:
+                return fetchStoreBillItemRows();
+            default: // BILL_ITEM and ADMISSION_FEE
+                return fetchInwardBillItemRows();
+        }
+    }
 
+    /**
+     * Fetches BillItems from InwardBill and InwardOutSideBill for BILL_ITEM /
+     * ADMISSION_FEE charge types.
+     *
+     * Uses an explicit LEFT JOIN on bi.item so that InwardOutSideBill items
+     * (where bi.item is null) are not dropped by implicit inner-join semantics
+     * when the OR predicate navigates through i.inwardChargeType.
+     */
+    private List<InwardChargeTypeDetailRowDto> fetchInwardBillItemRows() {
+        StringBuilder jpql = new StringBuilder(
+                "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
+                + " left join bi.item i"
+                + " where bi.retired = false"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billType in :btps"
+                + " and (bi.inwardChargeType = :ct or i.inwardChargeType = :ct)");
+        Map<String, Object> params = new HashMap<>();
+        List<BillType> btps = new ArrayList<>();
+        btps.add(BillType.InwardBill);
+        btps.add(BillType.InwardOutSideBill);
+        params.put("btps", btps);
+        params.put("ct", selectedChargeType);
+        appendEncounterFilters(jpql, params, "enc");
+        return mapBillItemsToRows(billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP));
+    }
+
+    /**
+     * Fetches BillItems from inward pharmacy bills for PHARMACY_BILL charge types.
+     */
+    private List<InwardChargeTypeDetailRowDto> fetchPharmacyBillItemRows() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+
+        StringBuilder jpql = new StringBuilder(
+                "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
+                + " where bi.retired = false"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic in :btas"
+                + " and bi.inwardChargeType = :ct");
+        Map<String, Object> params = new HashMap<>();
+        params.put("btas", btas);
+        params.put("ct", selectedChargeType);
+        appendEncounterFilters(jpql, params, "enc");
+        return mapBillItemsToRows(billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP));
+    }
+
+    /**
+     * Fetches BillItems from inward store bills for STORE_BILL charge types.
+     */
+    private List<InwardChargeTypeDetailRowDto> fetchStoreBillItemRows() {
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
@@ -207,22 +298,23 @@ public class InwardChargeTypeDetailController implements Serializable {
                 + " and b.cancelled = false"
                 + " and b.billType = :btp"
                 + " and bi.inwardChargeType = :ct");
-
         Map<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.InwardFinalBill);
-        params.put("ct",  selectedChargeType);
+        params.put("btp", BillType.StoreBhtPre);
+        params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");
+        return mapBillItemsToRows(billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP));
+    }
 
-        List<BillItem> raw = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
+    /**
+     * Maps a list of BillItem entities to detail row DTOs.
+     */
+    private List<InwardChargeTypeDetailRowDto> mapBillItemsToRows(List<BillItem> raw) {
         List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
         if (raw == null) {
             return rows;
         }
-
         for (BillItem bi : raw) {
             InwardChargeTypeDetailRowDto row = new InwardChargeTypeDetailRowDto();
-
             PatientEncounter enc = bi.getBill() != null ? bi.getBill().getPatientEncounter() : null;
             if (enc != null) {
                 row.setBhtNo(enc.getBhtNo());
@@ -231,7 +323,6 @@ public class InwardChargeTypeDetailController implements Serializable {
                 row.setDateOfAdmission(enc.getDateOfAdmission());
                 row.setDateOfDischarge(enc.getDateOfDischarge());
             }
-
             if (bi.getItem() != null) {
                 row.setItemName(bi.getItem().getName());
             } else if (bi.getInwardChargeType() != null) {
@@ -240,7 +331,6 @@ public class InwardChargeTypeDetailController implements Serializable {
             row.setGrossValue(bi.getGrossValue());
             row.setDiscount(bi.getDiscount());
             row.setNetValue(bi.getNetValue());
-
             // fromTime/toTime left null for regular bill items
             // sortTime = billItem.billTime, falling back to bill.billTime
             Date sortTime = bi.getBillTime();
@@ -248,7 +338,58 @@ public class InwardChargeTypeDetailController implements Serializable {
                 sortTime = bi.getBill().getBillTime();
             }
             row.setSortTime(sortTime);
+            rows.add(row);
+        }
+        return rows;
+    }
 
+    /**
+     * Fetches BillFee rows from InwardProfessional bills for BILL_FEE charge
+     * types (ProfessionalCharge, DoctorAndNurses). Returns empty list for all
+     * other charge types.
+     */
+    private List<InwardChargeTypeDetailRowDto> fetchProfessionalFeeRows() {
+        if (selectedChargeType.getCalculationMethod() != CalculationMethod.BILL_FEE) {
+            return new ArrayList<>();
+        }
+        StringBuilder jpql = new StringBuilder(
+                "select bf from BillFee bf join bf.bill b join b.patientEncounter enc"
+                + " where bf.retired = false"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billType = :btp");
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardProfessional);
+        appendEncounterFilters(jpql, params, "enc");
+
+        List<BillFee> raw = billFeeFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        List<InwardChargeTypeDetailRowDto> rows = new ArrayList<>();
+        if (raw == null) {
+            return rows;
+        }
+        for (BillFee bf : raw) {
+            InwardChargeTypeDetailRowDto row = new InwardChargeTypeDetailRowDto();
+            PatientEncounter enc = bf.getBill() != null ? bf.getBill().getPatientEncounter() : null;
+            if (enc != null) {
+                row.setBhtNo(enc.getBhtNo());
+                row.setPatientName(enc.getPatient() != null && enc.getPatient().getPerson() != null
+                        ? enc.getPatient().getPerson().getNameWithTitle() : "");
+                row.setDateOfAdmission(enc.getDateOfAdmission());
+                row.setDateOfDischarge(enc.getDateOfDischarge());
+            }
+            String feeName = "";
+            if (bf.getFee() != null && bf.getFee().getName() != null) {
+                feeName = bf.getFee().getName();
+            } else if (bf.getStaff() != null && bf.getStaff().getPerson() != null) {
+                feeName = bf.getStaff().getPerson().getNameWithTitle();
+            }
+            row.setItemName(feeName);
+            double gross = bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
+            double disc  = bf.getFeeDiscount();
+            row.setGrossValue(gross);
+            row.setDiscount(disc);
+            row.setNetValue(gross - disc);
+            row.setSortTime(bf.getFeeAt());
             rows.add(row);
         }
         return rows;
