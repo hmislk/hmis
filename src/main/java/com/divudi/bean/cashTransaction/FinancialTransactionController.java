@@ -10,6 +10,7 @@ import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
@@ -132,6 +133,8 @@ public class FinancialTransactionController implements Serializable {
     AuditEventController auditEventController;
     @Inject
     private NotificationController notificationController;
+    @Inject
+    private WebUserController webUserController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -293,6 +296,12 @@ public class FinancialTransactionController implements Serializable {
     private Date myFloatRequestsFromDate;
     private Date myFloatRequestsToDate;
     boolean floatRequestStarted = false;
+    // Cache for accepted-status per request bill ID — keyed by bill ID, populated in fillMyFundTransferRequests()
+    private Map<Long, Boolean> floatRequestAcceptedCache = new HashMap<>();
+
+    // Float Transfer Report Properties
+    private List<Bill> fundTransferReportBills;
+    private List<Bill> fundTransferRequestReportBills;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -2486,6 +2495,78 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getMyFloatRequestsFromDate());
         params.put("td", getMyFloatRequestsToDate());
         myFundTransferRequestsOut = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        // Pre-compute accepted status once per load — avoids N×2 JPQL queries in the XHTML
+        floatRequestAcceptedCache = new HashMap<>();
+        if (myFundTransferRequestsOut != null) {
+            for (Bill req : myFundTransferRequestsOut) {
+                if (req.getForwardReferenceBill() != null && !req.isCancelled()) {
+                    floatRequestAcceptedCache.put(req.getId(), isFloatRequestAccepted(req));
+                }
+            }
+        }
+    }
+
+    public double getFulfilledAmountForRequest(Bill request) {
+        if (request == null || request.getId() == null) {
+            return 0.0;
+        }
+        String jpql = "select coalesce(sum(t.netTotal), 0.0) from Bill t "
+                + "where t.backwardReferenceBill = :req "
+                + "and t.billTypeAtomic = :btype "
+                + "and (t.cancelled = false or t.cancelled is null) "
+                + "and t.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("req", request);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        Double sum = billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return sum != null ? Math.abs(sum) : 0.0;
+    }
+
+    public double getRemainingAmountForRequest(Bill request) {
+        if (request == null) {
+            return 0.0;
+        }
+        return Math.max(0.0, request.getNetTotal() - getFulfilledAmountForRequest(request));
+    }
+
+    /**
+     * Returns true only when the requester has physically accepted the float
+     * transfer by checking that a FUND_TRANSFER_RECEIVED_BILL exists whose
+     * referenceBill is exactly the forwardReferenceBill of the request (i.e.
+     * the terminal issued transfer has been received). This avoids false
+     * positives from intermediate partial received bills in multi-transfer
+     * scenarios.
+     * A forwardReferenceBill on the request means B has *issued* the transfer;
+     * it does NOT mean A has *accepted* it.
+     */
+    public boolean isFloatRequestAccepted(Bill request) {
+        if (request == null || request.getId() == null || request.getForwardReferenceBill() == null) {
+            return false;
+        }
+        String jpql = "select count(r) from Bill r "
+                + "where r.referenceBill = :issuedBill "
+                + "and r.billTypeAtomic = :btype "
+                + "and (r.cancelled = false or r.cancelled is null) "
+                + "and r.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("issuedBill", request.getForwardReferenceBill());
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+        Long count = billFacade.findLongByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Returns the precomputed accepted status for a request bill from the cache
+     * populated during fillMyFundTransferRequests(). Falls back to a live query
+     * if the cache does not contain the entry (e.g. when called from outside
+     * the My Float Requests page).
+     */
+    public boolean isFloatRequestAcceptedCached(Bill request) {
+        if (request == null || request.getId() == null) {
+            return false;
+        }
+        Boolean cached = floatRequestAcceptedCache.get(request.getId());
+        return cached != null ? cached : isFloatRequestAccepted(request);
     }
 
     private void prepareToAddNewFundDepositBill() {
@@ -2925,6 +3006,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleFundTransferBill() {
+        if (!webUserController.hasPrivilege("IssueFundTransfer")) {
+            JsfUtil.addErrorMessage("You do not have the required privilege to issue a float transfer.");
+            return "";
+        }
         if (floatTransferStarted) {
             JsfUtil.addErrorMessage("Already Started");
             return "";
@@ -3049,7 +3134,7 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
-        // If this transfer was initiated from a float transfer request, mark the request as fulfilled
+        // If this transfer was initiated from a float transfer request, handle partial/full fulfillment
         if (selectedFundTransferRequest != null) {
             Bill freshRequest = billFacade.find(selectedFundTransferRequest.getId());
             if (freshRequest == null
@@ -3061,8 +3146,23 @@ public class FinancialTransactionController implements Serializable {
                 JsfUtil.addErrorMessage("Float transfer request is no longer valid");
                 return "";
             }
-            freshRequest.setForwardReferenceBill(currentBill);
-            billController.save(freshRequest);
+            double alreadyFulfilled = getFulfilledAmountForRequest(freshRequest);
+            double remaining = Math.max(0.0, freshRequest.getNetTotal() - alreadyFulfilled);
+            double thisTransferAmount = Math.abs(billTotal);
+            if (thisTransferAmount > remaining + 0.001) {
+                floatTransferStarted = false;
+                JsfUtil.addErrorMessage("Transfer amount (" + thisTransferAmount + ") exceeds remaining balance (" + remaining + ")");
+                return "";
+            }
+            // Link this transfer back to its originating request
+            currentBill.setBackwardReferenceBill(freshRequest);
+            billController.save(currentBill);
+            // Mark request as fully fulfilled only when total issued covers the requested amount
+            double newTotalFulfilled = alreadyFulfilled + thisTransferAmount;
+            if (newTotalFulfilled >= freshRequest.getNetTotal() - 0.001) {
+                freshRequest.setForwardReferenceBill(currentBill);
+                billController.save(freshRequest);
+            }
         }
         floatTransferStarted = false;
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
@@ -3138,6 +3238,18 @@ public class FinancialTransactionController implements Serializable {
         // Guard: incoming pending floats — block until this user accepts or declines
         if (hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
             JsfUtil.addErrorMessage("You have incoming float transfers awaiting your response. Please accept or decline them before closing your shift.");
+            return null;
+        }
+
+        // Guard: outgoing pending handover — block until recipient accepts (unconditional, #19824)
+        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
+            return null;
+        }
+
+        // Guard: incoming pending handover — block until this user accepts (unconditional, #19824)
+        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
             return null;
         }
 
@@ -5079,6 +5191,18 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
+        // Guard: outgoing pending handover — unconditional, must be accepted before shift closes (#19824)
+        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
+            return "";
+        }
+
+        // Guard: incoming pending handover — unconditional, must be accepted before shift closes (#19824)
+        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+            JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
+            return "";
+        }
+
         if (mustReceiveAllFundTransfersBeforeClosingShift) {
             boolean haveFundTransfersForMeToReceive = hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
             if (haveFundTransfersForMeToReceive) {
@@ -5854,6 +5978,102 @@ public class FinancialTransactionController implements Serializable {
         myFloatInsToDate = CommonFunctions.getEndOfDay(new Date());
         fillMyFundTransferBillsIn();
         return "/cashier/fund_transfer_bills_my_float_ins?faces-redirect=true";
+    }
+
+    public String navigateToFundTransferReport() {
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        toDate = CommonFunctions.getEndOfDay(new Date());
+        user = null;
+        fillFundTransferReport();
+        return "/reports/cashier_reports/float_transfer_report?faces-redirect=true";
+    }
+
+    public String navigateToMyFundTransferReport() {
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        toDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyFundTransferReport();
+        return "/cashier/my_float_transfer_report?faces-redirect=true";
+    }
+
+    public void fillMyFundTransferReport() {
+        Map<String, Object> params = new HashMap<>();
+        WebUser loggedUser = sessionController.getLoggedUser();
+
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("loggedUser", loggedUser);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        String outJpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.fromWebUser=:loggedUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        myFundTransferBillsOut = billFacade.findByJpql(outJpql, params, TemporalType.TIMESTAMP);
+
+        String inJpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.toWebUser=:loggedUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        myFundTransferBillsIn = billFacade.findByJpql(inJpql, params, TemporalType.TIMESTAMP);
+
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        String reqJpql = "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.fromWebUser=:loggedUser "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt desc";
+        myFundTransferRequestsOut = billFacade.findByJpql(reqJpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void fillFundTransferReport() {
+        fillFundTransferReportBills();
+        fillFundTransferRequestReportBills();
+    }
+
+    public void fillFundTransferReportBills() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if (user != null) {
+            jpql.append("and s.fromWebUser=:fromUser ");
+            params.put("fromUser", user);
+        }
+        jpql.append("order by s.createdAt desc");
+        fundTransferReportBills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public void fillFundTransferRequestReportBills() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_REQUEST);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if (user != null) {
+            jpql.append("and s.fromWebUser=:fromUser ");
+            params.put("fromUser", user);
+        }
+        jpql.append("order by s.createdAt desc");
+        fundTransferRequestReportBills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     /**
@@ -7653,6 +7873,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setFundTransferRequestsForMe(List<Bill> fundTransferRequestsForMe) {
         this.fundTransferRequestsForMe = fundTransferRequestsForMe;
+    }
+
+    public List<Bill> getFundTransferReportBills() {
+        return fundTransferReportBills;
+    }
+
+    public void setFundTransferReportBills(List<Bill> fundTransferReportBills) {
+        this.fundTransferReportBills = fundTransferReportBills;
+    }
+
+    public List<Bill> getFundTransferRequestReportBills() {
+        return fundTransferRequestReportBills;
+    }
+
+    public void setFundTransferRequestReportBills(List<Bill> fundTransferRequestReportBills) {
+        this.fundTransferRequestReportBills = fundTransferRequestReportBills;
     }
 
     public int getFundTransferRequestsForMeCount() {

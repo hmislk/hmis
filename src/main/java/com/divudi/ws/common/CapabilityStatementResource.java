@@ -62,6 +62,13 @@ public class CapabilityStatementResource {
                         + "specialityId, institutionId, registration, qualification, description.",
                         "API Key (Token header)",
                         "POST", "PUT"))
+                .add(resource("Clinical Metadata", "/api/clinical/metadata",
+                        "CRUD for EMR clinical metadata types: symptom, sign, diagnosis, procedure, plan, vocabulary, "
+                        + "race, religion, blood_group, civil_status, employment, relationship. "
+                        + "Required param: type. GET supports query/page/size. "
+                        + "POST returns success, already_exists (with id), or error.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
                         "Clinical favourite medicine management",
                         "API Key",

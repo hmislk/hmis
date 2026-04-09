@@ -54,11 +54,11 @@ public class PlanController implements Serializable {
 
 
     public String navigateToManagePlans(){
-        return "/emr/admin/plans";
+        return "/emr/admin/plans?faces-redirect=true";
     }
 
     public String navigateToManageClinicaEntities(){
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
 

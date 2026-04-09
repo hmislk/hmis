@@ -53,7 +53,7 @@ public class SymptomController implements Serializable {
     String selectText = "";
 
     public String navigateToManageSymptoms(){
-        return "/emr/admin/symptoms";
+        return "/emr/admin/symptoms?faces-redirect=true";
     }
 
 

@@ -50,11 +50,11 @@ public class ClinicalEntityController implements Serializable {
     Department department;
 
     public String navigateToManageClinicalEntities() {
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public String navigateToMangeSurgeries() {
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
     public ClinicalEntity findItemByName(String name,Department dept) {
