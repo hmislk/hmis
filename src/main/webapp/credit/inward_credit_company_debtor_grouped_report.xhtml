@@ -186,10 +186,16 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h:outputText value="Inpatient Credit Company Debtors (Grouped)" />
-                                <p:commandButton value="Print" icon="fas fa-print"
-                                                 class="ui-button-info" ajax="false">
-                                    <p:printer target="debtorGroupedTable" />
-                                </p:commandButton>
+                                <div>
+                                    <p:commandButton value="Excel" icon="fas fa-file-excel"
+                                                     class="ui-button-success mr-2"
+                                                     actionListener="#{creditCompanyDebtorGroupedReportController.downloadExcel}"
+                                                     ajax="false" />
+                                    <p:commandButton value="Print" icon="fas fa-print"
+                                                     class="ui-button-info ml-1" ajax="false">
+                                        <p:printer target="debtorGroupedTable" />
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </f:facet>
 
