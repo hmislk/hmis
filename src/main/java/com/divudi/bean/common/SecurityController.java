@@ -269,7 +269,7 @@ public class SecurityController implements Serializable {
                 return null;
             }
             return new long[]{billId, expiryEpoch};
-        } catch (NumberFormatException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }
