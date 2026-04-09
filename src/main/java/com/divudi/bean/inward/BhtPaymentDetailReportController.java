@@ -184,33 +184,33 @@ public class BhtPaymentDetailReportController implements Serializable {
             jpql.append(" and c.department = :dept");
             params.put("dept", department);
         }
-        if (paymentMethod != null) {
-            jpql.append(" and c.paymentMethod = :pm");
-            params.put("pm", paymentMethod);
-        }
-
         jpql.append(" order by c.bhtNo");
         return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
-        String jpql = "select p from Payment p"
+        StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
                 + " and p.bill.cancelled = false"
                 + " and p.bill.billTypeAtomic = :bta"
-                + " and p.bill.patientEncounter = :enc"
-                + " order by p.createdAt";
+                + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
         params.put("enc", enc);
-        return paymentFacade.findByJpql(jpql, params);
+        if (paymentMethod != null) {
+            jpql.append(" and p.paymentMethod = :pm");
+            params.put("pm", paymentMethod);
+        }
+        jpql.append(" order by p.createdAt");
+        return paymentFacade.findByJpql(jpql.toString(), params);
     }
 
     private List<BillItem> fetchCreditSettlementItems(PatientEncounter enc) {
         String jpql = "select bi from BillItem bi"
                 + " where bi.retired = false"
                 + " and bi.bill.retired = false"
+                + " and bi.bill.cancelled = false"
                 + " and bi.bill.billTypeAtomic in :btas"
                 + " and bi.patientEncounter = :enc"
                 + " order by bi.createdAt";
