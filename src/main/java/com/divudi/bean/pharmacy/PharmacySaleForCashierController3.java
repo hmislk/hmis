@@ -2575,20 +2575,16 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
 
         System.out.println("Checking stockDto - Current value: " + (stockDto != null ? "ID=" + stockDto.getId() : "NULL"));
 
-        if (getStockDto() == null) {
+        if (getStockDto() == null && (getStock() == null || getStock().getId() == null)) {
             errorMessage = "Item ??";
-            System.out.println("Validation FAILED: stockDto is NULL");
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
 
-        System.out.println("stockDto ID: " + getStockDto().getId());
-        System.out.println("stockDto ItemName: " + getStockDto().getItemName());
-        System.out.println("stockDto StockQty: " + getStockDto().getStockQty());
-        System.out.println("stockDto RetailRate: " + getStockDto().getRetailRate());
-        System.out.println("stockDto DateOfExpire: " + getStockDto().getDateOfExpire());
+        // Use stockDto when available; fall back to stock entity for multi-batch path
+        boolean usingDto = (getStockDto() != null);
 
-        if (getStockDto().getDateOfExpire() != null && getStockDto().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (usingDto && getStockDto().getDateOfExpire() != null && getStockDto().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
@@ -2602,40 +2598,26 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
             JsfUtil.addErrorMessage("Quentity Zero?");
             return addedQty;
         }
-        if (getStockDto().getStockQty() == null) {
+        if (usingDto && getStockDto().getStockQty() == null) {
             errorMessage = "Stock quantity not available.";
-            System.out.println("Validation FAILED: stockDto.stockQty is NULL");
-            System.out.println("This indicates converter failed to preserve full DTO");
             JsfUtil.addErrorMessage("Stock quantity not available. Please select a valid stock.");
             return addedQty;
         }
 
-        System.out.println("Validation: stockQty = " + getStockDto().getStockQty());
-        System.out.println("Validation: requested qty = " + getQty());
-
-        if (getQty() > getStockDto().getStockQty()) {
+        if (usingDto && getQty() > getStockDto().getStockQty()) {
             errorMessage = "No sufficient stocks.";
-            System.out.println("Validation FAILED: Insufficient stock. Available: " + getStockDto().getStockQty() + ", Requested: " + getQty());
             JsfUtil.addErrorMessage("Insufficient stock. Available: " + String.format("%.0f", getStockDto().getStockQty()) + ", Requested: " + String.format("%.0f", getQty()));
             return addedQty;
         }
 
-        System.out.println("Validation PASSED: Stock quantity check successful");
-
-        System.out.println("Checking if item batch already exists in bill...");
         boolean batchExists = checkItemBatch();
-        System.out.println("checkItemBatch() returned: " + batchExists);
 
         if (batchExists) {
             errorMessage = "This batch is already there in the bill.";
-            System.out.println("ERROR: Item batch already in bill - stockDto ID: " + getStockDto().getId());
-            System.out.println("Current bill items count: " + (getPreBill() != null && getPreBill().getBillItems() != null ? getPreBill().getBillItems().size() : 0));
             JsfUtil.addErrorMessage("Already added this item batch");
             clearBillItem(); // Clear stale state to prevent confusion
             return addedQty;
         }
-
-        System.out.println("Item batch check passed, proceeding to add item...");
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
@@ -2651,23 +2633,34 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
-        // Convert StockDTO to Stock entity for persistence
-        Stock stockEntity = convertStockDtoToEntity(stockDto);
-        if (stockEntity == null) {
-            errorMessage = "Unable to process stock. Please try again.";
-            JsfUtil.addErrorMessage("Unable to process stock information. The server may be busy — please try again.");
-            logger.log(Level.SEVERE,
-                    "addBillItemSingleItem: convertStockDtoToEntity returned null for StockDTO ID {0}. Item not added to bill.",
-                    stockDto.getId());
-            return 0.0;
+        // Resolve Stock entity: prefer DTO path (avoids proxy resolution),
+        // fall back to controller-level stock entity for multi-batch path
+        Stock stockEntity;
+        if (usingDto) {
+            stockEntity = convertStockDtoToEntity(stockDto);
+            if (stockEntity == null) {
+                errorMessage = "Unable to process stock. Please try again.";
+                JsfUtil.addErrorMessage("Unable to process stock information. The server may be busy — please try again.");
+                logger.log(Level.SEVERE,
+                        "addBillItemSingleItem: convertStockDtoToEntity returned null for StockDTO ID {0}. Item not added to bill.",
+                        stockDto.getId());
+                return 0.0;
+            }
+        } else {
+            stockEntity = getStock();
         }
         billItem.getPharmaceuticalBillItem().setStock(stockEntity);
-        // Use DTO-based references to avoid triggering Stock proxy resolution
-        if (stockDto.getItemBatchId() != null) {
+        // Use DTO-based references to avoid triggering Stock proxy resolution.
+        // For multi-batch path (no DTO), fall back to stock entity's relationships.
+        if (usingDto && stockDto.getItemBatchId() != null) {
             billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchFacade.getReference(stockDto.getItemBatchId()));
+        } else if (stockEntity.getItemBatch() != null) {
+            billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
         }
-        if (stockDto.getItemId() != null) {
+        if (usingDto && stockDto.getItemId() != null) {
             billItem.setItem(itemFacade.getReference(stockDto.getItemId()));
+        } else if (stockEntity.getItemBatch() != null) {
+            billItem.setItem(stockEntity.getItemBatch().getItem());
         }
 
         calculateBillItem();
@@ -2676,7 +2669,7 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
-        System.out.println("SUCCESS: Adding item to bill - ID: " + getStockDto().getId() + ", Qty: " + qty);
+        System.out.println("SUCCESS: Adding item to bill - ID: " + (usingDto ? stockDto.getId() : stockEntity.getId()) + ", Qty: " + qty);
         getPreBill().getBillItems().add(billItem);
         System.out.println("Total items in bill now: " + getPreBill().getBillItems().size());
 
