@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.PaymentMethod;
@@ -13,7 +14,10 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -24,8 +28,22 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  * Controller for the Credit Company Debtor Grouped Report.
@@ -42,6 +60,8 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
     BillItemFacade BillItemFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+    @Inject
+    private SessionController sessionController;
 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
@@ -254,6 +274,323 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
             grandPaidTotal += g.getSubTotalPaid();
             grandOutstandingTotal += g.getSubOutstandingTotal();
         }
+    }
+
+    public void downloadExcel() {
+        if (groups == null || groups.isEmpty()) {
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response =
+                (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("CC Debtor Grouped");
+
+            // --- Cell styles ---
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font boldWhiteFont = workbook.createFont();
+            boldWhiteFont.setBold(true);
+            boldWhiteFont.setColor(IndexedColors.WHITE.getIndex());
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle subtitleStyle = workbook.createCellStyle();
+            subtitleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterLabelStyle = workbook.createCellStyle();
+            filterLabelStyle.setFont(boldFont);
+            filterLabelStyle.setAlignment(HorizontalAlignment.LEFT);
+
+            CellStyle filterValueStyle = workbook.createCellStyle();
+            filterValueStyle.setAlignment(HorizontalAlignment.LEFT);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setFont(boldWhiteFont);
+            setBorders(headerStyle);
+
+            CellStyle groupHeaderStyle = workbook.createCellStyle();
+            groupHeaderStyle.setFont(boldFont);
+            groupHeaderStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            groupHeaderStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            setBorders(groupHeaderStyle);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            setBorders(dataStyle);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+            numberStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            CellStyle subtotalStyle = workbook.createCellStyle();
+            subtotalStyle.setFont(boldFont);
+            subtotalStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+            subtotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            setBorders(subtotalStyle);
+
+            CellStyle subtotalNumberStyle = workbook.createCellStyle();
+            subtotalNumberStyle.cloneStyleFrom(subtotalStyle);
+            subtotalNumberStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+            subtotalNumberStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            CellStyle grandTotalStyle = workbook.createCellStyle();
+            grandTotalStyle.setFont(boldWhiteFont);
+            grandTotalStyle.setFillForegroundColor(IndexedColors.DARK_TEAL.getIndex());
+            grandTotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            setBorders(grandTotalStyle);
+
+            CellStyle grandTotalNumberStyle = workbook.createCellStyle();
+            grandTotalNumberStyle.cloneStyleFrom(grandTotalStyle);
+            grandTotalNumberStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+            grandTotalNumberStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            SimpleDateFormat dtf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+            int COL_COUNT = 11;
+            int rowIdx = 0;
+
+            // --- Header rows ---
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName() : "Institution";
+            rowIdx = createMergedRow(sheet, rowIdx, institutionName, titleStyle, COL_COUNT);
+
+            rowIdx = createMergedRow(sheet, rowIdx,
+                    "Inpatient Credit Company Debtor Report (Grouped)", subtitleStyle, COL_COUNT);
+
+            rowIdx = createMergedRow(sheet, rowIdx,
+                    "Printed By: "
+                    + (sessionController.getLoggedUser() != null
+                       && sessionController.getLoggedUser().getWebUserPerson() != null
+                            ? sessionController.getLoggedUser().getWebUserPerson().getName() : "-")
+                    + "   at " + dtf.format(new Date()),
+                    subtitleStyle, COL_COUNT);
+
+            rowIdx++; // blank row
+
+            // --- Filter details ---
+            String dateBasisLabel;
+            switch (dateBasis) {
+                case "dischargeDate": dateBasisLabel = "Discharge Date"; break;
+                case "admissionDate": dateBasisLabel = "Admission Date"; break;
+                default:              dateBasisLabel = "Payment / Bill Date"; break;
+            }
+            rowIdx = createFilterRow(sheet, rowIdx, "Date Basis",
+                    dateBasisLabel, filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "From",
+                    fromDate != null ? dtf.format(fromDate) : "-",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "To",
+                    toDate != null ? dtf.format(toDate) : "-",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Credit Company",
+                    institution != null ? institution.getName() : "All",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Institution",
+                    admittingInstitution != null ? admittingInstitution.getName() : "All",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Site",
+                    site != null ? site.getName() : "All",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Department",
+                    department != null ? department.getName() : "All",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Admission Type",
+                    admissionType != null ? admissionType.getName() : "All",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Payment Method",
+                    paymentMethod != null ? paymentMethod.toString() : "All",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+            rowIdx = createFilterRow(sheet, rowIdx, "Outstanding Only",
+                    outstandingOnly ? "Yes" : "No",
+                    filterLabelStyle, filterValueStyle, COL_COUNT);
+
+            rowIdx++; // blank row before data
+
+            // --- Column headers ---
+            String[] headers = {
+                "Bill No", "BHT No", "Patient Name", "Bill Date",
+                "Admitted", "Discharged",
+                "Bill Total", "Settled by Company", "Settled by Patient",
+                "Total Paid", "Outstanding"
+            };
+            Row headerRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = headerRow.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            // --- Data rows ---
+            for (CreditCompanyDebtorGroupDTO group : groups) {
+                // Company group header
+                Row groupRow = sheet.createRow(rowIdx++);
+                Cell groupCell = groupRow.createCell(0);
+                groupCell.setCellValue(group.getCreditCompanyName());
+                groupCell.setCellStyle(groupHeaderStyle);
+                for (int i = 1; i < COL_COUNT; i++) {
+                    groupRow.createCell(i).setCellStyle(groupHeaderStyle);
+                }
+                sheet.addMergedRegion(new CellRangeAddress(
+                        groupRow.getRowNum(), groupRow.getRowNum(), 0, COL_COUNT - 1));
+
+                // Bill rows
+                for (Bill b : group.getBills()) {
+                    Row dataRow = sheet.createRow(rowIdx++);
+                    int ci = 0;
+
+                    createStringCell(dataRow, ci++, b.getDeptId(), dataStyle);
+                    createStringCell(dataRow, ci++,
+                            b.getPatientEncounter() != null ? b.getPatientEncounter().getBhtNo() : "",
+                            dataStyle);
+                    createStringCell(dataRow, ci++,
+                            b.getPatient() != null && b.getPatient().getPerson() != null
+                                    ? b.getPatient().getPerson().getName() : "",
+                            dataStyle);
+                    createStringCell(dataRow, ci++,
+                            b.getBillDate() != null ? sdf.format(b.getBillDate()) : "", dataStyle);
+                    createStringCell(dataRow, ci++,
+                            b.getPatientEncounter() != null && b.getPatientEncounter().getDateOfAdmission() != null
+                                    ? sdf.format(b.getPatientEncounter().getDateOfAdmission()) : "",
+                            dataStyle);
+                    createStringCell(dataRow, ci++,
+                            b.getPatientEncounter() != null && b.getPatientEncounter().getDateOfDischarge() != null
+                                    ? sdf.format(b.getPatientEncounter().getDateOfDischarge()) : "",
+                            dataStyle);
+                    createNumberCell(dataRow, ci++, b.getNetTotal(), numberStyle);
+                    createNumberCell(dataRow, ci++, b.getSettledAmountBySponsor(), numberStyle);
+                    createNumberCell(dataRow, ci++, b.getSettledAmountByPatient(), numberStyle);
+                    createNumberCell(dataRow, ci++, b.getPaidAmount(), numberStyle);
+                    createNumberCell(dataRow, ci, b.getNetTotal() - b.getPaidAmount(), numberStyle);
+                }
+
+                // Subtotal row
+                Row subRow = sheet.createRow(rowIdx++);
+                int si = 0;
+                Cell subLabelCell = subRow.createCell(si++);
+                subLabelCell.setCellValue(group.getCreditCompanyName() + " Subtotal");
+                subLabelCell.setCellStyle(subtotalStyle);
+                for (int i = 1; i < 6; i++) {
+                    subRow.createCell(si++).setCellStyle(subtotalStyle);
+                }
+                sheet.addMergedRegion(new CellRangeAddress(
+                        subRow.getRowNum(), subRow.getRowNum(), 0, 5));
+                createNumberCell(subRow, si++, group.getSubBillTotal(), subtotalNumberStyle);
+                createNumberCell(subRow, si++, group.getSubSettledByCompany(), subtotalNumberStyle);
+                createNumberCell(subRow, si++, group.getSubSettledByPatient(), subtotalNumberStyle);
+                createNumberCell(subRow, si++, group.getSubTotalPaid(), subtotalNumberStyle);
+                createNumberCell(subRow, si, group.getSubOutstandingTotal(), subtotalNumberStyle);
+            }
+
+            // --- Grand total row ---
+            Row grandRow = sheet.createRow(rowIdx++);
+            int gi = 0;
+            Cell grandLabelCell = grandRow.createCell(gi++);
+            grandLabelCell.setCellValue("Grand Total");
+            grandLabelCell.setCellStyle(grandTotalStyle);
+            for (int i = 1; i < 6; i++) {
+                grandRow.createCell(gi++).setCellStyle(grandTotalStyle);
+            }
+            sheet.addMergedRegion(new CellRangeAddress(
+                    grandRow.getRowNum(), grandRow.getRowNum(), 0, 5));
+            createNumberCell(grandRow, gi++, grandBillTotal, grandTotalNumberStyle);
+            createNumberCell(grandRow, gi++, grandSettledByCompany, grandTotalNumberStyle);
+            createNumberCell(grandRow, gi++, grandSettledByPatient, grandTotalNumberStyle);
+            createNumberCell(grandRow, gi++, grandPaidTotal, grandTotalNumberStyle);
+            createNumberCell(grandRow, gi, grandOutstandingTotal, grandTotalNumberStyle);
+
+            // --- Auto-size columns ---
+            for (int i = 0; i < COL_COUNT; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // --- Buffer to byte array before touching the response ---
+            byte[] fileBytes;
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                workbook.write(bos);
+                fileBytes = bos.toByteArray();
+            }
+
+            // --- Write response atomically ---
+            String filename = "CC_Debtor_Grouped_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
+            response.setContentType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            response.setContentLength(fileBytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(fileBytes);
+                out.flush();
+            }
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int createFilterRow(XSSFSheet sheet, int rowIdx, String label, String value,
+            CellStyle labelStyle, CellStyle valueStyle, int colCount) {
+        Row row = sheet.createRow(rowIdx);
+        Cell labelCell = row.createCell(0);
+        labelCell.setCellValue(label);
+        labelCell.setCellStyle(labelStyle);
+        Cell valueCell = row.createCell(1);
+        valueCell.setCellValue(value);
+        valueCell.setCellStyle(valueStyle);
+        if (colCount > 2) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 1, colCount - 1));
+        }
+        return rowIdx + 1;
+    }
+
+    private int createMergedRow(XSSFSheet sheet, int rowIdx, String value,
+            CellStyle style, int colCount) {
+        Row row = sheet.createRow(rowIdx);
+        Cell cell = row.createCell(0);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+        for (int i = 1; i < colCount; i++) {
+            row.createCell(i).setCellStyle(style);
+        }
+        sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, colCount - 1));
+        return rowIdx + 1;
+    }
+
+    private void setBorders(CellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+    }
+
+    private void createStringCell(Row row, int col, String value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value != null ? value : "");
+        cell.setCellStyle(style);
+    }
+
+    private void createNumberCell(Row row, int col, double value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
     }
 
     private String resolveDateField(String basis, String defaultField, String encounterAlias) {

@@ -47,6 +47,9 @@
 ### When Working with Database
 - [MySQL Developer Guide](developer_docs/database/mysql-developer-guide.md) - Credentials and debugging
 
+### When Adding Excel Export to a Report
+- [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`
+
 ### When Creating User Documentation
 - [Wiki Publishing Workflow](developer_docs/github/wiki-publishing.md) - Sibling folder approach
 - [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
