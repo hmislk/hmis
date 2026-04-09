@@ -1,0 +1,348 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="frm">
+
+                    <p:panel header="Inpatient Credit Company Debtor Report (Grouped)" class="m-1">
+
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+
+                            <!-- Row 1: From | To | Credit Company -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{creditCompanyDebtorGroupedReportController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control"
+                                        id="toDate"
+                                        value="#{creditCompanyDebtorGroupedReportController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Credit Company" for="cmbCc" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete id="cmbCc" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                            value="#{creditCompanyDebtorGroupedReportController.institution}"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="cc" itemLabel="#{cc.name}" itemValue="#{cc}"
+                                            forceSelection="true" />
+
+                            <!-- Row 2: Date Basis -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf017;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="dateBasisMenu" styleClass="w-100 form-control"
+                                             value="#{creditCompanyDebtorGroupedReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Payment/Bill Date" />
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+
+                            <!-- Row 3: Institution | Site | Department -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control"
+                                             value="#{creditCompanyDebtorGroupedReportController.admittingInstitution}"
+                                             filter="true">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="siteMenu" styleClass="w-100 form-control"
+                                             value="#{creditCompanyDebtorGroupedReportController.site}"
+                                             filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept" layout="block">
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDebtorGroupedReportController.admittingInstitution eq null and creditCompanyDebtorGroupedReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDebtorGroupedReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDebtorGroupedReportController.admittingInstitution eq null and creditCompanyDebtorGroupedReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDebtorGroupedReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDebtorGroupedReportController.site)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDebtorGroupedReportController.admittingInstitution ne null and creditCompanyDebtorGroupedReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDebtorGroupedReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDebtorGroupedReportController.admittingInstitution)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDebtorGroupedReportController.admittingInstitution ne null and creditCompanyDebtorGroupedReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDebtorGroupedReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDebtorGroupedReportController.admittingInstitution, creditCompanyDebtorGroupedReportController.site)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <!-- Row 4: Admission Type | Outstanding Only | Payment Method -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="admTypeMenu" styleClass="w-100 form-control"
+                                             value="#{creditCompanyDebtorGroupedReportController.admissionType}">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}"
+                                               var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0d1;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Outstanding Only" for="chkOutstanding" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:selectBooleanCheckbox id="chkOutstanding"
+                                                     value="#{creditCompanyDebtorGroupedReportController.outstandingOnly}"
+                                                     styleClass="form-check-input mt-2" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Payment Method" for="pmMenuDebtor" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="pmMenuDebtor" styleClass="w-100 form-control"
+                                             value="#{creditCompanyDebtorGroupedReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <p:commandButton value="Process" icon="fas fa-cogs"
+                                         action="#{creditCompanyDebtorGroupedReportController.generateReport()}"
+                                         ajax="false" class="ui-button-warning m-1" />
+
+                    </p:panel>
+
+                    <p:panel id="pnlResults"
+                             rendered="#{creditCompanyDebtorGroupedReportController.groups != null}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="Inpatient Credit Company Debtors (Grouped)" />
+                                <p:commandButton value="Print" icon="fas fa-print"
+                                                 class="ui-button-info" ajax="false">
+                                    <p:printer target="debtorGroupedTable" />
+                                </p:commandButton>
+                            </div>
+                        </f:facet>
+
+                        <div id="debtorGroupedTable">
+                            <table class="table table-bordered table-sm w-100" style="font-size:0.9em;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th style="white-space:nowrap;">Bill No</th>
+                                        <th style="white-space:nowrap;">BHT No</th>
+                                        <th>Patient Name</th>
+                                        <th style="white-space:nowrap;">Bill Date</th>
+                                        <th style="white-space:nowrap;">Admitted</th>
+                                        <th style="white-space:nowrap;">Discharged</th>
+                                        <th style="text-align:right; white-space:nowrap;">Bill Total</th>
+                                        <th style="text-align:right; white-space:nowrap;">Settled by Company</th>
+                                        <th style="text-align:right; white-space:nowrap;">Settled by Patient</th>
+                                        <th style="text-align:right; white-space:nowrap;">Total Paid</th>
+                                        <th style="text-align:right; white-space:nowrap; font-weight:bold;">Outstanding</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{creditCompanyDebtorGroupedReportController.groups}" var="group">
+                                        <!-- Company group header row -->
+                                        <tr style="background-color:#dee2e6;">
+                                            <td colspan="11">
+                                                <strong><h:outputText value="#{group.creditCompanyName}" /></strong>
+                                            </td>
+                                        </tr>
+                                        <!-- Bill rows for this company -->
+                                        <ui:repeat value="#{group.bills}" var="b">
+                                            <tr>
+                                                <td style="white-space:nowrap;">
+                                                    <h:outputText value="#{b.deptId}" />
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <h:outputText value="#{b.patientEncounter.bhtNo}" />
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{b.patient.person.name}" />
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <h:outputText value="#{b.billDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <h:outputText value="#{b.patientEncounter.dateOfAdmission}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <h:outputText value="#{b.patientEncounter.dateOfDischarge}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right; white-space:nowrap;">
+                                                    <h:outputText value="#{b.netTotal}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right; white-space:nowrap;">
+                                                    <h:outputText value="#{b.settledAmountBySponsor}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right; white-space:nowrap;">
+                                                    <h:outputText value="#{b.settledAmountByPatient}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right; white-space:nowrap;">
+                                                    <h:outputText value="#{b.paidAmount}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right; white-space:nowrap; font-weight:bold;">
+                                                    <h:outputText value="#{b.netTotal - b.paidAmount}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <!-- Company subtotal row -->
+                                        <tr style="background-color:#f8f9fa; font-weight:bold;">
+                                            <td colspan="6" style="text-align:right;">
+                                                <h:outputText value="#{group.creditCompanyName} Subtotal" />
+                                            </td>
+                                            <td style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{group.subBillTotal}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{group.subSettledByCompany}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{group.subSettledByPatient}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{group.subTotalPaid}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right; white-space:nowrap;">
+                                                <h:outputText value="#{group.subOutstandingTotal}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <!-- Grand total row -->
+                                    <tr style="background-color:#343a40; color:#fff; font-weight:bold;">
+                                        <td colspan="6" style="text-align:right;">Grand Total</td>
+                                        <td style="text-align:right; white-space:nowrap;">
+                                            <h:outputText value="#{creditCompanyDebtorGroupedReportController.grandBillTotal}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right; white-space:nowrap;">
+                                            <h:outputText value="#{creditCompanyDebtorGroupedReportController.grandSettledByCompany}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right; white-space:nowrap;">
+                                            <h:outputText value="#{creditCompanyDebtorGroupedReportController.grandSettledByPatient}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right; white-space:nowrap;">
+                                            <h:outputText value="#{creditCompanyDebtorGroupedReportController.grandPaidTotal}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align:right; white-space:nowrap;">
+                                            <h:outputText value="#{creditCompanyDebtorGroupedReportController.grandOutstandingTotal}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

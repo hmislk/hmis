@@ -93,6 +93,13 @@
                                             actionListener="#{inwardReportController1.resetCreditCompanyReports()}"
                                             ajax="false"
                                             class="ui-button-success" />
+                                        <p:commandButton
+                                            value="Credit Company Debtor Report (Grouped)"
+                                            icon="fa fa-fw fa-layer-group"
+                                            action="/credit/inward_credit_company_debtor_grouped_report?faces-redirect=true"
+                                            actionListener="#{creditCompanyDebtorGroupedReportController.makeNull()}"
+                                            ajax="false"
+                                            class="ui-button-success" />
                                         <p:commandButton ajax="false" value="Deposits of Undischarged Patient and Complete Payments of Discharged Patients" icon="fa fa-fw fa-coins" action="bht_deposit_by_discharge_date_and_created_date?faces-redirect=true" actionListener="#{mdInwardReportController.makeNull()}" />
                                         <p:commandButton ajax="false" value="Complete Payments of Discharged Patient" icon="fa fa-fw fa-check-circle" action="bht_deposit_by_discharge_date" actionListener="#{mdInwardReportController.makeNull()}" />
                                         <p:commandButton ajax="false" value="Deposit of Undischarged Patient" icon="fa fa-fw fa-hourglass-half" action="bht_deposit_by_created_date_not_discharge" actionListener="#{mdInwardReportController.makeNull()}" />
