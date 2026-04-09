@@ -45,34 +45,18 @@
                         <h5 class="mb-0">Error Information</h5>
                     </div>
                     <div class="card-body">
-                        <h:panelGrid columns="2" styleClass="table table-sm table-borderless w-100" 
+                        <h:panelGrid columns="2" styleClass="table table-sm table-borderless w-100"
                                      columnClasses="font-weight-bold text-right pr-3,text-left">
                             <h:outputText value="Error Time:" />
                             <h:outputText value="#{errorHandler.errorTimeWithTimezone}" styleClass="text-danger font-weight-bold" />
-                            
-                            <h:outputText value="Request URL:" />
-                            <h:outputText value="#{errorHandler.requestURI}" />
-                            
+
                             <h:outputText value="Status Code:" />
                             <h:outputText value="#{errorHandler.statusCode}" />
-                            
-                            <h:outputText value="Exception Type:" />
-                            <h:outputText value="#{errorHandler.exceptionType}" />
-                            
-                            <h:outputText value="Error Message:" />
-                            <h:outputText value="#{errorHandler.message}" />
-                            
-                            <h:outputText value="Exception Details:" />
-                            <h:outputText value="#{errorHandler.exception}" />
                         </h:panelGrid>
-                        
-                        <div class="mt-3">
-                            <h6 class="font-weight-bold">Complete Stack Trace:</h6>
-                            <div class="bg-light p-3 border rounded" style="max-height: 300px; overflow-y: auto;">
-                                <h:outputText value="#{errorHandler.stackTrace}" escape="false" 
-                                              style="white-space: pre-wrap; font-family: monospace; font-size: 12px;" />
-                            </div>
-                        </div>
+                        <!-- Exception type, message, and stack trace are intentionally not
+                             rendered here — they would expose internal class names and paths
+                             to unauthenticated users. Full details are written to the server
+                             log (issue #19867). -->
                     </div>
                 </div>
 
