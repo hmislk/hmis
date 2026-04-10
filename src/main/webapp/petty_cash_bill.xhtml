@@ -7,6 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="admin">
@@ -187,8 +188,8 @@
                                                                     forceSelection="true" 
                                                                     value="#{pettyCashBillController.newPerson.area}" >
                                                                     <p:column style="width: 100px; padding: 3px;">
-                                                            #{pta.name}
-                                                        </p:column>
+                                                                        #{pta.name}
+                                                                    </p:column>
                                                                 </p:autoComplete>
                                                             </div>
                                                         </div>
@@ -346,14 +347,6 @@
                         </div>
                     </f:facet>
                     <div class="d-flex justify-content-end">
-                        <p:commandButton
-                            value="Print"
-                            ajax="false"
-                            icon="fas fa-print"
-                            class="ui-button-info mx-2">
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
-
                         <!-- Settings button for paper type configuration -->
                         <p:commandButton
                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
@@ -364,26 +357,59 @@
                             onclick="PF('pettyCashConfigDialog').show();" />
                     </div>
 
-                    <h:panelGroup   id="gpBillPreview">
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end">
+                                <p:commandButton
+                                    value="Print Request"
+                                    ajax="false"
+                                    icon="fas fa-print"
+                                    class="ui-button-info mx-2">
+                                    <p:printer target="gpRequestPreview" />
+                                </p:commandButton>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <h:panelGroup   id="gpRequestPreview">
+                                    <request:petty_cash_request request="#{pettyCashBillController.current.currentRequest}" />
+                            </h:panelGroup>
+                            </div>
+                            
+                        </div>
 
-                        <!-- POS/5.5 inch Format (Default) -->
-                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
-                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
-                        </h:panelGroup>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end">
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    icon="fas fa-print"
+                                    class="ui-button-info mx-2">
+                                    <p:printer target="gpBillPreview" />
+                                </p:commandButton>
+                            </div>
+                            <h:panelGroup   id="gpBillPreview">
 
-                        <!-- A4 Format -->
-                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
-                            <!-- For now, use the same component until A4 format is created -->
-                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
-                            <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
-                        </h:panelGroup>
+                                <!-- POS/5.5 inch Format (Default) -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
+                                    <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false" pre="true"/>
+                                </h:panelGroup>
 
-                        <!-- Custom Format -->
-                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
-                            <!-- Use existing format for now -->
-                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
-                        </h:panelGroup>
-                    </h:panelGroup>
+                                <!-- A4 Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
+                                    <!-- For now, use the same component until A4 format is created -->
+                                    <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                                    <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
+                                </h:panelGroup>
+
+                                <!-- Custom Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
+                                    <!-- Use existing format for now -->
+                                    <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+
                 </p:panel>  
 
             </h:form>

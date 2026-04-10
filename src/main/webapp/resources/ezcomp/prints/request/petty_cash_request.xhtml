@@ -62,7 +62,7 @@
                 <div class="separator"></div>
 
                 <!-- Header Section -->
-                <div class="hospital-name mt-2">
+                <div class="hospital-name mt-3">
                     <h:outputLabel value="Petty-Cash Aprovel Request" style="font-weight: 700;"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
@@ -70,7 +70,7 @@
                 </div>
 
                 <!-- Patient and Bill Information Table -->
-                <table class="mx-4 mt-4">
+                <table class="mx-4 mt-3">
 
                     <tr>
                         <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Request No</td>
@@ -116,7 +116,38 @@
                         <td  colspan="3">
                             <hr/> 
                         </td>
+                    </tr>
 
+                    <tr>
+                        <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Payee</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
+                            <h:panelGroup id="payeeArea">
+                                <h:panelGroup rendered="#{cc.attrs.request.bill.staff ne null}">
+                                    <h:outputLabel value="#{cc.attrs.request.bill.staff.person.nameWithTitle}" class="w-100"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{cc.attrs.request.bill.toDepartment ne null}">
+                                    <h:outputLabel value="#{cc.attrs.request.bill.toDepartment.name}" class="w-100"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{cc.attrs.request.bill.person ne null}">
+                                    <h:outputLabel value="#{cc.attrs.request.bill.person.nameWithTitle}" class="w-100"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Voucher No</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
+                            <h:outputLabel value="#{cc.attrs.request.bill.invoiceNumber}"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td  colspan="3">
+                            <hr/> 
+                        </td>
                     </tr>
 
                     <tr>
@@ -124,6 +155,17 @@
                         <td style="padding: 2px;" class="spacer"></td>
                         <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
                             <h:outputLabel value="#{cc.attrs.request.bill.deptId}"/>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Payment Method
+</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
+                            <h:outputLabel value="#{cc.attrs.request.bill.paymentMethod.label}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
                         </td>
                     </tr>
 
