@@ -1,7 +1,9 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PettyCashType;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
@@ -210,6 +212,9 @@ public class RequestController implements Serializable {
         }
         return navigation;
     }
+    
+    @Inject
+    PettyCashBillController pettyCashBillController;
 
     public String navigateToApproveRequest() {
         if (currentRequest == null) {
@@ -243,13 +248,12 @@ public class RequestController implements Serializable {
                 }
                 break;
             case PETTYCASH_APROVEL:
+                pettyCashBillController.setCurrentRequest(currentRequest);
                 break;
             default:
                 JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
         }
-
-        
 
         //Update Review Status
         if (currentRequest.getStatus() == RequestStatus.PENDING) {
@@ -499,6 +503,76 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
+
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+    }
+    
+    @Inject 
+    DrawerController drawerController;
+    
+    public void approvePettyCashRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+        
+        if (currentRequest.getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return;
+        }
+
+        if (currentRequest.getBill().getNetTotal() < 1) {
+            JsfUtil.addErrorMessage("Type Amount");
+            return;
+        }
+
+        if (currentRequest.getBill().getInvoiceNumber() == null || currentRequest.getBill().getInvoiceNumber().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Invoice No is Missing.");
+            return;
+        }
+
+        if (pettyCashBillController.checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_ISSUE,currentRequest.getBill().getInvoiceNumber())) {
+            JsfUtil.addErrorMessage("Invoice Number Already Exist");
+            return;
+        }
+        
+        Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+        System.out.println("loggedUserDrawer = " + loggedUserDrawer);
+
+        if (loggedUserDrawer == null) {
+            JsfUtil.addErrorMessage("Your Drawer have a Error.");
+            return ;
+        }
+        System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
+
+        if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
+            JsfUtil.addErrorMessage("There is no cash in your drawer.");
+            return ;
+        }
+
+        if (loggedUserDrawer.getCashInHandValue() < currentRequest.getBill().getNetTotal()) {
+            JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
+            return ;
+        }
+        
+        pettyCashBillController.settleBill(currentRequest.getBill());
 
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());

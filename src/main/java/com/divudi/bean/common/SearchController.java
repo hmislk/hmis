@@ -15914,7 +15914,7 @@ public class SearchController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billTypeAtomic =:bta and b.institution=:ins "
+        sql = "select b from Bill b where b.billTypeAtomic =:bta and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {

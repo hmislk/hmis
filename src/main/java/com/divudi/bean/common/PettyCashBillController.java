@@ -173,27 +173,31 @@ public class PettyCashBillController implements Serializable {
     }
 
     private boolean checkInvoiceNo() {
-        Calendar year = Calendar.getInstance();
-        Calendar c = Calendar.getInstance();
-        c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
-        Date fd = c.getTime();
-
-        System.out.println("Date = " + fd);
 
         String fullInvoiceNumber = getFullyInvoiceNo(financialYear, invoiceNo);
 
         System.out.println("fullInvoiceNumber = " + fullInvoiceNumber);
 
+        return checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_PRE,fullInvoiceNumber);
+    }
+
+    public boolean checkValidInvoiceNumber(BillTypeAtomic type, String invoiceNumber) {
+        
+        Calendar year = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
+        c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
+        Date fd = c.getTime();
+        
         String sql = "Select b From BilledBill b where "
                 + " b.retired=false "
                 + " and b.cancelled=false "
-                + " and b.billType= :btp "
+                + " and b.billTypeAtomic= :bta "
                 + " and b.createdAt > :fd "
                 + " and b.invoiceNumber =:inv ";
         HashMap h = new HashMap();
-        h.put("btp", BillType.PettyCash);
+        h.put("bta", type);
         h.put("fd", fd);
-        h.put("inv", fullInvoiceNumber);
+        h.put("inv", invoiceNumber);
         Bill tmp = getBillFacade().findFirstByJpql(sql, h, TemporalType.TIMESTAMP);
 
         if (tmp != null) {
@@ -201,9 +205,6 @@ public class PettyCashBillController implements Serializable {
         }
 
         return false;
-    }
-
-    public void checkInvoiceNumber() {
     }
 
     private String createInvoiceNumberSuffix() {
@@ -226,39 +227,13 @@ public class PettyCashBillController implements Serializable {
         return s;
     }
 
-    private void saveFreBill() {
+    private void savePreBill() {
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_PRE);
 
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_PRE);
-        getCurrent().setBillType(BillType.PettyCash);
-
-        getCurrent().setDepartment(getSessionController().getDepartment());
-        getCurrent().setInstitution(getSessionController().getInstitution());
-
-        getCurrent().setBillDate(new Date());
-        getCurrent().setBillTime(new Date());
-
-        getCurrent().setCreatedAt(new Date());
-        getCurrent().setCreater(getSessionController().getLoggedUser());
-
-        getCurrent().setTotal(getCurrent().getNetTotal());
-        getCurrent().setNetTotal(getCurrent().getNetTotal());
-
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-
-        getBillFacade().create(getCurrent());
-    }
-
-    private void saveBill() {
-
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_ISSUE);
-
-        getCurrent().setInsId(deptId);
-        getCurrent().setDeptId(deptId);
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
         getCurrent().setBillType(BillType.PettyCash);
 
         getCurrent().setDepartment(getSessionController().getDepartment());
@@ -301,8 +276,8 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setInvoiceNumber(getFullyInvoiceNo(financialYear, invoiceNo));
-        //saveBill();
-        saveFreBill();
+        
+        savePreBill();
 
         saveBillItem();
         
@@ -329,6 +304,52 @@ public class PettyCashBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
+    }
+    
+    private Request currentRequest;
+    
+    public void settleBill(Bill preBill) {
+
+        //Create BilledBill
+        Bill bill = new Bill();
+
+        bill.setInvoiceNumber(preBill.getInvoiceNumber());
+        bill.setPerson(preBill.getPerson());
+        bill.setStaff(preBill.getStaff());
+        bill.setToDepartment(preBill.getToDepartment());
+        bill.setCurrentRequest(preBill.getCurrentRequest());
+        bill.setReferenceBill(preBill);
+        
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_ISSUE);
+
+        bill.setInsId(deptId);
+        bill.setDeptId(deptId);
+        bill.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
+        bill.setBillType(BillType.PettyCash);
+
+        bill.setDepartment(getSessionController().getDepartment());
+        bill.setInstitution(getSessionController().getInstitution());
+
+        bill.setBillDate(new Date());
+        bill.setBillTime(new Date());
+
+        bill.setCreatedAt(new Date());
+        bill.setCreater(getSessionController().getLoggedUser());
+
+        getBillFacade().create(bill);
+        
+        //Updtae Pre Bill
+        preBill.setReferenceBill(bill);
+        getBillFacade().edit(preBill);
+        
+        
+        
+        //create Payment
+        List<Payment> payments = createPaymentForPettyCashBill(bill, bill.getPaymentMethod());
+        
+        //Update User Drawer
+        drawerController.updateDrawerForOuts(payments);
+        
     }
 
     @Inject
@@ -546,6 +567,11 @@ public class PettyCashBillController implements Serializable {
             return true;
         }
 
+        if (current != null && current.getId() != null) {
+            JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
+            return true;
+        }
+        
         Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
         System.out.println("loggedUserDrawer = " + loggedUserDrawer);
@@ -563,11 +589,6 @@ public class PettyCashBillController implements Serializable {
 
         if (loggedUserDrawer.getCashInHandValue() < getCurrent().getNetTotal()) {
             JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
-            return true;
-        }
-
-        if (current != null && current.getId() != null) {
-            JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
             return true;
         }
         
@@ -871,6 +892,14 @@ public class PettyCashBillController implements Serializable {
 
     public void setInvoiceNo(Integer invoiceNo) {
         this.invoiceNo = invoiceNo;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
     }
 
 }
