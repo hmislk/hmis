@@ -191,7 +191,6 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
-                                                disabled="#{r.status ne 'PENDING' and r.status ne 'UNDER_REVIEW'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >
                                                 <f:setPropertyActionListener value="#{r}" target="#{requestController.currentRequest}"/>

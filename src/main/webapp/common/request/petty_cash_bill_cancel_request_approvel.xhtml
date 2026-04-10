@@ -47,7 +47,7 @@
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
                                             class="ui-button-success" 
-                                            action="#{requestController.approveRequest()}">
+                                            action="#{requestController.approvePettyCashRequest()}">
                                         </p:commandButton>
 
                                         <p:commandButton
@@ -60,15 +60,6 @@
                                             action="#{requestController.rejectRequest()}">
                                         </p:commandButton>
 
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Cancel Approval" 
-                                            icon="fa fa-undo"
-                                            class="ui-button-danger" 
-                                            rendered="#{(requestController.currentRequest.status eq 'APPROVED')}"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
-                                            action="#{requestController.cancelApprovel()}">
-                                        </p:commandButton>
                                     </div>
                                 </div>
 
