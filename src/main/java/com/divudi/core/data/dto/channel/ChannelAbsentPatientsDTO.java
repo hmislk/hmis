@@ -31,6 +31,8 @@ public class ChannelAbsentPatientsDTO {
     public ChannelAbsentPatientsDTO(
             Long id, String deptId, BillTypeAtomic billTypeAtomic, String serviceSessionName, int billSessionSerialNo, String patientName, String cashierName,
             PaymentMethod paymentMethod, String doctorName, double staffFee, double hospitalFee, double netTotal, boolean cancelled, boolean refunded, String cancelledDeptId, String refundedDeptId, Long referenceId, Long paidId) {
+        
+        this.id = id;
         this.deptId = deptId;
         this.billTypeAtomic = billTypeAtomic;
         this.serviceSessionName = serviceSessionName;

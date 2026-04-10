@@ -3429,8 +3429,8 @@ public class ChannelReportController implements Serializable {
                 + " bs.serialNo, "
                 + " coalesce(case when b.billTypeAtomic = :onlineCompletedPayment then ob.patientName "
                 + " when b.billTypeAtomic = :onlineCancellation then orbb.patientName "
-                + " else p.person.name end, ''), "
-                + " coalesce(b.creater.name, ''), "
+                + " else pe.name end, ''), "
+                + " coalesce(c.name, '-'), "
                 + " b.paymentMethod, "
                 + " coalesce(b.staff.person.name, ''), "
                 + " coalesce(b.staffFee, 0.0), "
@@ -3446,6 +3446,8 @@ public class ChannelReportController implements Serializable {
                 + " from Bill b"
                 + " left join b.singleBillSession bs "
                 + " left join b.patient p "
+                + " left join p.person pe "
+                + " left join b.creater c "
                 + " left join b.cancelledBill cb "
                 + " left join b.refundedBill rfb "
                 + " left join b.referenceBill rb "
@@ -3454,15 +3456,18 @@ public class ChannelReportController implements Serializable {
                 + " left join bb.referenceBill rbb "
                 + " left join rbb.onlineBooking orbb "
                 + " left join rb.onlineBooking ob"
+                + " left join rb.singleBillSession rbs "
                 + " where b.retired=false "
                 + " and bs.retired=false "
-                + " and bs.absent=true "
+                // + " and bs.absent=true "
+                + " and (bs.absent=true or (rbs.absent=true and rb.paymentMethod= :pmo)) "
                 + " and b.createdAt between :fd and :td";
 
         params.put("onlineCompletedPayment", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         params.put("onlineCancellation", BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
         params.put("fd", fromDate);
         params.put("td", toDate);
+        params.put("pmo", PaymentMethod.OnCall);
 
         if (staff != null) {
             sql += " and b.staff=:st ";
@@ -3480,6 +3485,7 @@ public class ChannelReportController implements Serializable {
         Map<Long, ChannelAbsentPatientsDTO> absentPatients = new LinkedHashMap<>();
         for (ChannelAbsentPatientsDTO dto : fetchedBills) { 
             System.out.println(
+                dto.getId() + " | " +
                 dto.getDeptId() + " | " +
                 dto.getBillTypeAtomic() + " | " +
                 dto.getServiceSessionName() + " | " +
@@ -3494,20 +3500,24 @@ public class ChannelReportController implements Serializable {
                 dto.getRefundedDeptId()
             );
             if (dto.getPaymentMethod() == PaymentMethod.OnCall) {
-                if (dto.getPaidId() != null && absentPatients.containsKey(dto.getPaidId())) {
+                if (dto.getPaidId() != null) {
                     continue;
                 } else {
                     absentPatients.put(dto.getId(), dto);
                 }
             } else {
-                if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                System.out.println("reference bill: " + dto.getReferenceId());
+                if (dto.getReferenceId() != null && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT && dto.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL) {
                     continue;
                 } else {
+                    System.out.println("ID : " + dto.getId());
                     absentPatients.put(dto.getId(), dto);
                 }
             }
         }
         System.out.println("data mapped");
+
+        System.out.println("size mapped: " + absentPatients.size());
 
         for (ChannelAbsentPatientsDTO dto : absentPatients.values()) {
             System.out.println(
