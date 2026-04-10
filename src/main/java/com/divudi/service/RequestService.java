@@ -96,8 +96,7 @@ public class RequestService {
 
         String jpql = "Select q from Request q "
                 + " where q.retired =:ret "
-                + " and q.createdAt between :frm and :to"
-                + " and q.department.departmentType =:deptType";
+                + " and q.createdAt between :frm and :to";
 
         if (requestNo != null && !requestNo.trim().equals("")) {
             jpql += " and q.requestNo like :reqNo ";
@@ -126,7 +125,6 @@ public class RequestService {
 
         jpql += " order by q.id desc ";
 
-        params.put("deptType", departmentType);
         params.put("ret", false);
         params.put("frm", fromDate);
         params.put("to", toDate);

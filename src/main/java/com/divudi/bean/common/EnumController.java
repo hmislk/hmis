@@ -624,6 +624,8 @@ public class EnumController implements Serializable {
         rt.add(RequestType.PARTIAL_REFUND);
         rt.add(RequestType.SERVICE_REFUND);
         rt.add(RequestType.DRAWER_ADJUSTMENT);
+        rt.add(RequestType.PETTYCASH_APROVEL);
+        rt.add(RequestType.PETTYCASH_CANCELLATION);
         //rt.add(RequestType.EDIT_REQUEST);
         //rt.add(RequestType.INFORMATION_UPDATE);
         //rt.add(RequestType.QUANTITY_CHANGE);
