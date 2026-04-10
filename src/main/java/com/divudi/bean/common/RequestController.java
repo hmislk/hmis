@@ -96,6 +96,27 @@ public class RequestController implements Serializable {
         return "/common/request/view_request?faces-redirect=true";
     }
 
+    public String navigateToPendingPettyCashRequests() {
+        requestType = RequestType.PETTYCASH_APROVEL;
+        status = null;
+        fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new java.util.Date());
+        toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new java.util.Date());
+        searchRequest();
+        return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public long getPendingPettyCashApprovalCount() {
+        String jpql = "SELECT COUNT(r) FROM Request r"
+                + " WHERE r.retired = :ret"
+                + " AND r.requestType = :type"
+                + " AND r.status IN :statuses";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("ret", false);
+        params.put("type", RequestType.PETTYCASH_APROVEL);
+        params.put("statuses", java.util.Arrays.asList(RequestStatus.PENDING, RequestStatus.UNDER_REVIEW));
+        return requestFacade.findLongByJpql(jpql, params);
+    }
+
     public String navigateToBackSearchBillList() {
         
         switch (currentRequest.getBill().getBillTypeAtomic()) {
@@ -460,7 +481,7 @@ public class RequestController implements Serializable {
 
     public void searchRequest() {
         requests = new ArrayList<>();
-        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, sessionController.getDepartment().getDepartmentType());
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, null);
     }
 
     public void approveRequest() {
