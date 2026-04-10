@@ -1471,7 +1471,16 @@ public class PharmacyBean {
 //                }
 //            }
 //        }
+        // Re-check stock against FRESH DB state to prevent TOCTOU races where
+        // the in-memory Stock (selected in the UI) is stale vs. the actual
+        // committed value. Without this guard, a stale Stock snapshot can
+        // drive a batch/department row into negative values — see issue in
+        // coop database where Cetapin XR 500mg batch 1528539 in OPD Pharmacy
+        // went to -144 on 2025-10-12 (bill COOPPHTI/664).
         stock = getStockFacade().findWithoutCache(stock.getId());
+        if (stock == null || stock.getStock() < qty) {
+            return false;
+        }
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
         addToStockHistory(pbi, stock, d);
@@ -1490,7 +1499,11 @@ public class PharmacyBean {
         if (stock.getStock() < qty) {
             return false;
         }
+        // Re-check with fresh DB state (see deductFromStock for rationale).
         stock = getStockFacade().findWithoutCache(stock.getId());
+        if (stock == null || stock.getStock() < qty) {
+            return false;
+        }
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
         return true;

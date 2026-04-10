@@ -15,31 +15,91 @@
             <h:form  >
                 <p:panel >
 
-                    <p:panel class="mt-2" header="Timed Sevice" id="gpBillPreview">       
-                       
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar class="mx-4" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                                <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar class="mx-4" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                                <h:outputLabel value="Timed Item" ></h:outputLabel>
-                                <p:autoComplete class="mx-4" id="it" forceSelection="false" 
+                    <p:panel class="mt-2" header="Timed Service" id="gpBillPreview">
+
+                            <h:panelGrid columns="4" styleClass="w-100 form-grid">
+                                <h:outputLabel value="From" />
+                                <p:calendar class="mx-4" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                <h:outputLabel value="To" />
+                                <p:calendar class="mx-4" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                <h:outputLabel value="Timed Item" />
+                                <p:autoComplete class="mx-4" id="it" forceSelection="false"
                                                 value="#{inwardTimedItemController.current.item}"
-                                                completeMethod="#{timedItemController.completeInvest}" var="ix" 
+                                                completeMethod="#{timedItemController.completeInvest}" var="ix"
                                                 itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                    <p:column>
-                                        #{ix.name}
-                                    </p:column>
-                                    <p:column>
-                                        #{ix.total}
-                                    </p:column>
+                                    <p:column>#{ix.name}</p:column>
+                                    <p:column>#{ix.total}</p:column>
                                 </p:autoComplete>
-                               
-                                
+                                <h:panelGroup />
+                                <h:panelGroup />
+
+                                <!-- Institution -->
+                                <h:outputLabel value="Institution" for="cmbIns" />
+                                <p:selectOneMenu id="cmbIns" styleClass="mx-4 w-100 form-control"
+                                                value="#{inwardTimedItemController.institution}" filter="true">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins"
+                                                   itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="cmbIns" update="cmbDept"
+                                           listener="#{inwardTimedItemController.clearDepartment()}" />
+                                </p:selectOneMenu>
+
+                                <!-- Site -->
+                                <h:outputLabel value="Site" for="siteMenu" />
+                                <p:selectOneMenu id="siteMenu" styleClass="mx-4 w-100 form-control"
+                                                value="#{inwardTimedItemController.site}" filter="true">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site"
+                                                   itemLabel="#{site.name}" itemValue="#{site}" />
+                                    <p:ajax process="siteMenu" update="cmbDept"
+                                           listener="#{inwardTimedItemController.clearDepartment()}" />
+                                </p:selectOneMenu>
+
+                                <!-- Department -->
+                                <h:outputLabel value="Department" for="cmbDept" />
+                                <h:panelGroup id="cmbDept">
+                                    <p:selectOneMenu
+                                        rendered="#{inwardTimedItemController.institution eq null and inwardTimedItemController.site eq null}"
+                                        styleClass="mx-4 w-100 form-control"
+                                        value="#{inwardTimedItemController.department}"
+                                        filterMatchMode="contains" filter="true">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                       var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu
+                                        rendered="#{inwardTimedItemController.institution eq null and inwardTimedItemController.site ne null}"
+                                        styleClass="mx-4 w-100 form-control"
+                                        value="#{inwardTimedItemController.department}"
+                                        filterMatchMode="contains" filter="true">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardTimedItemController.site)}"
+                                                       var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu
+                                        rendered="#{inwardTimedItemController.institution ne null and inwardTimedItemController.site eq null}"
+                                        styleClass="mx-4 w-100 form-control"
+                                        value="#{inwardTimedItemController.department}"
+                                        filterMatchMode="contains" filter="true">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardTimedItemController.institution)}"
+                                                       var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu
+                                        rendered="#{inwardTimedItemController.institution ne null and inwardTimedItemController.site ne null}"
+                                        styleClass="mx-4 w-100 form-control"
+                                        value="#{inwardTimedItemController.department}"
+                                        filterMatchMode="contains" filter="true">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardTimedItemController.institution, inwardTimedItemController.site)}"
+                                                       var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
                             </h:panelGrid>
 
                             <div class="my-4">
-                                <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
+                                <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}" />
                                 
                                 <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-success mx-1 " actionListener="#{inwardTimedItemController.createTimeServiceList}">
                                     <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />

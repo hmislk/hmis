@@ -1733,7 +1733,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void loadCCFinancialData(Institution collectingCentre) {
-        Institution cc = institutionFacade.find(collectingCentre.getId());
+        Institution cc = institutionFacade.findWithoutCache(collectingCentre.getId());
 
         ccBalance = cc.getBallance();
         ccAllowedCreditLImit = cc.getAllowedCreditLimit();

@@ -212,7 +212,11 @@ public class TransferIssueDirectController implements Serializable {
     /**
      * Settles the direct issue transaction
      */
-    public void settleDirectIssue() {
+    public synchronized void settleDirectIssue() {
+        if (issuedBill != null && issuedBill.getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (issuedBill.getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;

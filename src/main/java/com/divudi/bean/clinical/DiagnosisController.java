@@ -53,7 +53,7 @@ public class DiagnosisController implements Serializable {
     String selectText = "";
 
     public String navigateToManageDiagnoses() {
-        return "/emr/admin/diagnoses";
+        return "/emr/admin/diagnoses?faces-redirect=true";
     }
 
     // Method to generate the Excel file and initiate the download

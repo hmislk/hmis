@@ -626,34 +626,48 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         if (encryptedPatientReportId == null) {
             return;
         }
-        if (encryptedExpiary != null) {
-            Date expiaryDate;
-            try {
-                String ed = encryptedExpiary;
-                ed = securityController.decrypt(ed);
-                if (ed == null) {
+        if (encryptedPatientReportId.startsWith("hmac.")) {
+            // New HMAC-SHA256 path — token embeds both bill ID and expiry
+            String hmacKey = sessionController.getApplicationPreference().getEncrptionKey();
+            if (hmacKey == null || hmacKey.trim().isEmpty()) {
+                return;
+            }
+            long[] decoded = securityController.decodeBillToken(encryptedPatientReportId, hmacKey);
+            if (decoded == null) {
+                return;
+            }
+            if (new Date().getTime() > decoded[1]) {
+                return; // link expired
+            }
+            bill = getBillFacade().find(decoded[0]);
+        } else {
+            // TODO: Remove this legacy block after 2026-07-09.
+            // Backward compatibility for links sent before HMAC migration (issue #19863).
+            // Old links have a 1-month TTL so none will be valid after that date.
+            if (encryptedExpiary != null) {
+                Date expiaryDate;
+                try {
+                    String ed = securityController.decrypt(encryptedExpiary);
+                    if (ed == null) {
+                        return;
+                    }
+                    expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
+                } catch (ParseException ex) {
                     return;
                 }
-                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
-            } catch (ParseException ex) {
+                if (expiaryDate.before(new Date())) {
+                    return;
+                }
+            }
+            String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+            Long id = 0L;
+            try {
+                id = Long.parseLong(idStr);
+            } catch (Exception e) {
                 return;
             }
-            if (expiaryDate.before(new Date())) {
-                return;
-            }
+            bill = getBillFacade().find(id);
         }
-        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
-        Long id = 0l;
-        try {
-            id = Long.parseLong(idStr);
-        } catch (Exception e) {
-            return;
-        }
-        Bill pr = getBillFacade().find(id);
-        if (pr == null) {
-            return;
-        }
-        bill = pr;
     }
 
     public void fillBillTypeSummery() {
@@ -2922,7 +2936,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // Update batch bill balance for credit payment method
         updateBatchBillFinancialFieldsForIndividualCancellation(bill, cancellationBill);
 
-        drawerController.updateDrawerForOuts(ps);
+        // NOTE: Do NOT call drawerController.updateDrawerForOuts(ps) here.
+        // paymentService.createPayment() already calls drawerService.updateDrawer() internally
+        // for each payment. A second call would create duplicate DrawerEntry records and
+        // double-deduct from the drawer balance. See issue #19796.
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {
