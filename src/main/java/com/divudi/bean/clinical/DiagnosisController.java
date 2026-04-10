@@ -165,7 +165,7 @@ public class DiagnosisController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Diagnosis Name before saving.");
             return;
         }
-        if(getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+        if(getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
             JsfUtil.addErrorMessage("Please enter a Diagnosis Code before saving.");
             return;
         }
