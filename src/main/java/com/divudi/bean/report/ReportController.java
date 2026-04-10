@@ -1819,11 +1819,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             String jpql = "SELECT pc "
                     + "FROM Bill pc "
                     + "WHERE pc.retired = :ret "
-                    + "AND pc.billType = :bt ";
+                    + "AND pc.billTypeAtomic = :bta ";
 
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
-            m.put("bt", BillType.PettyCash);
+            m.put("bta", BillTypeAtomic.PETTY_CASH_ISSUE);
 
             if (toDepartment != null) {
                 jpql += " AND pc.toDepartment=:dpt ";
