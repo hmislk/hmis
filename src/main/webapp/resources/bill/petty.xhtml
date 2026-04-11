@@ -38,11 +38,11 @@
                         </div>
                         <div class="d-flex justify-content-center">
                             <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true }" />
-                            <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                            <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.currentRequest.cancelled}" />
+                            <h:outputLabel value="**Rejected**"  rendered="#{cc.attrs.bill.currentRequest.rejected}" />
                         </div>
-                        
                     </div>
-
+                    
                     <div class="billline">
                         <hr/>   
                     </div>
