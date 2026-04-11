@@ -5176,9 +5176,9 @@ public class ChannelReportController implements Serializable {
 
         String reportStatusString = "";
         if (reportStatus != null && !reportStatus.isEmpty()) {
-            if (reportStatus.equals("Summery")) {
+            if ("Summery".equalsIgnoreCase(reportStatus.trim())) {
                 reportStatusString = "Summary View";
-            } else if (reportStatus.equals("Details")) {
+            } else if ("Details".equalsIgnoreCase(reportStatus.trim())) {
                 reportStatusString = "Details View";
             }
         }

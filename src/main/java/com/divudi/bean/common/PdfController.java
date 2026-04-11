@@ -3622,7 +3622,7 @@ public class PdfController {
             return null;
         }
 
-        String reportStatus = "";
+        String reportStatus = (filters != null && filters.get("Report Status") != null) ? Objects.toString(filters.get("Report Status"), null) : "";
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(outputStream);
@@ -3660,8 +3660,6 @@ public class PdfController {
             if (filters != null && !filters.isEmpty()) {
                 Table infoTable = createInfoTablePdfExport(filters);
                 document.add(infoTable);
-
-                reportStatus = (String) filters.get("Report Status");
             }
 
             SolidLine headerLine = new SolidLine(1.5f);

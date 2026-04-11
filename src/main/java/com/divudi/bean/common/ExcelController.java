@@ -4750,7 +4750,7 @@ public class ExcelController {
         // Row 2: Search Criteria
         if (filters != null && !filters.isEmpty()) {
             currentRow = addMetaDataToExcelSheet(workbook, dataSheet, currentRow, filters);
-            reportStatus = (String) filters.get("Report Status");
+            reportStatus = Objects.toString(filters.get("Report Status"), null);
         } else {
             Row criteriaRow = dataSheet.createRow(currentRow);
             Cell criteriaCell = criteriaRow.createCell(0);
@@ -4793,7 +4793,7 @@ public class ExcelController {
             noDataCell.setCellValue("No Data for Detailed View");
         }
 
-        if (reportStatus != null && !reportStatus.trim().isEmpty() && reportStatus.equals("Summary View")) {
+        if (reportStatus != null && !reportStatus.trim().isEmpty() && reportStatus.equalsIgnoreCase("Summary View")) {
             if (wrapperDto.getSummeryDtos() != null && !wrapperDto.getSummeryDtos().isEmpty()) {
 
                 XSSFSheet summarySheet = workbook.createSheet("Summary View");
