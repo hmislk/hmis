@@ -337,6 +337,11 @@ public class RequestController implements Serializable {
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
                 break;
+            case PETTY_CASH_PRE:
+                bills.add(currentRequest.getBill());
+                comment = null;
+                navigation = "/common/request/petty_cash_bill_request_cancel?faces-redirect=true";
+                break;
             default:
                 navigation = "";
         }
@@ -503,6 +508,7 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setApproved(true);
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.APPROVED);
@@ -578,6 +584,7 @@ public class RequestController implements Serializable {
 
         pettyCashBillController.settleBill(currentRequest.getBill());
 
+        currentRequest.setApproved(true);
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.APPROVED);
@@ -650,6 +657,7 @@ public class RequestController implements Serializable {
                 currentRequest.getBill(),
                 sessionController.getLoggedUser());
 
+        currentRequest.setApproved(true);
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.COMPLETED);
@@ -679,6 +687,7 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setApproved(false);
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
         currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
@@ -712,6 +721,7 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setRejected(true);
         currentRequest.setRejectedAt(new Date());
         currentRequest.setRejectedBy(sessionController.getLoggedUser());
         currentRequest.setRejectionReason(comment);
@@ -771,21 +781,24 @@ public class RequestController implements Serializable {
             return;
         }
 
+        currentRequest.setCancelled(true);
         currentRequest.setCancelledAt(new Date());
         currentRequest.setCancelledBy(sessionController.getLoggedUser());
         currentRequest.setCancellationReason(comment);
         currentRequest.setStatus(RequestStatus.CANCELLED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
-        //Update Batch Bill
-        currentRequest.getBill().setCurrentRequest(null);
-        billFacade.edit(currentRequest.getBill());
+        if (currentRequest.getRequestType() != PETTYCASH_APROVEL) {
+            //Update Batch Bill
+            currentRequest.getBill().setCurrentRequest(null);
+            billFacade.edit(currentRequest.getBill());
 
-        //Update Induvidual Bills of Batch Bil
-        if (bills != null) {
-            for (Bill b : bills) {
-                b.setCurrentRequest(null);
-                billFacade.edit(b);
+            //Update Induvidual Bills of Batch Bil
+            if (bills != null) {
+                for (Bill b : bills) {
+                    b.setCurrentRequest(null);
+                    billFacade.edit(b);
+                }
             }
         }
 
