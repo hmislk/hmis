@@ -4,17 +4,17 @@ package com.divudi.core.data;
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
 
-public enum RequestCategory {
-    
-    CANCELLATION("Cancellation"),
-    REFUND("Refund"),
-    EDIT("Edit"),
-    ADJUSTMENT("Adjustment"),
-    APROVEL("Approval");
 
+public enum PettyCashType{
+
+    STAFF("Staff"),
+    DEPARTMENT("Department"),
+    PERSON("Person"),
+    NEWPERSON("New Person");
+    
     private final String label;
 
-    RequestCategory(String label) {
+    PettyCashType(String label) {
         this.label = label;
     }
 

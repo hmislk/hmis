@@ -15912,17 +15912,12 @@ public class SearchController implements Serializable {
     }
 
     public void createPettyTable() {
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.PettyCash);
-        billTypes.add(BillType.IouIssue);
-
-        Date startTime = new Date();
 
         bills = null;
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b where b.billType IN :billTypes and b.institution=:ins "
+        sql = "select b from Bill b where b.billTypeAtomic =:bta and b.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -15953,12 +15948,12 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
 
-        temMap.put("billTypes", billTypes);
+        temMap.put("bta", BillTypeAtomic.PETTY_CASH_PRE);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
