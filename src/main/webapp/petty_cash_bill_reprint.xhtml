@@ -16,7 +16,8 @@
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h:outputLabel value="Petty Cash Reprint" class="mt-2"></h:outputLabel>
+                                    <h:outputLabel value="Petty Cash Reprint Preview" class="mt-2" rendered="#{pettyCashBillController.duplicate}"></h:outputLabel>
+                                    <h:outputLabel value="Petty Cash Preview" class="mt-2" rendered="#{not pettyCashBillController.duplicate}"></h:outputLabel>
                                 </div>
                                 <div>
                                     <p:commandButton  

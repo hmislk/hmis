@@ -516,40 +516,40 @@ public class RequestController implements Serializable {
     @Inject 
     DrawerController drawerController;
     
-    public void approvePettyCashRequest() {
+    public String approvePettyCashRequest() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Request not found for approval");
-            return;
+            return "";
         }
 
         if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
             JsfUtil.addErrorMessage("You have not authorize to Approval this.");
-            return;
+            return "";
         }
 
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
-            return;
+            return "";
         }
         
         if (currentRequest.getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select the PaymentMethod");
-            return;
+            return "";
         }
 
         if (currentRequest.getBill().getNetTotal() < 1) {
             JsfUtil.addErrorMessage("Type Amount");
-            return;
+            return "";
         }
 
         if (currentRequest.getBill().getInvoiceNumber() == null || currentRequest.getBill().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Invoice No is Missing.");
-            return;
+            return "";
         }
 
         if (pettyCashBillController.checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_ISSUE,currentRequest.getBill().getInvoiceNumber())) {
             JsfUtil.addErrorMessage("Invoice Number Already Exist");
-            return;
+            return "";
         }
         
         Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
@@ -558,18 +558,18 @@ public class RequestController implements Serializable {
 
         if (loggedUserDrawer == null) {
             JsfUtil.addErrorMessage("Your Drawer have a Error.");
-            return ;
+            return "";
         }
         System.out.println("loggedUserDrawer.getCashInHandValue() = " + loggedUserDrawer.getCashInHandValue());
 
         if (loggedUserDrawer != null && (loggedUserDrawer.getCashInHandValue() == null || loggedUserDrawer.getCashInHandValue() == 0)) {
             JsfUtil.addErrorMessage("There is no cash in your drawer.");
-            return ;
+            return "";
         }
 
         if (loggedUserDrawer.getCashInHandValue() < currentRequest.getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
-            return ;
+            return "";
         }
         
         pettyCashBillController.settleBill(currentRequest.getBill());
@@ -578,8 +578,16 @@ public class RequestController implements Serializable {
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.APPROVED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
-
+        
+        pettyCashBillController.setCurrent(currentRequest.getBill().getReferenceBill());
+        
+        pettyCashBillController.setPrintPreview(true);
+        pettyCashBillController.setDuplicate(false);
+        pettyCashBillController.setPreBill(false);
+        
         JsfUtil.addSuccessMessage("Successfully Approve");
+        
+        return "/petty_cash_bill_reprint?faces-redirect=true";
 
     }
 
