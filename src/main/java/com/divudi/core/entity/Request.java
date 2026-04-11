@@ -46,18 +46,21 @@ public class Request implements Serializable {
     private String requestReason;
     
     //Review Properties
+    private boolean reviewed;
     @ManyToOne
     private WebUser reviewedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reviewedAt;
     
     //Approval Properties
+    private boolean approved;
     @ManyToOne
     private WebUser approvedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date approvedAt;
     
     //Reject Properties
+    private boolean rejected;
     @ManyToOne
     private WebUser rejectedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -66,12 +69,14 @@ public class Request implements Serializable {
     private String rejectionReason;
     
     //Complete Properties
+    private boolean completed;
     @ManyToOne
     private WebUser completedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
     
     //Cancel Properties
+    private boolean cancelled;
     @ManyToOne
     private WebUser cancelledBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -389,6 +394,46 @@ public class Request implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public boolean getReviewed() {
+        return reviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        this.reviewed = reviewed;
+    }
+
+    public boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+    public boolean getRejected() {
+        return rejected;
+    }
+
+    public void setRejected(boolean rejected) {
+        this.rejected = rejected;
+    }
+
+    public boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public boolean getCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
     }
 
 }
