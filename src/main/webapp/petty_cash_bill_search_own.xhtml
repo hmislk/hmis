@@ -30,7 +30,7 @@
                                             action="#{requestController.navigateToPendingPettyCashRequests()}">
                                         </p:commandButton>
                                     </p:badge>
-                                    
+
                                     <p:commandButton
                                         value="Back"
                                         icon="fas fa-arrow-left"
@@ -137,17 +137,13 @@
                                             action="#{pettyCashBillController.navigatePettyCashReprint(bill)}">
                                         </p:commandLink>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Bill No" style="padding: 8px;" width="11em;" >
                                         <p:commandLink 
                                             id="prebillNo" 
                                             ajax="false" 
                                             value="#{bill.referenceBill.deptId}" 
-                                            action="#{pettyCashBillController.navigatePettyAndIouReprint()}"
-                                            actionListener="#{pettyCashBillController.fillBillsReferredByCurrentBill()}"
-                                            >
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
+                                            action="#{pettyCashBillController.navigatePettyCashReprint(bill.referenceBill)}">
                                         </p:commandLink>
                                     </p:column>
 
@@ -203,10 +199,16 @@
                                     </p:column>
 
                                     <p:column headerText="Status" style="padding: 8px;" width="7em;" class="text-center">
-                                        <p:badge  value="#{bill.currentRequest.status.label}" severity="warning" rendered="#{bill.currentRequest.status eq 'PENDING'}" class="w-100"/>
-                                        <p:badge  value="#{bill.currentRequest.status.label}" severity="info" rendered="#{bill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
-                                        <p:badge  value="#{bill.currentRequest.status.label}" severity="success" rendered="#{bill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
-                                        <p:badge  value="#{bill.currentRequest.status.label}" severity="danger" rendered="#{bill.currentRequest.status eq 'REJECTED'}" class="w-100"/>
+                                        <h:panelGroup rendered="#{bill.referenceBill.cancelled}">
+                                            <p:badge  value="Cancelled" severity="danger" class="w-100"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not bill.referenceBill.cancelled}">
+                                            <p:badge  value="#{bill.currentRequest.status.label}" severity="warning" rendered="#{bill.currentRequest.status eq 'PENDING'}" class="w-100"/>
+                                            <p:badge  value="#{bill.currentRequest.status.label}" severity="info" rendered="#{bill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
+                                            <p:badge  value="#{bill.currentRequest.status.label}" severity="success" rendered="#{bill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
+                                            <p:badge  value="#{bill.currentRequest.status.label}" severity="danger" rendered="#{bill.currentRequest.status eq 'REJECTED'}" class="w-100"/>
+                                        </h:panelGroup>
+
                                     </p:column>
 
                                     <p:column headerText="Net Value" style="padding: 8px;" width="8em;" class="text-end" >

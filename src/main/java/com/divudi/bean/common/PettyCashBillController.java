@@ -132,8 +132,13 @@ public class PettyCashBillController implements Serializable {
                 printPreview = true;
                 duplicate = true;
                 preBill = true;
-                return "petty_cash_bill?faces-redirect=true";
+                return "petty_cash_prebill_reprint?faces-redirect=true";
             case PETTY_CASH_ISSUE:
+                printPreview = true;
+                duplicate = true;
+                preBill = false;
+                return "petty_cash_bill_reprint?faces-redirect=true";
+            case PETTY_CASH_BILL_CANCELLATION:
                 printPreview = true;
                 duplicate = true;
                 preBill = false;
