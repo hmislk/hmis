@@ -317,11 +317,13 @@ public class PettyCashBillController implements Serializable {
         bill.setPerson(preBill.getPerson());
         bill.setStaff(preBill.getStaff());
         bill.setToDepartment(preBill.getToDepartment());
-        bill.setCurrentRequest(preBill.getCurrentRequest());
+        bill.setPaymentMethod(preBill.getPaymentMethod());
+        bill.setTotal(preBill.getTotal());
+        bill.setNetTotal(preBill.getNetTotal());
         bill.setReferenceBill(preBill);
         
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_ISSUE);
-
+        System.out.println("deptId = " + deptId);
         bill.setInsId(deptId);
         bill.setDeptId(deptId);
         bill.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
@@ -342,10 +344,11 @@ public class PettyCashBillController implements Serializable {
         preBill.setReferenceBill(bill);
         getBillFacade().edit(preBill);
         
-        
+        System.out.println("Create new Bill / Id = " + bill + " / Bill Numbeer = " + bill.getDeptId());
         
         //create Payment
         List<Payment> payments = createPaymentForPettyCashBill(bill, bill.getPaymentMethod());
+        System.out.println("payments = " + payments);
         
         //Update User Drawer
         drawerController.updateDrawerForOuts(payments);

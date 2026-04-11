@@ -31,15 +31,7 @@
 
                                 <div class="row mt-2 mb-3">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <p:inputText
-                                            id="commentsMenu"
-                                            value="#{requestController.comment}"
-                                            placeholder="Approval Comment"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}"
-                                            style="float: right; width: 500px;"
-                                            >
-                                        </p:inputText>
-
+                                        
                                         <p:commandButton 
                                             ajax="false"
                                             value="Approve" 
