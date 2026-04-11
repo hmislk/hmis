@@ -5094,7 +5094,7 @@ public class ExcelController {
             creater = b.getCreater().getWebUserPerson().getName();
         } 
         if (isChannelBill && (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT || b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING)) {
-            creater += " " + ((b.getCreditCompany() != null) ? b.getCreditCompany().getName() : "");
+            creater += (!creater.trim().isEmpty() ? " " : "") + ((b.getCreditCompany() != null) ? b.getCreditCompany().getName() : "");
         }
 
         if (b.isCancelled()) {
