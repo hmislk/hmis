@@ -31,13 +31,12 @@
 
                                 <div class="row mt-2 mb-3">
                                     <div class="d-flex justify-content-end gap-2">
-                                        
                                         <p:commandButton 
                                             ajax="false"
                                             value="Approve" 
                                             icon="fa fa-check"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
+                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
                                             class="ui-button-success" 
                                             action="#{requestController.approvePettyCashRequest()}">
                                         </p:commandButton>
@@ -47,7 +46,7 @@
                                             value="Reject" 
                                             icon="fa fa-times"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
-                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED')}"
+                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
                                             class="ui-button-danger" 
                                             action="#{requestController.rejectRequest()}">
                                         </p:commandButton>
@@ -123,7 +122,7 @@
                                                         <p:inputText
                                                             class="w-100"
                                                             value="#{requestController.currentRequest.bill.invoiceNumber}"
-                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
                                                         </p:inputText>
                                                     </div>
                                                 </div>
@@ -142,7 +141,7 @@
                                                         <p:selectOneMenu
                                                             class="w-100"
                                                             value="#{requestController.currentRequest.bill.paymentMethod}"
-                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
                                                             <f:selectItems
                                                                 value="#{enumController.paymentMethodsForPettyCashBilling}"
                                                                 var="pm"
@@ -159,7 +158,7 @@
                                                             class="w-100"
                                                             onfocus="this.select()"
                                                             value="#{requestController.currentRequest.bill.netTotal}"
-                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </p:inputText>
                                                     </div>
@@ -171,7 +170,7 @@
                                                             class="w-100"
                                                             rows="3"
                                                             value="#{requestController.currentRequest.bill.comments}"
-                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}">
+                                                            disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}">
                                                         </p:inputTextarea>
                                                     </div>
                                                 </div>

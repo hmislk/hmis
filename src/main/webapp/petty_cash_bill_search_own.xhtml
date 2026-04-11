@@ -207,6 +207,7 @@
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="info" rendered="#{bill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="success" rendered="#{bill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="danger" rendered="#{bill.currentRequest.status eq 'REJECTED'}" class="w-100"/>
+                                            <p:badge  value="#{bill.currentRequest.status.label}" severity="danger" rendered="#{bill.currentRequest.status eq 'CANCELLED'}" class="w-100"/>
                                         </h:panelGroup>
 
                                     </p:column>
