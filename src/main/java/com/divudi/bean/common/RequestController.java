@@ -710,8 +710,7 @@ public class RequestController implements Serializable {
         boolean canReject;
         if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
             canReject = webUserController.hasPrivilege("DrawerAdjustmentRequestApproval");
-        }
-        if (currentRequest.getRequestType() == RequestType.PETTYCASH_APROVEL) {
+        }else if (currentRequest.getRequestType() == RequestType.PETTYCASH_APROVEL) {
             canReject = true;
         } else {
             canReject = webUserController.hasPrivilege("BillCancelRequestApproval");

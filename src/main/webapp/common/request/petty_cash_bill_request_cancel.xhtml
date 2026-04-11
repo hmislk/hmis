@@ -34,10 +34,9 @@
                                     <p:inputText
                                         id="commentsMenu"
                                         value="#{requestController.comment}"
-                                        placeholder="Request Cancel Reason"
+                                        placeholder="Request Cancellation Reason"
                                         disabled="#{(requestController.currentRequest.status eq 'CANCELLED')}"
-                                        style="float: right; width: 500px;"
-                                        >
+                                        style="float: right; width: 500px;">
                                     </p:inputText>
 
                                     <p:commandButton
