@@ -1823,7 +1823,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
-            m.put("bta", BillTypeAtomic.PETTY_CASH_ISSUE);
+            m.put("bta", BillTypeAtomic.PETTY_CASH_PRE);
 
             if (toDepartment != null) {
                 jpql += " AND pc.toDepartment=:dpt ";
