@@ -15945,7 +15945,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
 
-        temMap.put("bta", BillTypeAtomic.PETTY_CASH_ISSUE);
+        temMap.put("bta", BillTypeAtomic.PETTY_CASH_PRE);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
