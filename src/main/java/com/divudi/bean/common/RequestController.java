@@ -2,7 +2,6 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
-import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PettyCashType;
 import com.divudi.core.data.RequestStatus;
@@ -89,8 +88,8 @@ public class RequestController implements Serializable {
 
     private PatientEncounter patientEncounter;
     private PettyCashType pettyCashPayeeType;
-
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
 
     public String navigateToSearchRequest() {
@@ -343,8 +342,8 @@ public class RequestController implements Serializable {
         }
         return navigation;
     }
-
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         patient = null;
@@ -522,8 +521,13 @@ public class RequestController implements Serializable {
             return "";
         }
 
-        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
-            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This Request is Already Approval");
+            return "";
+        }
+        
+        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
+            JsfUtil.addErrorMessage("This Request is Already Rejected");
             return "";
         }
 
@@ -884,8 +888,8 @@ public class RequestController implements Serializable {
             }
         }
     }
-
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public boolean isPrintPreview() {
         return printPreview;

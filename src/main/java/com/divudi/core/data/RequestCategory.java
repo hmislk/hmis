@@ -10,7 +10,7 @@ public enum RequestCategory {
     REFUND("Refund"),
     EDIT("Edit"),
     ADJUSTMENT("Adjustment"),
-    APROVEL("Aprovel");
+    APROVEL("Approval");
 
     private final String label;
 
