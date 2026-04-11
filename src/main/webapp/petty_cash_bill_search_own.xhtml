@@ -199,10 +199,10 @@
                                     </p:column>
 
                                     <p:column headerText="Status" style="padding: 8px;" width="7em;" class="text-center">
-                                        <h:panelGroup rendered="#{bill.referenceBill.cancelled}">
+                                        <h:panelGroup rendered="#{not empty bill.referenceBill and bill.referenceBill.cancelled}">
                                             <p:badge  value="Cancelled" severity="danger" class="w-100"/>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{not bill.referenceBill.cancelled}">
+                                        <h:panelGroup rendered="#{empty bill.referenceBill or not bill.referenceBill.cancelled}">
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="warning" rendered="#{bill.currentRequest.status eq 'PENDING'}" class="w-100"/>
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="info" rendered="#{bill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="success" rendered="#{bill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
