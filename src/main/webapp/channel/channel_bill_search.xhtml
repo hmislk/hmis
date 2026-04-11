@@ -61,7 +61,7 @@
                                             ajax="false"
                                             value="Download"
                                             class="w-100 mt-1">
-                                            <p:dataExporter fileName="OPD Bills" type="xlsx" target="tblBills" ></p:dataExporter>
+                                            <p:fileDownload value="#{searchController.channelBillAsExcel}" />
                                         </p:commandButton>
 
                                         <p:commandButton

@@ -6,6 +6,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
+import com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.hr.StaffController;
@@ -134,6 +135,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.checkerframework.checker.units.qual.s;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.DefaultStreamedContent;
@@ -23643,6 +23645,83 @@ public class SearchController implements Serializable {
         }
     }
 
+    // Excel Export: channel bill search
+    public StreamedContent getOpdBillAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please search opd bills before exporting.");
+            return null;
+        }
+
+        try {
+            String fileName = "OPD_Bills";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            List<ExcelController.ColumnDefExcel<Bill>> detailCols = Arrays.asList(
+                new ExcelController.ColumnDefExcel<>("Bill No*",        bill -> ExcelController.buildBillDeptId(bill)),
+                new ExcelController.ColumnDefExcel<>("Batch Bill",      bill -> (bill.getBackwardReferenceBill() != null) ?  bill.getBackwardReferenceBill().getDeptId() : ""),
+                new ExcelController.ColumnDefExcel<>("Billed At",       bill -> ExcelController.buildBillBilledAt(bill, (fromDate == toDate), sessionController.getApplicationPreference().getShortDateTimeFormat(), sessionController.getApplicationPreference().getShortDateTimeFormat())),
+                new ExcelController.ColumnDefExcel<>("Billed By",       bill -> ExcelController.buildBillBilledByDepartment(bill)),
+                new ExcelController.ColumnDefExcel<>("Billed For",      bill -> bill.getToDepartment() != null ? bill.getToDepartment().getName() : ""),
+                new ExcelController.ColumnDefExcel<>("Billed By",       bill -> ExcelController.buildBillBilledBy(bill, false)),
+                new ExcelController.ColumnDefExcel<>("Client",          bill -> bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : ""),
+                new ExcelController.ColumnDefExcel<>("Remarks",         bill -> ExcelController.buildBillRemarksOpd(bill)),
+                new ExcelController.ColumnDefExcel<>("Gross Value",     bill -> bill.getTotal()),
+                new ExcelController.ColumnDefExcel<>("Discount",        bill -> bill.getDiscount()),
+                new ExcelController.ColumnDefExcel<>("Net Value",       bill -> bill.getNetTotal())
+        );
+
+            downloadingExcel = excelController.createExcelForBillSearch(bills, detailCols, fileName, getFiltersForOpdBillSearch(), "OPD Bills");
+        } catch (IOException e) {
+            logger.error("getOpdBillAsExcel: Error creating downloadingExcel via excelController.createExcelForBillSearch", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Opd Bills Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
+    // Excel Export: channel bill search
+    public StreamedContent getChannelBillAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please search channel bills before exporting.");
+            return null;
+        }
+
+        try {
+            String fileName = "Channel_Bills";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+
+            List<ExcelController.ColumnDefExcel<Bill>> detailCols = Arrays.asList(
+                new ExcelController.ColumnDefExcel<>("Bill No*",         bill -> ExcelController.buildBillDeptChannel(bill)),
+                new ExcelController.ColumnDefExcel<>("Consultant",       bill -> (bill.getSingleBillSession() != null && bill.getSingleBillSession().getSessionInstance() != null && bill.getSingleBillSession().getSessionInstance().getOriginatingSession() != null 
+                                                                                                && bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff() != null && bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getPerson() != null) ?  bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getPerson().getNameWithTitle() : ""),
+                new ExcelController.ColumnDefExcel<>("Billed At",       bill -> ExcelController.buildBillBilledAt(bill, (fromDate == toDate), sessionController.getApplicationPreference().getShortTimeFormat(), sessionController.getApplicationPreference().getShortDateTimeFormat())),
+                new ExcelController.ColumnDefExcel<>("Session",         bill -> (bill.getSingleBillSession() != null && bill.getSingleBillSession().getSessionInstance() != null && bill.getSingleBillSession().getSessionInstance().getOriginatingSession() != null) ? bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getName() : ""),
+                new ExcelController.ColumnDefExcel<>("Billed For",      bill -> bill.getToInstitution() != null ? bill.getToInstitution().getName() : ""),
+                new ExcelController.ColumnDefExcel<>("Billed By",       bill -> ExcelController.buildBillBilledBy(bill, true)),
+                new ExcelController.ColumnDefExcel<>("Payment Method",  bill -> bill.getPaymentMethod() != null ? bill.getPaymentMethod().toString() : ""),
+                new ExcelController.ColumnDefExcel<>("Serial Number",   bill -> bill.getSingleBillSession() != null ? bill.getSingleBillSession().getSerialNo() : ""),
+                new ExcelController.ColumnDefExcel<>("Client",          bill -> ExcelController.buildBillPatientNameChannel(bill)),
+                new ExcelController.ColumnDefExcel<>("Remarks",         bill -> ExcelController.buildBillRemarksChannel(bill)),
+                new ExcelController.ColumnDefExcel<>("Gross Value",     bill -> bill.getTotal()),
+                new ExcelController.ColumnDefExcel<>("Discount",        bill -> bill.getDiscount()),
+                new ExcelController.ColumnDefExcel<>("Net Value",       bill -> bill.getNetTotal())
+        );
+
+            downloadingExcel = excelController.createExcelForBillSearch(bills, detailCols, fileName, getFiltersForChannelBillSearch(), "Channel Bills");
+        } catch (IOException e) {
+            logger.error("getChannelBillAsExcel: Error creating downloadingExcel via excelController.createExcelForBillSearch", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Channel Bills Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     // Filters for Channel Income Report
     private Map<String, Object> getFiltersForChannelIncomeReport() {
         Map<String, Object> params = new LinkedHashMap<>();
@@ -23698,6 +23777,54 @@ public class SearchController implements Serializable {
         }
 
         return bt;
+    }
+
+    // Filters for Channel Income Report
+    private Map<String, Object> getFiltersForChannelBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("Consultant", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+        params.put("Speciality", speciality != null ? speciality.getName() : "All");
+
+        return params;
+    }
+
+    // Filters for Opd Income Report
+    private Map<String, Object> getFiltersForOpdBillSearch() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("Logged Department Only", showLoggedDepartmentOnly);
+        if (searchKeyword != null) {
+            params.put("Bill No", searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().trim().isEmpty() ? searchKeyword.getBillNo() : "All");
+            params.put("MRN No", searchKeyword.getCode() != null && !searchKeyword.getCode().trim().isEmpty() ? searchKeyword.getCode() : "All");
+            params.put("Name", searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().trim().isEmpty() ? searchKeyword.getPatientName() : "All");
+            params.put("Phone", searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().trim().isEmpty() ? searchKeyword.getPatientPhone() : "All");
+            params.put("Total", searchKeyword.getTotal() != null? searchKeyword.getTotal() : "All");
+            params.put("Net Total", searchKeyword.getNetTotal() != null ? searchKeyword.getNetTotal() : "All");
+        }
+        params.put("From Institution", fromInstitution != null ? fromInstitution.getName() : "All Institutions");
+        params.put("From Department", fromDepartment != null ? fromDepartment.getName() : "All Departments");
+        params.put("To Institution", toInstitution != null ? toInstitution.getName() : "All Institutions");
+        params.put("To Department", toDepartment != null ? toDepartment.getName() : "All Departments");
+
+        return params;
     }
 
 }

@@ -19,9 +19,11 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Named;
@@ -4901,5 +4903,269 @@ public class ExcelController {
                 .build();
 
         return excelSc;
+    }
+
+    // Excel create helper class for bill search download
+    public static class ColumnDefExcel<T> {
+        final String header;
+        final Function<T, Object> valueExtractMethod;
+
+        ColumnDefExcel(String header, Function<T, Object> valueExtractMethod) {
+            this.header = header;
+            this.valueExtractMethod = valueExtractMethod;
+        }
+    }
+
+    // Excel Export: Bill Search
+    public StreamedContent createExcelForBillSearch(List<Bill> bills, List<ColumnDefExcel<Bill>> columnDef, String fileName, Map<String, Object> filters, String title) throws IOException {
+        if (columnDef == null || columnDef.isEmpty()) {
+            return null;
+        }
+        if (bills == null || bills.isEmpty()) {
+            return null;
+        }
+
+        int colNum = columnDef.size();
+
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        String safeName = WorkbookUtil.createSafeSheetName("Bills");
+        XSSFSheet dataSheet = workbook.createSheet(safeName);
+
+        // Create cell styles for headers
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(boldFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setBold(true);
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        CellStyle centerSmallStyle = workbook.createCellStyle();
+        centerSmallStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerSmallStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font smallFont = workbook.createFont();
+        smallFont.setFontHeightInPoints((short) 10);
+        centerSmallStyle.setFont(smallFont);
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(titleStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 7));
+        currentRow++;
+
+        // Row 1: Report Title
+        Row titleRow = dataSheet.createRow(currentRow);
+        Cell titleCell = titleRow.createCell(0);
+        if (title != null && !title.trim().isEmpty()) {
+            titleCell.setCellValue(title);
+        } else {
+            titleCell.setCellValue("Bill Search");
+        }
+        titleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 7));
+        currentRow++;
+
+        // Row 2: Search Criteria
+        if (filters != null && !filters.isEmpty()) {
+            currentRow = addMetaDataToExcelSheet(workbook, dataSheet, currentRow, filters);
+        } else {
+            Row criteriaRow = dataSheet.createRow(currentRow);
+            Cell criteriaCell = criteriaRow.createCell(0);
+            criteriaCell.setCellValue("Search Criteria: N/A");
+            criteriaCell.setCellStyle(centerSmallStyle);
+            dataSheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 7));
+            currentRow += 2;
+        }
+
+
+        // Headers
+        Row headerRow = dataSheet.createRow(currentRow++);
+        int headerColIndex = 0;
+        for(int i = 0; i < colNum; i++) {
+            headerRow.createCell(headerColIndex++).setCellValue(columnDef.get(i).header != null ? columnDef.get(i).header : "");
+        }
+
+        //Data
+        for (Bill b : bills) {
+            Row dataRow = dataSheet.createRow(currentRow++);
+            for (int i = 0; i < colNum; i++) {
+                Object value = columnDef.get(i).valueExtractMethod.apply(b);
+                Cell cell = dataRow.createCell(i);
+
+                if (value instanceof String)  cell.setCellValue((String) value);
+                if (value instanceof Double)  cell.setCellValue((Double) value);
+                else cell.setCellValue(value != null ? value.toString() : "");
+            }
+        } 
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        excelSc = DefaultStreamedContent.builder()
+                .name(((fileName != null && !fileName.isEmpty()) ? fileName : "Bill Search") + ".xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+
+        return excelSc;
+    }
+
+    // Helper Method: channel bill search: dept Id
+    public static String buildBillDeptChannel(Bill b) {
+        String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+        if (b.isCancelled()) {
+            billDept += " (Cancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId() + ")") : ")");
+        }
+        if (b.isRefunded()) {
+            billDept += " (Refunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId() + ")") : ")");
+        }
+        if (b instanceof RefundBill) {
+            billDept += " (Refund Bill)";
+        }
+        if (b.getBillTypeAtomic() != null && (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT || b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT)) {
+            billDept += " (Cancel Bill)";
+        }
+        return billDept;
+    }
+
+    // Helper Method: Bill Search: dept Id
+    public static String buildBillDeptId(Bill b) {
+        String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+        if (b.isCancelled()) {
+            billDept += " (Cancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId() + ")") : ")");
+        }
+        if (b.isRefunded()) {
+            billDept += " (Refunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId() + ")") : ")");
+        }
+        return billDept;
+    }
+
+    // Helper Method: Bill Search: Billed At
+    public static String buildBillBilledAt(Bill b, boolean sameDay, String st, String sdt) {
+        String billedAt = "";
+        SimpleDateFormat shortTime = new SimpleDateFormat(st);
+        SimpleDateFormat shortDateTime = new SimpleDateFormat(sdt);
+
+        if (sameDay) {
+            billedAt = b.getCreatedAt() != null ? shortTime.format(b.getCreatedAt()) : "";
+            if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
+                billedAt += "\n(Cancelled: " + shortTime.format(b.getCancelledBill().getCreatedAt()) + (b.getCancelledBill().getPaymentMethod() != null ? (" " + b.getCancelledBill().getPaymentMethod().toString()) : "") + ") ";
+            } else if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null) {
+                billedAt += "\n(Refunded: " + shortTime.format(b.getRefundedBill().getCreatedAt()) + (b.getCancelledBill().getPaymentMethod() != null ? (" " + b.getCancelledBill().getPaymentMethod().toString()) : "") + ") ";
+            }
+        } else {
+            billedAt = b.getCreatedAt() != null ? shortDateTime.format(b.getCreatedAt()) : "";
+            if (b.isCancelled() && b.getCancelledBill() != null && b.getCancelledBill().getCreatedAt() != null) {
+                billedAt += "\n(Cancelled: " + shortDateTime.format(b.getCancelledBill().getCreatedAt()) + ") ";
+            } else if (b.isRefunded() && b.getRefundedBill() != null && b.getRefundedBill().getCreatedAt() != null) {
+                billedAt += "\n(Refunded: " + shortDateTime.format(b.getRefundedBill().getCreatedAt()) + ") ";
+            }
+        }
+
+        return billedAt;
+    }
+
+    // Helper Method: Bill Search: Billed By
+    public static String buildBillBilledBy(Bill b, boolean isChannelBill) {
+        String creater = "";
+
+        if (b.getCreater() != null && b.getCreater().getWebUserPerson() != null) {
+            creater = b.getCreater().getWebUserPerson().getName();
+        } 
+        if (isChannelBill && (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT || b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING)) {
+            creater += " " + ((b.getCreditCompany() != null) ? b.getCreditCompany().getName() : "");
+        }
+
+        if (b.isCancelled()) {
+            creater += " (Cancelled: " + ((b.getCancelledBill() != null && b.getCancelledBill().getCreater() != null && b.getCancelledBill().getCreater().getWebUserPerson() != null) ? b.getCancelledBill().getCreater().getWebUserPerson().getName() : "") +  ")";
+        } else if (b.isRefunded()) {
+            creater += " (Refunded: " + ((b.getRefundedBill() != null && b.getRefundedBill().getCreater() != null && b.getRefundedBill().getCreater().getWebUserPerson() != null) ? b.getRefundedBill().getCreater().getWebUserPerson().getName() : "") +  ")";
+        }
+
+        return creater;
+    }
+
+    // Helper Method: OPD Bill Search: Billed By (Department)
+    public static String buildBillBilledByDepartment(Bill b) {
+        String creater = "";
+
+        if (b.getFromDepartment() != null) {
+            creater = b.getFromDepartment().getName();
+        }
+        if (b.isCancelled()) {
+            creater += " (Cancelled: " + ((b.getCancelledBill() != null && b.getCancelledBill().getDepartment() != null) ? b.getCancelledBill().getDepartment().getName() : "") +  ")";
+        } else if (b.isRefunded()) {
+            creater += " (Refunded: " + ((b.getRefundedBill() != null && b.getRefundedBill().getDepartment() != null) ? b.getRefundedBill().getDepartment().getName() : "") +  ")";
+        }
+
+        return creater;
+    }
+
+    // Helper Method: Channel Bill Search: Patient
+    public static String buildBillPatientNameChannel(Bill b) {
+        String patientName = "";
+        if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            patientName = (b.getReferenceBill() != null && b.getReferenceBill().getOnlineBooking() != null) ? b.getReferenceBill().getOnlineBooking().getPatientName() : "";
+        } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+            patientName = (b.getBilledBill() != null && b.getBilledBill().getReferenceBill() != null && b.getBilledBill().getReferenceBill().getOnlineBooking() != null) ? b.getBilledBill().getReferenceBill().getOnlineBooking().getPatientName() : "";
+        } else {
+            patientName = (b.getPatient() != null && b.getPatient().getPerson() != null) ? b.getPatient().getPerson().getName() : "";
+        }
+        return patientName;
+    }
+
+    // Helper Method: Channel Bill Search: Remarks
+    public static String buildBillRemarksChannel(Bill b) {
+        String remarks = "";
+        if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            remarks = "OB";
+        } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+            remarks = "OB Cancel";
+        } else {
+            remarks = "System";
+        }
+        return remarks;
+    }
+
+    // Helper Method: Opd Bill Search: Remarks
+    public static String buildBillRemarksOpd(Bill b) {
+        String remarks = "";
+        if (b.getMembershipScheme() != null) {
+            remarks = b.getMembershipScheme().getName() + " ";
+        } 
+        if (b.getBillTypeAtomic() == BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT) {
+            remarks += "Package Bill ";
+        } 
+        if (b.isCancelled()) {
+            remarks += "Cancelled ";
+        }
+        if (b.isRefunded()) {
+            remarks += "Refunded ";
+        }
+        if (b.getCurrentRequest() != null) {
+            remarks = b.getCurrentRequest().getStatus() != null ? (b.getCurrentRequest().getStatus().getLabel()) : "";
+        }
+        return remarks;
     }
 }
