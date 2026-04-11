@@ -371,9 +371,9 @@
                             <div class="d-flex justify-content-center">
                                 <h:panelGroup   id="gpRequestPreview">
                                     <request:petty_cash_request request="#{pettyCashBillController.current.currentRequest}" />
-                            </h:panelGroup>
+                                </h:panelGroup>
                             </div>
-                            
+
                         </div>
 
                         <div class="col-md-6">
@@ -390,20 +390,33 @@
 
                                 <!-- POS/5.5 inch Format (Default) -->
                                 <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
-                                    <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false" pre="true"/>
+                                    <bi:petty  
+                                        bill="#{pettyCashBillController.current}" 
+                                        billController="#{pettyCashBillController}" 
+                                        dup="#{pettyCashBillController.duplicate}" 
+                                        pre="#{pettyCashBillController.preBill}">
+                                    </bi:petty>
                                 </h:panelGroup>
 
                                 <!-- A4 Format -->
                                 <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
                                     <!-- For now, use the same component until A4 format is created -->
-                                    <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                                    <bi:petty  
+                                        bill="#{pettyCashBillController.current}" 
+                                        billController="#{pettyCashBillController}" 
+                                        dup="#{pettyCashBillController.duplicate}" >
+                                    </bi:petty>
                                     <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
                                 </h:panelGroup>
 
                                 <!-- Custom Format -->
                                 <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
                                     <!-- Use existing format for now -->
-                                    <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                                    <bi:petty  
+                                        bill="#{pettyCashBillController.current}" 
+                                        billController="#{pettyCashBillController}" 
+                                        dup="#{pettyCashBillController.duplicate}" >
+                                    </bi:petty>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </div>

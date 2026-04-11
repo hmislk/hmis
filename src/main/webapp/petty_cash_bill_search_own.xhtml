@@ -134,10 +134,7 @@
                                             id="billNo" 
                                             ajax="false" 
                                             value="#{bill.deptId}" 
-                                            action="#{pettyCashBillController.navigatePettyAndIouReprint()}"
-                                            actionListener="#{pettyCashBillController.fillBillsReferredByCurrentBill()}">
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pettyCashBillSearch.bill}"/>
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pettyCashBillController.current}"/>
+                                            action="#{pettyCashBillController.navigatePettyCashReprint(bill)}">
                                         </p:commandLink>
                                     </p:column>
                                     

@@ -112,6 +112,38 @@ public class PettyCashBillController implements Serializable {
         b.setApproveUser(sessionController.getLoggedUser());
         billController.save(b);
     }
+    
+    private boolean duplicate;
+    private boolean preBill;
+    
+    public String navigatePettyCashReprint(Bill selectedBill) {
+        if(selectedBill == null){
+            JsfUtil.addErrorMessage("BillType is Missing.");
+            return "";
+        }
+        
+        setCurrent(selectedBill);
+        
+        if (null == current.getBillTypeAtomic()){
+            JsfUtil.addErrorMessage("BillType is Worng.");
+            return "";
+        }else switch (current.getBillTypeAtomic()) {
+            case PETTY_CASH_PRE:
+                printPreview = true;
+                duplicate = true;
+                preBill = true;
+                return "petty_cash_bill?faces-redirect=true";
+            case PETTY_CASH_ISSUE:
+                printPreview = true;
+                duplicate = true;
+                preBill = false;
+                return "";
+            default:
+                JsfUtil.addErrorMessage("BillType is Worng.");
+                return "";
+        }
+        
+    }
 
     public String navigatePettyAndIouReprint() {
         if (current.getBillType() == BillType.PettyCash) {
@@ -301,8 +333,12 @@ public class PettyCashBillController implements Serializable {
 
         //List<Payment> payments = createPaymentForPettyCashBill(getCurrent(), getCurrent().getPaymentMethod());
         //drawerController.updateDrawerForOuts(payments);
-        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
+        duplicate = false;
+        preBill = true;
+        
+        JsfUtil.addSuccessMessage("Bill Saved");
+        
 
     }
     
@@ -658,6 +694,9 @@ public class PettyCashBillController implements Serializable {
 
     public void prepareNewBill() {
         recreateModel();
+        duplicate = false;
+        preBill = true;
+        printPreview = false;
         financialYear = createInvoiceNumberSuffix();
         invoiceNo = null;
     }
@@ -903,6 +942,22 @@ public class PettyCashBillController implements Serializable {
 
     public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
+    }
+
+    public boolean isDuplicate() {
+        return duplicate;
+    }
+
+    public void setDuplicate(boolean duplicate) {
+        this.duplicate = duplicate;
+    }
+
+    public boolean isPreBill() {
+        return preBill;
+    }
+
+    public void setPreBill(boolean preBill) {
+        this.preBill = preBill;
     }
 
 }
