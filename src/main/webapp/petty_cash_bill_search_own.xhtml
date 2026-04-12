@@ -197,12 +197,16 @@
                                             </div>
                                         </h:panelGroup>
                                     </p:column>
-
-                                    <p:column headerText="Status" style="padding: 8px;" width="7em;" class="text-center">
-                                        <h:panelGroup rendered="#{not empty bill.referenceBill and bill.referenceBill.cancelled}">
-                                            <p:badge  value="Cancelled" severity="danger" class="w-100"/>
+                                    
+                                    <p:column headerText="Status" style="padding: 8px;" width="9em;" class="text-center">
+                                        
+                                        <h:panelGroup rendered="#{bill.referenceBill.currentRequest ne null}">
+                                            <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="warning" rendered="#{bill.referenceBill.currentRequest.status eq 'PENDING'}" class="w-100"/>
+                                            <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="info" rendered="#{bill.referenceBill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
+                                            <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="success" rendered="#{bill.referenceBill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
+                                            <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="danger" rendered="#{bill.referenceBill.currentRequest.status eq 'REJECTED'}" class="w-100"/>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{empty bill.referenceBill or not bill.referenceBill.cancelled}">
+                                        <h:panelGroup rendered="#{bill.referenceBill.currentRequest eq null}">
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="warning" rendered="#{bill.currentRequest.status eq 'PENDING'}" class="w-100"/>
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="info" rendered="#{bill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
                                             <p:badge  value="#{bill.currentRequest.status.label}" severity="success" rendered="#{bill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
@@ -212,7 +216,7 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Net Value" style="padding: 8px;" width="8em;" class="text-end" >
+                                    <p:column headerText="Net Value" style="padding: 8px;" width="6em;" class="text-end" >
                                         <h:outputLabel value="#{bill.netTotal}" class="text-end" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
