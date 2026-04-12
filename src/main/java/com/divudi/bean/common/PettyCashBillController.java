@@ -190,7 +190,7 @@ public class PettyCashBillController implements Serializable {
 
     public void cancelPettyCashBill() {
         if (comment == null || comment.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("No bill selected.");
+            JsfUtil.addErrorMessage("Comment is Missing");
             return;
         }
 
