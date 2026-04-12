@@ -351,7 +351,9 @@
                             <p:commandButton class="ui-button-success mx-1"
                                              icon="fas fa-file-excel"
                                              ajax="false"
-                                             value="Download Excel" />
+                                             value="Download Excel">
+                                <p:fileDownload value="#{inwardReportController.ipUnsettledInvoicesExcel}" />
+                            </p:commandButton>
 
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"

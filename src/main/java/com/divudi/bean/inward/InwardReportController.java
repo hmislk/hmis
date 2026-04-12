@@ -1186,6 +1186,94 @@ public class InwardReportController implements Serializable {
         return value != null ? value : "";
     }
 
+    public StreamedContent getIpUnsettledInvoicesExcel() {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export.");
+            return null;
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = wb.createSheet("IP Unsettled Invoices");
+
+            String[] headers = {
+                "SI No", "MRN", "Patient Name", "Mobile", "Age", "Location",
+                "Discharged On", "Status", "Total", "Collected", "Due", "Discharged By"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+
+            CreationHelper helper = wb.getCreationHelper();
+            CellStyle dateStyle = wb.createCellStyle();
+            dateStyle.setDataFormat(helper.createDataFormat().getFormat("dd-MMM-yyyy HH:mm"));
+            CellStyle moneyStyle = wb.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+
+            int rowNum = 1;
+            int idx = 1;
+            for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(idx++);
+                row.createCell(1).setCellValue(dto.getPhn() != null ? dto.getPhn() : "");
+                row.createCell(2).setCellValue(dto.getPatientNameWithTitle() != null ? dto.getPatientNameWithTitle() : "");
+                row.createCell(3).setCellValue(dto.getMobileNumber() != null ? dto.getMobileNumber() : "");
+                row.createCell(4).setCellValue(dto.getAge() != null ? dto.getAge() : 0);
+
+                String location = "";
+                if (dto.getRoomCategoryName() != null
+                        && dto.getRoomCategoryName().getRoomFacilityCharge() != null
+                        && dto.getRoomCategoryName().getRoomFacilityCharge().getName() != null) {
+                    location = dto.getRoomCategoryName().getRoomFacilityCharge().getName();
+                }
+                row.createCell(5).setCellValue(location);
+
+                Cell dischargeCell = row.createCell(6);
+                if (dto.getDateOfDischarge() != null) {
+                    dischargeCell.setCellValue(dto.getDateOfDischarge());
+                    dischargeCell.setCellStyle(dateStyle);
+                }
+
+                row.createCell(7).setCellValue(dto.getPaymentStatusLabel() != null ? dto.getPaymentStatusLabel() : "");
+
+                Cell totalCell = row.createCell(8);
+                totalCell.setCellValue(dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
+                totalCell.setCellStyle(moneyStyle);
+
+                Cell collectedCell = row.createCell(9);
+                collectedCell.setCellValue(dto.getCreditPaidAmount() != null ? dto.getCreditPaidAmount() : 0.0);
+                collectedCell.setCellStyle(moneyStyle);
+
+                Cell dueCell = row.createCell(10);
+                dueCell.setCellValue(dto.getAmountToBePaid() != null ? dto.getAmountToBePaid() : 0.0);
+                dueCell.setCellStyle(moneyStyle);
+
+                String dischargedBy = dto.getCreaterName() != null ? dto.getCreaterName().getName() : "";
+                row.createCell(11).setCellValue(dischargedBy);
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("IP_Unsettled_Invoices.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
+    }
+
     public void processSpecialtyDoctorWiseIncomeReport() {
         spcDocIncomeBillList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
