@@ -68,6 +68,55 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
     }
 
     /**
+     * Ensures the DATABASEMIGRATION table's ID column has AUTO_INCREMENT.
+     *
+     * After deploying the GenerationType.IDENTITY build, EclipseLink stops
+     * providing ID values in INSERT statements. If the DB hasn't been migrated
+     * yet, the very first INSERT into DATABASEMIGRATION (to track a migration)
+     * will fail with "Field 'ID' doesn't have a default value".
+     *
+     * This method is called at startup from DatabaseMigrationController and
+     * self-heals only the one table the controller depends on. The remaining
+     * entity tables are handled by migration v2.2.0.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void ensureAutoIncrementOnMigrationTable() throws Exception {
+        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
+        Connection conn = emImpl.getServerSession().getDatasource().getConnection();
+        try {
+            conn.setAutoCommit(true);
+            // Check whether AUTO_INCREMENT is already set for DATABASEMIGRATION
+            try (java.sql.PreparedStatement check = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM information_schema.COLUMNS " +
+                    "WHERE TABLE_SCHEMA = DATABASE() " +
+                    "AND LOWER(TABLE_NAME) = 'databasemigration' " +
+                    "AND COLUMN_NAME = 'ID' " +
+                    "AND EXTRA LIKE '%auto_increment%'")) {
+                java.sql.ResultSet rs = check.executeQuery();
+                rs.next();
+                if (rs.getInt(1) == 0) {
+                    // Not yet set — find the actual table name (handles upper/lowercase)
+                    try (java.sql.PreparedStatement nameQuery = conn.prepareStatement(
+                            "SELECT TABLE_NAME FROM information_schema.COLUMNS " +
+                            "WHERE TABLE_SCHEMA = DATABASE() " +
+                            "AND LOWER(TABLE_NAME) = 'databasemigration' " +
+                            "AND COLUMN_NAME = 'ID' LIMIT 1")) {
+                        java.sql.ResultSet nameRs = nameQuery.executeQuery();
+                        if (nameRs.next()) {
+                            String tableName = nameRs.getString(1);
+                            try (Statement stmt = conn.createStatement()) {
+                                stmt.execute("ALTER TABLE `" + tableName + "` MODIFY COLUMN ID BIGINT NOT NULL AUTO_INCREMENT");
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            conn.close();
+        }
+    }
+
+    /**
      * Find migration by version
      */
     public DatabaseMigration findByVersion(String version) {
