@@ -124,10 +124,11 @@ public class RequestController implements Serializable {
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
             case INWARD_SERVICE_BILL:
                 return "/lab/inward_search_service?faces-redirect=true";
+            case PETTY_CASH_ISSUE:
+                return "/petty_cash_bill_search_own?faces-redirect=true";
             default:
                 return "";
         }
-
     }
 
     public String navigateToBackSearchRequest() {
@@ -240,7 +241,7 @@ public class RequestController implements Serializable {
                 }
                 break;
             case PETTYCASH_CANCELLATION:
-                if (!webUserController.hasPrivilege("DrawerAdjustmentRequestApproval")) {
+                if (!webUserController.hasPrivilege("PettyCashCancellationApproval")) {
                     JsfUtil.addErrorMessage("You are not authorized to review Petty Cash Cancellation requests.");
                     return "";
                 }
@@ -296,6 +297,11 @@ public class RequestController implements Serializable {
                 bills.add(currentRequest.getBill());
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
                 navigation = "/common/request/petty_cash_bill_cancel_request_approvel?faces-redirect=true";
+                break;
+            case PETTY_CASH_ISSUE:
+                bills.add(currentRequest.getBill());
+                pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
+                navigation = "/common/request/petty_cash_bill_cancellation_request?faces-redirect=true";
                 break;
             default:
                 navigation = "";
@@ -432,10 +438,10 @@ public class RequestController implements Serializable {
 
         printPreview = true;
     }
-    
+
     public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
         System.out.println("pettyCashBill = " + pettyCashBill);
-        
+
         if (pettyCashBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
             return;
@@ -653,6 +659,42 @@ public class RequestController implements Serializable {
 
     }
 
+    public void approvePettyCashCancellationRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This Request is Already Approval");
+            return;
+        }
+
+        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
+            JsfUtil.addErrorMessage("This Request is Already Rejected");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        if (currentRequest.getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select the PaymentMethod");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+    }
+
     public void approveDrawerAdjustmentRequest() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Request not found for approval");
@@ -733,11 +775,19 @@ public class RequestController implements Serializable {
             return;
         }
 
-        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
-            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
-            return;
+        if (currentRequest.getRequestType() == RequestType.BILL_CANCELLATION) {
+            if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+                JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+                return;
+            }
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
+            if (!webUserController.hasPrivilege("PettyCashCancellationApproval")) {
+                JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+                return;
+            }
         }
-
+        
+        
         currentRequest.setApproved(false);
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
@@ -761,8 +811,10 @@ public class RequestController implements Serializable {
         boolean canReject;
         if (currentRequest.getRequestType() == RequestType.DRAWER_ADJUSTMENT) {
             canReject = webUserController.hasPrivilege("DrawerAdjustmentRequestApproval");
-        }else if (currentRequest.getRequestType() == RequestType.PETTYCASH_APROVEL) {
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_APROVEL) {
             canReject = true;
+        } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
+            canReject = webUserController.hasPrivilege("PettyCashCancellationApproval");
         } else {
             canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
         }
