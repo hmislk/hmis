@@ -93,7 +93,6 @@ public class PettyCashBillController implements Serializable {
     private double returnTotal;
     private Bill currentReturnBill;
     private PaymentMethod paymentMethod;
-    private boolean printPriview;
     private List<Bill> billList;
 
     private PettyCashType currentBillType;
@@ -112,42 +111,75 @@ public class PettyCashBillController implements Serializable {
         b.setApproveUser(sessionController.getLoggedUser());
         billController.save(b);
     }
+
+    @Inject
+    RequestController requestController;
     
+    public String navigateToPettyCashCancel() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return "";
+        }
+
+        Calendar midnight = Calendar.getInstance();
+        midnight.set(Calendar.HOUR_OF_DAY, 0);
+        midnight.set(Calendar.MINUTE, 0);
+        midnight.set(Calendar.SECOND, 0);
+        midnight.set(Calendar.MILLISECOND, 0);
+        
+        System.out.println("Bill CreatedAt = " + current.getCreatedAt());  
+        System.out.println("midnight = " + midnight);
+
+        if (current.getCreatedAt() != null && current.getCreatedAt().after(midnight.getTime())) {
+            System.out.println("if Statment");
+            
+            printPreview = false;
+            return "petty_cash_bill_cancel?faces-redirect=true";
+        } else {
+            requestController.setComment("");
+            requestController.setPrintPreview(false);
+            System.out.println("else Statment");
+            return "petty_cash_bill_cancel_request.xhtml?faces-redirect=true";
+        }
+    }
+
     private boolean duplicate;
     private boolean preBill;
-    
+
     public String navigatePettyCashReprint(Bill selectedBill) {
-        if(selectedBill == null){
+        if (selectedBill == null) {
             JsfUtil.addErrorMessage("BillType is Missing.");
             return "";
         }
-        
+
         setCurrent(selectedBill);
-        
-        if (null == current.getBillTypeAtomic()){
+
+        if (null == current.getBillTypeAtomic()) {
             JsfUtil.addErrorMessage("BillType is Worng.");
             return "";
-        }else switch (current.getBillTypeAtomic()) {
-            case PETTY_CASH_PRE:
-                printPreview = true;
-                duplicate = true;
-                preBill = true;
-                return "petty_cash_prebill_reprint?faces-redirect=true";
-            case PETTY_CASH_ISSUE:
-                printPreview = true;
-                duplicate = true;
-                preBill = false;
-                return "petty_cash_bill_reprint?faces-redirect=true";
-            case PETTY_CASH_BILL_CANCELLATION:
-                printPreview = true;
-                duplicate = true;
-                preBill = false;
-                return "";
-            default:
-                JsfUtil.addErrorMessage("BillType is Worng.");
-                return "";
+        } else {
+            switch (current.getBillTypeAtomic()) {
+                case PETTY_CASH_PRE:
+                    printPreview = true;
+                    duplicate = true;
+                    preBill = true;
+                    return "petty_cash_prebill_reprint?faces-redirect=true";
+                case PETTY_CASH_ISSUE:
+                    printPreview = true;
+                    duplicate = true;
+                    preBill = false;
+                    return "petty_cash_bill_reprint?faces-redirect=true";
+                case PETTY_CASH_BILL_CANCELLATION:
+                    printPreview = true;
+                    duplicate = true;
+                    preBill = false;
+                    return "";
+                default:
+                    JsfUtil.addErrorMessage("BillType is Worng.");
+                    return "";
+            }
         }
-        
+
     }
 
     public String navigatePettyAndIouReprint() {
@@ -167,7 +199,7 @@ public class PettyCashBillController implements Serializable {
     public String navigateToPettyCashReturn() {
         returnAmount = Math.abs(getCurrent().getNetTotal()) - Math.abs(totalOfRedundedBills);
         if (returnAmount > 0.0) {
-            printPriview = false;
+            printPreview = false;
             comment = null;
             paymentMethodData = null;
             return "petty_cash_bill_return?faces-redirect=true";
@@ -215,16 +247,16 @@ public class PettyCashBillController implements Serializable {
 
         System.out.println("fullInvoiceNumber = " + fullInvoiceNumber);
 
-        return checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_PRE,fullInvoiceNumber);
+        return checkValidInvoiceNumber(BillTypeAtomic.PETTY_CASH_PRE, fullInvoiceNumber);
     }
 
     public boolean checkValidInvoiceNumber(BillTypeAtomic type, String invoiceNumber) {
-        
+
         Calendar year = Calendar.getInstance();
         Calendar c = Calendar.getInstance();
         c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
         Date fd = c.getTime();
-        
+
         String sql = "Select b From BilledBill b where "
                 + " b.retired=false "
                 + " and b.cancelled=false "
@@ -301,8 +333,8 @@ public class PettyCashBillController implements Serializable {
     }
 
     public void settlePreBill() {
-        if(errorCheck()){
-            return ;
+        if (errorCheck()) {
+            return;
         }
 
         if (currentBillType == PettyCashType.NEWPERSON) {
@@ -313,11 +345,11 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setInvoiceNumber(getFullyInvoiceNo(financialYear, invoiceNo));
-        
+
         savePreBill();
 
         saveBillItem();
-        
+
         Request newlyRequest = new Request();
 
         newlyRequest.setBill(getCurrent());
@@ -332,7 +364,7 @@ public class PettyCashBillController implements Serializable {
         newlyRequest.setRequestNo(reqNo);
 
         requestService.save(newlyRequest, sessionController.getLoggedUser());
-        
+
         getCurrent().setCurrentRequest(newlyRequest);
         billFacade.edit(current);
 
@@ -341,14 +373,13 @@ public class PettyCashBillController implements Serializable {
         printPreview = true;
         duplicate = false;
         preBill = true;
-        
+
         JsfUtil.addSuccessMessage("Bill Saved");
-        
 
     }
-    
+
     private Request currentRequest;
-    
+
     public void settleBill(Bill preBill) {
 
         //Create BilledBill
@@ -362,7 +393,7 @@ public class PettyCashBillController implements Serializable {
         bill.setTotal(preBill.getTotal());
         bill.setNetTotal(preBill.getNetTotal());
         bill.setReferenceBill(preBill);
-        
+
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_ISSUE);
         System.out.println("deptId = " + deptId);
         bill.setInsId(deptId);
@@ -380,20 +411,20 @@ public class PettyCashBillController implements Serializable {
         bill.setCreater(getSessionController().getLoggedUser());
 
         getBillFacade().create(bill);
-        
+
         //Updtae Pre Bill
         preBill.setReferenceBill(bill);
         getBillFacade().edit(preBill);
-        
+
         System.out.println("Create new Bill / Id = " + bill + " / Bill Numbeer = " + bill.getDeptId());
-        
+
         //create Payment
         List<Payment> payments = createPaymentForPettyCashBill(bill, bill.getPaymentMethod());
         System.out.println("payments = " + payments);
-        
+
         //Update User Drawer
         drawerController.updateDrawerForOuts(payments);
-        
+
     }
 
     @Inject
@@ -418,7 +449,7 @@ public class PettyCashBillController implements Serializable {
                 currentReturnBill = createPettyCashReturnBill();
                 paymentService.createPayment(currentReturnBill, paymentMethodData);
                 getBillFacade().edit(getCurrent());
-                printPriview = true;
+                printPreview = true;
                 current = null;
                 return "/petty_cash_bill_return_print";
             } else {
@@ -523,8 +554,8 @@ public class PettyCashBillController implements Serializable {
         return rb;
 
     }
-    
-    public boolean errorCheck(){
+
+    public boolean errorCheck() {
         if (currentBillType == null) {
             JsfUtil.addErrorMessage("Petty-Cash Type is Missing.");
             return true;
@@ -615,7 +646,7 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage("Bill already saved. Please start a new bill.");
             return true;
         }
-        
+
         Drawer loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
 
         System.out.println("loggedUserDrawer = " + loggedUserDrawer);
@@ -635,7 +666,7 @@ public class PettyCashBillController implements Serializable {
             JsfUtil.addErrorMessage("There is not enough cash in your drawer.");
             return true;
         }
-        
+
         return false;
     }
 
@@ -823,14 +854,6 @@ public class PettyCashBillController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }
-
-    public boolean isPrintPriview() {
-        return printPriview;
-    }
-
-    public void setPrintPriview(boolean printPriview) {
-        this.printPriview = printPriview;
     }
 
     public List<Bill> getBillList() {
