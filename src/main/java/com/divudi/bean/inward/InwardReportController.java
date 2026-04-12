@@ -109,6 +109,22 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import java.util.stream.Collectors;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfTable;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+
 /**
  *
  * @author pdhs
@@ -976,6 +992,202 @@ public class InwardReportController implements Serializable {
             }
         }
         return result;
+    }
+
+    public void downloadIpUnsettledInvoicesPdf() {
+        if (unsettledInvoicesList == null || unsettledInvoicesList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            String fileName = "IP_Unsettled_Invoices_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            document = new Document(com.lowagie.text.PageSize.A2.rotate(), 20, 20, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 7);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
+
+            java.awt.Color headerBg = new java.awt.Color(33, 37, 41);
+            java.awt.Color headerFg = java.awt.Color.WHITE;
+            java.awt.Color altRowBg = new java.awt.Color(245, 245, 245);
+            java.awt.Color grandTotalBg = new java.awt.Color(52, 58, 64);
+
+            com.lowagie.text.Font headerFontWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, headerFg);
+            com.lowagie.text.Font grandFontWhite = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, headerFg);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            Paragraph title = new Paragraph("IP Unsettled Invoices Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(6);
+            document.add(title);
+
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(60);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1f, 2f});
+            infoTable.setSpacingAfter(10);
+            addInfoRow(infoTable, "Institution:", institution != null ? institution.getName() : "All", boldFont, normalFont);
+            addInfoRow(infoTable, "Site:", site != null ? site.getName() : "All", boldFont, normalFont);
+            addInfoRow(infoTable, "Department:", department != null ? department.getName() : "All", boldFont, normalFont);
+            addInfoRow(infoTable, "From Date:", fromDate != null ? sdf.format(fromDate) : "-", boldFont, normalFont);
+            addInfoRow(infoTable, "To Date:", toDate != null ? sdf.format(toDate) : "-", boldFont, normalFont);
+            addInfoRow(infoTable, "Generated:", sdf.format(new Date()), boldFont, normalFont);
+            document.add(infoTable);
+
+            String[] headers = {
+                "#", "MRN", "Patient Name", "Mobile", "Age", "Location",
+                "Discharged On", "Invoice Status", "Total", "Collected",
+                "Amount Due", "Discharged By"
+            };
+            float[] colWidths = {3f, 8f, 16f, 8f, 4f, 10f, 10f, 8f, 7f, 7f, 7f, 9f};
+
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            table.setWidths(colWidths);
+            table.setSpacingBefore(4);
+            table.setHeaderRows(1);
+
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFontWhite));
+                cell.setBackgroundColor(headerBg);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setPadding(5);
+                table.addCell(cell);
+            }
+
+            double totalNet = 0.0;
+            double totalCollected = 0.0;
+            double totalDue = 0.0;
+            int idx = 1;
+
+            for (IpUnsettledInvoiceDTO row : unsettledInvoicesList) {
+                boolean alt = idx % 2 == 0;
+                java.awt.Color bg = alt ? altRowBg : null;
+
+                addPdfTextCell(table, String.valueOf(idx++), normalFont, bg, Element.ALIGN_CENTER);
+                addPdfTextCell(table, nullSafe(row.getPhn()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getPatientNameWithTitle()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getMobileNumber()), normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, row.getAge() != null ? row.getAge().toString() : "", normalFont, bg, Element.ALIGN_CENTER);
+
+                String location = "";
+                if (row.getRoomCategoryName() != null
+                        && row.getRoomCategoryName().getRoomFacilityCharge() != null
+                        && row.getRoomCategoryName().getRoomFacilityCharge().getName() != null) {
+                    location = row.getRoomCategoryName().getRoomFacilityCharge().getName();
+                }
+                addPdfTextCell(table, location, normalFont, bg, Element.ALIGN_LEFT);
+
+                addPdfTextCell(table, row.getDateOfDischarge() != null ? sdf.format(row.getDateOfDischarge()) : "",
+                        normalFont, bg, Element.ALIGN_LEFT);
+                addPdfTextCell(table, nullSafe(row.getPaymentStatusLabel()), normalFont, bg, Element.ALIGN_LEFT);
+
+                addPdfNumberCell(table, row.getNetTotal(), normalFont, bg);
+                addPdfNumberCell(table, row.getCreditPaidAmount(), normalFont, bg);
+                addPdfNumberCell(table, row.getAmountToBePaid(), normalFont, bg);
+
+                String dischargedBy = "";
+                if (row.getCreaterName() != null && row.getCreaterName().getName() != null) {
+                    dischargedBy = row.getCreaterName().getName();
+                }
+                addPdfTextCell(table, dischargedBy, normalFont, bg, Element.ALIGN_LEFT);
+
+                totalNet += row.getNetTotal() != null ? row.getNetTotal() : 0.0;
+                totalCollected += row.getCreditPaidAmount() != null ? row.getCreditPaidAmount() : 0.0;
+                totalDue += row.getAmountToBePaid() != null ? row.getAmountToBePaid() : 0.0;
+            }
+
+            PdfPCell grandLabel = new PdfPCell(new Phrase("Grand Total:", grandFontWhite));
+            grandLabel.setColspan(8);
+            grandLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            grandLabel.setBackgroundColor(grandTotalBg);
+            grandLabel.setPadding(5);
+            grandLabel.setBorderWidthTop(2);
+            table.addCell(grandLabel);
+
+            addPdfNumberCellBordered(table, totalNet, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalCollected, grandFontWhite, grandTotalBg);
+            addPdfNumberCellBordered(table, totalDue, grandFontWhite, grandTotalBg);
+            addPdfTextCell(table, "", grandFontWhite, grandTotalBg, Element.ALIGN_LEFT);
+
+            document.add(table);
+            document.close();
+            facesContext.responseComplete();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+        }
+    }
+
+    private void addInfoRow(PdfPTable table, String label, String value,
+            com.lowagie.text.Font labelFont, com.lowagie.text.Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(0);
+        labelCell.setPadding(2);
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "", valueFont));
+        valueCell.setBorder(0);
+        valueCell.setPadding(2);
+        table.addCell(valueCell);
+    }
+
+    private void addPdfTextCell(PdfPTable table, String text, com.lowagie.text.Font font,
+            java.awt.Color bgColor, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setPadding(2);
+        if (bgColor != null) {
+            cell.setBackgroundColor(bgColor);
+        }
+        table.addCell(cell);
+    }
+
+    private void addPdfNumberCell(PdfPTable table, Double value, com.lowagie.text.Font font,
+            java.awt.Color bgColor) {
+        double v = value != null ? value : 0.0;
+        PdfPCell cell = new PdfPCell(new Phrase(String.format("%,.2f", v), font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setPadding(2);
+        if (bgColor != null) {
+            cell.setBackgroundColor(bgColor);
+        }
+        table.addCell(cell);
+    }
+
+    private void addPdfNumberCellBordered(PdfPTable table, Double value, com.lowagie.text.Font font,
+            java.awt.Color bgColor) {
+        PdfPCell cell = new PdfPCell(new Phrase(String.format("%,.2f", value != null ? value : 0.0), font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setPadding(3);
+        cell.setBorderWidthTop(2);
+        cell.setBorderWidthBottom(2);
+        if (bgColor != null) {
+            cell.setBackgroundColor(bgColor);
+        }
+        table.addCell(cell);
+    }
+
+    private String nullSafe(String value) {
+        return value != null ? value : "";
     }
 
     public void processSpecialtyDoctorWiseIncomeReport() {
