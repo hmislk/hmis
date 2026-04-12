@@ -24,12 +24,14 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PettyCashType;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Request;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.CancelledBillFacade;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
 import java.io.Serializable;
@@ -83,6 +85,8 @@ public class PettyCashBillController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private CashTransactionBean cashTransactionBean;
+    @EJB
+    CancelledBillFacade cancelledBillFacade;
 
     private Bill current;
     private boolean printPreview = false;
@@ -114,7 +118,7 @@ public class PettyCashBillController implements Serializable {
 
     @Inject
     RequestController requestController;
-    
+
     public String navigateToPettyCashCancel() {
         if (current == null) {
             JsfUtil.addErrorMessage("No bill selected.");
@@ -126,20 +130,131 @@ public class PettyCashBillController implements Serializable {
         midnight.set(Calendar.MINUTE, 0);
         midnight.set(Calendar.SECOND, 0);
         midnight.set(Calendar.MILLISECOND, 0);
-        
-        System.out.println("Bill CreatedAt = " + current.getCreatedAt());  
+
+        System.out.println("Bill CreatedAt = " + current.getCreatedAt());
         System.out.println("midnight = " + midnight);
 
+        currentRequest = requestService.findRequest(current);
+        
         if (current.getCreatedAt() != null && current.getCreatedAt().after(midnight.getTime())) {
             System.out.println("if Statment");
-            
             printPreview = false;
+            comment = "";
             return "petty_cash_bill_cancel?faces-redirect=true";
         } else {
-            requestController.setComment("");
-            requestController.setPrintPreview(false);
-            System.out.println("else Statment");
-            return "petty_cash_bill_cancel_request.xhtml?faces-redirect=true";
+            System.out.println("Else = ");
+            
+            System.out.println("currentRequest = " + currentRequest);
+
+            if (currentRequest == null) {
+                System.out.println("currentRequest = Null");
+                requestController.setComment("");
+                requestController.setPrintPreview(false);
+                System.out.println("else Statment");
+                return "petty_cash_bill_cancel_request.xhtml?faces-redirect=true";
+            } else {
+                System.out.println("currentRequest = Not Null");
+                System.out.println("Request Status = " + currentRequest.getStatus());
+                requestController.setCurrentRequest(currentRequest);
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+                        printPreview = false;
+                        setComment(currentRequest.getRequestReason());
+                        return "petty_cash_bill_cancel?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        }
+    }
+
+    public static Date getMidnight() {
+        Calendar calendar = Calendar.getInstance();
+        // Reset the time to midnight
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+
+    public void cancelPettyCashBill() {
+        Date currentTime = new Date();
+        Date midNight = getMidnight();
+        if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
+            if (currentTime.before(midNight)) {
+                if (!current.getCurrentRequest().getApproved()) {
+                    JsfUtil.addErrorMessage("Bill cancellation is not allowed after midnight.");
+                    return;
+                }
+            }
+        }
+
+        if (current != null && current.getId() != null && current.getId() != 0) {
+
+            CancelledBill cb = new CancelledBill();
+            if (current != null) {
+                cb.copy(current);
+                cb.invertAndAssignValuesFromOtherBill(current);
+                cb.setBilledBill(current);
+            }
+            
+            String billNo = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
+
+            cb.setDeptId(billNo);
+            cb.setInsId(billNo);
+            cb.setBillDate(new Date());
+            cb.setBillTime(new Date());
+            cb.setCreatedAt(new Date());
+            cb.setCreater(getSessionController().getLoggedUser());
+            cb.setDepartment(getSessionController().getDepartment());
+            cb.setInstitution(getSessionController().getInstitution());
+            cb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
+            cb.setPaymentMethod(current.getPaymentMethod());
+            cb.setComments(comment);
+            cb.setStaff(current.getStaff());
+            cb.setPerson(current.getPerson());
+            cb.setToDepartment(current.getToDepartment());
+            cancelledBillFacade.create(cb);
+            System.out.println("Create Cancel Bill.");
+
+            JsfUtil.addSuccessMessage("Cancelled");
+
+            current.setCancelled(true);
+            current.setCancelledBill(cb);
+            billFacade.edit(current);
+
+            System.out.println("Billed Bill Updated.");
+
+            Payment p = createPaymentForPettyCashBillCancellation(cb, cb.getPaymentMethod());
+            System.out.println("Create Payments. ---> " + p);
+
+            drawerController.updateDrawerForIns(p);
+
+            if (currentRequest != null) {
+                currentRequest.setCompleted(true);
+                currentRequest.setCompletedAt(new Date());
+                currentRequest.setCompletedBy(sessionController.getLoggedUser());
+                requestService.save(currentRequest, sessionController.getLoggedUser());
+                System.out.println("Current Request Update");
+            }
+            
+            setCurrent(cb);
+
+            duplicate = false;
+            printPreview = true;
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -173,7 +288,7 @@ public class PettyCashBillController implements Serializable {
                     printPreview = true;
                     duplicate = true;
                     preBill = false;
-                    return "";
+                    return "petty_cash_bill_cancel?faces-redirect=true";
                 default:
                     JsfUtil.addErrorMessage("BillType is Worng.");
                     return "";
