@@ -63,7 +63,8 @@
 
                 <!-- Header Section -->
                 <div class="hospital-name mt-3">
-                    <h:outputLabel value="Petty-Cash Aprovel Request" style="font-weight: 700;"/>
+                    <h:outputLabel value="Petty-Cash Aprovel Request" style="font-weight: 700;" rendered="#{cc.attrs.request.requestType eq 'PETTYCASH_APROVEL'}"/>
+                    <h:outputLabel value="Petty-Cash Cancellation Request" style="font-weight: 700;" rendered="#{cc.attrs.request.requestType eq 'PETTYCASH_CANCELLATION'}"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                     <h:outputLabel value="**Approved**"  rendered="#{cc.attrs.request.approved }" />
