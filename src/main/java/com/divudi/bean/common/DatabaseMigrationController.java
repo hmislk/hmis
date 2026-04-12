@@ -70,29 +70,7 @@ public class DatabaseMigrationController implements Serializable {
 
     @PostConstruct
     public void init() {
-        bootstrapDatabaseMigrationTable();
         refreshMigrationLists();
-    }
-
-    /**
-     * Ensures the DATABASEMIGRATION table itself has AUTO_INCREMENT on its ID
-     * column before any migration tracking record is inserted.
-     *
-     * Bootstrap problem: after deploying the GenerationType.IDENTITY build,
-     * EclipseLink omits ID from INSERT statements. If DATABASEMIGRATION.ID
-     * has no AUTO_INCREMENT yet (migration v2.2.0 hasn't run), MySQL throws
-     * "Field 'ID' doesn't have a default value" and the tracking insert fails.
-     *
-     * This method detects that condition and self-heals the one table that
-     * the migration controller itself depends on, before touching any other
-     * table. The remaining 186 tables are handled by migration v2.2.0.
-     */
-    private void bootstrapDatabaseMigrationTable() {
-        try {
-            migrationFacade.ensureAutoIncrementOnMigrationTable();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Could not bootstrap DATABASEMIGRATION AUTO_INCREMENT — migration v2.2.0 may fail if not yet applied", e);
-        }
     }
 
     public String navigateToDatabaseMigration(){
