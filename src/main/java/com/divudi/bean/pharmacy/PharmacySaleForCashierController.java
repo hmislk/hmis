@@ -18,6 +18,7 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -1549,8 +1550,21 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             Stock result = stockFacade.getReference(stockDto.getId());
             return result;
         } catch (Exception e) {
-            System.out.println("convertStockDtoToEntity: Exception occurred - " + e.getMessage());
-            return null;
+            // EclipseLink ConcurrencyException can occur when another thread holds
+            // a write lock on the Stock identity map entry. Retry with find() which
+            // bypasses the identity map proxy and goes directly to the database.
+            logger.log(Level.WARNING,
+                    "convertStockDtoToEntity: getReference failed for Stock ID {0}, retrying with find(). Error: {1}",
+                    new Object[]{stockDto.getId(), e.getMessage()});
+            try {
+                Stock result = stockFacade.find(stockDto.getId());
+                return result;
+            } catch (Exception e2) {
+                logger.log(Level.SEVERE,
+                        "convertStockDtoToEntity: find() also failed for Stock ID {0}. Error: {1}",
+                        new Object[]{stockDto.getId(), e2.getMessage()});
+                return null;
+            }
         }
     }
 
@@ -2304,6 +2318,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             Stock stockEntity = convertStockDtoToEntity(stockDto);
             if (stockEntity != null) {
                 getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
+            } else {
+                JsfUtil.addErrorMessage("Unable to load stock information. The server may be busy — please try again.");
+                logger.log(Level.WARNING,
+                        "calculateBillItem: convertStockDtoToEntity returned null for StockDTO ID {0}",
+                        stockDto.getId());
+                return;
             }
         }
 
@@ -2493,13 +2513,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return addedQty;
         }
 
-        if (getStockDto() == null) {
+        if (getStockDto() == null && (getStock() == null || getStock().getId() == null)) {
             errorMessage = "Item ??";
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
 
-        if (getStockDto().getDateOfExpire() != null && getStockDto().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        // Use stockDto when available; fall back to stock entity for multi-batch path
+        boolean usingDto = (getStockDto() != null);
+
+        if (usingDto && getStockDto().getDateOfExpire() != null && getStockDto().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
@@ -2513,13 +2536,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Quentity Zero?");
             return addedQty;
         }
-        if (getStockDto().getStockQty() == null) {
+        if (usingDto && getStockDto().getStockQty() == null) {
             errorMessage = "Stock quantity not available.";
             JsfUtil.addErrorMessage("Stock quantity not available. Please select a valid stock.");
             return addedQty;
         }
 
-        if (getQty() > getStockDto().getStockQty()) {
+        if (usingDto && getQty() > getStockDto().getStockQty()) {
             errorMessage = "No sufficient stocks.";
             JsfUtil.addErrorMessage("Insufficient stock. Available: " + String.format("%.0f", getStockDto().getStockQty()) + ", Requested: " + String.format("%.0f", getQty()));
             return addedQty;
@@ -2547,11 +2570,34 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
-        // Convert StockDTO to Stock entity for persistence
-        Stock stockEntity = convertStockDtoToEntity(stockDto);
-        if (stockEntity != null) {
-            billItem.getPharmaceuticalBillItem().setStock(stockEntity);
+        // Resolve Stock entity: prefer DTO path (avoids proxy resolution),
+        // fall back to controller-level stock entity for multi-batch path
+        Stock stockEntity;
+        if (usingDto) {
+            stockEntity = convertStockDtoToEntity(stockDto);
+            if (stockEntity == null) {
+                errorMessage = "Unable to process stock. Please try again.";
+                JsfUtil.addErrorMessage("Unable to process stock information. The server may be busy — please try again.");
+                logger.log(Level.SEVERE,
+                        "addBillItemSingleItem: convertStockDtoToEntity returned null for StockDTO ID {0}. Item not added to bill.",
+                        stockDto.getId());
+                return 0.0;
+            }
+        } else {
+            stockEntity = getStock();
+        }
+        billItem.getPharmaceuticalBillItem().setStock(stockEntity);
+        // Use DTO-based references to avoid triggering Stock proxy resolution,
+        // which can throw EclipseLink ConcurrencyException under concurrent load.
+        // For multi-batch path (no DTO), fall back to stock entity's relationships.
+        if (usingDto && stockDto.getItemBatchId() != null) {
+            billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchFacade.getReference(stockDto.getItemBatchId()));
+        } else if (stockEntity.getItemBatch() != null) {
             billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+        }
+        if (usingDto && stockDto.getItemId() != null) {
+            billItem.setItem(itemFacade.getReference(stockDto.getItemId()));
+        } else if (stockEntity.getItemBatch() != null) {
             billItem.setItem(stockEntity.getItemBatch().getItem());
         }
 
@@ -2921,15 +2967,18 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     }
 
-    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
-        if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
+    private boolean savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        WebUser loggedUser = getSessionController().getLoggedUser();
+        if (loggedUser == null) {
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return false;
         }
-        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getPreBill().setDepartment(loggedUser.getDepartment());
+        getPreBill().setInstitution(loggedUser.getDepartment().getInstitution());
 
         getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getPreBill().setCreater(getSessionController().getLoggedUser());
+        getPreBill().setCreater(loggedUser);
 
         getPreBill().setPatient(pt);
 //        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
@@ -2953,8 +3002,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
-        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setFromDepartment(loggedUser.getDepartment());
+        getPreBill().setFromInstitution(loggedUser.getDepartment().getInstitution());
         getPreBill().setPaymentMethod(getPaymentMethod());
         getPreBill().setPaymentScheme(getPaymentScheme());
 
@@ -2995,7 +3044,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
-        getBillFacade().edit(getPreBill());
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        } else {
+            getBillFacade().edit(getPreBill());
+        }
+        return true;
     }
 
     private void saveSaleBill() {
@@ -3061,6 +3115,28 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 ////                continue;
 //            }
 
+            // Safety net: skip item entirely if stock is null (should not happen
+            // after upstream fixes, but prevents silent data loss if it does)
+            if (tbi.getPharmaceuticalBillItem().getStock() == null) {
+                logger.log(Level.SEVERE,
+                        "savePreBillItems: Stock is null for BillItem ID {0}, item {1}. "
+                        + "Stock deduction skipped. Bill: {2}",
+                        new Object[]{tbi.getId(),
+                            tbi.getItem() != null ? tbi.getItem().getName() : "unknown",
+                            getPreBill().getDeptId()});
+                tbi.setQty(0.0);
+                tbi.setGrossValue(0.0);
+                tbi.setDiscount(0.0);
+                tbi.setNetValue(0.0);
+                if (tbi.getPharmaceuticalBillItem() != null) {
+                    tbi.getPharmaceuticalBillItem().setQty(0.0);
+                    tbi.getPharmaceuticalBillItem().setFreeQty(0.0f);
+                }
+                JsfUtil.addErrorMessage("Error: Stock information missing for item "
+                        + (tbi.getItem() != null ? tbi.getItem().getName() : "")
+                        + ". Item removed from bill. Please add it again.");
+                continue;
+            }
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
             if (tbi.getId() == null) {
@@ -3121,6 +3197,28 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //                continue;
             }
 
+            // Safety net: skip item entirely if stock is null
+            if (tbi.getPharmaceuticalBillItem().getStock() == null) {
+                logger.log(Level.SEVERE,
+                        "savePreBillItemsFinally: Stock is null for BillItem ID {0}, item {1}. "
+                        + "Stock deduction skipped. Bill: {2}",
+                        new Object[]{tbi.getId(),
+                            tbi.getItem() != null ? tbi.getItem().getName() : "unknown",
+                            getPreBill().getDeptId()});
+                tbi.setQty(0.0);
+                tbi.setGrossValue(0.0);
+                tbi.setDiscount(0.0);
+                tbi.setNetValue(0.0);
+                if (tbi.getPharmaceuticalBillItem() != null) {
+                    tbi.getPharmaceuticalBillItem().setQty(0.0);
+                    tbi.getPharmaceuticalBillItem().setFreeQty(0.0f);
+                }
+                JsfUtil.addErrorMessage("Error: Stock information missing for item "
+                        + (tbi.getItem() != null ? tbi.getItem().getName() : "")
+                        + ". Item removed from bill. Please add it again.");
+                // Do not re-add to preBill — item is excluded from the bill
+                continue;
+            }
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
             if (tbi.getId() == null) {
@@ -3486,6 +3584,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public String settlePreBillAndNavigateToPrint() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return null;
+        }
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return null;
@@ -3680,6 +3783,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (!stockValidation.isValid()) {
             // Display comprehensive error messages showing ALL stock shortfalls
             JsfUtil.addErrorMessage(stockValidation.getFormattedErrorMessage());
+            stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Stock validation failed");
             billSettlingStarted = false;
             return null;
         }
@@ -3694,6 +3798,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 if (patientRequiredForPharmacySale) {
                     if (!hasValidName) {
                         JsfUtil.addErrorMessage("Please Select a Patient");
+                        stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Patient not selected");
                         billSettlingStarted = false;
                         return null;
                     } else {
@@ -3706,6 +3811,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 }
             } else if (patientRequiredForPharmacySale) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
+                stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Patient not selected");
                 billSettlingStarted = false;
                 return null;
             }
@@ -3720,7 +3826,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             getPreBill().setBillItems(null);
             getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-            savePreBillFinallyForRetailSaleForCashier(pt);
+            if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+                getPreBill().setBillItems(tmpBillItems);
+                stockLockingService.releaseLocks(stockValidation.getLockedStocks(), "Session expired during settlement");
+                billSettlingStarted = false;
+                return null;
+            }
             // Use locked stocks for settlement instead of re-validating
             savePreBillItemsFinallyWithLockedStocks(tmpBillItems, stockValidation.getLockedStocks());
             setPrintBill(getPreBill());
@@ -3783,6 +3894,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
     public void settlePreBill() {
         editingQty = null;
+        if (getSessionController().getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return;
+        }
 
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items added to bill to sale");
@@ -3951,7 +4067,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getPreBill().setBillItems(null);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
 
-        savePreBillFinallyForRetailSaleForCashier(pt);
+        if (!savePreBillFinallyForRetailSaleForCashier(pt)) {
+            billSettlingStarted = false;
+            return;
+        }
         savePreBillItemsFinally(tmpBillItems);
         // Create BFD for pre-bill at creation time so F15 stock movement report can track it
         if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {

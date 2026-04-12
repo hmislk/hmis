@@ -1874,6 +1874,26 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    // For channel bills
+    public void createRowValuesFromBillForChannelBills() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+
+                if (row.getBill() == null) {
+                    continue;
+                }
+
+                // Setting values
+                row.setGrossTotal(row.getBill().getTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getBill().getHospitalFee());
+                row.setStaffTotal(row.getBill().getStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
+            }
+        }
+    }
+
     public Map<String, List<BillItem>> getGroupedBillItems() {
         return groupedBillItems;
     }

@@ -3,6 +3,8 @@ package com.divudi.bean.common;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientInvestigationController;
+
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,13 +22,20 @@ import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.data.ReportTemplateRowBundle;
 
 import javax.inject.Inject;
+
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InvestigationItemType;
 import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.ReportItemType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.lab.CommonReportItem;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientReportItemValue;
@@ -85,6 +94,8 @@ public class PdfController {
     SessionController sessionController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Creates a new instance of PdfController
@@ -2673,6 +2684,12 @@ public class PdfController {
                 case "opdProfessionalFeePayments":
                     populateTableForOpdProfessionalFeePayments(document, bundle);
                     break;
+                case "channelIncomeScanning":
+                    populateTableForChannelIncomeScanningReport(document, bundle);
+                    break;
+                case "channelIncome":
+                    populateTableForChannelIncomeReport(document, bundle);
+                    break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report type for PDF export: " + bundle.getBundleType());
                     document.close();
@@ -2981,6 +2998,616 @@ public class PdfController {
 
         return infoTable;
 
+    }
+
+    // PDF Export: Channel Income Scanning Report
+    private void populateTableForChannelIncomeScanningReport(Document document, ReportTemplateRowBundle bundle) throws IOException {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data Available"));
+            return;
+        }
+
+        Table table;
+        int fontSize = 8;
+
+        // PaymentsMethod Column boolean values
+        boolean hasCash             = false;
+        boolean hasCard             = false;
+        boolean hasCredit           = false;
+        boolean hasStaffWelfare     = false;
+        boolean hasVoucher          = false;
+        boolean hasIou              = false;
+        boolean hasAgent            = false;
+        boolean hasCheque           = false;
+        boolean hasSlip             = false;
+        boolean hasEWallet          = false;
+        boolean hasPatientDeposit   = false;
+        boolean hasPatientPoints    = false;
+        boolean hasOnlineSettlement = false;
+
+        List<String> headers = new ArrayList<>(Arrays.asList("Serial No", "Bill Id", "Created At", "Bill No", "Patient", "Doctor", "Session", "Item", "Cashier", "Hospital Fee", "Doctor Fee", "Gross Total"));
+
+        List<Float> colWidths = new ArrayList<>(Arrays.asList(2f, 3f, 3f, 5f, 5f, 5f, 4f, 5f, 4f, 4f, 4f, 4f));
+
+        // Payment Method columns
+        if (bundle.isHasCashTransaction()) {
+            headers.add("Cash");
+            colWidths.add(4f);
+            hasCash = true;
+        }
+        if (bundle.isHasCardTransaction()) {
+            headers.add("Card");
+            colWidths.add(4f);
+            hasCard = true;
+        }
+        if (bundle.isHasCreditTransaction()) {
+            headers.add("Credit");
+            colWidths.add(4f);
+            hasCredit = true;
+        }
+        if (bundle.isHasStaffWelfareTransaction()) {
+            headers.add("Staff Welfare");
+            colWidths.add(4f);
+            hasStaffWelfare = true;
+        }
+        if (bundle.isHasVoucherTransaction()) {
+            headers.add("Voucher");
+            colWidths.add(4f);
+            hasVoucher = true;
+        }
+        if (bundle.isHasIouTransaction()) {
+            headers.add("IOU");
+            colWidths.add(4f);
+            hasIou = true;
+        }
+        if (bundle.isHasAgentTransaction()) {
+            headers.add("Agent");
+            colWidths.add(4f);
+            hasAgent = true;
+        }
+        if (bundle.isHasChequeTransaction()) {
+            headers.add("Cheque");
+            colWidths.add(4f);
+            hasCheque = true;
+        }
+        if (bundle.isHasSlipTransaction()) {
+            headers.add("Slip");
+            colWidths.add(4f);
+            hasSlip = true;
+        }
+        if (bundle.isHasEWalletTransaction()) {
+            headers.add("eWallet");
+            colWidths.add(4f);
+            hasEWallet = true;
+        }
+        if (bundle.isHasPatientDepositTransaction()) {
+            headers.add("Patient Deposit");
+            colWidths.add(4f);
+            hasPatientDeposit = true;
+        }
+        if (bundle.isHasPatientPointsTransaction()) {
+            headers.add("Patient Points");
+            colWidths.add(4f);
+            hasPatientPoints = true;
+        }
+        if (bundle.isHasOnlineSettlementTransaction()) {
+            headers.add("Online Settlement");
+            colWidths.add(4f);
+            hasOnlineSettlement = true;
+        }
+
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+
+        // Convert List<Float> to float[]
+        float[] widthsArray = new float[colWidths.size()];
+        for (int i = 0; i < colWidths.size(); i++) {
+            widthsArray[i] = colWidths.get(i);
+        }
+
+        // Create table using dynamic widths
+        table = new Table(widthsArray).useAllAvailableWidth().setFixedLayout();
+
+        if (table == null || headers == null) {
+            document.add(new Paragraph("Invalid table configuration"));
+            return;
+        }
+
+        if (colWidths.size() > 15) {
+            fontSize = 6;
+        }
+
+        for (String header : headers) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(fontSize)
+                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
+            table.addCell(headerCell);
+        }
+
+        int serialNo = 1;
+
+        for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+
+            Bill b = r.getBill();
+
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(serialNo++)).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize))); 
+            if (b != null) { 
+                table.addCell(new Cell().add(new Paragraph(String.valueOf(b.getId() != null ? b.getId() : "")).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(b.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+                if (b.isCancelled()) {
+                    billDept += "\nCancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId()) : "" );
+                }
+                if (b.isRefunded()) {
+                    billDept += "\nRefunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId()) : "" );
+                }
+                if (b instanceof RefundBill) {
+                    billDept += "\nRefund Bill";
+                }
+                if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    billDept += "\nCancel Bill";
+                }
+                table.addCell(new Cell().add(new Paragraph(billDept).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                table.addCell(new Cell().add(new Paragraph((b.getPatient() != null && b.getPatient().getPerson() != null ) ? b.getPatient().getPerson().getNameWithTitle() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph((b.getSingleBillItem() != null && b.getSingleBillItem().getItem() != null && b.getSingleBillItem().getItem().getStaff() != null && b.getSingleBillItem().getItem().getStaff().getPerson() != null) ? b.getSingleBillItem().getItem().getStaff().getPerson().getNameWithTitle() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                SessionInstance si = b.getSingleBillSession() != null ? b.getSingleBillSession().getSessionInstance() : null;
+                String sessionName = "";
+                if (si != null) {
+                    sessionName += si.getName();
+                    if (si.getSessionDate() != null) {
+                        sessionName += " " + new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat()).format(si.getSessionDate());
+                    }
+                    if (si.getSessionTime() != null) {
+                        sessionName += " " + new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat()).format(si.getSessionTime());
+                    }
+                }
+                table.addCell(new Cell().add(new Paragraph(sessionName).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                String itemNames = "";
+                if (b.getBillItems() != null && !b.getBillItems().isEmpty()) {
+                    for (BillItem bi : b.getBillItems()) {
+                        if (bi.getItem() != null && !(bi.getItem() instanceof ServiceSession)) {
+                            itemNames += bi.getItem().getName() + "/ ";
+                        }
+                    }
+                }
+                table.addCell(new Cell().add(new Paragraph(itemNames).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                table.addCell(new Cell().add(new Paragraph(b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getHospitalFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getStaffFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            } else {
+                for (int i = 0; i < 11; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            }
+
+            // Columns for Payment Methods
+            if (hasCash) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getCashValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasCard) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getCardValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasCredit) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getCreditValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasStaffWelfare) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getStaffWelfareValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasVoucher) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getVoucherValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasIou) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getIouValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasAgent) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getAgentValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasCheque) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getChequeValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasSlip) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getSlipValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasEWallet) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getEwalletValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasPatientDeposit) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getPatientDepositValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasPatientPoints) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getPatientPointsValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasOnlineSettlement) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getOnlineSettlementValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+        } 
+
+        table.addCell(new Cell(1, 9).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(bundle.getLong2() != null ? formatter.format(bundle.getLong2()) : "").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(bundle.getLong3() != null ? formatter.format(bundle.getLong3()) : "").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(bundle.getLong1() != null ? formatter.format(bundle.getLong1()) : "").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+
+        // footers for PaymentMethod columns
+        if (hasCash) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getCashValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasCard) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getCardValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasCredit) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getCreditValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasStaffWelfare) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getStaffWelfareValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasVoucher) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getVoucherValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasIou) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getIouValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasAgent) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getAgentValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasCheque) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getChequeValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasSlip) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getSlipValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasEWallet) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getEwalletValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasPatientDeposit) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getPatientDepositValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasPatientPoints) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getPatientPointsValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasOnlineSettlement) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getOnlineSettlementValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        
+
+        document.add(table);
+
+        return;
+        
+    }
+
+    // PDF Export: Channel Income Report
+    private void populateTableForChannelIncomeReport(Document document, ReportTemplateRowBundle bundle) throws IOException {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data Available"));
+            return;
+        }
+
+        Table table;
+        int fontSize = 8;
+
+        // PaymentsMethod Column boolean values
+        boolean hasCash             = false;
+        boolean hasCard             = false;
+        boolean hasCredit           = false;
+        boolean hasStaffWelfare     = false;
+        boolean hasVoucher          = false;
+        boolean hasIou              = false;
+        boolean hasAgent            = false;
+        boolean hasCheque           = false;
+        boolean hasSlip             = false;
+        boolean hasEWallet          = false;
+        boolean hasPatientDeposit   = false;
+        boolean hasPatientPoints    = false;
+        boolean hasOnlineSettlement = false;
+        boolean includeBTA          = false;
+        boolean includeDiscount     = false;
+
+        List<String> headers = new ArrayList<>(Arrays.asList("Serial", "Date", "Bill No"));
+        List<Float> colWidths = new ArrayList<>(Arrays.asList(2f, 3f, 5f));
+
+        if (webUserController.hasPrivilege("Developers")) {
+            includeBTA = true;
+            headers.add("Bill Type");
+            colWidths.add(5f);
+        }
+
+        headers.addAll(Arrays.asList("Bill Type", "Patient", "Cashier", "Payment Method", "Hospital Fee", "Staff Fee", "Gross Total"));
+        colWidths.addAll(Arrays.asList(5f, 4f, 4f, 3f, 3.5f, 3.5f, 3.5f));
+
+        if (configOptionApplicationController.getBooleanValueByKey("Add discount column to the channel income report", false)) {
+            includeDiscount = true;
+            headers.addAll(Arrays.asList("Discount", "Net Total"));
+            colWidths.addAll(Arrays.asList(3.5f, 3.5f));
+        }
+
+        // Payment Method columns
+        if (bundle.isHasCashTransaction()) {
+            headers.add("Cash");
+            colWidths.add(4f);
+            hasCash = true;
+        }
+        if (bundle.isHasCardTransaction()) {
+            headers.add("Card");
+            colWidths.add(4f);
+            hasCard = true;
+        }
+        if (bundle.isHasCreditTransaction()) {
+            headers.add("Credit");
+            colWidths.add(4f);
+            hasCredit = true;
+        }
+        if (bundle.isHasStaffWelfareTransaction()) {
+            headers.add("Staff Welfare");
+            colWidths.add(4f);
+            hasStaffWelfare = true;
+        }
+        if (bundle.isHasVoucherTransaction()) {
+            headers.add("Voucher");
+            colWidths.add(4f);
+            hasVoucher = true;
+        }
+        if (bundle.isHasIouTransaction()) {
+            headers.add("IOU");
+            colWidths.add(4f);
+            hasIou = true;
+        }
+        if (bundle.isHasAgentTransaction()) {
+            headers.add("Agent");
+            colWidths.add(4f);
+            hasAgent = true;
+        }
+        if (bundle.isHasChequeTransaction()) {
+            headers.add("Cheque");
+            colWidths.add(4f);
+            hasCheque = true;
+        }
+        if (bundle.isHasSlipTransaction()) {
+            headers.add("Slip");
+            colWidths.add(4f);
+            hasSlip = true;
+        }
+        if (bundle.isHasEWalletTransaction()) {
+            headers.add("eWallet");
+            colWidths.add(4f);
+            hasEWallet = true;
+        }
+        if (bundle.isHasPatientDepositTransaction()) {
+            headers.add("Patient Deposit");
+            colWidths.add(4f);
+            hasPatientDeposit = true;
+        }
+        if (bundle.isHasPatientPointsTransaction()) {
+            headers.add("Patient Points");
+            colWidths.add(4f);
+            hasPatientPoints = true;
+        }
+        if (bundle.isHasOnlineSettlementTransaction()) {
+            headers.add("Online Settlement");
+            colWidths.add(4f);
+            hasOnlineSettlement = true;
+        }
+
+        // Convert List<Float> to float[]
+        float[] widthsArray = new float[colWidths.size()];
+        for (int i = 0; i < colWidths.size(); i++) {
+            widthsArray[i] = colWidths.get(i);
+        }
+
+        // Create table using dynamic widths
+        table = new Table(widthsArray).useAllAvailableWidth().setFixedLayout();
+
+        if (table == null || headers == null) {
+            document.add(new Paragraph("Invalid table configuration"));
+            return;
+        }
+
+        if (colWidths.size() > 15) {
+            fontSize = 6;
+        }
+
+        for (String header : headers) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(fontSize)
+                    .setBackgroundColor(new DeviceRgb(192, 192, 192));
+            table.addCell(headerCell);
+        }
+
+        int serialNo = 1;
+
+        for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+
+            Bill b = r.getBill();
+
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(serialNo++)).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize))); 
+            if (b != null) { 
+                table.addCell(new Cell().add(new Paragraph(b.getCreatedAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateTimeFormat()).format(b.getCreatedAt()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                String billDept = b.getDeptId() != null ? b.getDeptId() : "";
+                if (b.isCancelled()) {
+                    billDept += "\nCancelled" + (b.getCancelledBill() != null && b.getCancelledBill().getDeptId() != null ? (" - " + b.getCancelledBill().getDeptId()) : "" );
+                }
+                if (b.isRefunded()) {
+                    billDept += "\nRefunded" + (b.getRefundedBill() != null && b.getRefundedBill().getDeptId() != null ? (" - " + b.getRefundedBill().getDeptId()) : "" );
+                }
+                if (b instanceof RefundBill) {
+                    billDept += "\nRefund Bill";
+                }
+                if (b.getBillTypeAtomic() != null && b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT) {
+                    billDept += "\nCancel Bill";
+                }
+                table.addCell(new Cell().add(new Paragraph(billDept).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                if (includeBTA) {
+                    table.addCell(new Cell().add(new Paragraph(b.getBillTypeAtomic() != null ? b.getBillTypeAtomic().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+
+                String billType = "";
+                if (b.getBillTypeAtomic() != null) {
+                    if (b.getBillTypeAtomic() == BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION) {
+                        billType = "Dr Payment";
+                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN) {
+                        billType = "Dr Payment Return";
+                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL) {
+                        billType = "OB Agent Payment To Hospital";
+                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION) {
+                        billType = "OB Agent Cancel Payment To Hospital";
+                    } else {
+                        billType = "Channel Bill";
+                    }
+                }
+                table.addCell(new Cell().add(new Paragraph(billType).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                String patientName = "";
+                if (b.getBillTypeAtomic() != null) {
+                    if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                        patientName = (b.getReferenceBill() != null && b.getReferenceBill().getOnlineBooking() != null) ? b.getReferenceBill().getOnlineBooking().getPatientName() : "";
+                    } else if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING) {
+                       patientName = (b.getBilledBill() != null && b.getBilledBill().getReferenceBill() != null && b.getBilledBill().getReferenceBill().getOnlineBooking() != null) ? b.getBilledBill().getReferenceBill().getOnlineBooking().getPatientName() : "";
+                    } else {
+                        patientName = (b.getPatient() != null && b.getPatient().getPerson() != null) ? b.getPatient().getPerson().getNameWithTitle() : "";
+                    }
+                }
+                table.addCell(new Cell().add(new Paragraph(patientName).setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+
+                table.addCell(new Cell().add(new Paragraph(b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(b.getPaymentMethod() != null ? b.getPaymentMethod().toString() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getHospitalFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getStaffFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+
+                if (includeDiscount) {
+                    table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getDiscount())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+                    table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", b.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+                }
+            } else if (includeBTA && includeDiscount){
+                for (int i = 0; i < 12; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            } else if (includeBTA){
+                for (int i = 0; i < 10; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            } else if (includeDiscount){
+                for (int i = 0; i < 11; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            } else {
+                for (int i = 0; i < 9; i++) {
+                    table.addCell(new Cell().add(new Paragraph("").setTextAlignment(TextAlignment.LEFT).setFontSize(fontSize)));
+                }
+            } 
+
+            // Columns for Payment Methods
+            if (hasCash) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getCashValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasCard) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getCardValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasCredit) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getCreditValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasStaffWelfare) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getStaffWelfareValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasVoucher) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getVoucherValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasIou) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getIouValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasAgent) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getAgentValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasCheque) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getChequeValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasSlip) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getSlipValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasEWallet) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getEwalletValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasPatientDeposit) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getPatientDepositValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasPatientPoints) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getPatientPointsValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+            if (hasOnlineSettlement) {
+                table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", r.getOnlineSettlementValue())).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)));
+            }
+        } 
+
+        if (includeBTA) {
+            table.addCell(new Cell(1, 8).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        } else {
+            table.addCell(new Cell(1, 7).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        table.addCell(new Cell().add(new Paragraph(bundle.getHospitalTotal() != null ? String.format("%,.2f", bundle.getHospitalTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(bundle.getStaffTotal() != null ? String.format("%,.2f", bundle.getStaffTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        table.addCell(new Cell().add(new Paragraph(bundle.getGrossTotal() != null ? String.format("%,.2f", bundle.getGrossTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+
+        if (includeDiscount) {
+            table.addCell(new Cell().add(new Paragraph(bundle.getDiscount() != null ? String.format("%,.2f", bundle.getDiscount().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+            table.addCell(new Cell().add(new Paragraph(bundle.getTotal() != null ? String.format("%,.2f", bundle.getTotal().doubleValue()) : "0.0").setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        // footers for PaymentMethod columns
+        if (hasCash) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getCashValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasCard) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getCardValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasCredit) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getCreditValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasStaffWelfare) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getStaffWelfareValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasVoucher) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getVoucherValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasIou) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getIouValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasAgent) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getAgentValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasCheque) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getChequeValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasSlip) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getSlipValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasEWallet) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getEwalletValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasPatientDeposit) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getPatientDepositValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasPatientPoints) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getPatientPointsValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        if (hasOnlineSettlement) {
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bundle.getOnlineSettlementValue())).setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)).setTextAlignment(TextAlignment.RIGHT).setFontSize(fontSize)).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+        }
+        
+
+        document.add(table);
+
+        return;
+        
     }
 
 }

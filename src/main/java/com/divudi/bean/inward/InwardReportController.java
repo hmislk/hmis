@@ -127,6 +127,20 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import java.io.OutputStream;
+import javax.faces.context.ExternalContext;
+
+import javax.faces.context.FacesContext;
+import javax.persistence.TemporalType;
+
 /**
  *
  * @author pdhs
@@ -426,6 +440,507 @@ public class InwardReportController implements Serializable {
         billList.add(grandTotal);
 
         createChartModels();
+    }
+
+    public void downloadSurgeryCountDoctorWisePdf() {
+        if (billList == null || billList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.lowagie.text.Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+
+            String fileName = "Surgery_Count_Doctor_Wise_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+
+            document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 20, 20, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            // ── Derive year from fromYearStartDate ─────────────────────────────────
+            // fromYearStartDate is bound in XHTML — extract year from it safely
+            int reportYear = Calendar.getInstance().get(Calendar.YEAR); // fallback
+            if (fromYearStartDate != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fromYearStartDate);
+                reportYear = cal.get(Calendar.YEAR);
+            }
+
+            // ── Fonts ──────────────────────────────────────────────────────────────
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font subFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, new java.awt.Color(255, 255, 255));
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font subtotalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            com.lowagie.text.Font grandFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.lowagie.text.Font totalColFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8,
+                    com.lowagie.text.Font.NORMAL, new java.awt.Color(255, 255, 255));
+
+            // ── Colors ─────────────────────────────────────────────────────────────
+            java.awt.Color headerBg = new java.awt.Color(41, 128, 185);
+            java.awt.Color subtotalBg = new java.awt.Color(213, 232, 255);
+            java.awt.Color grandTotalBg = new java.awt.Color(255, 200, 100);
+            java.awt.Color totalColBg = new java.awt.Color(255, 165, 0);
+            java.awt.Color evenRowBg = new java.awt.Color(255, 255, 255);
+            java.awt.Color oddRowBg = new java.awt.Color(248, 249, 250);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // ── Title ──────────────────────────────────────────────────────────────
+            Paragraph title = new Paragraph(
+                    "Surgery Count Report - Doctor Wise", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(4);
+            document.add(title);
+
+            Paragraph yearLine = new Paragraph("Year: " + reportYear, subFont);
+            yearLine.setAlignment(Element.ALIGN_CENTER);
+            yearLine.setSpacingAfter(10);
+            document.add(yearLine);
+
+            // ── Info Table (inline helper — no external method needed) ─────────────
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(45);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1.5f, 3f});
+            infoTable.setSpacingAfter(12);
+
+            // Inline addInfoRow — avoids dependency on missing helper method
+            String[][] infoRows = {
+                {"From Date:", fromYearStartDate != null ? sdf.format(fromYearStartDate) : ""},
+                {"To Date:", toYearEndDate != null ? sdf.format(toYearEndDate) : ""},
+                {"Speciality:", currentSpeciality != null ? currentSpeciality.getName() : "All"},
+                {"Generated:", sdf.format(new Date())}
+            };
+            for (String[] row : infoRows) {
+                // Label cell
+                PdfPCell labelCell = new PdfPCell(new Phrase(row[0], boldFont));
+                labelCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                labelCell.setPadding(3);
+                infoTable.addCell(labelCell);
+                // Value cell
+                PdfPCell valueCell = new PdfPCell(new Phrase(row[1], normalFont));
+                valueCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                valueCell.setPadding(3);
+                infoTable.addCell(valueCell);
+            }
+            document.add(infoTable);
+
+            // ── Column Headers & Widths ────────────────────────────────────────────
+            String[] headers = {
+                "Doctor Name", "Speciality",
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+                "Total"
+            };
+            float[] colWidths = {
+                3.5f, 2.5f,
+                1f, 1f, 1f, 1f, 1f, 1f,
+                1f, 1f, 1f, 1f, 1f, 1f,
+                1.3f
+            };
+
+            // ── Main Data Table ────────────────────────────────────────────────────
+            PdfPTable table = new PdfPTable(15);
+            table.setWidthPercentage(100);
+            table.setWidths(colWidths);
+            table.setSpacingBefore(5);
+            table.setSpacingAfter(10);
+            table.setHeaderRows(1);
+
+            // Header Row
+            for (int i = 0; i < headers.length; i++) {
+                PdfPCell cell = new PdfPCell(new Phrase(headers[i], headerFont));
+                cell.setBackgroundColor(headerBg);
+                cell.setHorizontalAlignment(i <= 1 ? Element.ALIGN_LEFT : Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setPadding(4);
+                table.addCell(cell);
+            }
+
+            // Data Rows
+            int rowIndex = 0;
+            for (SurgeryCountDoctorWiseDTO item : billList) {
+
+                boolean isSubtotal = item.isSubtotal();
+                boolean isGrandTotal = item.isGrandTotal();
+                boolean isDataRow = !isSubtotal && !isGrandTotal;
+
+                java.awt.Color rowBg = isGrandTotal ? grandTotalBg
+                        : isSubtotal ? subtotalBg
+                                : (rowIndex % 2 == 0) ? evenRowBg : oddRowBg;
+
+                com.lowagie.text.Font rowFont
+                        = (isSubtotal || isGrandTotal) ? subtotalFont : normalFont;
+
+                // Col 0 – Doctor Name
+                // Inline nullSafe — avoids dependency on missing helper
+                String doctorName = item.getDoctorName() != null ? item.getDoctorName() : "";
+                addSurgeryPdfCell(table, doctorName,
+                        isGrandTotal ? grandFont : rowFont,
+                        rowBg, Element.ALIGN_LEFT, isGrandTotal);
+
+                // Col 1 – Speciality
+                String speciality = (isDataRow && item.getSpecialityName() != null)
+                        ? item.getSpecialityName() : "";
+                addSurgeryPdfCell(table, speciality,
+                        rowFont, rowBg, Element.ALIGN_LEFT, false);
+
+                // Cols 2-13 – Month values
+                int[] monthValues = {
+                    item.getJanuary(), item.getFebruary(), item.getMarch(),
+                    item.getApril(), item.getMay(), item.getJune(),
+                    item.getJuly(), item.getAugust(), item.getSeptember(),
+                    item.getOctober(), item.getNovember(), item.getDecember()
+                };
+                for (int mv : monthValues) {
+                    addSurgeryPdfCell(table,
+                            mv > 0 ? String.valueOf(mv) : "",
+                            rowFont, rowBg, Element.ALIGN_CENTER, false);
+                }
+
+                // Col 14 – Total (orange background, white text always)
+                PdfPCell totalCell = new PdfPCell(
+                        new Phrase(String.valueOf(item.getTotalSurgeries()), totalColFont));
+                totalCell.setBackgroundColor(totalColBg);
+                totalCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                totalCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                totalCell.setPadding(3);
+                if (isGrandTotal) {
+                    totalCell.setBorderWidthTop(2f);
+                }
+                table.addCell(totalCell);
+
+                if (isDataRow) {
+                    rowIndex++;
+                }
+            }
+
+            document.add(table);
+
+            // ── Footer ─────────────────────────────────────────────────────────────
+            Paragraph footer = new Paragraph(
+                    "Generated on: " + sdf.format(new Date()), normalFont);
+            footer.setAlignment(Element.ALIGN_RIGHT);
+            footer.setSpacingBefore(6);
+            document.add(footer);
+
+            document.close();
+            facesContext.responseComplete();
+
+        } catch (DocumentException | IOException e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+        }
+    }
+
+// ── Helper: styled cell for surgery PDF table ─────────────────────────────────
+    private void addSurgeryPdfCell(PdfPTable table,
+            String value,
+            com.lowagie.text.Font font,
+            java.awt.Color bg,
+            int hAlign,
+            boolean topBorder) {
+        PdfPCell cell = new PdfPCell(new Phrase(value == null ? "" : value, font));
+        if (bg != null) {
+            cell.setBackgroundColor(bg);
+        }
+        cell.setHorizontalAlignment(hAlign);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(3);
+        if (topBorder) {
+            cell.setBorderWidthTop(2f);
+        }
+        table.addCell(cell);
+    }
+
+    public void downloadSurgeryCountDoctorWiseExcel() {
+        if (billList == null || billList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        XSSFWorkbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Surgery Count Doctor Wise");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            // ── Derive report year ─────────────────────────────────────────────────
+            int reportYear = Calendar.getInstance().get(Calendar.YEAR);
+            if (fromYearStartDate != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fromYearStartDate);
+                reportYear = cal.get(Calendar.YEAR);
+            }
+
+            // ── Title style ────────────────────────────────────────────────────────
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Info label style ───────────────────────────────────────────────────
+            XSSFCellStyle infoLabelStyle = workbook.createCellStyle();
+            XSSFFont infoLabelFont = workbook.createFont();
+            infoLabelFont.setBold(true);
+            infoLabelFont.setFontHeightInPoints((short) 9);
+            infoLabelStyle.setFont(infoLabelFont);
+
+            // ── Info value style ───────────────────────────────────────────────────
+            XSSFCellStyle infoValueStyle = workbook.createCellStyle();
+            XSSFFont infoValueFont = workbook.createFont();
+            infoValueFont.setFontHeightInPoints((short) 9);
+            infoValueStyle.setFont(infoValueFont);
+
+            // ── Column header style — blue bg, white bold ──────────────────────────
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 9);
+            headerFont.setColor(new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null));
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 41, (byte) 128, (byte) 185}, null));
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Normal text style ──────────────────────────────────────────────────
+            XSSFCellStyle normalStyle = workbook.createCellStyle();
+            XSSFFont normalFont = workbook.createFont();
+            normalFont.setFontHeightInPoints((short) 8);
+            normalStyle.setFont(normalFont);
+            normalStyle.setBorderBottom(BorderStyle.THIN);
+            normalStyle.setBorderTop(BorderStyle.THIN);
+            normalStyle.setBorderLeft(BorderStyle.THIN);
+            normalStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Normal number style — center aligned ───────────────────────────────
+            XSSFCellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(normalStyle);
+            numberStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Subtotal style — light blue bg, bold ───────────────────────────────
+            XSSFCellStyle subtotalStyle = workbook.createCellStyle();
+            XSSFFont subtotalFont = workbook.createFont();
+            subtotalFont.setBold(true);
+            subtotalFont.setFontHeightInPoints((short) 9);
+            subtotalStyle.setFont(subtotalFont);
+            subtotalStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 213, (byte) 232, (byte) 255}, null));
+            subtotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            subtotalStyle.setBorderBottom(BorderStyle.THIN);
+            subtotalStyle.setBorderTop(BorderStyle.THIN);
+            subtotalStyle.setBorderLeft(BorderStyle.THIN);
+            subtotalStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Subtotal number style ──────────────────────────────────────────────
+            XSSFCellStyle subtotalNumberStyle = workbook.createCellStyle();
+            subtotalNumberStyle.cloneStyleFrom(subtotalStyle);
+            subtotalNumberStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Grand total style — orange bg, bold ────────────────────────────────
+            XSSFCellStyle grandTotalStyle = workbook.createCellStyle();
+            XSSFFont grandFont = workbook.createFont();
+            grandFont.setBold(true);
+            grandFont.setFontHeightInPoints((short) 10);
+            grandTotalStyle.setFont(grandFont);
+            grandTotalStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 255, (byte) 200, (byte) 100}, null));
+            grandTotalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            grandTotalStyle.setBorderBottom(BorderStyle.MEDIUM);
+            grandTotalStyle.setBorderTop(BorderStyle.MEDIUM);
+            grandTotalStyle.setBorderLeft(BorderStyle.THIN);
+            grandTotalStyle.setBorderRight(BorderStyle.THIN);
+
+            // ── Grand total number style ───────────────────────────────────────────
+            XSSFCellStyle grandTotalNumberStyle = workbook.createCellStyle();
+            grandTotalNumberStyle.cloneStyleFrom(grandTotalStyle);
+            grandTotalNumberStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // ── Total column style — orange bg, white bold ─────────────────────────
+            XSSFCellStyle totalColStyle = workbook.createCellStyle();
+            XSSFFont totalColFont = workbook.createFont();
+            totalColFont.setBold(true);
+            totalColFont.setFontHeightInPoints((short) 9);
+            totalColFont.setColor(
+                    new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null));
+            totalColStyle.setFont(totalColFont);
+            totalColStyle.setFillForegroundColor(
+                    new XSSFColor(new byte[]{(byte) 255, (byte) 165, (byte) 0}, null));
+            totalColStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            totalColStyle.setAlignment(HorizontalAlignment.CENTER);
+            totalColStyle.setBorderBottom(BorderStyle.THIN);
+            totalColStyle.setBorderTop(BorderStyle.THIN);
+            totalColStyle.setBorderLeft(BorderStyle.THIN);
+            totalColStyle.setBorderRight(BorderStyle.THIN);
+
+            int rowIdx = 0;
+
+            // ── Title row ──────────────────────────────────────────────────────────
+            Row titleRow = sheet.createRow(rowIdx++);
+            titleRow.setHeightInPoints(22);
+            org.apache.poi.ss.usermodel.Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(
+                    "Surgery Count Report - Doctor Wise  (Year: " + reportYear + ")");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 14));
+
+            rowIdx++; // blank row
+
+            // ── Info rows ──────────────────────────────────────────────────────────
+            String[][] infoRows = {
+                {"From Date:", fromYearStartDate != null ? sdf.format(fromYearStartDate) : ""},
+                {"To Date:", toYearEndDate != null ? sdf.format(toYearEndDate) : ""},
+                {"Speciality:", currentSpeciality != null ? currentSpeciality.getName() : "All"},
+                {"Generated:", sdf.format(new Date())}
+            };
+            for (String[] info : infoRows) {
+                Row infoRow = sheet.createRow(rowIdx++);
+                org.apache.poi.ss.usermodel.Cell labelCell = infoRow.createCell(0);
+                labelCell.setCellValue(info[0]);
+                labelCell.setCellStyle(infoLabelStyle);
+                org.apache.poi.ss.usermodel.Cell valueCell = infoRow.createCell(1);
+                valueCell.setCellValue(info[1]);
+                valueCell.setCellStyle(infoValueStyle);
+            }
+
+            rowIdx++; // blank row
+
+            // ── Column header row ──────────────────────────────────────────────────
+            String[] headers = {
+                "Doctor Name", "Speciality",
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+                "Total"
+            };
+            Row headerRow = sheet.createRow(rowIdx++);
+            headerRow.setHeightInPoints(18);
+            for (int i = 0; i < headers.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // ── Data rows ──────────────────────────────────────────────────────────
+            for (SurgeryCountDoctorWiseDTO item : billList) {
+
+                boolean isSubtotal = item.isSubtotal();
+                boolean isGrandTotal = item.isGrandTotal();
+                boolean isDataRow = !isSubtotal && !isGrandTotal;
+
+                XSSFCellStyle textStyle = isGrandTotal ? grandTotalStyle
+                        : isSubtotal ? subtotalStyle
+                                : normalStyle;
+                XSSFCellStyle numStyle = isGrandTotal ? grandTotalNumberStyle
+                        : isSubtotal ? subtotalNumberStyle
+                                : numberStyle;
+
+                Row dataRow = sheet.createRow(rowIdx++);
+                dataRow.setHeightInPoints(15);
+
+                // Col 0 – Doctor Name
+                org.apache.poi.ss.usermodel.Cell nameCell = dataRow.createCell(0);
+                nameCell.setCellValue(item.getDoctorName() != null ? item.getDoctorName() : "");
+                nameCell.setCellStyle(textStyle);
+
+                // Col 1 – Speciality
+                org.apache.poi.ss.usermodel.Cell specCell = dataRow.createCell(1);
+                specCell.setCellValue(isDataRow && item.getSpecialityName() != null
+                        ? item.getSpecialityName() : "");
+                specCell.setCellStyle(textStyle);
+
+                // Cols 2-13 – Month values
+                int[] monthValues = {
+                    item.getJanuary(), item.getFebruary(), item.getMarch(),
+                    item.getApril(), item.getMay(), item.getJune(),
+                    item.getJuly(), item.getAugust(), item.getSeptember(),
+                    item.getOctober(), item.getNovember(), item.getDecember()
+                };
+                for (int m = 0; m < monthValues.length; m++) {
+                    org.apache.poi.ss.usermodel.Cell monthCell = dataRow.createCell(2 + m);
+                    if (monthValues[m] > 0) {
+                        monthCell.setCellValue(monthValues[m]);
+                    } else {
+                        monthCell.setCellValue("");
+                    }
+                    monthCell.setCellStyle(numStyle);
+                }
+
+                // Col 14 – Total (always orange)
+                org.apache.poi.ss.usermodel.Cell totalCell = dataRow.createCell(14);
+                totalCell.setCellValue(item.getTotalSurgeries());
+                totalCell.setCellStyle(totalColStyle);
+            }
+
+            // ── Column widths ──────────────────────────────────────────────────────
+            int[] colWidths = {
+                6000, 5000,
+                1800, 1800, 1800, 1800, 1800, 1800,
+                1800, 1800, 1800, 1800, 1800, 1800,
+                2200
+            };
+            for (int i = 0; i < colWidths.length; i++) {
+                sheet.setColumnWidth(i, colWidths[i]);
+            }
+
+            // ── Write workbook to byte array first, then stream ────────────────────
+            // Avoids "IOException never thrown" by separating workbook.write()
+            // from the JSF response stream handling
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] excelBytes = baos.toByteArray();
+
+            // ── Write to HTTP response ─────────────────────────────────────────────
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseContentLength(excelBytes.length);
+            String fileName = "Surgery_Count_Doctor_Wise_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(excelBytes);
+            out.flush();
+
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 
     private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;

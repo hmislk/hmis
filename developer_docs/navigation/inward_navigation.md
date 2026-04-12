@@ -309,7 +309,7 @@ Two parallel workflows exist:
 | `/inward/report_doctor_payment.xhtml` | Doctor payment report |
 | `/inward/report_doctor_payment_summery.xhtml` | Doctor payment summary |
 | `/inward/inward_report_room.xhtml` | Room income report |
-| `/inward/inward_report_timed_service.xhtml` | Timed service report |
+| `/inward/inward_report_timed_service.xhtml` | Timed service report | `InwardTimedItemController` | Filters: date range, timed item, **institution, site, department** (fixed #19715) |
 | `/inward/report_income_room.xhtml` | Room income |
 | `/inward/inward_report_discount.xhtml` | Discount report |
 | `/inward/pharmacy_report_bht_issue_by_item.xhtml` | Pharmacy BHT issue by item |
@@ -333,3 +333,21 @@ Key areas with multiple open issues:
 - **Surgery management on BHT** — #19317 (duplicate surgery, cannot remove)
 - **Pharmacy privileges** — #19309 (medicine amount privilege), #19312 (qty limits)
 - **Lab privileges** — #19319 (sample receive/reject not enforced)
+
+## Timed Service Report — Filter Pattern
+
+**Controller**: `InwardTimedItemController` (`@SessionScoped`)
+
+The timed service report (`inward_report_timed_service.xhtml`) supports the following filters, all optional:
+
+| Filter | Field | JPQL path |
+|---|---|---|
+| Date range | `frmDate` / `toDate` | `i.patientEncounter.dateOfDischarge between :fd and :td` |
+| Timed item | `current.item` | `i.item = :item` |
+| Institution | `institution` (`Institution`) | `i.patientEncounter.institution = :ins` |
+| Site | `site` (`Institution`) | `i.patientEncounter.department.site = :site` |
+| Department | `department` (`Department`) | `i.patientEncounter.department = :dept` |
+
+**Department dropdown** uses 4 rendered variants (same pattern as `AdmissionReportController`) — the list of selectable departments is narrowed based on which of institution/site is currently selected. Selecting institution or site triggers a `p:ajax` call to `clearDepartment()` so a stale department from the previous selection is not silently applied.
+
+**Site** is stored as `Institution` (not a separate entity). Sites are loaded via `institutionController.sites`.

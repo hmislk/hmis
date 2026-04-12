@@ -277,20 +277,14 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        String token = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String encodedToken;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
+            encodedToken = URLEncoder.encode(token, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken = token;
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-        }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -353,20 +347,14 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String encodedToken2;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
+            encodedToken2 = URLEncoder.encode(token2, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken2 = token2;
         }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken2;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
