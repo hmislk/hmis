@@ -19,13 +19,22 @@
                                     <h:outputLabel value="Petty Cash Reprint Preview" class="mt-2" rendered="#{pettyCashBillController.duplicate}"></h:outputLabel>
                                     <h:outputLabel value="Petty Cash Preview" class="mt-2" rendered="#{not pettyCashBillController.duplicate}"></h:outputLabel>
                                 </div>
-                                <div>
+                                <div class=" d-flex gap-2">
+                                    <h:panelGroup rendered="#{pettyCashBillController.current.currentRequest ne null}">
+                                        <div class="card  p-2" style="width: 500px;">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <h:outputLabel value="Bill Cancellation Request"></h:outputLabel>
+                                                <h:outputLabel value="#{pettyCashBillController.current.currentRequest.status.label}" class="text-danger" style="font-weight: 700; font-size: 17px;"></h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
                                     <p:commandButton  
                                         ajax="false" 
                                         class="ui-button-danger" 
                                         icon="fas fa-ban" 
                                         value="To Cancel" 
-                                        action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" 
+                                        action="#{pettyCashBillController.navigateToPettyCashCancel()}" 
                                         disabled="#{pettyCashBillController.current.cancelled}"> 
                                     </p:commandButton>
 

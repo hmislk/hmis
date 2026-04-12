@@ -4,19 +4,21 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!pettyCashBillController.printPreview}" styleClass="alignTop" >
+
+                    <h:panelGroup rendered="#{!requestController.printPreview}" styleClass="alignTop" >
                         <p:panel>
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
-                                    <h:outputText value="Petty Cash Cancellation" class="mt-2"/>
+                                    <h:outputText value="Petty Cash Bill Cancellation Request" class="mt-2"/>
                                     <p:commandButton  
-                                        class="ui-button-secondary d-flex justify-content-end mx-2"
+                                        class="ui-button-secondary"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
                                         action="/petty_cash_bill_search_own?faces-redirect=true"
@@ -27,17 +29,16 @@
 
                             <div class="d-flex justify-content-end gap-2 mb-4">
                                 <p:inputText 
-                                    value="#{pettyCashBillController.comment}" 
-                                    style="width: 550px;"   
-                                    readonly="#{pettyCashBillController.currentRequest ne null}"
+                                    value="#{requestController.comment}" 
+                                    style="width: 550px;"     
                                     placeholder="Add Reason for Cancellation" >
                                 </p:inputText>
                                 <p:commandButton 
-                                    value="Cancel Bill" 
+                                    value="Create Cancellation Request" 
                                     icon="fa fa-cancel"
                                     class="ui-button-danger" 
                                     ajax="false" 
-                                    action="#{pettyCashBillController.cancelPettyCashBill()}" >
+                                    action="#{requestController.createRequestforPettyCashBillCancellation(pettyCashBillController.current)}" >
                                 </p:commandButton>
                             </div>
 
@@ -87,10 +88,20 @@
                                 <div class="col-md-6">
                                     <p:panel >
                                         <f:facet name="header">
-                                            <h:outputLabel value="Preview" class="mt-2"></h:outputLabel>
+                                            <div class="d-flex justify-content-between">
+                                                <h:outputLabel value="Preview" class="mt-2"></h:outputLabel>
+                                                <p:commandButton 
+                                                    value="Print" 
+                                                    class="ui-button-info"
+                                                    icon="fa fa-print"
+                                                    ajax="false">
+                                                    <p:printer target="gpBillPreview" />
+                                                </p:commandButton> 
+                                            </div>
+
                                         </f:facet>
 
-                                        <h:panelGroup  >
+                                        <h:panelGroup   id="gpBillPreview">
 
                                             <!-- POS/5.5 inch Format (Default) -->
                                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
@@ -127,41 +138,46 @@
                                     </p:panel>
                                 </div>
                             </div>
+
                         </p:panel>
+
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{pettyCashBillController.printPreview}" >
+                    <h:panelGroup rendered="#{requestController.printPreview}" >
                         <p:panel>
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
-                                    <h:outputText value="Petty Cash Cancellation" class="mt-2"/>
-                                    <p:commandButton  
-                                        class="ui-button-secondary"
-                                        value="Back To Search"
-                                        icon="fa-solid fa-arrow-left"
-                                        action="/petty_cash_bill_search_own?faces-redirect=true"
-                                        ajax="false">
-                                    </p:commandButton>
+                                    <h:outputText value="Cancellation Request Preview" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            value="Print" 
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            ajax="false">
+                                            <p:printer target="cancelPettyBill" />
+                                        </p:commandButton>
+                                        <p:commandButton  
+                                            class="ui-button-secondary"
+                                            value="Back To Search"
+                                            icon="fa-solid fa-arrow-left"
+                                            action="/petty_cash_bill_search_own?faces-redirect=true"
+                                            ajax="false">
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </f:facet>
 
-                            <div class="d-flex justify-content-end">
-                                <p:commandButton 
-                                    value="Print" 
-                                    class="ui-button-info"
-                                    icon="fa fa-print"
-                                    ajax="false">
-                                    <p:printer target="cancelPettyBill" />
-                                </p:commandButton>
-                            </div>
-
                             <h:panelGroup id="cancelPettyBill">
-                                <bi:petty_cash_cancel_bill bill="#{pettyCashBillController.current}" dup="#{pettyCashBillController.duplicate}"/>
+                                <div class="d-flex justify-content-center">
+                                    <div>
+                                        <request:petty_cash_request request="#{requestController.currentRequest}" duplicate="false"/>   
+                                    </div>
+                                </div>
+                                   
                             </h:panelGroup>
-                            
+
                         </p:panel>
                     </h:panelGroup>
-
                 </h:form>                
             </ui:define>
         </ui:composition>

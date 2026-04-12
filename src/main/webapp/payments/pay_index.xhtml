@@ -199,7 +199,7 @@
                                     <p:tab title="Petty Cash" >
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                class="w-100 ui-button-success" 
                                                 ajax="false" 
                                                 action="/petty_cash_bill?faces-redirect=true" 
                                                 value="Petty Cash Payment" 
@@ -207,23 +207,25 @@
                                                 title="Create a new petty cash payment">
                                             </p:commandButton>
                                             <p:commandButton 
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" 
+                                                class="w-100 ui-button-warning" 
+                                                ajax="false"
                                                 action="/petty_cash_bill_search_own?faces-redirect=true" 
                                                 actionListener="#{searchController.makeListNull}" 
                                                 value="Petty Cash Search"
                                                 title="Search your petty cash bills">
                                             </p:commandButton>
                                             <p:commandButton 
-                                                styleClass="w-100 ui-button-success ui-button-outlined" 
+                                                class="w-100 ui-button-success" 
                                                 ajax="false" 
+                                                rendered="false"
                                                 action="#{searchController.navigateToPettyCashBillApprove}" 
                                                 value="Petty Cash Bill Approve" 
                                                 title="Approve submitted petty cash bills">
                                             </p:commandButton>
                                             <p:commandButton 
-                                                styleClass="w-100 ui-button-warning ui-button-outlined" 
+                                                class="w-100 ui-button-warning" 
                                                 ajax="false" 
+                                                rendered="false"
                                                 action="#{searchController.navigateToPettyCashCancelBillApprove}" 
                                                 value="Petty Cash Cancel Bill Approve" 
                                                 title="Approve requests to cancel petty cash bills">

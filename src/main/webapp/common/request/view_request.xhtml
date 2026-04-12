@@ -144,7 +144,7 @@
                                         #{i+1}
                                     </p:column>
 
-                                    <p:column headerText="Request No" width="17em;" style="padding: 8px;">
+                                    <p:column headerText="Request No" width="19em;" style="padding: 8px;">
                                         <h:outputLabel value="#{r.requestNo}" />
                                     </p:column>
 
@@ -178,6 +178,7 @@
                                             <p:badge rendered="#{r.requestType eq 'EDIT_REQUEST'}" value="#{r.requestType.displayName}"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'DRAWER_ADJUSTMENT'}" value="#{r.requestType.displayName}" severity="info" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'PETTYCASH_APROVEL'}" value="#{r.requestType.displayName}" severity="success" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{r.requestType eq 'PETTYCASH_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                     </p:column>
 
