@@ -432,6 +432,57 @@ public class RequestController implements Serializable {
 
         printPreview = true;
     }
+    
+    public void createRequestforPettyCashBillCancellation(Bill pettyCashBill) {
+        System.out.println("pettyCashBill = " + pettyCashBill);
+        
+        if (pettyCashBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (!pettyCashBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + pettyCashBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(pettyCashBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(pettyCashBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.PETTYCASH_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.PETTYCASH_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update PettyCash Bill
+            pettyCashBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(pettyCashBill);
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
 
     public void createRequestforInpatientServiceBill() {
         if (batchBill == null) {

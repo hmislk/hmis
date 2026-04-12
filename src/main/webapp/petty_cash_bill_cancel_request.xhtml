@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+
+                    <h:panelGroup rendered="#{!requestController.printPreview}" styleClass="alignTop" >
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Petty Cash Bill Cancellation Request" class="mt-2"/>
+                                    <p:commandButton  
+                                        class="ui-button-secondary"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/petty_cash_bill_search_own?faces-redirect=true"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                            </f:facet>
+
+                            <div class="d-flex justify-content-end gap-2 mb-4">
+                                <p:inputText 
+                                    value="#{requestController.comment}" 
+                                    style="width: 550px;"     
+                                    placeholder="Add Reason for Cancellation" >
+                                </p:inputText>
+                                <p:commandButton 
+                                    value="Cancel Bill" 
+                                    icon="fa fa-cancel"
+                                    class="ui-button-danger" 
+                                    ajax="false" 
+                                    action="#{requestController.createRequestforPettyCashBillCancellation(pettyCashBillController.current)}" >
+                                </p:commandButton>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText value="&#xf007;" styleClass="fa mr-2"></h:outputText>
+                                            <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Paid To :" ></h:outputLabel>
+                                            <h:panelGroup rendered="#{pettyCashBillController.current.staff ne null}">
+                                                <div class="d-flex gap-2">
+                                                    <p:badge value="Staff" severity="warning" style="width: 120px;" ></p:badge>
+                                                    <h:outputLabel value="-"></h:outputLabel>
+                                                    <h:outputLabel value="Staff - #{pettyCashBillController.current.staff.person.nameWithTitle}"></h:outputLabel>
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{pettyCashBillController.current.person ne null}">
+                                                <div class="d-flex gap-2">
+                                                    <p:badge value="Person" severity="info"  style="width: 120px;"></p:badge>
+                                                    <h:outputLabel value="-"></h:outputLabel>
+                                                    <h:outputLabel value="#{pettyCashBillController.current.person.nameWithTitle}"/>
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{pettyCashBillController.current.toDepartment ne null}">
+                                                <div class="d-flex gap-2">
+                                                    <p:badge value="Department" severity="success" style="width: 120px;"></p:badge>
+                                                    <h:outputLabel value="-"></h:outputLabel>
+                                                    <h:outputLabel value="#{pettyCashBillController.current.toDepartment.name}"/>
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{pettyCashBillController.current.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                            <h:outputLabel value="#{pettyCashBillController.current.paymentMethod}" ></h:outputLabel>                                        
+                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{pettyCashBillController.current.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <p:panel >
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <h:outputLabel value="Preview" class="mt-2"></h:outputLabel>
+                                                <p:commandButton 
+                                                    value="Print" 
+                                                    class="ui-button-info"
+                                                    icon="fa fa-print"
+                                                    ajax="false">
+                                                    <p:printer target="gpBillPreview" />
+                                                </p:commandButton> 
+                                            </div>
+
+                                        </f:facet>
+
+                                        <h:panelGroup   id="gpBillPreview">
+
+                                            <!-- POS/5.5 inch Format (Default) -->
+                                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
+                                                <bi:petty  
+                                                    bill="#{pettyCashBillController.current}" 
+                                                    billController="#{pettyCashBillController}" 
+                                                    dup="#{pettyCashBillController.duplicate}" 
+                                                    pre="#{pettyCashBillController.preBill}">
+                                                </bi:petty>
+                                            </h:panelGroup>
+
+                                            <!-- A4 Format -->
+                                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
+                                                <!-- For now, use the same component until A4 format is created -->
+                                                <bi:petty  
+                                                    bill="#{pettyCashBillController.current}" 
+                                                    billController="#{pettyCashBillController}" 
+                                                    dup="#{pettyCashBillController.duplicate}" >
+                                                </bi:petty>
+                                                <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
+                                            </h:panelGroup>
+
+                                            <!-- Custom Format -->
+                                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
+                                                <!-- Use existing format for now -->
+                                                <bi:petty  
+                                                    bill="#{pettyCashBillController.current}" 
+                                                    billController="#{pettyCashBillController}" 
+                                                    dup="#{pettyCashBillController.duplicate}" >
+                                                </bi:petty>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                        </p:panel>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{requestController.printPreview}" >
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Cancellation Request Preview" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            value="Print" 
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            ajax="false">
+                                            <p:printer target="cancelPettyBill" />
+                                        </p:commandButton>
+                                        <p:commandButton  
+                                            class="ui-button-secondary"
+                                            value="Back To Search"
+                                            icon="fa-solid fa-arrow-left"
+                                            action="/petty_cash_bill_search_own?faces-redirect=true"
+                                            ajax="false">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <h:panelGroup id="cancelPettyBill">
+                                <div class="d-flex justify-content-center">
+                                    <div>
+                                        <request:petty_cash_request request="#{requestController.currentRequest}" duplicate="false"/>   
+                                    </div>
+                                </div>
+                                   
+                            </h:panelGroup>
+
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
