@@ -539,87 +539,107 @@ public class DatabaseMigrationController implements Serializable {
     }
 
     /**
-     * Execute SQL script using EntityManager through facade
+     * Execute SQL script, routing each statement to the correct executor.
+     *
+     * DDL statements (CREATE, ALTER, DROP, CALL, DELIMITER blocks) are
+     * executed via executeDdlNative() which uses a raw JDBC connection
+     * outside JTA — necessary because MySQL auto-commits DDL implicitly,
+     * which would otherwise abort the JTA transaction.
+     *
+     * DML/query statements (SELECT, INSERT, UPDATE, DELETE) continue to
+     * use executeNativeSql() through the EntityManager.
      */
     private void executeSqlScript(String sql, StringBuilder logBuilder) throws Exception {
-        List<String> statements = splitSqlStatements(sql);
-        for (String stmt : statements) {
-            String trimmedStmt = stmt.trim();
-            if (!trimmedStmt.isEmpty() && !trimmedStmt.startsWith("--")) {
+        try {
+            List<String> statements = splitSqlStatements(sql);
+
+            for (String stmt : statements) {
+                String trimmedStmt = stmt.trim();
+                if (trimmedStmt.isEmpty() || trimmedStmt.startsWith("--")) {
+                    continue;
+                }
                 logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\n");
                 try {
-                    migrationFacade.executeNativeSql(trimmedStmt);
+                    if (isDdlStatement(trimmedStmt)) {
+                        migrationFacade.executeDdlNative(trimmedStmt);
+                    } else {
+                        migrationFacade.executeNativeSql(trimmedStmt);
+                    }
                 } catch (Exception e) {
                     if (isCreateIndexStatement(trimmedStmt) && isDuplicateIndexError(e)) {
-                        logBuilder.append("Index already exists, skipping: ").append(e.getMessage()).append("\n");
+                        logBuilder.append("Index already exists, skipping...\n");
                     } else {
                         throw e;
                     }
                 }
             }
+
+            logBuilder.append("All statements executed successfully\n");
+
+        } catch (Exception e) {
+            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\n");
+            throw e;
         }
     }
 
     /**
      * Splits a SQL script into individual executable statements.
-     * Handles DELIMITER changes used in stored procedure definitions.
-     * DELIMITER lines are MySQL client directives — they are stripped and the
-     * procedure body is submitted as a single JDBC statement (JDBC does not
-     * use client-side delimiters).
+     * Handles DELIMITER directives used in stored procedure definitions.
+     * DELIMITER is a MySQL client convention — the directive itself is
+     * stripped; the procedure body is submitted as a single JDBC call.
      */
     private List<String> splitSqlStatements(String sql) {
         List<String> statements = new ArrayList<>();
         String currentDelimiter = ";";
-        StringBuilder currentStatement = new StringBuilder();
+        StringBuilder current = new StringBuilder();
 
         for (String line : sql.split("\n")) {
-            String trimmedLine = line.trim();
+            String trimmed = line.trim();
 
-            if (trimmedLine.toUpperCase().startsWith("DELIMITER")) {
-                // Flush any buffered statement before changing delimiter
-                String buffered = currentStatement.toString().trim();
+            if (trimmed.toUpperCase().startsWith("DELIMITER")) {
+                String buffered = current.toString().trim();
                 if (!buffered.isEmpty()) {
                     statements.add(buffered);
-                    currentStatement = new StringBuilder();
+                    current = new StringBuilder();
                 }
-                // Extract new delimiter (e.g. "DELIMITER //" → "//")
-                String[] parts = trimmedLine.split("\\s+", 2);
+                String[] parts = trimmed.split("\\s+", 2);
                 currentDelimiter = parts.length > 1 ? parts[1].trim() : ";";
                 continue;
             }
 
-            if (!currentDelimiter.equals(";") && trimmedLine.endsWith(currentDelimiter)) {
-                // End of a procedure/function block — strip trailing delimiter and flush
-                String withoutDelim = line.substring(0, line.lastIndexOf(currentDelimiter));
-                currentStatement.append(withoutDelim).append("\n");
-                statements.add(currentStatement.toString().trim());
-                currentStatement = new StringBuilder();
+            if (!currentDelimiter.equals(";") && trimmed.endsWith(currentDelimiter)) {
+                // End of a procedure block — strip the custom delimiter and flush
+                int delimIdx = line.lastIndexOf(currentDelimiter);
+                current.append(line, 0, delimIdx).append("\n");
+                statements.add(current.toString().trim());
+                current = new StringBuilder();
                 currentDelimiter = ";";
-            } else if (currentDelimiter.equals(";")) {
-                // Normal statement splitting by semicolon
-                if (trimmedLine.endsWith(";")) {
-                    currentStatement.append(line, 0, line.lastIndexOf(";")).append("\n");
-                    String stmt = currentStatement.toString().trim();
-                    if (!stmt.isEmpty()) {
-                        statements.add(stmt);
-                    }
-                    currentStatement = new StringBuilder();
-                } else {
-                    currentStatement.append(line).append("\n");
+            } else if (currentDelimiter.equals(";") && trimmed.endsWith(";")) {
+                // Normal semicolon-terminated statement
+                int semiIdx = line.lastIndexOf(";");
+                current.append(line, 0, semiIdx).append("\n");
+                String stmt = current.toString().trim();
+                if (!stmt.isEmpty()) {
+                    statements.add(stmt);
                 }
+                current = new StringBuilder();
             } else {
-                // Inside a procedure block — accumulate lines
-                currentStatement.append(line).append("\n");
+                current.append(line).append("\n");
             }
         }
 
-        // Flush any remaining content
-        String remaining = currentStatement.toString().trim();
+        String remaining = current.toString().trim();
         if (!remaining.isEmpty()) {
             statements.add(remaining);
         }
-
         return statements;
+    }
+
+    private boolean isDdlStatement(String sql) {
+        String upper = sql.toUpperCase().trim();
+        return upper.startsWith("CREATE") || upper.startsWith("ALTER")
+                || upper.startsWith("DROP") || upper.startsWith("CALL")
+                || upper.startsWith("RENAME") || upper.startsWith("TRUNCATE");
     }
 
     private boolean isCreateIndexStatement(String sql) {
