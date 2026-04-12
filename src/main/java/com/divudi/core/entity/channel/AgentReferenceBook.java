@@ -31,7 +31,7 @@ public class AgentReferenceBook implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private double startingReferenceNumber = 0.0;
     private double endingReferenceNumber = 0.0;
