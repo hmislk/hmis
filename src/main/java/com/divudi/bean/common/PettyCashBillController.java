@@ -135,7 +135,7 @@ public class PettyCashBillController implements Serializable {
         System.out.println("midnight = " + midnight);
 
         currentRequest = requestService.findRequest(current);
-        
+
         if (current.getCreatedAt() != null && current.getCreatedAt().after(midnight.getTime())) {
             System.out.println("if Statment");
             printPreview = false;
@@ -143,7 +143,7 @@ public class PettyCashBillController implements Serializable {
             return "petty_cash_bill_cancel?faces-redirect=true";
         } else {
             System.out.println("Else = ");
-            
+
             System.out.println("currentRequest = " + currentRequest);
 
             if (currentRequest == null) {
@@ -168,6 +168,7 @@ public class PettyCashBillController implements Serializable {
                         setComment(currentRequest.getRequestReason());
                         return "petty_cash_bill_cancel?faces-redirect=true";
                     default:
+                        JsfUtil.addErrorMessage("Unsupported request status.");
                         return "";
                 }
             }
@@ -188,6 +189,27 @@ public class PettyCashBillController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void cancelPettyCashBill() {
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return;
+        }
+
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+
+        Bill persisted = billFacade.find(current.getId());
+        if (persisted == null) {
+            JsfUtil.addErrorMessage("Bill not found.");
+            return;
+        }
+        if (persisted.isCancelled() || persisted.getCancelledBill() != null) {
+            JsfUtil.addErrorMessage("This bill is already cancelled.");
+            return;
+        }
+        current = persisted;
+
         Date currentTime = new Date();
         Date midNight = getMidnight();
         if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
@@ -207,7 +229,7 @@ public class PettyCashBillController implements Serializable {
                 cb.invertAndAssignValuesFromOtherBill(current);
                 cb.setBilledBill(current);
             }
-            
+
             String billNo = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
 
             cb.setDeptId(billNo);
@@ -247,7 +269,7 @@ public class PettyCashBillController implements Serializable {
                 requestService.save(currentRequest, sessionController.getLoggedUser());
                 System.out.println("Current Request Update");
             }
-            
+
             setCurrent(cb);
 
             duplicate = false;
