@@ -102,16 +102,25 @@ public class AutoIncrementBootstrapService {
                     tables.add(rs.getString(1));
                 }
 
-                for (String tableName : tables) {
-                    try (Statement stmt = conn.createStatement()) {
-                        stmt.execute(
-                                "ALTER TABLE `" + tableName +
-                                "` MODIFY COLUMN ID BIGINT NOT NULL AUTO_INCREMENT");
-                        altered.add(tableName);
-                        LOGGER.fine("AutoIncrementBootstrap: altered `" + tableName + "`");
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING,
-                                "AutoIncrementBootstrap: could not alter `" + tableName + "` — skipping", e);
+                try (Statement fkOff = conn.createStatement()) {
+                    fkOff.execute("SET FOREIGN_KEY_CHECKS=0");
+                }
+                try {
+                    for (String tableName : tables) {
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.execute(
+                                    "ALTER TABLE `" + tableName +
+                                    "` MODIFY COLUMN ID BIGINT NOT NULL AUTO_INCREMENT");
+                            altered.add(tableName);
+                            LOGGER.fine("AutoIncrementBootstrap: altered `" + tableName + "`");
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING,
+                                    "AutoIncrementBootstrap: could not alter `" + tableName + "` — skipping", e);
+                        }
+                    }
+                } finally {
+                    try (Statement fkOn = conn.createStatement()) {
+                        fkOn.execute("SET FOREIGN_KEY_CHECKS=1");
                     }
                 }
             }
