@@ -6,12 +6,20 @@ package com.divudi.core.facade;
 
 import com.divudi.core.entity.DatabaseMigration;
 import com.divudi.core.data.MigrationStatus;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import org.eclipse.persistence.internal.jpa.EntityManagerImpl;
+import org.eclipse.persistence.sessions.JNDIConnector;
+import org.eclipse.persistence.sessions.server.ServerSession;
 
 /**
  * Facade for DatabaseMigration entity operations
@@ -31,6 +39,42 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
 
     public DatabaseMigrationFacade() {
         super(DatabaseMigration.class);
+    }
+
+    /**
+     * Execute a DDL statement (CREATE TABLE, ALTER TABLE, SET, etc.) outside JTA.
+     *
+     * DDL statements cause MySQL to issue an implicit COMMIT, which
+     * desynchronises the JTA transaction manager and causes "Transaction
+     * aborted". This method obtains a raw JDBC connection directly from
+     * EclipseLink's datasource — bypassing JTA entirely — and sets
+     * autoCommit=true so MySQL's implicit commits are harmless.
+     *
+     * Must NOT be called inside an active JTA transaction; the
+     * NOT_SUPPORTED attribute suspends any surrounding transaction.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void executeDdlNative(String sql) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+        try (Connection conn = getRawJdbcConnection()) {
+            conn.setAutoCommit(true);
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(sql);
+            }
+        }
+    }
+
+    /**
+     * Obtain a raw JDBC connection from EclipseLink's JNDI datasource,
+     * completely outside JTA. Caller is responsible for closing it.
+     */
+    private Connection getRawJdbcConnection() throws Exception {
+        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
+        ServerSession serverSession = emImpl.getServerSession();
+        DataSource ds = ((JNDIConnector) serverSession.getLogin().getConnector()).getDataSource();
+        return ds.getConnection();
     }
 
     /**

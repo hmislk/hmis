@@ -34,6 +34,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillNumberFacade;
 import com.divudi.core.facade.AuditDatabaseFacade;
 import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DatabaseMigrationFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -278,6 +279,8 @@ public class DataAdministrationController implements Serializable {
     private BillService billService;
     @EJB
     private DatabaseMigrationService databaseMigrationService;
+    @EJB
+    private DatabaseMigrationFacade databaseMigrationFacade;
     @EJB
     private com.divudi.core.facade.BillFinanceDetailsFacade billFinanceDetailsFacade;
     @EJB
@@ -2645,9 +2648,10 @@ public class DataAdministrationController implements Serializable {
             String createStatement = "CREATE TABLE " + part;
 
             try {
-                // First execute the CREATE TABLE
+                // First execute the CREATE TABLE outside JTA (DDL causes implicit MySQL commit
+                // which desyncs the JTA transaction manager if run via EntityManager)
                 try {
-                    facade.executeNativeSql(createStatement);
+                    databaseMigrationFacade.executeDdlNative(createStatement);
                     executionResults.append("<br/>Successfully executed: ").append(createStatement);
                 } catch (Exception e) {
                     executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(getExceptionMessage(e));
@@ -2671,7 +2675,7 @@ public class DataAdministrationController implements Serializable {
 
                     try {
                         if (isValidSqlStatement(sql)) {
-                            facade.executeNativeSql(sql);
+                            databaseMigrationFacade.executeDdlNative(sql);
                             executionResults.append("<br/>Successfully executed: ").append(sql);
                         } else {
                             executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
