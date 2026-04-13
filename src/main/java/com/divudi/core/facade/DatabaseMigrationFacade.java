@@ -21,7 +21,10 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
 import org.eclipse.persistence.internal.jpa.EntityManagerImpl;
+import org.eclipse.persistence.sessions.JNDIConnector;
+import org.eclipse.persistence.sessions.server.ServerSession;
 
 /**
  * Facade for DatabaseMigration entity operations
@@ -60,19 +63,26 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
         if (sql == null || sql.trim().isEmpty()) {
             throw new IllegalArgumentException("SQL statement cannot be null or empty");
         }
-        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
-        Connection conn = emImpl.getServerSession().getDatasource().getConnection();
-        try {
+        try (Connection conn = getRawJdbcConnection()) {
             conn.setAutoCommit(true);
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(sql);
             }
-        } finally {
-            conn.close();
         }
     }
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationFacade.class.getName());
+
+    /**
+     * Obtain a raw JDBC connection from EclipseLink's JNDI datasource,
+     * completely outside JTA.  Caller is responsible for closing it.
+     */
+    private Connection getRawJdbcConnection() throws Exception {
+        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
+        ServerSession serverSession = emImpl.getServerSession();
+        DataSource ds = ((JNDIConnector) serverSession.getLogin().getConnector()).getDataSource();
+        return ds.getConnection();
+    }
 
     /**
      * Scan every table in the current schema for a BIGINT column named ID that
@@ -88,8 +98,7 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public List<String> applyAutoIncrementToAllEntityTables() throws Exception {
         List<String> altered = new ArrayList<>();
-        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
-        Connection conn = emImpl.getServerSession().getDatasource().getConnection();
+        Connection conn = getRawJdbcConnection();
         try {
             conn.setAutoCommit(true);
             // Find all BIGINT ID columns that do NOT yet have auto_increment
