@@ -29,6 +29,7 @@
 12. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
 13. **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
 14. **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
+15. **🚨 HOTFIX BRANCHES MUST END WITH `-hotfix`**: When creating a branch targeting a production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`), the branch name **MUST** end with `-hotfix`. CI merge validation will block PRs from branches that do not end with `-hotfix`. Format: `<description>-hotfix` (e.g., `sequence-preallocation-hotfix`, `critical-billing-fix-hotfix`). See the `/hotfix-deploy` skill.
 
 ## Situational Guidelines (Reference When Needed)
 
@@ -75,6 +76,11 @@
 
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
+
+### When Creating a Hotfix for a Production Branch
+- **Branch name MUST end with `-hotfix`** (rule #15 above) — CI blocks merges otherwise
+- Use the `/hotfix-deploy` skill to run the full workflow: branch from prod → fix → commit → push → PR targeting prod branch
+- [Commit Conventions — Hotfix Branches](developer_docs/git/commit-conventions.md#hotfix-branches) - naming format and examples
 
 ## Common Abbreviations & Terms
 - **TIA**: Thanks In Advance
