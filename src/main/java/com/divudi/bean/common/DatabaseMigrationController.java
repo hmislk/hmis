@@ -539,39 +539,107 @@ public class DatabaseMigrationController implements Serializable {
     }
 
     /**
-     * Execute SQL script using EntityManager through facade
+     * Execute SQL script, routing each statement to the correct executor.
+     *
+     * DDL statements (CREATE, ALTER, DROP, CALL, DELIMITER blocks) are
+     * executed via executeDdlNative() which uses a raw JDBC connection
+     * outside JTA — necessary because MySQL auto-commits DDL implicitly,
+     * which would otherwise abort the JTA transaction.
+     *
+     * DML/query statements (SELECT, INSERT, UPDATE, DELETE) continue to
+     * use executeNativeSql() through the EntityManager.
      */
     private void executeSqlScript(String sql, StringBuilder logBuilder) throws Exception {
         try {
-            // Split SQL into individual statements (simple approach)
-            String[] statements = sql.split(";");
+            List<String> statements = splitSqlStatements(sql);
 
             for (String stmt : statements) {
                 String trimmedStmt = stmt.trim();
-                if (!trimmedStmt.isEmpty() && !trimmedStmt.startsWith("--")) {
-                    logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\\n");
-
-                    try {
-                        // Use facade to execute native SQL
+                if (trimmedStmt.isEmpty() || trimmedStmt.startsWith("--")) {
+                    continue;
+                }
+                logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\n");
+                try {
+                    if (isDdlStatement(trimmedStmt)) {
+                        migrationFacade.executeDdlNative(trimmedStmt);
+                    } else {
                         migrationFacade.executeNativeSql(trimmedStmt);
-                    } catch (Exception e) {
-                        // Check if this is a "duplicate index" error (MySQL error 1061)
-                        // for CREATE INDEX statements - safe to skip
-                        if (isCreateIndexStatement(trimmedStmt) && isDuplicateIndexError(e)) {
-                            logBuilder.append("Index already exists, skipping...\\n");
-                        } else {
-                            throw e;
-                        }
+                    }
+                } catch (Exception e) {
+                    if (isCreateIndexStatement(trimmedStmt) && isDuplicateIndexError(e)) {
+                        logBuilder.append("Index already exists, skipping...\n");
+                    } else {
+                        throw e;
                     }
                 }
             }
 
-            logBuilder.append("All statements executed successfully\\n");
+            logBuilder.append("All statements executed successfully\n");
 
         } catch (Exception e) {
-            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\\n");
+            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\n");
             throw e;
         }
+    }
+
+    /**
+     * Splits a SQL script into individual executable statements.
+     * Handles DELIMITER directives used in stored procedure definitions.
+     * DELIMITER is a MySQL client convention — the directive itself is
+     * stripped; the procedure body is submitted as a single JDBC call.
+     */
+    private List<String> splitSqlStatements(String sql) {
+        List<String> statements = new ArrayList<>();
+        String currentDelimiter = ";";
+        StringBuilder current = new StringBuilder();
+
+        for (String line : sql.split("\n")) {
+            String trimmed = line.trim();
+
+            if (trimmed.toUpperCase().startsWith("DELIMITER")) {
+                String buffered = current.toString().trim();
+                if (!buffered.isEmpty()) {
+                    statements.add(buffered);
+                    current = new StringBuilder();
+                }
+                String[] parts = trimmed.split("\\s+", 2);
+                currentDelimiter = parts.length > 1 ? parts[1].trim() : ";";
+                continue;
+            }
+
+            if (!currentDelimiter.equals(";") && trimmed.endsWith(currentDelimiter)) {
+                // End of a procedure block — strip the custom delimiter and flush
+                int delimIdx = line.lastIndexOf(currentDelimiter);
+                current.append(line, 0, delimIdx).append("\n");
+                statements.add(current.toString().trim());
+                current = new StringBuilder();
+                currentDelimiter = ";";
+            } else if (currentDelimiter.equals(";") && trimmed.endsWith(";")) {
+                // Normal semicolon-terminated statement
+                int semiIdx = line.lastIndexOf(";");
+                current.append(line, 0, semiIdx).append("\n");
+                String stmt = current.toString().trim();
+                if (!stmt.isEmpty()) {
+                    statements.add(stmt);
+                }
+                current = new StringBuilder();
+            } else {
+                current.append(line).append("\n");
+            }
+        }
+
+        String remaining = current.toString().trim();
+        if (!remaining.isEmpty()) {
+            statements.add(remaining);
+        }
+        return statements;
+    }
+
+    private boolean isDdlStatement(String sql) {
+        String upper = sql.toUpperCase().trim();
+        return upper.startsWith("CREATE") || upper.startsWith("ALTER")
+                || upper.startsWith("DROP") || upper.startsWith("CALL")
+                || upper.startsWith("RENAME") || upper.startsWith("TRUNCATE");
     }
 
     private boolean isCreateIndexStatement(String sql) {
