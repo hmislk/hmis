@@ -4,6 +4,7 @@
  */
 package com.divudi.service;
 
+import com.divudi.core.facade.AuditDatabaseFacade;
 import com.divudi.core.facade.DatabaseMigrationFacade;
 import java.util.List;
 import java.util.logging.Level;
@@ -45,9 +46,13 @@ public class AutoIncrementBootstrapService {
     @EJB
     private DatabaseMigrationFacade migrationFacade;
 
+    @EJB
+    private AuditDatabaseFacade auditDatabaseFacade;
+
     @PostConstruct
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void applyAutoIncrementIfNeeded() {
+        // Main database (hmisPU)
         try {
             List<String> altered = migrationFacade.applyAutoIncrementToAllEntityTables();
             if (altered.isEmpty()) {
@@ -59,6 +64,19 @@ public class AutoIncrementBootstrapService {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "AutoIncrementBootstrap: failed to apply AUTO_INCREMENT — "
                     + "entity INSERTs may fail until migration v2.2.0 is run manually", e);
+        }
+
+        // Audit database (hmisAuditPU)
+        try {
+            List<String> altered = auditDatabaseFacade.applyAutoIncrementToAllEntityTables();
+            if (altered.isEmpty()) {
+                LOGGER.info("AutoIncrementBootstrap [AuditDB]: all tables already have AUTO_INCREMENT — nothing to do.");
+            } else {
+                LOGGER.info("AutoIncrementBootstrap [AuditDB]: applied AUTO_INCREMENT to " + altered.size()
+                        + " table(s): " + altered);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "AutoIncrementBootstrap [AuditDB]: failed to apply AUTO_INCREMENT", e);
         }
     }
 }
