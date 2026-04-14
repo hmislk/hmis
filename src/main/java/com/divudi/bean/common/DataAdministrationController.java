@@ -2740,6 +2740,153 @@ public class DataAdministrationController implements Serializable {
         markSchemaAsCurrentSilently(executionPerformed);
     }
 
+    /**
+     * Detect missing fields for each entity and automatically apply ALTER TABLE
+     * ADD COLUMN statements sourced from the pasted DDL content in
+     * {@code allCreateStetements}. Uses {@link DatabaseMigrationFacade#executeDdlNative}
+     * for the main database and {@link AuditDatabaseFacade#executeDdlNative} for
+     * the audit database so that DDL runs outside JTA (avoids MySQL implicit-commit
+     * desync).
+     *
+     * <p>Requires the full DDL file content to be pasted into the
+     * "allCreateStetements" field (Tab 1) before calling this method. If no DDL
+     * is available the method reports which entities still need attention.</p>
+     */
+    public void fixMissingFields() {
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+            String msg = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field in Tab 1 first.";
+            executionFeedback = msg;
+            mainDatabaseExecutionFeedback = msg;
+            auditDatabaseExecutionFeedback = msg;
+            return;
+        }
+
+        if (runOnMainDatabase) {
+            fixMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            fixMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    private void fixMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
+        StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
+
+        for (Class<?> entityClass : findEntityClassNames()) {
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
+            String entityName = entityClass.getSimpleName();
+            String jpql = "SELECT e FROM " + entityName + " e";
+
+            try {
+                facade.executeQueryFirstResult(entityClass, jpql);
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause == null) {
+                    continue;
+                }
+                // Entity has at least one missing column — fix ALL columns for this entity
+                // by generating ADD COLUMN statements from the CREATE TABLE in the DDL.
+                String createStatement = findCreateStatementInDdl(entityName);
+                if (createStatement == null) {
+                    executionResults.append("<br/>No DDL found for entity: ").append(entityName)
+                            .append(" — cannot auto-fix.");
+                    continue;
+                }
+                String alterSql = generateAlterStatements(createStatement);
+                String[] statements = alterSql.split(";");
+                for (String stmt : statements) {
+                    stmt = stmt.trim();
+                    if (stmt.isEmpty()) {
+                        continue;
+                    }
+                    String stmtLower = stmt.toLowerCase();
+                    if (!stmtLower.contains("add column")) {
+                        continue; // only apply ADD COLUMN fixes here
+                    }
+                    if (!isValidSqlStatement(stmt)) {
+                        continue;
+                    }
+                    try {
+                        executeDdlForDatabase(databaseName, stmt);
+                        executionResults.append("<br/>Fixed [").append(entityName).append("]: ").append(stmt);
+                    } catch (Exception ex) {
+                        String errMsg = getExceptionMessage(ex);
+                        if (errMsg != null && errMsg.toLowerCase().contains("duplicate column")) {
+                            // Column already exists — not an error
+                        } else {
+                            executionResults.append("<br/>Failed [").append(entityName).append("]: ")
+                                    .append(stmt).append(" | ").append(errMsg);
+                        }
+                    }
+                }
+            }
+        }
+
+        String databaseResult = executionResults.toString();
+        if ("Main Database".equals(databaseName)) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
+    }
+
+    /**
+     * Find the full CREATE TABLE statement for the given entity name (case-insensitive)
+     * within the pasted {@code allCreateStetements} DDL content.
+     *
+     * @return the CREATE TABLE statement string, or {@code null} if not found
+     */
+    private String findCreateStatementInDdl(String entityName) {
+        if (allCreateStetements == null || allCreateStetements.trim().isEmpty()) {
+            return null;
+        }
+        String upperEntityName = entityName.toUpperCase();
+        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            String trimmedPart = part.trim();
+            if (trimmedPart.toUpperCase().startsWith(upperEntityName + " ")
+                    || trimmedPart.toUpperCase().startsWith(upperEntityName + "(")) {
+                return "CREATE TABLE " + trimmedPart;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Execute a DDL statement on the correct database (main or audit) using the
+     * native JDBC path that bypasses JTA. This avoids the MySQL implicit-commit
+     * desync that occurs when DDL runs through an EntityManager inside a JTA
+     * transaction.
+     */
+    private void executeDdlForDatabase(String databaseName, String sql) throws Exception {
+        if ("Main Database".equals(databaseName)) {
+            databaseMigrationFacade.executeDdlNative(sql);
+        } else {
+            auditDatabaseFacade.executeDdlNative(sql);
+        }
+    }
+
     private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {
         // Adjust the split pattern based on your actual SQL string format
         // Assuming statements end with semicolons

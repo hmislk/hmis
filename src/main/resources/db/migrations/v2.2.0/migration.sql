@@ -12,6 +12,9 @@ SELECT SEQ_NAME, SEQ_COUNT FROM SEQUENCE WHERE SEQ_NAME = 'SEQ_GEN';
 
 -- Step 2: Create stored procedure to add AUTO_INCREMENT dynamically
 -- Uses information_schema so it works with both uppercase and lowercase table names
+-- Drop first so re-runs don't fail with "already exists"
+DROP PROCEDURE IF EXISTS hmis_add_auto_increment;
+
 DELIMITER //
 CREATE PROCEDURE hmis_add_auto_increment()
 BEGIN

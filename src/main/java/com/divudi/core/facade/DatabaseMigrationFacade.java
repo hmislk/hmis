@@ -63,11 +63,19 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
         if (sql == null || sql.trim().isEmpty()) {
             throw new IllegalArgumentException("SQL statement cannot be null or empty");
         }
-        try (Connection conn = getRawJdbcConnection()) {
+        Connection conn = getRawJdbcConnection();
+        try {
             conn.setAutoCommit(true);
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(sql);
             }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            // Without this, the pool hands the connection (with autoCommit=true) to the
+            // next JTA operation, which breaks JTA enlistment and causes
+            // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
         }
     }
 
@@ -138,6 +146,11 @@ public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
                 }
             }
         } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            // Without this, the pool hands the connection (with autoCommit=true) to the
+            // next JTA operation, which breaks JTA enlistment and causes
+            // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
             conn.close();
         }
         return altered;
