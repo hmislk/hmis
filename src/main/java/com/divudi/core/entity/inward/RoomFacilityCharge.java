@@ -31,7 +31,7 @@ public class RoomFacilityCharge implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Double maintananceCharge = 0.0;
     private Double roomCharge = 0.0;
