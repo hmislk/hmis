@@ -2651,7 +2651,7 @@ public class DataAdministrationController implements Serializable {
                 // First execute the CREATE TABLE outside JTA (DDL causes implicit MySQL commit
                 // which desyncs the JTA transaction manager if run via EntityManager)
                 try {
-                    databaseMigrationFacade.executeDdlNative(createStatement);
+                    executeDdlForDatabase(databaseName, createStatement);
                     executionResults.append("<br/>Successfully executed: ").append(createStatement);
                 } catch (Exception e) {
                     executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(getExceptionMessage(e));
@@ -2675,7 +2675,7 @@ public class DataAdministrationController implements Serializable {
 
                     try {
                         if (isValidSqlStatement(sql)) {
-                            databaseMigrationFacade.executeDdlNative(sql);
+                            executeDdlForDatabase(databaseName, sql);
                             executionResults.append("<br/>Successfully executed: ").append(sql);
                         } else {
                             executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
