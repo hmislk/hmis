@@ -8,6 +8,7 @@ package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.ShiftTable;
+import com.divudi.core.data.dataStructure.RosterTable;
 import com.divudi.core.data.hr.DayType;
 
 import com.divudi.ejb.HumanResourceBean;
@@ -48,7 +49,12 @@ public class ShiftTableController implements Serializable {
     Roster roster;
     Shift shift;
     StaffShift staffShift;
+    RosterTable rosterTable;
     List<ShiftTable> shiftTables;
+
+    @EJB
+    RosterGeneratorService rosterGeneratorService;
+
     @EJB
     HumanResourceBean humanResourceBean;
 
@@ -69,7 +75,7 @@ public class ShiftTableController implements Serializable {
         dateRange = 0l;
         roster = null;
         shiftTables = null;
-
+        rosterTable = null;  
     }
 
     private boolean errorCheck() {
@@ -183,6 +189,23 @@ public class ShiftTableController implements Serializable {
         saveStaffShift();
         saveStaffShift();
 
+    }
+
+    public void generateAutoRoster() {
+        if (roster == null) {
+            JsfUtil.addErrorMessage("Please select a roster.");
+            return;
+        }
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select from and to dates.");
+            return;
+        }
+        rosterTable = rosterGeneratorService.generateRosterTable(fromDate, toDate, roster);
+        if (rosterTable.getWarnings() != null) {
+            for (String w : rosterTable.getWarnings()) {
+                JsfUtil.addErrorMessage(w);
+            }
+        }
     }
 
     public void createShiftTable() {
@@ -825,5 +848,13 @@ public class ShiftTableController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    public RosterTable getRosterTable() {
+        return rosterTable;
+    }
+
+    public void setRosterTable(RosterTable rosterTable) {
+        this.rosterTable = rosterTable;
     }
 }

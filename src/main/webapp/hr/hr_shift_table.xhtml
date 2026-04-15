@@ -81,6 +81,11 @@
                                          action="#{shiftTableController.makeNull()}"
                                          class="m-1"
                                          />
+
+                        <p:commandButton ajax="false" value="Auto Generate"
+                                         action="#{shiftTableController.generateAutoRoster()}"
+                                         class="m-1"
+                                         />
                     </div>
 
                     <!--                    <div class="m-2">
@@ -114,6 +119,108 @@
 
                 </div>
             </div>
+
+            <p:panel id="rosterTablePanel" class="m-3"
+                    rendered="#{shiftTableController.rosterTable != null 
+                                and not empty shiftTableController.rosterTable.rows}">
+                
+                <f:facet name="header">
+                    <h:outputLabel value="Auto-Generated Roster: #{shiftTableController.roster.name}" />
+                    <br/>
+                    <h:outputLabel value="#{shiftTableController.fromDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="   To  "/>
+                    <h:outputLabel value="#{shiftTableController.toDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputLabel>
+                </f:facet>
+
+                <!-- Warnings -->
+                <ui:repeat value="#{shiftTableController.rosterTable.warnings}" var="warn">
+                    <div class="alert alert-warning" style="padding: 4px 8px; margin: 2px 0; font-size: 12px;">
+                        #{warn}
+                    </div>
+                </ui:repeat>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-family: serif; font-size: 12px;"
+                        border="1">
+                        
+                        <!-- Header Row 1: Dates -->
+                        <tr>
+                            <th rowspan="2" 
+                                style="border: 1px solid black; text-align: center; 
+                                    padding: 4px 8px; min-width: 120px; background-color: #f0f0f0;">
+                                Shifts
+                            </th>
+                            <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="colDate">
+                                <th style="border: 1px solid black; text-align: center; 
+                                        padding: 4px; min-width: 100px; background-color: #f0f0f0;">
+                                    <h:outputText value="#{colDate}">
+                                        <f:convertDateTime pattern="yyyy.MM.dd"/>
+                                    </h:outputText>
+                                </th>
+                            </ui:repeat>
+                        </tr>
+                        
+                        <!-- Header Row 2: Day names -->
+                        <tr>
+                            <ui:repeat value="#{shiftTableController.rosterTable.dates}" var="colDate">
+                                <th style="border: 1px solid black; text-align: center; 
+                                        padding: 4px; background-color: #f0f0f0;">
+                                    <h:outputText value="#{colDate}">
+                                        <f:convertDateTime pattern="EEE"/>
+                                    </h:outputText>
+                                </th>
+                            </ui:repeat>
+                        </tr>
+                        
+                        <!-- Data Rows: One per shift -->
+                        <ui:repeat value="#{shiftTableController.rosterTable.rows}" var="row">
+                            <tr>
+                                <!-- Shift name column -->
+                                <td style="border: 1px solid black; padding: 4px 8px; 
+                                        font-weight: bold; white-space: nowrap;
+                                        background-color: #{row.dayOff ? '#f9f9f9' : '#ffffff'};">
+                                    <h:outputText value="#{row.shiftName}" 
+                                                style="#{row.dayOff ? 'color: gray; font-style: italic;' : ''}"/>
+                                </td>
+                                
+                                <!-- Staff cells: one per date -->
+                                <ui:repeat value="#{row.cells}" var="cell">
+                                    <td style="border: 1px solid black; padding: 4px; 
+                                            text-align: center; vertical-align: top;
+                                            #{cell.understaffed ? 'background-color: #fff3cd;' : ''}">
+                                        
+                                        <!-- Staff names, one per line -->
+                                        <ui:repeat value="#{cell.assignedStaff}" var="staff" varStatus="status">
+                                            <h:outputText value="#{staff.person.name}" 
+                                                        style="font-size: 11px;"/>
+                                            <br rendered="#{!status.last}"/>
+                                        </ui:repeat>
+                                        
+                                        <!-- Show warning if understaffed -->
+                                        <h:outputText value="(need #{cell.requiredCount})" 
+                                                    rendered="#{cell.understaffed}"
+                                                    style="color: red; font-size: 10px; display: block;"/>
+                                        
+                                    </td>
+                                </ui:repeat>
+                            </tr>
+                        </ui:repeat>
+                        
+                    </table>
+                </div>
+                
+            </p:panel>
+
+    <!-- Print button for the roster table -->
+    <p:commandButton value="Print Roster Table" ajax="false" action="#" class="mx-3"
+                    rendered="#{shiftTableController.rosterTable != null 
+                                and not empty shiftTableController.rosterTable.rows}">
+        <p:printer target="rosterTablePanel"/>
+    </p:commandButton>
 
             <p:panel id="print3" styleClass="printOnly" class="m-3" >
 
