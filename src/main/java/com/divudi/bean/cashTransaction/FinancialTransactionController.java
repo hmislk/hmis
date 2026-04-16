@@ -4931,19 +4931,18 @@ public class FinancialTransactionController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
 
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
                 + "FROM Bill p "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.billTypeAtomic in :btas "
-                + "AND p.id > :cid "
-                + "ORDER BY p.id DESC";
+                + "AND p.createdAt >= :startTime "
+                + "ORDER BY p.createdAt DESC";
         Map<String, Object> m = new HashMap<>();
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("btas", billTypesToFilter);
         m.put("ret", false);
-        m.put("cid", shiftStartBillId);
+        m.put("startTime", nonClosedShiftStartFundBill.getCreatedAt());
         currentBills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByBills = new AtomicBillTypeTotals();
