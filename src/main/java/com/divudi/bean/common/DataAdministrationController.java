@@ -2620,6 +2620,15 @@ public class DataAdministrationController implements Serializable {
         mainDatabaseExecutionFeedback = "";
         auditDatabaseExecutionFeedback = "";
 
+        // Require DDL content — do not mark schema current if nothing to apply
+        boolean hasDdl = allCreateStetements != null && !allCreateStetements.trim().isEmpty();
+        if (!hasDdl) {
+            executionFeedback = "DDL content is empty. Paste the full createDDL.jdbc contents into the 'DDL Content' field before clicking Update Database.";
+            mainDatabaseExecutionFeedback = executionFeedback;
+            auditDatabaseExecutionFeedback = executionFeedback;
+            return;
+        }
+
         // Run on both databases if enabled
         boolean executionPerformed = false;
         if (runOnMainDatabase) {
@@ -2726,6 +2735,15 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = "";
         mainDatabaseExecutionFeedback = "";
         auditDatabaseExecutionFeedback = "";
+
+        // Require SQL content — do not mark schema current if nothing to apply
+        boolean hasSql = suggestedSql != null && !suggestedSql.trim().isEmpty();
+        if (!hasSql) {
+            executionFeedback = "SQL field is empty. Enter SQL statements before clicking RUN SQL.";
+            mainDatabaseExecutionFeedback = executionFeedback;
+            auditDatabaseExecutionFeedback = executionFeedback;
+            return;
+        }
 
         // Run on both databases if enabled
         boolean executionPerformed = false;
