@@ -133,9 +133,9 @@
                                         </small>
                                     </div>
                                 </f:facet>
-                                <p:dataTable 
+                                <p:dataTable
                                     id="tbl"
-                                    value="#{searchController.bills}" 
+                                    value="#{searchController.bills}"
                                     var="p"
                                     rows="15"
                                     paginator="true"
@@ -148,7 +148,11 @@
                                     resizableColumns="true"
                                     reflow="true"
                                     stripedRows="true"
+                                    rowExpandMode="multiple"
                                     size="small">
+                                    <p:column width="30" exportable="false">
+                                        <p:rowToggler />
+                                    </p:column>
                                     <p:column headerText="Request Details" sortBy="#{p.createdAt}" styleClass="text-nowrap" width="200">
                                         <div class="d-flex flex-column">
                                             <div class="d-flex align-items-center mb-1">
