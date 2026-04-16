@@ -1218,7 +1218,7 @@ public class GrnCostingController implements Serializable {
                     - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
 
             double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - receivedFreeQty;
+            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
