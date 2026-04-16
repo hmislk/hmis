@@ -5191,16 +5191,26 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
-        // Guard: outgoing pending handover — unconditional, must be accepted before shift closes (#19824)
-        if (hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+        boolean allowShiftEndWithoutHandoverAcceptance = configOptionApplicationController
+                .getBooleanValueByKey("Allow Shift End Without Handover Acceptance", false);
+
+        // Guard: outgoing pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true (#19963)
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
             JsfUtil.addErrorMessage("You have a handover awaiting acceptance by the recipient. Please wait for them to accept before closing your shift.");
             return "";
         }
 
-        // Guard: incoming pending handover — unconditional, must be accepted before shift closes (#19824)
-        if (hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
+        // Guard: incoming pending handover — bypassed when 'Allow Shift End Without Handover Acceptance' is true (#19963)
+        if (!allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null)) {
             JsfUtil.addErrorMessage("You have a pending handover to accept. Please accept it before closing your shift.");
             return "";
+        }
+
+        if (allowShiftEndWithoutHandoverAcceptance
+                && hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null)) {
+            JsfUtil.addInfoMessage("Warning: You are ending your shift while a handover is still pending acceptance by the recipient.");
         }
 
         if (mustReceiveAllFundTransfersBeforeClosingShift) {
@@ -5254,11 +5264,10 @@ public class FinancialTransactionController implements Serializable {
                     return null;
                 }
             }
-            // Also block if a handover has been created but not yet accepted by the recipient.
-            // This covers the case where all collections are already included in a pending handover
-            // (bundle.getTotal() == 0) but the recipient has not confirmed receipt yet.
+            // Also block if a handover has been created but not yet accepted by the recipient,
+            // unless 'Allow Shift End Without Handover Acceptance' is enabled (#19963).
             boolean hasPendingHandover = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
-            if (hasPendingHandover) {
+            if (hasPendingHandover && !allowShiftEndWithoutHandoverAcceptance) {
                 JsfUtil.addErrorMessage("Handover pending acceptance. Please wait for the recipient to accept your handover before ending your shift.");
                 return null;
             }
@@ -9369,6 +9378,12 @@ public class FinancialTransactionController implements Serializable {
         shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
                 "Require Handover Before Shift End",
                 "When enabled, shift end is blocked until the total of all accepted handovers for the current shift matches the collection total within the configured tolerance (see 'Maximum Allowed Difference for Shift End Handover'). Shifts with no collections are unaffected. Default: false.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Shift End Without Handover Acceptance",
+                "When enabled, a shift can be ended even if a handover has been created but not yet accepted by the recipient. A warning message is shown so the user is aware of the pending handover. Default: false (strict mode — shift end is blocked until all handovers are accepted).",
                 OptionScope.APPLICATION
         ));
 
